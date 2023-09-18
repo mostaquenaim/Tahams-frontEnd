@@ -55,7 +55,9 @@ const AddProduct = () => {
 
 
     const handleSubmit = async (e) => {
-        console.log("ok")
+        const joinedSizes = selectedSizes.join(' ');
+
+        console.log("joinedSizes",joinedSizes)
         e.preventDefault();
 
         const formData = new FormData();
@@ -67,6 +69,7 @@ const AddProduct = () => {
         // const selectedCategory = await axios.get(`http://localhost:3000/admin/getCategoryById/${productData.categoryId}`)
         formData.append('categoryId', productData.categoryId);
         formData.append('filename', file);
+        formData.append('availableSizes', joinedSizes);
 
         try {
             const response = await axios.post('http://localhost:3000/admin/add-new-product', formData, {
@@ -76,6 +79,19 @@ const AddProduct = () => {
             });
             console.log('Product added:', response.data);
             setSuccess("Successfully added")
+
+            // clear values from input fields
+            setProductData({
+                name: '',
+                tags: '',
+                description: '',
+                ifStock: '',
+                price: '',
+                categoryId: '', 
+            });
+            setSelectedSizes([])
+            setFile(null)
+
 
         } catch (error) {
             console.error('Error adding product:', error);
@@ -156,7 +172,7 @@ const AddProduct = () => {
                         ))}
                     </select>
                 </div>
-                {/* <div >
+                <div >
                     <label>Sizes:</label>
                     <div>
                         {sizes.map((size) => (
@@ -169,17 +185,18 @@ const AddProduct = () => {
                                     checked={selectedSizes.includes(size.size)}
                                     onChange={(e) => handleSizeChange(e, size.size)}
                                 />
-                                {console.log(selectedSizes)}
+                                {console.log("selectedSizes", selectedSizes)}
                                 <label>{size.size}</label>
                             </div>
                         ))}
 
                     </div>
-                </div> */}
+                </div>
 
                 <div>
                     <label>Image:</label>
                     <input
+                        name="filename"
                         type="file"
                         accept=".png, .jpg, .jpeg"
                         onChange={handleFileChange}
