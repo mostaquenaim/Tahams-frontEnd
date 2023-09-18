@@ -45,7 +45,7 @@ function Drawer(props) {
                 {/* drawer icon  */}
                 <label
                     htmlFor="panel-toggle"
-                    className="absolute top-0 left-0 inline-block p-4 transition-all duration-500 bg-indigo-500 rounded-lg peer-checked:rotate-180 peer-checked:left-64"
+                    className="fixed top-0 left-0 inline-block p-4 transition-all duration-500 bg-indigo-500 rounded-lg peer-checked:rotate-180 peer-checked:left-64"
                 >
                     <div className="w-6 h-1 mb-3 -rotate-45 bg-white rounded-lg"></div>
                     <div className="w-6 h-1 rotate-45 bg-white rounded-lg"></div>

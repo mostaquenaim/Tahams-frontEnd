@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import Link from 'next/link';
 
-const UpdateVehicle = ({ item }) => {
+const UpdateCategory = ({ item }) => {
 
     const [updatedData, setUpdatedData] = useState({});
     const router = useRouter();
@@ -81,7 +81,7 @@ const UpdateVehicle = ({ item }) => {
 
             <div className="flex flex-col justify-center items-center text-center bg-gradient-to-b from-zinc-50 to-blue-100 h-screen">
                 <div className="p-5 bg-white shadow-md w-96 flex flex-col gap-3 rounded-lg">
-                    <h1 className="text-xl font-bold">Update Vehicle</h1>
+                    <h1 className="text-xl font-bold">Update Category</h1>
                     <p className={successColor}>{success}</p>
                     <div className="my-2">
                         {item.filename && (
@@ -126,7 +126,7 @@ const UpdateVehicle = ({ item }) => {
     );
 };
 
-export default UpdateVehicle;
+export default UpdateCategory;
 
 // Rest of the code remains the same
 
