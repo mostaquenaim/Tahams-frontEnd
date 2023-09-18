@@ -7,7 +7,7 @@ import SessionCheck from '../components/sessionCheck';
 import Image from 'next/image';
 import ShowCategories from '../components/showCategories';
 
-export default function AddCategory() {
+export default function Categories() {
 
     const {
         register,

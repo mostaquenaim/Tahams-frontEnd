@@ -31,7 +31,7 @@ function Drawer(props) {
 
     return (
         <>
-            <Header title={props.title} />
+            <Header title={props.title} header={props.header} />
 
 
             <div className="flex">
@@ -87,6 +87,15 @@ function Drawer(props) {
                                     className="text-lg font-semibold hover:text-indigo-500"
                                 >
                                     Add Product
+                                </a>
+                            </li>
+
+                            <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
+                                <a
+                                    href="Products"
+                                    className="text-lg font-semibold hover:text-indigo-500"
+                                >
+                                    Show Products
                                 </a>
                             </li>
                         </ul>
