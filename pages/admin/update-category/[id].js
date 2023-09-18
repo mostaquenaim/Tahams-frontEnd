@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Link from 'next/link';
@@ -9,8 +9,25 @@ const UpdateVehicle = ({ item }) => {
     const router = useRouter();
 
     const [success, setSuccess] = useState('')
+    const [categories, setCategories] = useState([])
+    const [successColor, setSuccessColor] = useState(""); 
+
+    useEffect(() => {
+        fetchCategories();
+    }, [])
+
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/admin/view-product-categories');
+            setCategories(response.data);
+        } catch (error) {
+            // Handle errors here, e.g., log the error or show an error message.
+            console.error('Error fetching data:', error);
+        }
+    };
 
     const handleUpdate = async () => {
+
         try {
             for (const key in item) {
                 console.log(updatedData[key])
@@ -18,9 +35,18 @@ const UpdateVehicle = ({ item }) => {
                     updatedData[key] = item[key]
                 }
             }
-            console.log(updatedData)
-            await axios.put(`http://localhost:3000/admin/updateCategory/${item.id}`, updatedData);
-            setSuccess(' update successfully');
+
+            const checkAvailability = categories.some((category) => category.categoryName === updatedData.categoryName)
+            if (checkAvailability) 
+            {
+                setSuccessColor("text-red-500"); 
+                setSuccess(`${updatedData.categoryName} already exists`);
+            }
+            else {
+                setSuccessColor("text-green-500"); 
+                await axios.put(`http://localhost:3000/admin/updateCategory/${item.id}`, updatedData);
+                setSuccess(' update successfully');
+            }
         }
         catch (error) {
             setSuccess('Error updating user:', error);
@@ -29,17 +55,21 @@ const UpdateVehicle = ({ item }) => {
 
     const handleDelete = async () => {
         try {
+            const confirmation = confirm("Are you sure you want to delete? ")
+
+            if(confirmation){
             console.log(updatedData)
-            await axios.delete(`http://localhost:3000/admin/deleteCategory/${item.id}`);
+            const response = await axios.delete(`http://localhost:3000/admin/deleteCategory/${item.id}`);
+            console.log("response", response)
+
             setSuccess(' deleted successfully');
             router.push('/admin/categories')
+            }
         }
         catch (error) {
             setSuccess('Error deleting:', error);
         }
     };
-
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -48,11 +78,11 @@ const UpdateVehicle = ({ item }) => {
 
     return (
         <>
-            
+
             <div className="flex flex-col justify-center items-center text-center bg-gradient-to-b from-zinc-50 to-blue-100 h-screen">
                 <div className="p-5 bg-white shadow-md w-96 flex flex-col gap-3 rounded-lg">
                     <h1 className="text-xl font-bold">Update Vehicle</h1>
-                    <p className="text-red-500">{success}</p>
+                    <p className={successColor}>{success}</p>
                     <div className="my-2">
                         {item.filename && (
                             <img

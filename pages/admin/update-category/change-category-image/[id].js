@@ -50,9 +50,12 @@ export default function ChangeCategoryImage({item}) {
         <>
             <SessionCheck />
 
-            <section className="bg-gradient-to-b from-zinc-50 to-blue-100 min-h-full flex justify-center items-center text-black hover:text-white transition duration-300">
+            <section className="bg-gradient-to-b from-zinc-50 to-blue-100 min-h-full flex justify-center items-center text-black ">
                 <div className="container mx-auto p-6 bg-white shadow-md hover:shadow-lg rounded-lg text-center">
                     <p>{success}</p>
+                    <div>
+                        only png|jpg|jpeg accepted
+                    </div>
                     <div className="my-4">
                         <input
                             type="file"

@@ -8,23 +8,22 @@ import MyHeader from '../components/header';
 export default function AdminSignIn() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
     const router = useRouter();
 
     const [success, setSuccess] = useState('')
+    const [error, setError] = useState('')
+
 
     const handleSubmit = async (event) => {
         event.preventDefault()
 
         try {
-            console.log("skjbvs")
+
             const response = await axios.post('http://localhost:3000/admin/signin', { email, password });
 
             sessionStorage.setItem('email', email);
-
+            setSuccess("Logged in")
             router.push('dashboard');
-            setSuccess('login successfully');
-            reset();
 
         } catch (error) {
             console.log("error")
@@ -39,8 +38,8 @@ export default function AdminSignIn() {
 
     return (
         <>
-<MyHeader title="Login"/>
-            <LoggedCheck/>
+            <MyHeader title="Login" />
+            <LoggedCheck />
             <section className="flex h-screen items-center justify-center text-center bg-gradient-to-b from-zinc-50 to-blue-100">
                 <div className='flex flex-col bg-white p-5 shadow-lg rounded-lg hover:shadow-2xl hover:shadow-black max-w-md w-full items-center justify-center text-center space-y-4'>
 
@@ -51,8 +50,9 @@ export default function AdminSignIn() {
                             <tbody className=' gap-5'>
                                 <tr>
                                     <td colSpan="2">
-                                        <h1 className='font-bold text-black text-xl'>Deliveryman Login</h1>
-                                        {error && <p className="text-red-500">{error}</p>}
+                                        <h1 className='font-bold text-black text-xl'>Admin Login</h1>
+                                        {success? <p className="text-green-500">{success}</p>
+                                        :<p className="text-red-500">{error}</p>}
                                     </td>
                                 </tr>
                                 <tr>
@@ -91,12 +91,6 @@ export default function AdminSignIn() {
                             </tbody>
                         </table>
                     </form>
-                    <p className="mt-4">
-                        Don't have an account?{' '}
-                        <a className="text-blue-500" href="/deliveryman/registration">
-                            Register here
-                        </a>
-                    </p>
                 </div>
             </section>
 

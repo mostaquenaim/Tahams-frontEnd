@@ -10,7 +10,7 @@ export default function SessionCheck () {
     console.log(session)
 
     if (!session) {
-      router.push('/deliveryman/login');
+      router.push('sign-in');
     }
     
   }, []);

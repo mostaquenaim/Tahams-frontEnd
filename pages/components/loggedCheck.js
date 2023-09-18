@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-export default function LoggedCheck () {
+export default function LoggedCheck() {
 
   const router = useRouter();
 
@@ -10,9 +10,9 @@ export default function LoggedCheck () {
     console.log(session)
 
     if (session) {
-      router.push('/deliveryman/updateProfile');
+      router.push('dashboard');
     }
-    
+
   }, []);
 
   return null;

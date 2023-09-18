@@ -22,7 +22,7 @@ function Drawer(props) {
         try {
             sessionStorage.removeItem('email');
             setEmail(null);
-            router.push('/deliveryman/login');
+            router.push('sign-in');
         } catch (error) {
             console.error(error)
         }
@@ -35,12 +35,14 @@ function Drawer(props) {
 
 
             <div className="flex">
+                {/* drawer open close  */}
                 <input
                     type="checkbox"
                     id="panel-toggle"
                     className="relative sr-only peer"
                     defaultChecked
                 />
+                {/* drawer icon  */}
                 <label
                     htmlFor="panel-toggle"
                     className="absolute top-0 left-0 inline-block p-4 transition-all duration-500 bg-indigo-500 rounded-lg peer-checked:rotate-180 peer-checked:left-64"
@@ -56,50 +58,35 @@ function Drawer(props) {
                         <ul className="text-gray-500 mt-5">
                             <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
                                 <a
-                                    href="scheduleManagement"
+                                    href="add-category"
                                     className="text-lg font-semibold hover:text-indigo-500"
                                 >
-                                    Schedule Management
+                                    Add category
                                 </a>
                             </li>
                             <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
                                 <a
-                                    href="order"
+                                    href="categories"
                                     className="text-lg font-semibold hover:text-indigo-500"
                                 >
-                                    Orders
+                                    Show categories
                                 </a>
                             </li>
                             <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
                                 <a
-                                    href="feedback"
+                                    href="AddSize"
                                     className="text-lg font-semibold hover:text-indigo-500"
                                 >
-                                    Feedback
+                                    Add Size
                                 </a>
                             </li>
+
                             <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
                                 <a
-                                    href="customerReview"
+                                    href="AddProduct"
                                     className="text-lg font-semibold hover:text-indigo-500"
                                 >
-                                    Customer Reviews
-                                </a>
-                            </li>
-                            <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
-                                <a
-                                    href="addVehicle"
-                                    className="text-lg font-semibold hover:text-indigo-500"
-                                >
-                                    Add Vehicles
-                                </a>
-                            </li>
-                            <li className="mb-4 transition duration-300 ease-in-out transform hover:scale-105">
-                                <a
-                                    href="updateVehicle"
-                                    className="text-lg font-semibold hover:text-indigo-500"
-                                >
-                                    Update Vehicles
+                                    Add Product
                                 </a>
                             </li>
                         </ul>
