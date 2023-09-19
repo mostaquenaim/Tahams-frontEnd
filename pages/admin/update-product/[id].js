@@ -9,24 +9,9 @@ const UpdateProduct = ({ item }) => {
     const router = useRouter();
 
     const [success, setSuccess] = useState('')
-    const [products, setProducts] = useState([])
-    const [successColor, setSuccessColor] = useState(""); 
+    const [successColor, setSuccessColor] = useState("");
 
-    useEffect(() => {
-        fetchProducts();
-    }, [])
-
-    const fetchProducts = async () => {
-        try {
-            const response = await axios.get('http://localhost:3000/admin/view-all-products');
-            setProducts(response.data);
-            console.log("products", products)
-        } catch (error) {
-            console.error('Error fetching data:', error); 
-        }
-    };
-
-    const handleUpdate = async () => { 
+    const handleUpdate = async () => {
 
         try {
             for (const key in item) {
@@ -35,18 +20,10 @@ const UpdateProduct = ({ item }) => {
                     updatedData[key] = item[key]
                 }
             }
+            setSuccessColor("text-green-500");
+            await axios.put(`http://localhost:3000/admin/updateProduct/${item.id}`, updatedData);
+            setSuccess(' update successfully');
 
-            const checkAvailability = products.some((product) => product.name === updatedData.name)
-            if (checkAvailability) 
-            {
-                setSuccessColor("text-red-500"); 
-                setSuccess(`${updatedData.name} already exists`);
-            }
-            else {
-                setSuccessColor("text-green-500"); 
-                await axios.put(`http://localhost:3000/admin/updateProduct/${item.id}`, updatedData);
-                setSuccess(' update successfully');
-            }
         }
         catch (error) {
             setSuccess('Error updating user:', error);
@@ -57,13 +34,13 @@ const UpdateProduct = ({ item }) => {
         try {
             const confirmation = confirm("Are you sure you want to delete? ")
 
-            if(confirmation){
-            console.log(updatedData)
-            const response = await axios.delete(`http://localhost:3000/admin/deleteProduct/${item.id}`);
-            console.log("response", response)
+            if (confirmation) {
+                console.log("updatedData", updatedData)
+                const response = await axios.delete(`http://localhost:3000/admin/deleteProduct/${item.id}`);
+                console.log("response", response.data)
 
-            setSuccess(' deleted successfully');
-            router.push('/admin/products')
+                setSuccess(' deleted successfully');
+                router.push('/admin/Products')
             }
         }
         catch (error) {
