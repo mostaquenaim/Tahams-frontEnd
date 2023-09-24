@@ -2,20 +2,27 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Link from 'next/link';
+import ShowImage from '@/pages/components/ShowImage';
 
 const UpdateProduct = ({ item }) => {
 
-    const [updatedData, setUpdatedData] = useState({});
     const router = useRouter();
 
+    const [updatedData, setUpdatedData] = useState({});
     const [success, setSuccess] = useState('')
+    const [productImages, setProductImages] = useState([])
     const [successColor, setSuccessColor] = useState("");
+
+    useEffect(() => {
+        const filenamesArray = item.filename.split(' ');
+        setProductImages(filenamesArray)
+    }, [])
 
     const handleUpdate = async () => {
 
         try {
             for (const key in item) {
-                console.log(updatedData[key])
+
                 if (!updatedData[key]) {
                     updatedData[key] = item[key]
                 }
@@ -26,6 +33,7 @@ const UpdateProduct = ({ item }) => {
 
         }
         catch (error) {
+            setSuccessColor("text-red-500");
             setSuccess('Error updating user:', error);
         }
     };
@@ -60,20 +68,21 @@ const UpdateProduct = ({ item }) => {
                 <div className="p-5 bg-white shadow-md w-96 flex flex-col gap-3 rounded-lg">
                     <h1 className="text-xl font-bold">Update Product</h1>
                     <p className={successColor}>{success}</p>
-                    <div className="my-2">
-                        {item.filename && (
-                            <img
-                                src={`http://localhost:3000/admin/getImage/${item.filename}`}
-                                alt="User Image"
-                                onError={(e) => {
-                                    console.error("Error loading image:", e);
-                                }}
-                            />
-                        )}
+                    {/* product images  */}
+                    <div className="my-2 flex gap-2">
+                        {
+                            productImages && (
+                                productImages.map((productImage, idx) =>
+                                    <ShowImage key={idx} image={productImage} altImg={`image-${idx+1}`} />
+                                )
+                            )
+                        }
                     </div>
-                    <div><Link href={`change-product-image/${item.id}`}>Update Image</Link></div>
+                    {/* <div><Link href={`change-product-image/${item.id}`}>Update Image</Link></div> */}
+
+                    {/* product name  */}
                     <div className="my-2">
-                        <label className="block font-semibold">product:</label>
+                        <label className="block font-semibold">product name:</label>
                         <input
                             type="text"
                             name="name"
@@ -82,6 +91,63 @@ const UpdateProduct = ({ item }) => {
                             className="border p-1 rounded focus:outline-none focus:border-blue-500"
                         />
                     </div>
+                    {/* tags  */}
+                    <div className="my-2">
+                        <label className="block font-semibold">product tags:</label>
+                        <input
+                            type="text"
+                            name="tags"
+                            value={updatedData.tags || item.tags}
+                            onChange={handleInputChange}
+                            className="border p-1 rounded focus:outline-none focus:border-blue-500"
+                        />
+                    </div>
+                    {/* description  */}
+                    <div className="my-2">
+                        <label className="block font-semibold">Product description:</label>
+                        <input
+                            type="text"
+                            name="description"
+                            value={updatedData.description || item.description}
+                            onChange={handleInputChange}
+                            className="border p-1 rounded focus:outline-none focus:border-blue-500"
+                        />
+                    </div>
+                    {/* if stock  */}
+                    {/* <div className="my-2">
+                        <label className="block font-semibold">Available:</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={updatedData.name || item.name}
+                            onChange={handleInputChange}
+                            className="border p-1 rounded focus:outline-none focus:border-blue-500"
+                        />
+                    </div> */}
+                    {/* price  */}
+                    <div className="my-2">
+                        <label className="block font-semibold">Price:</label>
+                        <input
+                            type="text"
+                            name="price"
+                            value={updatedData.price || item.price}
+                            onChange={handleInputChange}
+                            className="border p-1 rounded focus:outline-none focus:border-blue-500"
+                        />
+                    </div>
+                    {/* categories  */}
+                    {/* <div className="my-2">
+                        <label className="block font-semibold">product:</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={updatedData.name || item.name}
+                            onChange={handleInputChange}
+                            className="border p-1 rounded focus:outline-none focus:border-blue-500"
+                        />
+                    </div> */}
+                    {/* sizes  */}
+                    {/* to keep sizes checkboxes here  */}
                     <button
                         onClick={handleUpdate}
                         className="btn bg-blue-400 text-black hover:text-white hover:bg-blue-600 transition duration-300"

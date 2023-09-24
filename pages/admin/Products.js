@@ -26,6 +26,7 @@ export default function Products() {
 
     useEffect(() => {
         loadProducts();
+    
     }, []);
 
     const loadProducts = async () => {

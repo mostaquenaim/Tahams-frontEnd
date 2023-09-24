@@ -109,6 +109,7 @@ const AddProduct = () => {
             <div className="bg-white shadow-md hover:shadow-lg hover:shadow-black p-6 rounded-lg">
                 <h2 className="font-bold text-xl text-center mb-4">Add Product</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* product name  */}
                     <div className="flex flex-col">
                         <label className="text-sm font-semibold mb-1">Name:</label>
                         <input
@@ -119,6 +120,7 @@ const AddProduct = () => {
                             className="border p-2 rounded focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
                         />
                     </div>
+                    {/* product tags  */}
                     <div className="flex flex-col">
                         <label className="text-sm font-semibold mb-1">Tags:</label>
                         <input

@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const ShowProducts = (props) => {
     const { item, handleModelClick } = props
+
+    const [filename, setFilename] = useState('')
+
+    useEffect(() => {
+        const firstPart = item.filename.split(' ')[0];
+        setFilename(firstPart)
+    },[])
+
     return (
         <div>
             <div key={item.id} className="mb-4" onClick={() => handleModelClick(item.id)}>
@@ -9,7 +17,7 @@ const ShowProducts = (props) => {
                     <div className="mb-2">
                         {
                             item.filename ?
-                            <img className='h-72' src={`http://localhost:3000/admin/getimage/${item.filename}`}></img>
+                            <img className='h-72' src={`http://localhost:3000/admin/getimage/${filename}`}></img>
                             : "No image uploaded"
                         }
 
