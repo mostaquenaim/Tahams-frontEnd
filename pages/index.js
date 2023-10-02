@@ -1,20 +1,34 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import IndexCheck from './components';
+import { createContext, useEffect, useState } from 'react';
+import axios from 'axios';
+import ShowBanners from './components/ShowBanner';
+import NavbarComp from './components/Navbar';
 
-export default function Home () {
+export const CompanyContext = createContext(null); {/* unused  */}
 
-  // const router = useRouter();
+export default function Home() {
+
+  // const [company, setCompany] = useState(null)
+
+  // const loadCompanyInfo = async () => {
+  //   const resp = await axios.get('/company.json')
+  //   setCompany(resp.data)
+  // }
 
   // useEffect(() => {
-  //     router.push('/deliveryman/login');
-  // }, []);
+  //   loadCompanyInfo();
+  // }, [])
 
-  return(
+  return (
     <>
-    <IndexCheck/>
+    
+      <CompanyContext.Provider value='unused'> {/* unused  */}
+        <NavbarComp />
+        <ShowBanners />
+      </CompanyContext.Provider> {/* unused  */}
     </>
-  )
-  
+  ); 
+
+
 }
+
 

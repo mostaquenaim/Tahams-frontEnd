@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "title": "Summer Sale Banner",
+        "filename": "https://i.ibb.co/pJBxtVm/bannner-1.jpg",
+        "isEnable": true,
+        "startDate": "2023-06-01",
+        "endDate": "2023-06-30",
+        "platform": "Web"
+    },
+    {
+        "id": 2,
+        "title": "New Arrivals Banner",
+        "filename": "https://i.ibb.co/dDWJ3jD/banner-2.jpg",
+        "isEnable": true,
+        "startDate": "2023-07-01",
+        "endDate": "2023-07-31",
+        "platform": "Mobile"
+    },
+    {
+        "id": 3,
+        "title": "Holiday Special Banner",
+        "filename": "https://i.ibb.co/XWcM0zf/banner-3.jpg",
+        "isEnable": false,
+        "startDate": "2023-12-01",
+        "endDate": "2023-12-31",
+        "platform": "Web"
+    }
+]

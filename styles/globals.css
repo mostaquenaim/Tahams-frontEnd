@@ -1,3 +1,8 @@
+/* CSS
+ul.group-hover\:p-1 {
+    padding: 1rem; 
+  } */
+  
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
