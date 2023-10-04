@@ -20,18 +20,18 @@ const NavbarComp = () => {
 
     return (
         <div>
-            <div className="navbar bg-gradient-to-r from-blue-200 via-blue-500 to-blue-200">
-                <div className="navbar-start">
+            <div className="flex justify-between items-center text-white md:justify-center text-center bg-black">
+                <div className="">
                     <div className='md:hidden'>
                         <CustomerDrawer links={links} />
                     </div>
                 </div>
-                <div className="navbar-center">
-                    <Link href='/' className="normal-case text-xl">
-                        <img src='https://i.ibb.co/wJ08vz8/logo-removebg-preview.png' alt="Company Logo" className="w-16" />
+                <div className="">
+                    <Link href='/' className="normal-case">
+                        <img src='https://i.ibb.co/5FcQHFJ/logo-removebg.png' alt="Company Logo" className="w-16" />
                     </Link>
                 </div>
-                <div className="navbar-end">
+                <div className="">
                     <div className='md:hidden'>
                         <CgProfile className='text-3xl '/>
                     </div>

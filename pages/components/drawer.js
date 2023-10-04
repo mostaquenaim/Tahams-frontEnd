@@ -32,8 +32,6 @@ function Drawer(props) {
     return (
         <>
             <Header title={props.title} header={props.header} />
-
-
             <div className="flex">
                 {/* drawer open close  */}
                 <input
