@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Drawer from '../components/drawer';
-import SessionCheck from '../components/sessionCheck';
-import InputField from '../components/InputField';
+import Drawer from '../../components/Drawers/drawer';
+import SessionCheck from '../../components/Auth/sessionCheck';
+import InputField from '../../components/Forms/InputField';
 import DateTimePicker from 'react-datetime-picker';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';

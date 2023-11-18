@@ -1,11 +1,11 @@
-import Drawer from '../components/drawer';
+import Drawer from '../../components/Drawers/drawer';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
-import SessionCheck from '../components/sessionCheck';
+import SessionCheck from '../../components/Auth/sessionCheck';
 import Image from 'next/image';
-import ShowProducts from '../components/showProducts';
+import ShowProducts from '../../components/Show/showProducts';
 
 export default function Products() {
 

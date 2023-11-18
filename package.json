@@ -1,5 +1,5 @@
 {
-  "name": "hr-tech",
+  "name": "tahams",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.8",
+    "@mui/icons-material": "^5.14.18",
+    "@mui/material": "^5.14.18",
+    "aos": "^2.3.4",
     "axios": "^1.4.0",
     "flowbite": "^1.8.1",
     "flowbite-react": "^0.6.3",
@@ -24,12 +30,16 @@
     "react-hook-form": "^7.45.4",
     "react-icons": "^4.11.0",
     "react-router-dom": "^6.16.0",
-    "sort-by": "^1.2.0"
+    "sort-by": "^1.2.0",
+    "swiper": "^10.3.1"
   },
   "devDependencies": {
+    "@types/node": "20.8.9",
+    "@types/react": "18.2.33",
     "autoprefixer": "^10.4.15",
     "daisyui": "^3.6.2",
     "postcss": "^8.4.28",
-    "tailwindcss": "^3.3.3"
+    "tailwindcss": "^3.3.3",
+    "typescript": "5.2.2"
   }
 }

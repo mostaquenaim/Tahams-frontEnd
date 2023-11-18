@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "name": "Full Sleeve SweatShirt",
+      "category": "T-Shirts",
+      "price": 20.00,
+      "description": "A classic, comfortable t-shirt for everyday wear.",
+      "image": "https://i.ibb.co/qsT8tfg/377440277-325715626621853-5206800607682093601-n-1-1.png"
+    },
+    {
+      "id": 2,
+      "name": "Hoodie",
+      "category": "Sweatshirts",
+      "price": 35.00,
+      "description": "Stay warm and stylish with our cozy hoodie.",
+      "image": "https://i.ibb.co/z8SBsfq/348318714-218278447635815-3476159820566035646-n-1.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Half Sleeve Zipper Hoodie",
+      "category": "Accessories",
+      "price": 12.00,
+      "description": "Enjoy your favorite beverages in our branded mug.",
+      "image": "https://i.ibb.co/nRGc3cs/326217026-707702487380440-3776000058426941783-n-1.jpg"
+    }
+  ]
+  

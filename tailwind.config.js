@@ -1,19 +1,22 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
     content: [
-        "./node_modules/flowbite-react/**/*.js",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                'montserrat': ['Montserrat', 'sans-serif'],
+            },
+        },
     },
     plugins: [
         require("daisyui"),
-        require("flowbite/plugin")
     ],
     daisyui: {
-        themes: ["light", "dark", "cupcake", "fantasy"],
+        themes: ["light", "dark", "cupcake", "fantasy", "black"],
     },
 }

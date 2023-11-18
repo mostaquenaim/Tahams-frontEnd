@@ -1,0 +1,11 @@
+/* Define the initial width as 0 */
+hr {
+    width: 0;
+    transition: width 300ms ease; /* Apply the transition to the width property */
+  }
+  
+  /* On hover, change the width to 100% */
+  li:hover hr {
+    width: 100%;
+  }
+  
