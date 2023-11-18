@@ -1,25 +1,27 @@
 import { useEffect, useState } from "react";
 import ShowCat from "./ShowCat";
+import Heading from "../Header/Heading";
+import axios from "axios";
 
 const ShopByCategory = () => {
 
     const [cats, setCats] = useState([])
 
     useEffect(() => {
-        fetch('/sub-categories.json')
-            .then(res => res.json())
-            .then(data => setCats(data))
+        axios.get('http://localhost:3000/admin/view-product-categories')
+            .then(res => 
+                {
+                    console.log(res.data);
+                    setCats(res.data)
+                }
+                )
     }, [])
 
     return (
         <>
-            <div className="pt-20 pb-10 shadow-md px-10">
-                <h1 className="text-4xl text-center font-semibold py-10 bg-black text-white text-opacity-80">
-                    SHOP BY
-                    <br></br>
-                    <span className="text-6xl border-b-2 border-white font-extrabold">CATEGORY</span>
-                </h1>
-                <div className="pt-10 pb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 gap-y-16">
+            <div className="pt-20 md:pt-16 lg:pt-10 pb-10 shadow-md px-10">
+                <Heading first="Shop by" second="CATEGORY"></Heading>
+                <div className="pt-4 md:pt-8 lg:pt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     {
                         cats.map((cat, index) => (
                             <ShowCat key={index} prop={cat}></ShowCat>

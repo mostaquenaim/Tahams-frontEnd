@@ -37,9 +37,9 @@ export default function Home() {
           <MySwiper images={images}></MySwiper>
           <NewArrival></NewArrival>
            <WhyUs></WhyUs>
-          {/*<ShopByCategory></ShopByCategory>
-          <Payment></Payment>
-          <Footer></Footer> */}
+         <ShopByCategory></ShopByCategory>
+           <Payment></Payment>
+         <Footer></Footer>
         </ThemeProvider>
       </CompanyContext.Provider>  
     </div>
