@@ -6,7 +6,7 @@ const Drawer = ({ ListStyle, ListComponent, categories }) => {
 
     const liClass = `text-black bg-white hover:bg-primary border-red-100 border-2 ${!drawerOpen && 'opacity-0'}`
     const parentLiClass = `text-black bg-white rounded-lg relative group`
-    const ulClass = `ml-4 absolute z-50 top-4 left-12 lg:top-7 left-0 mt-2 hidden hover:block group-hover:block`
+    const ulClass = `ml-4 absolute z-40 top-4 left-12 lg:top-7 left-0 mt-2 hidden hover:block group-hover:block`
 
     const toggleDrawer = () => {
         setDrawerOpen(!drawerOpen);
@@ -31,7 +31,7 @@ const Drawer = ({ ListStyle, ListComponent, categories }) => {
 
     return (
         <div>
-            <div className={`drawer z-50 relative ${drawerOpen ? 'open' : ''}`}>
+            <div className={`drawer z-40 relative ${drawerOpen ? 'open' : ''}`}>
                 {/* drawer open close  */}
                 <input
                     type="checkbox"

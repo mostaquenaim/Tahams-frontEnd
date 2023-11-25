@@ -48,8 +48,6 @@ const NavbarCompTwo = () => {
 
     return (
         <>
-            {
-                // categories &&
 
                 <div
                     data-theme='black'
@@ -132,7 +130,7 @@ const NavbarCompTwo = () => {
                         <ResponsiveNavBar btn={searchBtn} fnc={setSearchBtn} ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></ResponsiveNavBar>
                     </section>
                 </div>
-            }</>
+            </>
     );
 };
 

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 
 import SessionCheck from '../../../components/Auth/sessionCheck';
 
-export default function ChangeCategoryImage({item}) {
+export default function ChangeCategoryImage({ item }) {
     const {
         register,
         handleSubmit,

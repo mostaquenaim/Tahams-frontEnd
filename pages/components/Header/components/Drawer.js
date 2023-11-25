@@ -23,7 +23,7 @@ const Drawer = () => {
 
     return (
         <div>
-            <div className={`drawer z-50 lg:hidden ${drawerOpen ? 'open' : ''}`}>
+            <div className={`drawer z-40 lg:hidden ${drawerOpen ? 'open' : ''}`}>
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" checked={drawerOpen} onChange={toggleDrawer} />
                 <div className="drawer-content">
                     <label htmlFor="my-drawer" className="drawer-button text-white">

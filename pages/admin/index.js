@@ -3,7 +3,7 @@ export default function AdminIndex(){
         <>
             <section >
                 ok
-            </section>
+            </section >
         </>
     )
 }

@@ -16,8 +16,8 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories }) => {
         </>
 
     return (
-        <div className='z-50'>
-            <div className="drawer z-50">
+        <div className='z-40'>
+            <div className="drawer z-40">
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content">
                     <label htmlFor="my-drawer" className="drawer-button">

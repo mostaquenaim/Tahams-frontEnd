@@ -7,7 +7,7 @@ const ListComponent = ({ cat, ListStyle, isSide=false }) => {
     const [subCategories, setSubCategories] = useState([])
 
     useEffect(() => {
-        axios.get(`http://localhost:3000/admin/view-product-sub-categories/${cat.id}`)
+        axios.get(`http://localhost:3000/admin/view-product-sub-category/${cat.id}`)
             .then(res => setSubCategories(res.data))
     }, [])
 
