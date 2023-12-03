@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Drawer from '../../components/Drawers/drawer';
 import SessionCheck from '../../components/Auth/sessionCheck';
 import InputField from '../../components/Forms/InputField';
 import DateTimePicker from 'react-datetime-picker';
@@ -25,6 +24,7 @@ const AddProduct = () => {
     const [selectedSizes, setSelectedSizes] = useState([]);
     const [selectedColors, setSelectedColors] = useState([]);
     const [color, setColor] = useState("#aabbcc");
+    const [selectedFile, setSelectedFile] = useState('')
 
     const [productData, setProductData] = useState({
         name: '',
@@ -42,16 +42,15 @@ const AddProduct = () => {
             colorCode: '',
             name: '',
             quantity: '',
-            sizes: [{
-                name: '',
-                quantity: 0
-            }],
-            files: [{
-                filename: '',
-                isThumbnail: false,
-                isFeatured: false
-            }]
         }],
+        filename: '',
+        // files: [
+        //     {
+        //         files: '',
+        //         // isThumbnail: false,
+        //         // isFeatured: false
+        //     }
+        // ],
         subCategories: [],
         // colorCode: '',
         // name:'',
@@ -131,11 +130,34 @@ const AddProduct = () => {
         console.log(productData)
     };
 
+    // colors 
     const handleColorChange = (e, index) => {
         const { name, value } = e.target;
         const updatedColors = [...productData.colors];
         updatedColors[index] = { ...updatedColors[index], [name]: value };
         setProductData({ ...productData, colors: updatedColors });
+    };
+
+    // handle file 
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0])
+        // setProductData({ ...productData, filename: selected })
+        // const selectedFiles = e.target.files;
+
+        // const updatedFiles = [...productData.files]
+        // // const files = [];
+
+        // // Assuming you want to handle multiple files for each color
+        // for (let i = 0; i < selectedFiles.length; i++) {
+        //     const file = selectedFiles[i];
+
+        //     updatedFiles.push(file);
+        // }
+
+        // setProductData((prevData) => ({
+        //     ...prevData,
+        //     files: updatedFiles
+        // }));
     };
 
     // handle size change 
@@ -184,39 +206,21 @@ const AddProduct = () => {
         setProductData({ ...productData, purchaseDate: date });
     };
 
-    // handle file 
-    const handleFileChange = (e, colorIndex) => {
-        const selectedFiles = e.target.files;
-
-        const updatedColors = [...productData.colors];
-        const files = [];
-
-        // Assuming you want to handle multiple files for each color
-        for (let i = 0; i < selectedFiles.length; i++) {
-            const file = selectedFiles[i];
-
-            // You may want to generate a unique filename or handle it differently
-            const filename = file.name;
-
-            const newFile = {
-                filename: filename,
-                isThumbnail: false, // Adjust as needed
-                isFeatured: false, // Adjust as needed
-            };
-
-            files.push(newFile);
-        }
-
-        updatedColors[colorIndex].files = files;
-
-        setProductData((prevData) => ({
-            ...prevData,
-            colors: updatedColors,
-        }));
-    };
-
     const handleSubmit = async (e) => {
+        console.log(productData, "206");
         e.preventDefault();
+
+        console.log(selectedFile);
+
+        const formData = new FormData();
+        // Append non-file data
+        for (const key in productData) {
+            if (key !== 'filename') {
+                formData.append(key, productData[key]);
+            }
+        }
+        console.log(productData.filename, "219");
+        formData.append('filename', selectedFile);
 
         const newCategories = []
         for (const selectedCategory of selectedCategories) {
@@ -224,28 +228,32 @@ const AddProduct = () => {
         }
 
         productData.subCategories = [...newCategories]
-        console.log(selectedCategories,"product-Data ", productData)
+        formData.append('subCategories', [...newCategories])
+        console.log(productData);
+        console.log(selectedCategories, "product-Data ", formData)
 
         try {
-            const response = await axios.post('http://localhost:3000/admin/add-product', productData)
-            setCurrentState('Successfully added');
+            await axios.post('http://localhost:3000/admin/add-product', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
             // Clear values from input fields
             setProductData({
-                name: '',
-                serialNo: '',
-                // quantity: 0,
-                note: '',
+                // name: '',
+                // serialNo: '',
+                // note: '',
                 purchaseDate: '',
-                vatPercentage: '',
-                discountPercentage: '',
-                buyingPrice: '',
-                sellingPrice: '',
-                tags: '',
-                description: '',
+                // vatPercentage: '',
+                // discountPercentage: '',
+                // buyingPrice: '',
+                // sellingPrice: '',
+                // tags: '',
+                // description: '',
                 ifStock: '',
-                categories: [],
                 colors: [{ colorCode: '', name: '', quantity: 0 }],
+                // files: [],
                 // colorCode: '',
                 // name:'',
                 subCategories: []
@@ -362,6 +370,18 @@ const AddProduct = () => {
                                 sizes={sizes}
                             />
                         ))}
+
+                        <div className='flex flex-col gap-3 my-3 '>
+                            <div className='flex gap-2 items-center'>
+                                <input
+                                    type="file"
+                                    name="myfile"
+                                    id="myfile"  // Make sure the ID matches with the query selector
+                                    className="file-input file-input-bordered file-input-primary"
+                                    onChange={(e) => handleFileChange(e)}
+                                />
+                            </div>
+                        </div>
                         <button type="button" className='btn btn-primary' onClick={addColorField}>
                             Add Color
                         </button>

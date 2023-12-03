@@ -7,14 +7,11 @@ const ColorUpload = ({
     colorIndex,
     handleColorChange,
     removeColorField,
-    handleFileChange,
-    sizes,
-    handleSizeChange,
-    handleSizeQuantityChange
 }) => {
 
     return (
-        <div >
+        <div>
+
             <div className='flex justify-around' >
                 <input
                     type="text"
@@ -43,20 +40,12 @@ const ColorUpload = ({
 
             </div>
 
-
-
-            <div className='flex gap-10 items-center my-5'>
-                <FileUpload color={color} handleFileChange={handleFileChange} colorIndex={colorIndex}></FileUpload>
-                {/* <ColorWiseSize color={color} colorIndex={colorIndex} sizes={sizes} handleSizeChange={handleSizeChange} handleSizeQuantityChange={handleSizeQuantityChange}></ColorWiseSize> */}
-            </div>
-
-
-
-
             <div>
                 <button type="button" className='btn' onClick={() => removeColorField(colorIndex)}>
                     Remove Color
-                </button></div>
+                </button>
+            </div>
+
         </div>
     );
 };

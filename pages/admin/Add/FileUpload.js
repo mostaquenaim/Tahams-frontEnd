@@ -1,9 +1,9 @@
 import React from 'react';
 
-const FileUpload = ({ color, handleFileChange, colorIndex }) => {
+const FileUpload = ({ color, handleFileChange }) => {
 
     const handleFile = (e) => {
-        handleFileChange(e, colorIndex)
+        handleFileChange(e)
     }
 
     return (
@@ -12,38 +12,10 @@ const FileUpload = ({ color, handleFileChange, colorIndex }) => {
                 <input type="file"
                     name='filename'
                     className="file-input file-input-bordered file-input-primary "
-                    onChange={(e) => handleFile(e, colorIndex)}
+                    onChange={(e) => handleFile(e)}
                     multiple
                 />
             </div>
-            {/* <div className='flex gap-2 items-center'>
-                <input type="file"
-                    name='filename2'
-                    className="file-input file-input-bordered file-input-primary "
-                    onChange={() => handleFile(e)}
-                />
-            </div>
-            <div className='flex gap-2 items-center'>
-                <input type="file"
-                    name='filename3'
-                    className="file-input file-input-bordered file-input-primary "
-                    onChange={() => handleFile(e)}
-                />
-            </div>
-            <div className='flex gap-2 items-center'>
-                <input type="file"
-                    name='filename4'
-                    className="file-input file-input-bordered file-input-primary "
-                    onChange={() => handleFile(e)}
-                />
-            </div>
-            <div className='flex gap-2 items-center'>
-                <input type="file"
-                    name='filename5'
-                    className="file-input file-input-bordered file-input-primary "
-                    onChange={() => handleFile(e)}
-                />
-            </div> */}
         </div>
     );
 };

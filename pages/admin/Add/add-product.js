@@ -1,214 +1,215 @@
+import React, { useEffect } from 'react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import SessionCheck from '../../components/Auth/sessionCheck';
+import DateTimePicker from 'react-datetime-picker';
+import { HexColorPicker } from 'react-colorful';
+import AdminDrawer from '../../Drafts/AdminDrawer';
 
-const ProductAdd = () => {
-    // State for product data
-    const [productData, setProductData] = useState({
-        name: '',
-        serialNo: '',
-        note: '',
-        purchaseDate: '',
-        vatPercentage: 0,
-        discountPercentage: 0,
-        buyingPrice: '',
-        sellingPrice: '',
-        tags: '',
-        description: '',
-        isStock: true,
-        colors: [
-            {
-                name: '',
-                colorCode: '',
-                sizes: [
-                    {
-                        name: '',
-                        quantity: 0,
-                    },
-                ],
-                files: [
-                    {
-                        filename: '',
-                        isThumbnail: false,
-                        isFeatured: false,
-                    },
-                ],
-            },
-        ],
-        subCategories: [],
+const FileUpload = ({ handleFileChange }) => (
+    <div className='flex flex-col gap-3 my-3 '>
+        <div className='flex gap-2 items-center'>
+            <input
+                type="file"
+                name="myfile"
+                id="myfile"
+                className="file-input file-input-bordered file-input-primary"
+                onChange={handleFileChange}
+            />
+        </div>
+    </div>
+);
+
+const ColorUpload = ({
+    color,
+    colorIndex,
+    handleColorChange,
+    removeColorField,
+}) => (
+    <div>
+        <div className='flex justify-around' >
+            <input
+                type="text"
+                name="colorCode"
+                value={color.colorCode}
+                onChange={(e) => handleColorChange(e, colorIndex)}
+                placeholder="Color Code"
+            />
+
+            <input
+                type="text"
+                name="name"
+                value={color.name}
+                onChange={(e) => handleColorChange(e, colorIndex)}
+                placeholder="Color Name"
+            />
+
+            <input
+                type="number"
+                name="quantity"
+                placeholder="quantity"
+                value={color.quantity}
+                onChange={(e) => handleColorChange(e, colorIndex)}
+            />
+        </div>
+
+        <div>
+            <button type="button" className='btn' onClick={() => removeColorField(colorIndex)}>
+                Remove Color
+            </button>
+        </div>
+
+    </div>
+);
+
+const AddProduct = () => {
+    const {
+        register,
+        control,
+        handleSubmit,
+        setValue,
+        formState: { errors },
+    } = useForm({
+        defaultValues: {
+            name: '',
+            serialNo: '',
+            note: '',
+            purchaseDate: '',
+            vatPercentage: 0,
+            discountPercentage: 0,
+            buyingPrice: 0,
+            sellingPrice: 0,
+            tags: '',
+            description: '',
+            ifStock: true,
+            colors: [{ colorCode: '', name: '', quantity: '' }],
+            filename: '',
+            subCategories: [],
+        },
     });
-    const [currentState, setCurrentState] = useState('');
-    const [categories, setCategories] = useState([]);
-    const [subCategories, setSubCategories] = useState([]);
-    const [subSubCategories, setSubSubCategories] = useState([])
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [selectedSubCategories, setSelectedSubCategories] = useState([]);
-    const [sizes, setSizes] = useState([]);
-    const [selectedSizes, setSelectedSizes] = useState([]);
-    const [selectedColors, setSelectedColors] = useState([]);
-    const [color, setColor] = useState("#aabbcc");
-    // loads 
-    const loadCategories = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-categories');
-        setCategories(result.data);
-    };
-    const loadSubCategories = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-sub-categories');
-        setSubCategories(result.data);
-    };
-    const loadSubSubCategories = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-sub-sub-categories');
-        setSubSubCategories(result.data);
-    };
-    const loadSizes = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-sizes');
-        setSizes(result.data);
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'colors',
+    });
+
+    const onSubmit = async (data) => {
+        console.log(data);
+
+        const formData = new FormData();
+
+        for (const key in data) {
+            if (key === 'filename') {
+                formData.append(key, data[key][0]);
+            } else if (key === 'colors') {
+                data.colors.forEach((color, index) => {
+                    formData.append(`colors[${index}].colorCode`, color.colorCode);
+                    formData.append(`colors[${index}].name`, color.name);
+                    formData.append(`colors[${index}].quantity`, color.quantity);
+                    // Add additional fields if needed
+                });
+            } else {
+                formData.append(key, data[key]);
+            }
+        }
+
+        try {
+            const response = await axios.post('http://localhost:3000/admin/add-product', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            console.log(response.data);
+
+            // Handle success, e.g., redirect or show a success message
+        } catch (error) {
+            console.error('Error adding product:', error);
+            // Handle error, e.g., display an error message
+        }
     };
 
-    // use effect 
+    const handleFileChange = (e) => {
+        setValue('filename', e.target.files);
+    };
+
     useEffect(() => {
-        loadCategories();
-        loadSizes();
-        loadSubCategories();
-        loadSubSubCategories();
+        // Additional initialization logic if needed
     }, []);
 
-    // Function to handle form submission
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Add logic to handle the submission of productData
-        console.log('Product Data:', productData);
-        // Add API calls or other actions here
-    };
-
     return (
-        <div>
-            <h2>Add Product</h2>
-            <form onSubmit={handleSubmit}>
-                {/* Input fields */}
-                <div>
-                    <label>Name:</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={productData.name}
-                    // onChange={(e) => handleInputChange(e)}
-                    />
-                </div>
-                <div>
-                    <label>Serial No:</label>
-                    <input
-                        type="text"
-                        name="serialNo"
-                        value={productData.serialNo}
-                    // onChange={(e) => handleInputChange(e)}
-                    />
-                </div>
-                <div>
-                    <label>Note:</label>
-                    <input
-                        type="text"
-                        name="note"
-                        value={productData.note}
-                    // onChange={(e) => handleInputChange(e)}
-                    />
-                </div>
+        <>
+            <AdminDrawer />
+            <SessionCheck />
+            <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-zinc-50 to-blue-100">
+                <div className="bg-white shadow-md hover:shadow-lg p-6 rounded-lg">
+                    <h2 className="font-bold text-xl text-center mb-4">Add Product</h2>
+                    <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data" className="space-y-4">
+                        <div className="flex flex-col gap-3 my-3">
 
-                {/* Color section */}
-                <div>
-                    <h3>Colors</h3>
-                    {productData.colors.map((color, index) => (
-                        <div key={index}>
-                            <label>Color Name:</label>
-                            <input
-                                type="text"
-                                name={`colors[${index}].name`}
-                                value={color.name}
-                            // onChange={(e) => handleInputChange(e, index)}
-                            />
-                            <label>Color Code:</label>
-                            <input
-                                type="text"
-                                name={`colors[${index}].colorCode`}
-                                value={color.colorCode}
-                            // onChange={(e) => handleInputChange(e, index)}
-                            />
-                            {/* Sizes */}
-                            {color.sizes.map((size, subIndex) => (
-                                <div key={subIndex}>
-                                    <label>{size.name} Quantity:</label>
-                                    <input
-                                        type="number"
-                                        name={`colors[${index}].sizes[${subIndex}].quantity`}
-                                        value={size.quantity}
-                                    // onChange={(e) => handleSizeChange(e, index, subIndex)}
-                                    />
-                                </div>
-                            ))}
-                            {/* Files */}
-                            {color.files.map((file, subIndex) => (
-                                <div key={subIndex}>
-                                    <label>File Name:</label>
-                                    <input
-                                        type="text"
-                                        name={`colors[${index}].files[${subIndex}].filename`}
-                                        value={file.filename}
-                                    // onChange={(e) => handleFileChange(e, index)}
-                                    />
-                                    <label>Is Thumbnail:</label>
-                                    <input
-                                        type="checkbox"
-                                        name={`colors[${index}].files[${subIndex}].isThumbnail`}
-                                        checked={file.isThumbnail}
-                                    // onChange={(e) => handleInputChange(e, index, subIndex)}
-                                    />
-                                    <label>Is Featured:</label>
-                                    <input
-                                        type="checkbox"
-                                        name={`colors[${index}].files[${subIndex}].isFeatured`}
-                                        checked={file.isFeatured}
-                                    // onChange={(e) => handleInputChange(e, index, subIndex)}
-                                    />
-                                </div>
-                            ))}
-                            {/* Remove color button */}
-                            <button type="button"
-                                // onClick={() => removeColor(index)}
-                            >
-                                Remove Color
-                            </button>
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="name">Name:</label>
+                                <input type="text" id="name" {...register('name')} />
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="serialNo">Serial No:</label>
+                                <input type="text" id="serialNo" {...register('serialNo')} />
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="note">Note</label>
+                                <input type="text" id="note" {...register('note')} />
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="vatPercentage"> Vat Percentage:</label>
+                                <input type="number" id="vatPercentage" {...register('vatPercentage')} />
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="discountPercentage">discountPercentage</label>
+                                <input type="number" id="discountPercentage" {...register('discountPercentage')} />
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="buyingPrice">buyingPrice:</label>
+                                <input type="number" id="buyingPrice" {...register('buyingPrice')} />
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label htmlFor="sellingPrice">sellingPrice:</label>
+                                <input type="number" id="sellingPrice" {...register('sellingPrice')} />
+                            </div>
+
+                            {/* Add similar input elements for other fields */}
                         </div>
-                    ))}
-                    {/* Add color button */}
-                    <button type="button"
-                        // onClick={addColor}
-                    >
-                        Add Color
-                    </button>
-                </div>
 
-                {/* Subcategories */}
-                <div>
-                    <h3>Subcategories</h3>
-                    {productData.subCategories.map((subCategory, index) => (
-                        <div key={index}>
-                            <label>{subCategory}:</label>
-                            <input
-                                type="checkbox"
-                                name={`subCategories[${index}]`}
-                                checked={true}
-                            // onChange={(e) => handleInputChange(e, index)}
-                            />
+                        <FileUpload handleFileChange={handleFileChange} />
+{/* 
+                        <ColorUpload
+
+                        ></ColorUpload> */}
+                        {/* <button type="button" className='btn btn-primary' onClick={() => append({ colorCode: '', name: '', quantity: '' })}>
+                            Add Color
+                        </button> */}
+
+                        <div className='flex justify-around'>
+                            <div></div>
+                            <div className="flex justify-center">
+                                <button
+                                    type="submit"
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+                                >
+                                    Add Product
+                                </button>
+                            </div>
                         </div>
-                    ))}
+                    </form>
                 </div>
-
-                {/* Submit button */}
-                <div>
-                    <button type="submit">Add Product</button>
-                </div>
-            </form>
-        </div>
+            </div>
+        </>
     );
 };
 
-export default ProductAdd;
+export default AddProduct;
