@@ -24,7 +24,7 @@ export default function Categories() {
         loadCategories();
     }, []);
     const loadCategories = async () => {
-        const result = await axios.get(`http://localhost:3000/admin/view-product-categories`);
+        const result = await axios.get(`https://tahams-test-production.up.railway.app/admin/view-product-categories`);
         setCategories(result.data);
         setCategoriesTemp(result.data)
         setLoading(false)

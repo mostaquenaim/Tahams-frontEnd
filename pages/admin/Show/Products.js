@@ -30,7 +30,7 @@ export default function Products() {
     }, []);
 
     const loadProducts = async () => {
-        const result = await axios.get(`http://localhost:3000/admin/view-all-products`);
+        const result = await axios.get(`https://tahams-test-production.up.railway.app/admin/view-all-products`);
         setProducts(result.data);
         setProductsTemporaryStore(result.data)
     };

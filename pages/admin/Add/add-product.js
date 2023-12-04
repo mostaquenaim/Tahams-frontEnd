@@ -114,7 +114,7 @@ const AddProduct = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:3000/admin/add-product', formData, {
+            const response = await axios.post('https://tahams-test-production.up.railway.app/admin/add-product', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

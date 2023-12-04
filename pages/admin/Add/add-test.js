@@ -31,7 +31,7 @@ export default function AddTest() {
     // loads 
     const loadSubSubCategories = async () => {
         try {
-            const result = await axios.get('http://localhost:3000/admin/view-product-sub-sub-categories');
+            const result = await axios.get('https://tahams-test-production.up.railway.app/admin/view-product-sub-sub-categories');
 
             // Sort the subSubCategories array based on categoryName
             const sortedSubSubCategories = result.data.sort((a, b) => {
@@ -100,7 +100,7 @@ export default function AddTest() {
 
         console.log(formData);
         try {
-            const response = await axios.post("http://localhost:3000/admin/add-product",
+            const response = await axios.post("https://tahams-test-production.up.railway.app/admin/add-product",
                 formData, {
                 headers: {
                     "Content-Type": "multipart/form-data"

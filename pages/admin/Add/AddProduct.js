@@ -78,16 +78,16 @@ const AddProduct = () => {
 
     // loads 
     const loadCategories = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-categories');
+        const result = await axios.get('https://tahams-test-production.up.railway.app/admin/view-product-categories');
         setCategories(result.data);
     };
     const loadSubCategories = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-sub-categories');
+        const result = await axios.get('https://tahams-test-production.up.railway.app/admin/view-product-sub-categories');
         setSubCategories(result.data);
     };
     const loadSubSubCategories = async () => {
         try {
-            const result = await axios.get('http://localhost:3000/admin/view-product-sub-sub-categories');
+            const result = await axios.get('https://tahams-test-production.up.railway.app/admin/view-product-sub-sub-categories');
             console.log(result.data, "699999");
 
             // Sort the subSubCategories array based on categoryName
@@ -112,7 +112,7 @@ const AddProduct = () => {
         }
     };
     const loadSizes = async () => {
-        const result = await axios.get('http://localhost:3000/admin/view-product-sizes');
+        const result = await axios.get('https://tahams-test-production.up.railway.app/admin/view-product-sizes');
         setSizes(result.data);
     };
 
@@ -233,7 +233,7 @@ const AddProduct = () => {
         console.log(selectedCategories, "product-Data ", formData)
 
         try {
-            await axios.post('http://localhost:3000/admin/add-product', formData, {
+            await axios.post('https://tahams-test-production.up.railway.app/admin/add-product', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

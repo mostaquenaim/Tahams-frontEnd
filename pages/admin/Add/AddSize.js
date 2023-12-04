@@ -16,7 +16,7 @@ const AddSize = () => {
     const onSubmit = async (data) => {
 
         try {
-            const response = await axios.post(`http://localhost:3000/admin/addSize`, data);
+            const response = await axios.post(`https://tahams-test-production.up.railway.app/admin/addSize`, data);
             setSuccess('Size added successfully');
         } catch (error) {
             console.error('Error creating Size:', error);

@@ -28,7 +28,7 @@ const UpdateProduct = ({ item }) => {
                 }
             }
             setSuccessColor("text-green-500");
-            await axios.put(`http://localhost:3000/admin/updateProduct/${item.id}`, updatedData);
+            await axios.put(`https://tahams-test-production.up.railway.app/admin/updateProduct/${item.id}`, updatedData);
             setSuccess(' update successfully');
 
         }
@@ -44,7 +44,7 @@ const UpdateProduct = ({ item }) => {
 
             if (confirmation) {
                 console.log("updatedData", updatedData)
-                const response = await axios.delete(`http://localhost:3000/admin/deleteProduct/${item.id}`);
+                const response = await axios.delete(`https://tahams-test-production.up.railway.app/admin/deleteProduct/${item.id}`);
                 console.log("response", response.data)
 
                 setSuccess(' deleted successfully');
@@ -180,7 +180,7 @@ export async function getServerSideProps(context) {
 
     console.log(id);
 
-    const response = await axios.get(`http://localhost:3000/admin/getProductById/${id}`);
+    const response = await axios.get(`https://tahams-test-production.up.railway.app/admin/getProductById/${id}`);
     const item = await response.data;
 
     return { props: { item } }
