@@ -2,7 +2,7 @@ import React from 'react';
 import MySwiper from './MySwiper';
 import PropTypes from 'prop-types';
 
-const ProductShowCard = ({name, desc, images}) => {
+const ProductShowCard = ({name, desc, images=[]}) => {
     return (
         <div>
             {/* <div>{name}</div> */}

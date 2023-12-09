@@ -2,7 +2,7 @@ import React from 'react';
 import MySwiper from './MySwiper';
 import PropTypes from 'prop-types';
 
-const ShowBanner = ({name, desc, images}) => {
+const ShowBanner = ({name, desc, images=[]}) => {
     return (
         <div>
             {/* <div>{name}</div> */}
