@@ -8,7 +8,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/effect-fade';
 
-const MySwiper = ({ images }) => {
+const MySwiper = ({ images=[] }) => {
     return (
 
         <Swiper
