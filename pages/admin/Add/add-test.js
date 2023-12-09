@@ -396,11 +396,6 @@ export default function AddTest() {
                             Submit
                         </button>
                     </form>
-                    {/* </div>
-                        </div>
-                    </div>
-                </section> */}
-
                 </div>
             </div>
         </>
