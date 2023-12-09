@@ -1,9 +1,9 @@
-import React from 'react';
+import NavbarCompTwo from '../components/Header/NavbarComp';
 
 const Kids = () => {
     return (
         <div>
-            <NavbarComp/>
+            <NavbarCompTwo></NavbarCompTwo>
             kids here
         </div>
     );

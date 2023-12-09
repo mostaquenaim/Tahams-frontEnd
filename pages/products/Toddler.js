@@ -1,9 +1,9 @@
-import React from 'react';
+import NavbarCompTwo from '../components/Header/NavbarComp';
 
 const Toddler = () => {
     return (
         <div>
-            <NavbarComp/>
+            <NavbarCompTwo></NavbarCompTwo>
             toddle here
         </div>
     );

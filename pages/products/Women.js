@@ -1,9 +1,9 @@
-import React from 'react';
+import NavbarCompTwo from '../components/Header/NavbarComp';
 
 const Women = () => {
     return (
         <div>
-            <NavbarComp/>
+            <NavbarCompTwo></NavbarCompTwo>
               women here
         </div>
     );
