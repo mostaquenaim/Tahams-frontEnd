@@ -1,9 +1,9 @@
-import React from 'react';
+import NavbarCompTwo from '../components/Header/NavbarComp'
 
 const WishList = () => {
     return (
         <>
-        <NavbarComp></NavbarComp>
+        <NavbarCompTwo></NavbarCompTwo>
         <section className='pt-40'>WishList</section>
         </>
     );
