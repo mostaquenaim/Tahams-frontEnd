@@ -1,13 +1,6 @@
-import { useRouter } from "next/router";
-import Drawer from "../../components/Drawers/drawer";
-import Products from "./Products";
 
+const Dashboard = () => {
 
-export default function Dashboard(){
-    const router = useRouter();
-
-    router.push('Products')
-    
     return(
         <>
         
@@ -15,3 +8,5 @@ export default function Dashboard(){
         </>
     )
 }
+
+export default Dashboard

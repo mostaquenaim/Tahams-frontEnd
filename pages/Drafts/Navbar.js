@@ -256,7 +256,7 @@ export default function NavbarComp({ category }) {
 
 export async function getServerSideProps() {
     // Fetch data from external API
-    const res = await fetch(`https://tahams-test-production.up.railway.app/admin/view-product-categories`)
+    const res = await fetch(`http://localhost:3000/admin/view-product-categories`)
     const category = await res.json()
     console.log(category);
     // Pass data to the page via props

@@ -19,7 +19,7 @@ export default function AdminSignIn() {
 
         try {
 
-            const response = await axios.post('https://tahams-test-production.up.railway.app/admin/signin', { email, password });
+            const response = await axios.post('http://localhost:3000/admin/signin', { email, password });
 
             sessionStorage.setItem('email', email);
             setSuccess("Logged in")

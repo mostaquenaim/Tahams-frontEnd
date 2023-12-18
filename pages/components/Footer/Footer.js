@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import React from 'react';
 import { AiTwotoneHeart } from 'react-icons/ai';
 import { FaFacebook, FaInstagram, FaTiktok  } from "react-icons/fa";
 

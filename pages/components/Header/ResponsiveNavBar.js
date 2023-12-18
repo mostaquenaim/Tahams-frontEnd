@@ -1,20 +1,9 @@
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
 import { AiOutlineHeart, AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
 import CustomerDrawer from '../Drawers/CustomerDrawer';
 import Drawer from '../Drawers/drawer';
 
 const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories }) => {
-    // const { theme, setTheme } = useContext(ThemeContext)
-
-    // const handleTheme = () => {
-    //     if (theme === 'light') {
-    //         setTheme('dark')
-    //     }
-    //     else {
-    //         setTheme('light')
-    //     }
-    // }
 
 
     const navEndBtnClass = "btn btn-square btn-ghost text-xl"

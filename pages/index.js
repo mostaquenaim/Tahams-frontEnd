@@ -1,11 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
-import axios from 'axios';
-import ShowBanner2 from './components/ShowBanner2';
-import Banners from './admin/Show/Banners';
-import ResponsiveNavBar from './components/Header/ResponsiveNavBar';
 import ThemeProvider from './Contexts/ThemeProvider';
-import Bot from './components/Bot';
-import TestNavbar from './components/Header/TestNavbar';
 import MySwiper from './components/Swiper/MySwiper';
 import ShopByCategory from './components/ShopByCategory/ShopByCategory';
 import NewArrival from './components/NewArrival/NewArrival';

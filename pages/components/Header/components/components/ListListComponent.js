@@ -6,7 +6,7 @@ const ListListComponent = ({ sub, ListStyle }) => {
     const [cats, setCats] = useState([])
 
     useEffect(() => {
-        axios.get(`https://tahams-test-production.up.railway.app/admin/view-product-sub-sub-category/${sub.id}`)
+        axios.get(`http://localhost:3000/admin/view-product-sub-sub-category/${sub.id}`)
             .then(res => setCats(res.data))
     }, [])
 

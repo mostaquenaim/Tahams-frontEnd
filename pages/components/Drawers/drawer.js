@@ -1,21 +1,20 @@
-import Link from 'next/link';
 import { useState } from 'react';
 
 const Drawer = ({ ListStyle, ListComponent, categories }) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const liClass = `text-black bg-white hover:bg-primary border-red-100 border-2 ${!drawerOpen && 'opacity-0'}`
-    const parentLiClass = `text-black bg-white rounded-lg relative group`
-    const ulClass = `ml-4 absolute z-40 top-4 left-12 lg:top-7 left-0 mt-2 hidden hover:block group-hover:block`
+    // const liClass = `text-black bg-white hover:bg-primary border-red-100 border-2 ${!drawerOpen && 'opacity-0'}`
+    // const parentLiClass = `text-black bg-white rounded-lg relative group`
+    // const ulClass = `ml-4 absolute z-40 top-4 left-12 lg:top-7 left-0 mt-2 hidden hover:block group-hover:block`
 
     const toggleDrawer = () => {
         setDrawerOpen(!drawerOpen);
     };
 
-    const handleLinkClick = () => {
-        // Close the drawer when any link is clicked
-        setDrawerOpen(false);
-    };
+    // const handleLinkClick = () => {
+    //     // Close the drawer when any link is clicked
+    //     setDrawerOpen(false);
+    // };
 
     const links =
         <>

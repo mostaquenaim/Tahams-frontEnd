@@ -11,7 +11,7 @@ module.exports = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'https://tahams-test-production.up.railway.app',
+        hostname: 'http://localhost:3000',
         port: '3000',
       },
     ],

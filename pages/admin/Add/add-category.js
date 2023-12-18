@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import SessionCheck from '../../components/Auth/sessionCheck';
 import Drawer from '../../components/Drawers/drawer';
 
-function AddCategory() {
+const AddCategory = () => {
     const {
         register,
         handleSubmit,
@@ -22,7 +22,7 @@ function AddCategory() {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('https://tahams-test-production.up.railway.app/admin/view-product-categories');
+            const response = await axios.get('http://localhost:3000/admin/view-product-categories');
             setCategories(response.data);
         } catch (error) {
             // Handle errors here, e.g., log the error or show an error message.
@@ -40,7 +40,7 @@ function AddCategory() {
 
             if (checkAvailability) setSuccess(`${data.categoryName} already exists`);
             else {
-                const response = await axios.post(`https://tahams-test-production.up.railway.app/admin/addCategory`, data);
+                const response = await axios.post(`http://localhost:3000/admin/addCategory`, data);
                 console.log('Category:', response.data);
 
                 setSuccess('Category added successfully');

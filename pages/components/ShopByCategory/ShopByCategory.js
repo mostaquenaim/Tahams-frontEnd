@@ -4,11 +4,10 @@ import Heading from "../Header/Heading";
 import axios from "axios";
 
 const ShopByCategory = () => {
-
     const [cats, setCats] = useState([])
 
     useEffect(() => {
-        axios.get('https://tahams-test-production.up.railway.app/admin/view-product-categories')
+        axios.get('http://localhost:3000/admin/view-product-categories')
             .then(res => 
                 {
                     console.log(res.data);

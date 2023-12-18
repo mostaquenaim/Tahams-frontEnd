@@ -9,7 +9,7 @@ const ShowCategories = (props) => {
                     <div className="mb-2">
                         {
                             item.filename ?
-                            <img className='h-72' src={`https://tahams-test-production.up.railway.app/admin/getimage/${item.filename}`}></img>
+                            <img className='h-72' src={`http://localhost:3000/admin/getimage/${item.filename}`}></img>
                             : "No image uploaded"
                         }
 

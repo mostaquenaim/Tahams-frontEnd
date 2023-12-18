@@ -1,215 +1,449 @@
-import React, { useEffect } from 'react';
-import axios from 'axios';
-import { useForm, useFieldArray } from 'react-hook-form';
-import SessionCheck from '../../components/Auth/sessionCheck';
+import axios from "axios"
+import { useEffect, useState } from "react"
+import { useRouter } from 'next/router'
 import DateTimePicker from 'react-datetime-picker';
-import { HexColorPicker } from 'react-colorful';
-import AdminDrawer from '../../Drafts/AdminDrawer';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 
-const FileUpload = ({ handleFileChange }) => (
-    <div className='flex flex-col gap-3 my-3 '>
-        <div className='flex gap-2 items-center'>
-            <input
-                type="file"
-                name="myfile"
-                id="myfile"
-                className="file-input file-input-bordered file-input-primary"
-                onChange={handleFileChange}
-            />
-        </div>
-    </div>
-);
+export default function AddTest() {
+    const [subSubCategories, setSubSubCategories] = useState([])
+    const [colors, setColors] = useState([])
+    const [selectedCats, setSelectedCats] = useState([])
+    const [selectedColor, setSelectedColor] = useState('');
 
-const ColorUpload = ({
-    color,
-    colorIndex,
-    handleColorChange,
-    removeColorField,
-}) => (
-    <div>
-        <div className='flex justify-around' >
-            <input
-                type="text"
-                name="colorCode"
-                value={color.colorCode}
-                onChange={(e) => handleColorChange(e, colorIndex)}
-                placeholder="Color Code"
-            />
+    const router = useRouter();
 
-            <input
-                type="text"
-                name="name"
-                value={color.name}
-                onChange={(e) => handleColorChange(e, colorIndex)}
-                placeholder="Color Name"
-            />
-
-            <input
-                type="number"
-                name="quantity"
-                placeholder="quantity"
-                value={color.quantity}
-                onChange={(e) => handleColorChange(e, colorIndex)}
-            />
-        </div>
-
-        <div>
-            <button type="button" className='btn' onClick={() => removeColorField(colorIndex)}>
-                Remove Color
-            </button>
-        </div>
-
-    </div>
-);
-
-const AddProduct = () => {
     const {
         register,
-        control,
         handleSubmit,
-        setValue,
-        formState: { errors },
-    } = useForm({
-        defaultValues: {
-            name: '',
-            serialNo: '',
-            note: '',
-            purchaseDate: '',
-            vatPercentage: 0,
-            discountPercentage: 0,
-            buyingPrice: 0,
-            sellingPrice: 0,
-            tags: '',
-            description: '',
-            ifStock: true,
-            colors: [{ colorCode: '', name: '', quantity: '' }],
-            filename: '',
-            subCategories: [],
-        },
-    });
-
-    const { fields, append, remove } = useFieldArray({
         control,
-        name: 'colors',
-    });
+        formState: { errors },
+        reset,
+    } = useForm();
+
+    const validateFile = (value) => {
+        const file = value[0];
+        console.log(value[0]);
+        const allowedtypes = ["image/jpg", "image/png", "image/jpeg"];
+
+        if (!allowedtypes.includes(file.type)) {
+            return false;
+        }
+    }
+
+    // loads 
+    const loadSubSubCategories = async () => {
+        try {
+            const result = await axios.get('http://localhost:3000/admin/view-product-sub-sub-categories');
+
+            // Sort the subSubCategories array based on categoryName
+            const sortedSubSubCategories = result.data.sort((a, b) => {
+                // Convert category names to lowercase for case-insensitive sorting
+                const categoryA = a.categoryName.toLowerCase();
+                const categoryB = b.categoryName.toLowerCase();
+
+                // Compare category names
+                if (categoryA < categoryB) {
+                    return -1;
+                }
+                if (categoryA > categoryB) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            setSubSubCategories(sortedSubSubCategories);
+        } catch (error) {
+            console.error('Error loading sub-sub-categories:', error);
+        }
+    };
+
+    const loadColors = async () => {
+        try {
+            const result = await axios.get('http://localhost:3000/admin/view-colors');
+            // Sort the subSubCategories array based on categoryName
+            setColors(result.data);
+        } catch (error) {
+            console.error('Error loading sub-sub-categories:', error);
+        }
+    };
+
+    const handleCategoryChange = (event, catID) => {
+        // console.log(event.target.checked);
+        const isChecked = event.target.checked
+
+        if (isChecked) {
+            setSelectedCats([...selectedCats, catID])
+            return
+        }
+
+        const res = selectedCats.filter(category => category !== catID)
+        setSelectedCats([...res])
+    }
+
+    // use effect 
+    useEffect(() => {
+        loadSubSubCategories();
+        loadColors()
+    }, []);
+
+    const [success, setSuccess] = useState('')
 
     const onSubmit = async (data) => {
         console.log(data);
+        console.log("cats", selectedCats);
+        console.log(data.myfile[0]);
 
         const formData = new FormData();
 
-        for (const key in data) {
-            if (key === 'filename') {
-                formData.append(key, data[key][0]);
-            } else if (key === 'colors') {
-                data.colors.forEach((color, index) => {
-                    formData.append(`colors[${index}].colorCode`, color.colorCode);
-                    formData.append(`colors[${index}].name`, color.name);
-                    formData.append(`colors[${index}].quantity`, color.quantity);
-                    // Add additional fields if needed
-                });
-            } else {
-                formData.append(key, data[key]);
-            }
-        }
+        const newCategories = subSubCategories.filter((subCat) => selectedCats.includes(subCat.id))
+
+        console.log(newCategories);
+        formData.append('subCategories', selectedCats)
+        formData.append('name', data.name);
+        formData.append('serialNo', data.serialNo);
+        formData.append('note', data.note);
+        formData.append('vatPercentage', data.vatPercentage);
+        formData.append('discountPercentage', data.discountPercentage);
+        formData.append('buyingPrice', data.buyingPrice);
+        formData.append('sellingPrice', data.sellingPrice);
+        formData.append('tags', data.tags);
+        formData.append('description', data.description);
+        formData.append('myfile', data.myfile[0]);
+        formData.append('color', data.color);
+
+        // formData.append('categories', JSON.stringify(data.categories));
+        console.log(formData);
 
         try {
-            const response = await axios.post('https://tahams-test-production.up.railway.app/admin/add-product', formData, {
+            const response = await axios.post("http://localhost:3000/admin/add-product",
+                formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                    "Content-Type": "multipart/form-data"
+                }
             });
 
-            console.log(response.data);
+            setSuccess('Product add successfully');
+            reset();
 
-            // Handle success, e.g., redirect or show a success message
-        } catch (error) {
-            console.error('Error adding product:', error);
-            // Handle error, e.g., display an error message
+        }
+        catch (error) {
+            console.log(error.response.data.message);
+
+            setSuccess('product add unsuccessful ' + error.response.data.message);
         }
     };
-
-    const handleFileChange = (e) => {
-        setValue('filename', e.target.files);
-    };
-
-    useEffect(() => {
-        // Additional initialization logic if needed
-    }, []);
 
     return (
         <>
-            <AdminDrawer />
-            <SessionCheck />
-            <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-zinc-50 to-blue-100">
-                <div className="bg-white shadow-md hover:shadow-lg p-6 rounded-lg">
-                    <h2 className="font-bold text-xl text-center mb-4">Add Product</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data" className="space-y-4">
-                        <div className="flex flex-col gap-3 my-3">
+            <div className="container mx-auto p-4 flex justify-center items-center">
+                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
 
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="name">Name:</label>
-                                <input type="text" id="name" {...register('name')} />
-                            </div>
+                    <p className="mt-2 text-xs text-green-600 dark:text-green-400">
+                        <span className="font-medium">{success}</span>
+                    </p>
 
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="serialNo">Serial No:</label>
-                                <input type="text" id="serialNo" {...register('serialNo')} />
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="note">Note</label>
-                                <input type="text" id="note" {...register('note')} />
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="vatPercentage"> Vat Percentage:</label>
-                                <input type="number" id="vatPercentage" {...register('vatPercentage')} />
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="discountPercentage">discountPercentage</label>
-                                <input type="number" id="discountPercentage" {...register('discountPercentage')} />
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="buyingPrice">buyingPrice:</label>
-                                <input type="number" id="buyingPrice" {...register('buyingPrice')} />
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                                <label htmlFor="sellingPrice">sellingPrice:</label>
-                                <input type="number" id="sellingPrice" {...register('sellingPrice')} />
-                            </div>
-
-                            {/* Add similar input elements for other fields */}
+                    <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+                        {/* Product Name */}
+                        <div>
+                            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Product name
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Product Name"
+                                required=""
+                                {...register('name', { required: true })}
+                            />
+                            {errors.name && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.name.type === 'required'
+                                            ? 'Product name is required'
+                                            : 'Invalid product name'}
+                                    </span>
+                                </p>
+                            )}
                         </div>
 
-                        <FileUpload handleFileChange={handleFileChange} />
-{/* 
-                        <ColorUpload
+                        {/* Serial No */}
+                        <div>
+                            <label htmlFor="serialNo" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Serial No
+                            </label>
+                            <input
+                                type="text"
+                                id="serialNo"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Serial No"
+                                required=""
+                                {...register('serialNo', { required: true })}
+                            />
+                            {errors.serialNo && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.serialNo.type === 'required'
+                                            ? 'Serial No is required'
+                                            : 'Invalid Serial No'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
 
-                        ></ColorUpload> */}
-                        {/* <button type="button" className='btn btn-primary' onClick={() => append({ colorCode: '', name: '', quantity: '' })}>
-                            Add Color
-                        </button> */}
+                        {/* Note */}
+                        <div>
+                            <label htmlFor="note" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Note
+                            </label>
+                            <input
+                                type="text"
+                                id="note"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Note"
+                                required=""
+                                {...register('note', { required: true })}
+                            />
+                            {errors.note && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.note.type === 'required'
+                                            ? 'Note is required'
+                                            : 'Invalid note'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
 
+                        {/* Vat Percentage */}
+                        <div>
+                            <label htmlFor="vatPercentage" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Vat Percentage
+                            </label>
+                            <input
+                                type="number"
+                                id="vatPercentage"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Vat Percentage"
+                                required=""
+                                {...register('vatPercentage', { required: true })}
+                            />
+                            {errors.vatPercentage && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.vatPercentage.type === 'required'
+                                            ? 'Vat Percentage is required'
+                                            : 'Invalid Vat Percentage'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Discount Percentage */}
+                        <div>
+                            <label htmlFor="discountPercentage" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Discount Percentage
+                            </label>
+                            <input
+                                type="number"
+                                id="discountPercentage"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Discount Percentage"
+                                required=""
+                                {...register('discountPercentage', { required: true })}
+                            />
+                            {errors.discountPercentage && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.discountPercentage.type === 'required'
+                                            ? 'Discount Percentage is required'
+                                            : 'Invalid Discount Percentage'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Buying Price */}
+                        <div>
+                            <label htmlFor="buyingPrice" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Buying Price
+                            </label>
+                            <input
+                                type="number"
+                                id="buyingPrice"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Buying Price"
+                                required=""
+                                {...register('buyingPrice', { required: true })}
+                            />
+                            {errors.buyingPrice && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.buyingPrice.type === 'required'
+                                            ? 'Buying Price is required'
+                                            : 'Invalid Buying Price'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Selling Price */}
+                        <div>
+                            <label htmlFor="sellingPrice" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Selling Price
+                            </label>
+                            <input
+                                type="number"
+                                id="sellingPrice"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Selling Price"
+                                required=""
+                                {...register('sellingPrice', { required: true })}
+                            />
+                            {errors.sellingPrice && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.sellingPrice.type === 'required'
+                                            ? 'Selling Price is required'
+                                            : 'Invalid Selling Price'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Tags */}
+                        <div>
+                            <label htmlFor="tags" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Tags
+                            </label>
+                            <input
+                                type="text"
+                                id="tags"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Tags"
+                                required=""
+                                {...register('tags', { required: true })}
+                            />
+                            {errors.tags && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.tags.type === 'required'
+                                            ? 'Tags is required'
+                                            : 'Invalid Tags'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                rows="4"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Full description here...."
+                                {...register('description', { required: true })}
+                            />
+                            {errors.description && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.description.type === 'required'
+                                            ? 'Description is required'
+                                            : 'Invalid Description'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* categories */}
                         <div className='flex justify-around'>
-                            <div></div>
-                            <div className="flex justify-center">
-                                <button
-                                    type="submit"
-                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
-                                >
-                                    Add Product
-                                </button>
+                            <label className="text-sm font-semibold mb-1">Categories:</label>
+                            <div className="space-y-1">
+                                {subSubCategories.map((category, index) => (
+                                    <div key={category.id} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name={`selectedCategories[${category.id}]`}
+                                            id={`selectedCategories_${category.id}`}
+                                            onChange={(e) => handleCategoryChange(e, category.id)}
+                                            checked={selectedCats.includes(category.id)}
+                                            className="h-4 w-4 text-blue-500 focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
+                                        />
+                                        <label htmlFor={`selectedCategories_${index}`} className="ml-2">
+                                            <span className='font-semibold text-xl'> {category.categoryName} </span>
+                                            ({category.category.categoryName}, <span className=''>{category.category.category.categoryName}</span>)
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
                         </div>
+
+                        {/* file upload  */}
+                        <div>
+                            <label htmlFor="file_input" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Upload file
+                            </label>
+                            <input
+                                type="file"
+                                id="myfile"
+                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
+                                {...register('myfile', { required: true, validate: validateFile })}
+                            />
+                            {errors.myfile && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.myfile.type === 'required'
+                                            ? 'File is required'
+                                            : 'Invalid file'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Color Selection */}
+                        <div className="mt-4">
+                            <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Select Color
+                            </label>
+                            <select
+                                id="color"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                {...register('color', { required: true })}
+                                value={selectedColor}
+                                onChange={(e) => setSelectedColor(e.target.value)}
+                            >
+                                <option value="" disabled>
+                                    Choose a color
+                                </option>
+                                {colors.map((color) => (
+                                    <option key={color.id} value={color.name} className="text-center" style={{backgroundColor: color.colorCode}}>
+                                        {color.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.color && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.color.type === 'required' ? 'Color is required' : 'Invalid Color'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mt-4"
+                        >
+                            Submit
+                        </button>
                     </form>
                 </div>
             </div>
         </>
     );
-};
-
-export default AddProduct;
+}

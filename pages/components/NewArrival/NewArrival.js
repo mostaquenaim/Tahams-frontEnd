@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import ShowCat from '../ShopByCategory/ShowCat';
 import ShowNewArrival from './ShowNewArrival';
 import Heading from '../Header/Heading';
 
 const NewArrival = () => {
-    
     const [products, setProducts] = useState([])
 
     useEffect(() => {
