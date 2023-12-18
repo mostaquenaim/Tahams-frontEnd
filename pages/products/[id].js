@@ -28,7 +28,7 @@ const Product = ({ categories }) => {
             }
 
             // Check price range filter
-            const productPrice = parseInt(product.price);
+            const productPrice = parseInt(product.sellingPrice * (100 - product.discountPercentage) / 100);
             if (productPrice < priceRange[0] || productPrice > priceRange[1]) {
                 console.log("29");
                 return false;
