@@ -72,8 +72,18 @@ const FilterComp = (
                         <input
                             type="radio"
                             name="availability"
-                            value="in_stock"
-                            checked={selectedAvailability === 'in_stock'}
+                            value=''
+                            checked={selectedAvailability === ''}
+                            onChange={handleAvailabilityChange}
+                        />
+                        All
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            name="availability"
+                            value='true'
+                            checked={selectedAvailability === 'true'}
                             onChange={handleAvailabilityChange}
                         />
                         In Stock
@@ -82,8 +92,8 @@ const FilterComp = (
                         <input
                             type="radio"
                             name="availability"
-                            value="out_of_stock"
-                            checked={selectedAvailability === 'out_of_stock'}
+                            value='false'
+                            checked={selectedAvailability === 'false'}
                             onChange={handleAvailabilityChange}
                         />
                         Out of Stock
@@ -103,21 +113,21 @@ const FilterComp = (
                         <input
                             type="radio"
                             name="offer"
-                            value="discount"
-                            checked={selectedOffer === 'discount'}
+                            value="all"
+                            checked={selectedOffer === 'all'}
                             onChange={handleOfferChange}
                         />
-                        Discount
+                        All
                     </div>
                     <div>
                         <input
                             type="radio"
                             name="offer"
-                            value="free_shipping"
-                            checked={selectedOffer === 'free_shipping'}
+                            value="discount"
+                            checked={selectedOffer === 'discount'}
                             onChange={handleOfferChange}
                         />
-                        Free Shipping
+                        Discount
                     </div>
                 </div>
             </div>

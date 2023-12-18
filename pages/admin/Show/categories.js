@@ -48,7 +48,7 @@ export default function Categories() {
                 </div>
                     :
                     <>
-                        <Drawer title="Update Vehicle" />
+                        <Drawer title="Categories" />
                         <section className="bg-gradient-to-b from-zinc-50 to-blue-100 min-h-screen flex justify-center items-center">
                             <div className="container mx-auto bg-white shadow-md hover:shadow-lg hover:shadow-black p-6 rounded-lg">
                                 <div className="text-center mb-4">

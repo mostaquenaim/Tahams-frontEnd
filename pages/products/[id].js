@@ -35,13 +35,16 @@ const Product = ({ categories }) => {
             }
 
             // Check availability filter
-            if (selectedAvailability && product.availability !== selectedAvailability) {
-                console.log("35");
+            console.log("selectedAvailability",selectedAvailability);
+            if (selectedAvailability!=='' && String(product.ifStock) != selectedAvailability) {
+                console.log(typeof product.ifStock, typeof selectedAvailability);
+
+                console.log("39", product.ifStock, selectedAvailability, String(product.ifStock) === selectedAvailability);
                 return false;
             }
 
             // Check offer filter
-            if (selectedOffer && product.offer !== selectedOffer) {
+            if (selectedOffer === 'discount' && product.discountPercentage <= 0) {
                 console.log("41");
                 return false;
             }

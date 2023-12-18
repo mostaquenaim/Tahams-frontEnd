@@ -53,7 +53,7 @@ const AddCategory = () => {
 
     return (
         <>
-            <Drawer title="Add Size" />
+            <Drawer title="Add Category" />
             <SessionCheck />
             <section className="text-gray-600 body-font">
                 <div className="container mx-auto bg-gradient-to-b from-zinc-50 to-blue-100 h-screen">
