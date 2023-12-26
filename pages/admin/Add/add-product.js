@@ -24,7 +24,7 @@ export default function AddTest() {
     const validateFile = (value) => {
         const file = value[0];
         console.log(value[0]);
-        const allowedtypes = ["image/jpg", "image/png", "image/jpeg"];
+        const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
 
         if (!allowedtypes.includes(file.type)) {
             return false;
