@@ -1,9 +1,11 @@
-export default function AdminIndex(){
-    return(
-        <>
-            <section >
-                ok
-            </section >
-        </>
-    )
-}
+import React from 'react';
+
+const Admin = () => {
+    return (
+        <div>
+           Hello 
+        </div>
+    );
+};
+
+export default Admin;

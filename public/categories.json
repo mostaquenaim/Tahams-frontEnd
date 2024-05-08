@@ -1,19 +1,37 @@
 [
-    {
-      "id": 1,
-      "categoryName": "Men"
-    },
-    {
-      "id": 2,
-      "categoryName": "Women"
-    },
-    {
-      "id": 3,
-      "categoryName": "Kids"
-    },
-    {
-      "id": 4,
-      "categoryName": "Toddler"
-    }
-  ]
-  
+  {
+    "id": 1,
+    "categoryName": "Kids",
+    "filename": "Kids-min.png"
+  },
+  {
+    "id": 2,
+    "categoryName": "Toddler",
+    "filename": "Toddler-min.png"
+  },
+  {
+    "id": 3,
+    "categoryName": "Adults",
+    "filename": "Adults-min.png"
+  },
+  {
+    "id": 4,
+    "categoryName": "Customize",
+    "filename": "Customized-min.png"
+  },
+  {
+    "id": 5,
+    "categoryName": "Bigboss",
+    "filename": "Big-Boss-min.png"
+  },
+  {
+    "id": 6,
+    "categoryName": "Couples",
+    "filename": "Couple-Tshirt-min.png"
+  },
+  {
+    "id": 7,
+    "categoryName": "Gift",
+    "filename": "Gifts-min.png"
+  }
+]

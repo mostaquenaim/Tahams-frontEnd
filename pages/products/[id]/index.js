@@ -141,9 +141,9 @@ const Product = ({ categories }) => {
                             {/* Page content here */}
                             <label htmlFor="filter-drawer" className="btn btn-primary drawer-button"><FaFilter></FaFilter>Filter</label>
                         </div>
-                        <div className="drawer-side" >
+                        <div className="drawer-side z-50" >
                             <label htmlFor="filter-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-                            <ul className="menu p-4 w-72 min-h-full bg-base-200 text-base-content pt-20 z-50">
+                            <ul className="menu p-4 w-72 min-h-full bg-base-200 text-base-content pt-20 ">
                                 {/* Sidebar content here */}
                                 <FilterComp
                                     handleColorChange={handleColorChange}

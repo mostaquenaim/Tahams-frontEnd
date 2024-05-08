@@ -78,13 +78,13 @@ const ShowProduct = ({ item }) => {
     return (
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
-                <figure className="relative">
+                <Link href={`details/${id}`} className="relative">
                     <img src={`http://localhost:3000/admin/getImage/${filename}`} alt={item.name} className="rounded-t-lg" />
                     {
                         !ifStock &&
                         <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48"></img>
                     }
-                </figure>
+                </Link>
                 <div className="flex flex-col items-center text-center justify-center gap-3">
                     <h2 className="card-title">{item.name}</h2>
                     <div className="flex gap-3">

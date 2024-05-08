@@ -29,15 +29,15 @@ const BuyNow = () => {
   return (
     <div>
       <NavbarCompTwo />
-      <div className="pt-48 flex items-start">
-        <div >
-          <div>
-            <BuyingAddress />
-          </div>
-          <div>
+      <div className="pt-48 flex justify-around items-start container mx-auto">
+        {/* <div > */}
+        {/* <div> */}
+        <BuyingAddress />
+        {/* </div> */}
+        {/* <div>
             <PaymentInfo />
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
         <FinalCart cartItems={cartItems} />
       </div>
       <Footer />

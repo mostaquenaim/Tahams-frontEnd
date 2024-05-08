@@ -32,7 +32,7 @@ const FinalCart = ({ cartItems }) => {
     };
 
     return (
-        <div className="mx-auto mt-8 p-8 bg-gray-100 border rounded-lg w-1/3 mb-10">
+        <div className=" mt-8 p-8 bg-gray-100 border rounded-lg mb-10">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-semibold">Your Cart</h2>
                 <FaShoppingCart className="text-3xl text-blue-500" />

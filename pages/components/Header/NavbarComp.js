@@ -14,7 +14,10 @@ const NavbarCompTwo = () => {
 
     useEffect(() => {
         axios.get('http://localhost:3000/admin/view-product-categories')
-            .then((res) => setCategories(res.data))
+            .then((res) => {
+                setCategories(res.data)
+                console.log(res.data,"19");
+            })
     }, [])
 
     const handleLogout = () =>{
@@ -38,7 +41,6 @@ const NavbarCompTwo = () => {
     const links = (
         <>
             <ListStyle goto='/' pageName='Home' />
-
             {
                 categories &&
                 categories.map((cat, index) => (

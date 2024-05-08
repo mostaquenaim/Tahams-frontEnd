@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import DateTimePicker from 'react-datetime-picker';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import AdminDrawer from "../../components/Drawers/AdminDrawer";
 
 export default function AddTest() {
     const [subSubCategories, setSubSubCategories] = useState([])
@@ -136,6 +137,7 @@ export default function AddTest() {
 
     return (
         <>
+        <AdminDrawer></AdminDrawer>
             <div className="container mx-auto p-4 flex justify-center items-center">
                 <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
 
