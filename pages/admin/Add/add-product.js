@@ -94,10 +94,17 @@ export default function AddTest() {
         console.log(data);
         console.log("cats", selectedCats);
         console.log(data.myfile[0]);
+        console.log(data.myfiles,"97");
+        console.log(data.myfiles[0],"98");
+
 
         const formData = new FormData();
 
         const newCategories = subSubCategories.filter((subCat) => selectedCats.includes(subCat.id))
+
+        // data.myfiles.forEach((file) => {
+        //     formData.append('myfiles', file);
+        // });
 
         console.log(newCategories);
         formData.append('subCategories', selectedCats)
@@ -125,19 +132,49 @@ export default function AddTest() {
             });
 
             setSuccess('Product add successfully');
+            onSubmitPictures(data);
             reset();
 
         }
         catch (error) {
             console.log(error.response.data.message);
-
             setSuccess('product add unsuccessful ' + error.response.data.message);
         }
     };
 
+    const onSubmitPictures = async (data) => {
+        console.log(data); // Check if files contains the expected File objects
+        console.log(data); // Check if files contains the expected File objects
+        
+        const formData = new FormData();
+        
+        // Append each file to FormData
+        Array.from(data.myfiles).forEach((file) => {
+            formData.append('myfiles', file);
+        });
+    
+        console.log(formData);
+        
+        try {
+            const response = await axios.post("http://localhost:3000/admin/add-product-pictures",
+                formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                });
+        
+            setSuccess('Product pictures uploaded successfully');
+            reset();
+        
+        } catch (error) {
+            console.log(error.response.data.message);
+            setSuccess('Product pictures upload unsuccessful: ' + error.response.data.message);
+        }
+    };
+    
     return (
         <>
-        <AdminDrawer></AdminDrawer>
+            <AdminDrawer></AdminDrawer>
             <div className="container mx-auto p-4 flex justify-center items-center">
                 <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
 
@@ -386,8 +423,8 @@ export default function AddTest() {
 
                         {/* file upload  */}
                         <div>
-                            <label htmlFor="file_input" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Upload file
+                            <label htmlFor="file_input" className="block mb-2 text-sm font-medium text-gray-900">
+                                Upload featured photo
                             </label>
                             <input
                                 type="file"
@@ -400,6 +437,29 @@ export default function AddTest() {
                                     <span className="font-medium">
                                         {errors.myfile.type === 'required'
                                             ? 'File is required'
+                                            : 'Invalid file'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* product pictures */}
+                        <div>
+                            <label htmlFor="file_input" className="block mb-2 text-sm font-medium text-gray-900">
+                                Upload product photos
+                            </label>
+                            <input
+                                type="file"
+                                id="file_input"
+                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
+                                {...register('myfiles', { required: true, validate: validateFile })}
+                                multiple // Allow multiple file selection
+                            />
+                            {errors.myfiles && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.myfiles.type === 'required'
+                                            ? 'Files are required'
                                             : 'Invalid file'}
                                     </span>
                                 </p>
@@ -422,7 +482,7 @@ export default function AddTest() {
                                     Choose a color
                                 </option>
                                 {colors.map((color) => (
-                                    <option key={color.id} value={color.name} className="text-center" style={{backgroundColor: color.colorCode}}>
+                                    <option key={color.id} value={color.name} className="text-center" style={{ backgroundColor: color.colorCode }}>
                                         {color.name}
                                     </option>
                                 ))}
