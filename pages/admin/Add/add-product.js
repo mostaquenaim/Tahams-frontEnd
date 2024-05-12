@@ -11,13 +11,13 @@ export default function AddTest() {
     const [colors, setColors] = useState([])
     const [selectedCats, setSelectedCats] = useState([])
     const [selectedColor, setSelectedColor] = useState('');
+    const [longDescription, setLongDescription] = useState('');
 
     const router = useRouter();
 
     const {
         register,
         handleSubmit,
-        control,
         formState: { errors },
         reset,
     } = useForm();
@@ -94,8 +94,8 @@ export default function AddTest() {
         console.log(data);
         console.log("cats", selectedCats);
         console.log(data.myfile[0]);
-        console.log(data.myfiles,"97");
-        console.log(data.myfiles[0],"98");
+        console.log(data.myfiles, "97");
+        console.log(data.myfiles[0], "98");
 
 
         const formData = new FormData();
@@ -119,6 +119,7 @@ export default function AddTest() {
         formData.append('description', data.description);
         formData.append('myfile', data.myfile[0]);
         formData.append('color', data.color);
+        formData.append('longDescription', longDescription);
 
         // formData.append('categories', JSON.stringify(data.categories));
         console.log(formData);
@@ -145,33 +146,33 @@ export default function AddTest() {
     const onSubmitPictures = async (data) => {
         console.log(data); // Check if files contains the expected File objects
         console.log(data); // Check if files contains the expected File objects
-        
+
         const formData = new FormData();
-        
+
         // Append each file to FormData
         Array.from(data.myfiles).forEach((file) => {
             formData.append('myfiles', file);
         });
-    
+
         console.log(formData);
-        
+
         try {
             const response = await axios.post("http://localhost:3000/admin/add-product-pictures",
                 formData, {
-                    headers: {
-                        "Content-Type": "multipart/form-data"
-                    }
-                });
-        
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+
             setSuccess('Product pictures uploaded successfully');
             reset();
-        
+
         } catch (error) {
             console.log(error.response.data.message);
             setSuccess('Product pictures upload unsuccessful: ' + error.response.data.message);
         }
     };
-    
+
     return (
         <>
             <AdminDrawer></AdminDrawer>
@@ -384,7 +385,7 @@ export default function AddTest() {
                                 id="description"
                                 rows="4"
                                 className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
-                                placeholder="Full description here...."
+                                placeholder="Short description here...."
                                 {...register('description', { required: true })}
                             />
                             {errors.description && (
@@ -396,6 +397,21 @@ export default function AddTest() {
                                     </span>
                                 </p>
                             )}
+                        </div>
+
+                        {/* Long Description */}
+                        <div>
+                            <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                rows="4"
+                                className="text-2xl border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Full description here...."
+                                value={longDescription}
+                                onChange={(e) => setLongDescription(e.target.value)}
+                            />
                         </div>
 
                         {/* categories */}

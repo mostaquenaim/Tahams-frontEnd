@@ -25,6 +25,7 @@ const Product = ({ product, sizes }) => {
         filename,
         discountPercentage,
         description,
+        longDescription,
         ifStock,
         name,
         vatPercentage,
@@ -149,14 +150,14 @@ const Product = ({ product, sizes }) => {
     return (
         <div className="">
             <NavbarCompTwo />
-            <div className="container mx-auto p-4 min-h-screen pt-48 pb-10">
-                <div className="flex">
+            <div className="container mx-auto p-4 min-h-screen pt-20 lg:pt-48 pb-10">
+                <div className="flex flex-col md:flex-row">
                     {/* Product Image */}
-                    <div className="w-1/2">
+                    <div className="md:w-1/2">
                         <img
                             src={`http://localhost:3000/admin/getimage/${selectedImage}`}
                             alt={name}
-                            className="max-h-screen rounded mb-5 relative"
+                            className="md:h-[500px] md:w-96 lg:h-[600px] lg:w-[500px] max-h-screen rounded mb-5 relative"
                         />
                         <div className='flex gap-4'>
                             <input
@@ -207,7 +208,7 @@ const Product = ({ product, sizes }) => {
                     </div>
 
                     {/* Product Details */}
-                    <div className="w-1/2 p-4">
+                    <div className="md:w-1/2 p-4">
                         <h1 className="text-2xl font-bold mb-2">{name}</h1>
 
                         {/* Wishlist Icon */}
@@ -221,12 +222,12 @@ const Product = ({ product, sizes }) => {
                         </div>
 
                         <p className="text-gray-600 mb-4">{description}</p>
-                        <p className="text-green-600 text-lg mb-2">${sellingPrice}</p>
+                        <p className="text-green-600 text-lg mb-2">{sellingPrice} BDT</p>
 
                         {/* Discount */}
                         {discountPercentage > 0 && (
                             <p className="text-red-500 line-through mb-2">
-                                ${sellingPrice + (sellingPrice * discountPercentage) / 100}
+                                {sellingPrice + (sellingPrice * discountPercentage) / 100} BDT
                             </p>
                         )}
 
@@ -291,7 +292,7 @@ const Product = ({ product, sizes }) => {
                         </div>
 
                         {/* Add to Cart and Buy Now Buttons */}
-                        <div className="flex space-x-4">
+                        <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
                             <button
                                 className={`btn btn-primary ${isAddedToCart ? 'btn-disabled' : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'}`}
                                 onClick={handleAddToCart}
@@ -307,6 +308,16 @@ const Product = ({ product, sizes }) => {
                         </div>
                     </div>
                 </div>
+
+                {/* Long Description */}
+                <div className="mt-8">
+                    <h2 className="text-xl font-semibold mb-4">More about this product</h2>
+                    <div className="prose prose-lg">
+                        {/* Render long description content */}
+                        {longDescription}
+                    </div>
+                </div>
+
             </div>
             <Footer />
             <Toaster />
