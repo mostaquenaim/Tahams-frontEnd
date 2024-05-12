@@ -1,7 +1,7 @@
 import NavbarCompTwo from '../../components/Header/NavbarComp';
 import Footer from '../../components/Footer/Footer';
 import { FaFilter, FaShoppingCart } from 'react-icons/fa';
-import { useContext, useState } from 'react';
+import { Fragment, useContext, useState } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa6';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -12,6 +12,7 @@ const Product = ({ product, sizes }) => {
     console.log(product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [selectedSize, setSelectedSize] = useState('');
+    const [selectedImage, setSelectedImage] = useState(product.filename)
     const [quantity, setQuantity] = useState(1);
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const { user } = useContext(AuthContext)
@@ -153,31 +154,57 @@ const Product = ({ product, sizes }) => {
                     {/* Product Image */}
                     <div className="w-1/2">
                         <img
-                            src={`http://localhost:3000/admin/getimage/${filename}`}
+                            src={`http://localhost:3000/admin/getimage/${selectedImage}`}
                             alt={name}
-                            className="max-h-screen rounded mb-5"
+                            className="max-h-screen rounded mb-5 relative"
                         />
                         <div className='flex gap-4'>
-                            <img
-                                src={`http://localhost:3000/admin/getimage/${filename}`}
-                                alt={name}
-                                className="h-24 w-24"
+                            <input
+                                type="radio"
+                                id={`main-image`}
+                                name="productImage"
+                                value={`http://localhost:3000/admin/getimage/${filename}`}
+                                className="hidden"
+                                defaultChecked // Ensures that the first image is initially selected
+                                onChange={() => setSelectedImage(filename)}
                             />
+                            <label htmlFor={`main-image`} className="relative">
+                                <img
+                                    src={`http://localhost:3000/admin/getimage/${filename}`}
+                                    alt={name}
+                                    className="h-24 w-24 cursor-pointer"
+                                />
+                                {selectedImage === filename && (
+                                    <div className="overlay bg-white opacity-50 absolute top-0 left-0 w-full h-full"></div>
+                                )}
+                            </label>
                             {
                                 product.productPictures.length > 0 &&
-                                product.productPictures.map(pp => (
-                                    <img
-                                        // key={idx}
-                                        src={`http://localhost:3000/admin/getimage/${pp.filename}`}
-                                        alt={name}
-                                        className="h-24 w-24"
-                                    />
+                                product.productPictures.map((pp, idx) => (
+                                    <Fragment key={idx}>
+                                        <input
+                                            type="radio"
+                                            id={`thumbnail-image-${idx}`}
+                                            name="productImage"
+                                            value={`http://localhost:3000/admin/getimage/${pp.filename}`}
+                                            className="hidden"
+                                            onChange={() => setSelectedImage(pp.filename)}
+                                        />
+                                        <label htmlFor={`thumbnail-image-${idx}`} className="relative">
+                                            <img
+                                                src={`http://localhost:3000/admin/getimage/${pp.filename}`}
+                                                alt={name}
+                                                className="h-24 w-24 cursor-pointer"
+                                            />
+                                            {selectedImage === pp.filename && (
+                                                <div className="overlay bg-white opacity-50 absolute top-0 left-0 w-full h-full"></div>
+                                            )}
+                                        </label>
+                                    </Fragment>
                                 ))
                             }
                         </div>
                     </div>
-
-
 
                     {/* Product Details */}
                     <div className="w-1/2 p-4">
