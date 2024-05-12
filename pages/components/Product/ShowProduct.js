@@ -13,6 +13,8 @@ const ShowProduct = ({ item }) => {
     const { user } = useContext(AuthContext)
 
     const [isAddedToCart, setIsAddedToCart] = useState(false)
+    const [hovered, setHovered] = useState(false)
+    const [hoveredImage, setHoveredImage] = useState('')
     const [ftImage, setFtImage] = useState('https://static-01.daraz.com.bd/p/13e6157acd98dfb45b8f2c9de90fe6bd.jpg')
 
     const { sellingPrice, discountPercentage, id, filename, ifStock } = item
@@ -73,17 +75,27 @@ const ShowProduct = ({ item }) => {
         }
     };
 
+    const handleMouseEnter = () => {
+
+        // Set the source of the first image in productPictures as the hoveredImage
+        if (item.productPictures.length > 0) {
+            setHovered(true);
+            setHoveredImage(item.productPictures[0].filename);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setHovered(false);
+    };
+
     const cardBtnStyle = 'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1'
 
     return (
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
-                <Link href={`details/${id}`} className="relative">
-                    <img src={`http://localhost:3000/admin/getImage/${filename}`} alt={item.name} className="rounded-t-lg" />
-                    {
-                        !ifStock &&
-                        <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48"></img>
-                    }
+                <Link href={`details/${id}`} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                    <img src={`http://localhost:3000/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
+                    {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
                 </Link>
                 <div className="flex flex-col items-center text-center justify-center gap-3">
                     <h2 className="card-title">{item.name}</h2>

@@ -9,6 +9,7 @@ import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
 
 const Product = ({ product, sizes }) => {
+    console.log(product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -154,9 +155,29 @@ const Product = ({ product, sizes }) => {
                         <img
                             src={`http://localhost:3000/admin/getimage/${filename}`}
                             alt={name}
-                            className="max-h-screen rounded"
+                            className="max-h-screen rounded mb-5"
                         />
+                        <div className='flex gap-4'>
+                            <img
+                                src={`http://localhost:3000/admin/getimage/${filename}`}
+                                alt={name}
+                                className="h-24 w-24"
+                            />
+                            {
+                                product.productPictures.length > 0 &&
+                                product.productPictures.map(pp => (
+                                    <img
+                                        // key={idx}
+                                        src={`http://localhost:3000/admin/getimage/${pp.filename}`}
+                                        alt={name}
+                                        className="h-24 w-24"
+                                    />
+                                ))
+                            }
+                        </div>
                     </div>
+
+
 
                     {/* Product Details */}
                     <div className="w-1/2 p-4">
