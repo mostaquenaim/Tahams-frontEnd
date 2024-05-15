@@ -5,6 +5,7 @@ import DateTimePicker from 'react-datetime-picker';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import AdminDrawer from "../../components/Drawers/AdminDrawer";
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function AddTest() {
     const [subSubCategories, setSubSubCategories] = useState([])
@@ -133,13 +134,16 @@ export default function AddTest() {
             });
 
             setSuccess('Product add successfully');
+            toast.success('Product add successfully');
             onSubmitPictures(data);
             reset();
+
 
         }
         catch (error) {
             console.log(error.response.data.message);
             setSuccess('product add unsuccessful ' + error.response.data.message);
+            toast.success('product add unsuccessful ' + error.response.data.message);
         }
     };
 
@@ -522,6 +526,7 @@ export default function AddTest() {
                     </form>
                 </div>
             </div>
+            <Toaster />
         </>
     );
 }

@@ -45,7 +45,7 @@ const FilterComp = (
             </div>
 
             {/* Price Range */}
-            <div className="filter-section">
+            <div className="filter-section xl:mr-20">
                 <div className='py-5'>
                     <span className={headingStyle}>
                         Price Range

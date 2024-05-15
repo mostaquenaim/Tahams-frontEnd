@@ -8,7 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useContext, useEffect } from 'react';
 import AuthProvider, { AuthContext } from '../Contexts/Auth/AuthProvider';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../components/Firebase/firebase';
+import { auth } from '/firebase'
 import { useLocation } from 'react-router-dom';
 import { useRouter } from 'next/router';
 import axios from 'axios';

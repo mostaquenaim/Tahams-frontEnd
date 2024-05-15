@@ -1,7 +1,7 @@
 import NavbarCompTwo from '../../components/Header/NavbarComp';
 import Footer from '../../components/Footer/Footer';
 import { FaFilter, FaShoppingCart } from 'react-icons/fa';
-import { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa6';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -18,6 +18,11 @@ const Product = ({ product, sizes }) => {
     const { user } = useContext(AuthContext)
     console.log(user, "17");
     const router = useRouter()
+
+    useEffect(() => {
+        // Scroll down by 100 pixels when the component mounts
+        window.scrollTo(0, 100);
+    }, []);
 
     console.log(product);
     const {
@@ -221,7 +226,9 @@ const Product = ({ product, sizes }) => {
                             </button>
                         </div>
 
-                        <p className="text-gray-600 mb-4">{description}</p>
+                        <p className="text-gray-600 mb-4">
+                            {description}
+                        </p>
                         <p className="text-green-600 text-lg mb-2">{sellingPrice} BDT</p>
 
                         {/* Discount */}
@@ -312,11 +319,12 @@ const Product = ({ product, sizes }) => {
                 {/* Long Description */}
                 <div className="mt-8">
                     <h2 className="text-xl font-semibold mb-4">More about this product</h2>
-                    <div className="prose prose-lg">
+                    <div className="prose prose-lg" style={{ whiteSpace: 'pre-line' }}>
                         {/* Render long description content */}
                         {longDescription}
                     </div>
                 </div>
+
 
             </div>
             <Footer />

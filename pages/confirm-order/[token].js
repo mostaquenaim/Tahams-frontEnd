@@ -3,13 +3,12 @@ import PaymentInfo from "../components/Cart/PaymentInfo";
 import Footer from "../components/Footer/Footer";
 import NavbarCompTwo from "../components/Header/NavbarComp";
 
-
 const PaymentProcess = ({ buyingHistory }) => {
     // Display buying history data or implement your payment logic
     return (
-        <div>
+        <div className="min-h-screen">
             <NavbarCompTwo />
-            <div className="pt-48">
+            <div className="pt-48 min-h-screen">
                 <PaymentInfo />
             </div>
             {/* {buyingHistory ? (
