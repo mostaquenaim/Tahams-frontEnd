@@ -11,7 +11,6 @@ const AddCategory = () => {
         formState: { errors },
     } = useForm();
 
-    const [user, setUser] = useState(null);
     const [email, setEmail] = useState("")
     const [success, setSuccess] = useState('')
     const [categories, setCategories] = useState([])

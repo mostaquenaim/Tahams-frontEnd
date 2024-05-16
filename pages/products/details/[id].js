@@ -7,11 +7,14 @@ import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const Product = ({ product, sizes }) => {
     console.log(product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
-    const [selectedSize, setSelectedSize] = useState('');
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [showGotoCart, setShowGotoCart] = useState(false)
+    const [selectedSize, setSelectedSize] = useState('L');
     const [selectedImage, setSelectedImage] = useState(product.filename)
     const [quantity, setQuantity] = useState(1);
     const [isAddedToCart, setIsAddedToCart] = useState(false)
@@ -38,9 +41,15 @@ const Product = ({ product, sizes }) => {
     } = product;
 
     const addToWishlist = () => {
-        // Implement logic to add the product to the user's wishlist
-        // For example, you can make an API call or update the state
-        setAddedToWishlist(!isAddedToWishlist);
+        // Toggle the state to trigger the animation
+        setIsAnimating(true);
+        // Add the product to the wishlist
+        // This is where you can implement your logic
+        // For demonstration, we'll just set a timeout to simulate the process
+        setTimeout(() => {
+            setAddedToWishlist(!isAddedToWishlist);
+            setIsAnimating(false);
+        }, 500); // Timeout duration should match the animation duration
     };
 
     const handleSizeChange = (size) => {
@@ -66,6 +75,7 @@ const Product = ({ product, sizes }) => {
 
         else {
             setIsAddedToCart(true)
+            setShowGotoCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axios.post('http://localhost:3000/admin/add-to-cart', {
@@ -101,10 +111,13 @@ const Product = ({ product, sizes }) => {
                 setTimeout(() => {
                     setIsAddedToCart(false);
                 }, 700);
+
+                setTimeout(() => {
+                    setShowGotoCart(false);
+                }, 3000);
             }
         }
     };
-
 
     const handleBuyNow = async () => {
         if (!user) {
@@ -327,6 +340,14 @@ const Product = ({ product, sizes }) => {
 
 
             </div>
+            {
+                // showGotoCart &&
+                <Link
+                    href={'/MyCart'}
+                    className={` w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
+                >Go to cart
+                </Link>
+            }
             <Footer />
             <Toaster />
         </div>

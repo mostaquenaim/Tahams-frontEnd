@@ -10,9 +10,10 @@ import toast from "react-hot-toast";
 const ShowProduct = ({ item }) => {
     console.log(item);
     const router = useRouter()
-    const { user } = useContext(AuthContext)
+    const { user, setShowGotoCart } = useContext(AuthContext)
 
     const [isAddedToCart, setIsAddedToCart] = useState(false)
+    // const [showGotoCart, setShowGotoCart] = useState(false)
     const [hovered, setHovered] = useState(false)
     const [hoveredImage, setHoveredImage] = useState('')
     const [ftImage, setFtImage] = useState('https://static-01.daraz.com.bd/p/13e6157acd98dfb45b8f2c9de90fe6bd.jpg')
@@ -32,6 +33,8 @@ const ShowProduct = ({ item }) => {
     const handleAddToCart = async () => {
         if (user) {
             setIsAddedToCart(true)
+            setShowGotoCart(true)
+            localStorage.setItem('showGotoCart', true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axios.post('http://localhost:3000/admin/add-to-cart', {
@@ -67,6 +70,10 @@ const ShowProduct = ({ item }) => {
                 setTimeout(() => {
                     setIsAddedToCart(false);
                 }, 700);
+                setTimeout(() => {
+                    // localStorage.removeItem('showGotoCart')
+                    setShowGotoCart(false)
+                }, 4000);
             }
         }
         else {
@@ -121,6 +128,7 @@ const ShowProduct = ({ item }) => {
                     </div>
                 </div>
             </div>
+            
         </>
     );
 };

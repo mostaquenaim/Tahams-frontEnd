@@ -1,27 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import NavbarCompTwo from '../../components/Header/NavbarComp';
 import ShowProduct from '../../components/Product/ShowProduct';
 import FilterComp from '../../components/Filter/Filter';
 import { FaFilter } from "react-icons/fa";
 import Footer from '../../components/Footer/Footer';
 import axios from 'axios';
+import Link from 'next/link';
+import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const Product = ({ categories }) => {
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState(categories)
-
+    // const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedColors, setSelectedColors] = useState([]);
     const [priceRange, setPriceRange] = useState([200, 2000]);
     const [selectedAvailability, setSelectedAvailability] = useState('');
     const [selectedOffer, setSelectedOffer] = useState('');
-    const [colors,setColors] = useState([])
+    const [colors, setColors] = useState([])
+
+    const { showGotoCart } = useContext(AuthContext)
+
+    // useEffect(() => {
+    //     // Check if setShowGotoCart is available in localStorage
+    //     const localStorageShowGotoCart = localStorage.getItem('showGotoCart');
+    //     setShowGotoCart(localStorageShowGotoCart === 'true');
+    //     console.log(localStorageShowGotoCart,"24");
+    // }, []);
 
     const updateSelectedProducts = () => {
         console.log("updated");
         // Apply filters to the original categories
         let filteredProducts = categories.filter(product => {
             // Check color 
-            console.log(selectedColors,product);
+            console.log(selectedColors, product);
             if (selectedColors.length > 0 && !selectedColors.includes(product.color.name)) {
                 console.log("22");
                 return false;
@@ -35,8 +46,8 @@ const Product = ({ categories }) => {
             }
 
             // Check availability filter
-            console.log("selectedAvailability",selectedAvailability);
-            if (selectedAvailability!=='' && String(product.ifStock) != selectedAvailability) {
+            console.log("selectedAvailability", selectedAvailability);
+            if (selectedAvailability !== '' && String(product.ifStock) != selectedAvailability) {
                 console.log(typeof product.ifStock, typeof selectedAvailability);
 
                 console.log("39", product.ifStock, selectedAvailability, String(product.ifStock) === selectedAvailability);
@@ -79,9 +90,9 @@ const Product = ({ categories }) => {
         }
     };
 
-    useEffect(()=>{
+    useEffect(() => {
         loadColors()
-    },[])
+    }, [])
 
     useEffect(() => {
         // setOriginalProducts(categories);
@@ -177,15 +188,23 @@ const Product = ({ categories }) => {
                         ></FilterComp>
                     </div>
                     {
-                    selectedProducts.length > 0 ?
-                    selectedProducts.map((category, index) => (
-                        <ShowProduct key={index} item={category}></ShowProduct>
-                    ))
-                    :
-                    <div className='text-3xl text-center'>No product to show!😢</div>
-                }
+                        selectedProducts.length > 0 ?
+                            selectedProducts.map((category, index) => (
+                                <ShowProduct key={index} item={category}></ShowProduct>
+                            ))
+                            :
+                            <div className='text-3xl text-center'>No product to show!😢</div>
+                    }
                 </div>
             </div>
+            {
+                // showGotoCart &&
+                <Link
+                    href={'/MyCart'}
+                    className={` w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
+                >Go to cart
+                </Link>
+            }
             <Footer></Footer>
         </div>
     );
