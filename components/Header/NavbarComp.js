@@ -4,7 +4,7 @@ import ResponsiveNavBar from './ResponsiveNavBar';
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
 import ListComponent from './components/ListComponent';
 import axios from 'axios';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const NavbarCompTwo = () => {
     const [searchBtn, setSearchBtn] = useState(false)

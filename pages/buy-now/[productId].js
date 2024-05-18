@@ -1,7 +1,7 @@
-import BuyingAddress from "../components/Cart/BuyingAddress";
-import FinalCart from "../components/Cart/FinalCart";
-import Footer from "../components/Footer/Footer";
-import NavbarCompTwo from "../components/Header/NavbarComp";
+import BuyingAddress from "/components/Cart/BuyingAddress";
+import FinalCart from "/components/Cart/FinalCart";
+import Footer from "/components/Footer/Footer";
+import NavbarCompTwo from "/components/Header/NavbarComp";
 
 const BuyNow = ({ product }) => {
     console.log(product, "4");

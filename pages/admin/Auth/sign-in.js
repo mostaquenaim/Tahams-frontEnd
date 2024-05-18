@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router';
-import LoggedCheck from '../../components/Auth/loggedCheck';
-import MyHeader from '../../components/Header/header';
+import LoggedCheck from '/components/Auth/loggedCheck';
+import MyHeader from '/components/Header/header';
 
 
 export default function AdminSignIn() {

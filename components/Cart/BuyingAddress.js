@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const BuyingAddress = () => {
     const {
@@ -12,25 +13,10 @@ const BuyingAddress = () => {
         reset,
     } = useForm();
 
+    const { user } = useContext(AuthContext)
     const router = useRouter()
     const axios = useAxiosPublic()
     const [carts, setCarts] = useState([])
-
-    // const [countries, setCountries] = useState([]);
-
-    // useEffect(() => {
-    //     // Fetch countries from a public API
-    //     const fetchCountries = async () => {
-    //         try {
-    //             const response = await fetch('https://restcountries.com/v2/all');
-    //             const data = await response.json();
-    //             setCountries(data);
-    //         } catch (error) {
-    //             console.error('Error fetching countries:', error);
-    //         }
-    //     };
-    //     fetchCountries();
-    // }, [])
 
     useEffect(() => {
         const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
@@ -38,6 +24,7 @@ const BuyingAddress = () => {
         setCarts(cartIds);
         console.log(cartIds);
     }, [])
+
 
     const onSubmit = async (data) => {
         console.log(data);
@@ -94,6 +81,7 @@ const BuyingAddress = () => {
                         id="fullName"
                         name="fullName"
                         className="mt-1 p-2 w-full border rounded-md shadow-sm focus:outline-none focus:ring focus:border-indigo-500"
+                        defaultValue={ user && user.displayName}
                         {...register('fullName', { required: 'Full Name is required' })}
                     />
                     {errors.fullName && <p className="text-red-500 mt-1">{errors.fullName.message}</p>}

@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
-import NavbarCompTwo from '../../components/Header/NavbarComp';
-import ShowProduct from '../../components/Product/ShowProduct';
-import FilterComp from '../../components/Filter/Filter';
+import NavbarCompTwo from '/components/Header/NavbarComp';
+import ShowProduct from '/components/Product/ShowProduct';
+import FilterComp from '/components/Filter/Filter';
 import { FaFilter } from "react-icons/fa";
-import Footer from '../../components/Footer/Footer';
+import Footer from '/components/Footer/Footer';
 import axios from 'axios';
 import Link from 'next/link';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Product = ({ categories }) => {
     const [sortOption, setSortOption] = useState('default');

@@ -1,11 +1,11 @@
-import NavbarCompTwo from '../../components/Header/NavbarComp';
-import Footer from '../../components/Footer/Footer';
+import NavbarCompTwo from '/components/Header/NavbarComp';
+import Footer from '/components/Footer/Footer';
 import { FaFilter, FaShoppingCart } from 'react-icons/fa';
 import { Fragment, useContext, useEffect, useState } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa6';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 

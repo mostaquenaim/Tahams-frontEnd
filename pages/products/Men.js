@@ -1,4 +1,4 @@
-import NavbarCompTwo from '../components/Header/NavbarComp';
+import NavbarCompTwo from '/components/Header/NavbarComp';
 
 const Men = () => {
     return (

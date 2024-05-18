@@ -1,7 +1,7 @@
-import useAxiosPublic from "../Hooks/useAxiosPublic";
-import PaymentInfo from "../components/Cart/PaymentInfo";
-import Footer from "../components/Footer/Footer";
-import NavbarCompTwo from "../components/Header/NavbarComp";
+import useAxiosPublic from "/Hooks/useAxiosPublic";
+import PaymentInfo from "/components/Cart/PaymentInfo";
+import Footer from "/components/Footer/Footer";
+import NavbarCompTwo from "/components/Header/NavbarComp";
 
 const PaymentProcess = ({ buyingHistory }) => {
     // Display buying history data or implement your payment logic

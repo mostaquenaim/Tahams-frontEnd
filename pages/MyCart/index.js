@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import NavbarCompTwo from '../components/Header/NavbarComp';
-import useCart from '../Hooks/useCart';
+import NavbarCompTwo from '/components/Header/NavbarComp';
+import useCart from '/Hooks/useCart';
 import { useRouter } from 'next/router';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import Swal from 'sweetalert2';
@@ -89,7 +89,6 @@ const MyCart = () => {
       }
     });
   };
-  
 
   // Handle checkbox in the header
   const handleSelectAll = () => {

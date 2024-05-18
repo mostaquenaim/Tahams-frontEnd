@@ -4,7 +4,7 @@ import CartButton from "../Buttons/CartButton";
 import { FaCartShopping, FaDisplay, FaEye } from "react-icons/fa6";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { AuthContext } from "../../Contexts/Auth/AuthProvider";
+import { AuthContext } from "/Contexts/Auth/AuthProvider";
 import toast from "react-hot-toast";
 
 const ShowProduct = ({ item }) => {

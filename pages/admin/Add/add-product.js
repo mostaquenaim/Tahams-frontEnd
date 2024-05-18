@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import DateTimePicker from 'react-datetime-picker';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import AdminDrawer from "../../components/Drawers/AdminDrawer";
+import AdminDrawer from "/components/Drawers/AdminDrawer";
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function AddTest() {

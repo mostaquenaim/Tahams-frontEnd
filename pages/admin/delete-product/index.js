@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminDrawer from '../../components/Drawers/AdminDrawer';
+import AdminDrawer from '/components/Drawers/AdminDrawer';
 
 const DeleteProduct = () => {
 

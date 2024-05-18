@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import BuyingAddress from "../components/Cart/BuyingAddress";
-import NavbarCompTwo from "../components/Header/NavbarComp";
-import Footer from "../components/Footer/Footer";
-import FinalCart from "../components/Cart/FinalCart";
-import PaymentInfo from "../components/Cart/PaymentInfo";
+import BuyingAddress from "/components/Cart/BuyingAddress";
+import NavbarCompTwo from "/components/Header/NavbarComp";
+import Footer from "/components/Footer/Footer";
+import FinalCart from "/components/Cart/FinalCart";
+import PaymentInfo from "/components/Cart/PaymentInfo";
 
 const BuyNow = () => {
   const router = useRouter();
