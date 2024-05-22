@@ -7,7 +7,7 @@ const ShopByCategory = () => {
     const [cats, setCats] = useState([])
 
     useEffect(() => {
-        // axios.get('http://localhost:3000/admin/view-product-categories')
+        // axios.get('https://api.tahamsbd.com/admin/view-product-categories')
         axios.get('/categories.json')
             .then(res => 
                 {

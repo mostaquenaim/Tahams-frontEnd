@@ -20,13 +20,6 @@ const Product = ({ categories }) => {
 
     const { showGotoCart } = useContext(AuthContext)
 
-    // useEffect(() => {
-    //     // Check if setShowGotoCart is available in localStorage
-    //     const localStorageShowGotoCart = localStorage.getItem('showGotoCart');
-    //     setShowGotoCart(localStorageShowGotoCart === 'true');
-    //     console.log(localStorageShowGotoCart,"24");
-    // }, []);
-
     const updateSelectedProducts = () => {
         console.log("updated");
         // Apply filters to the original categories
@@ -82,7 +75,7 @@ const Product = ({ categories }) => {
 
     const loadColors = async () => {
         try {
-            const result = await axios.get('http://localhost:3000/admin/view-colors');
+            const result = await axios.get('https://api.tahamsbd.com/admin/view-colors');
             // Sort the colors array based on categoryName
             setColors(result.data);
         } catch (error) {
@@ -215,7 +208,7 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`http://localhost:3000/admin/get-product-by-sub-sub-cat/${id}`);
+        const response = await fetch(`https://api.tahamsbd.com/admin/get-product-by-sub-sub-cat/${id}`);
         const categories = await response.json();
 
         return {

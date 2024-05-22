@@ -68,7 +68,7 @@ const Login = () => {
                     uniqueId: loggedInUser.uid
                 };
 
-                axios.post('http://localhost:3000/admin/customer-login', dto, {
+                axios.post('https://api.tahamsbd.com/admin/customer-login', dto, {
                     withCredentials: true
                 })
                     .then(res => {

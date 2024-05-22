@@ -13,7 +13,7 @@ const NavbarCompTwo = () => {
     console.log(user);
 
     useEffect(() => {
-        axios.get('http://localhost:3000/admin/view-product-categories')
+        axios.get('https://api.tahamsbd.com/admin/view-product-categories')
             .then((res) => {
                 setCategories(res.data)
                 console.log(res.data,"19");
@@ -89,7 +89,7 @@ const NavbarCompTwo = () => {
                         {/* menu  */}
                         <ul className="menu menu-horizontal px-1">
                             <li>
-                                <Link href='/WishList' className={navEndBtnClass}>
+                                <Link href={`/WishList?userId=${user?.uid}`} className={navEndBtnClass}>
                                     <AiOutlineHeart></AiOutlineHeart>
                                 </Link>
                             </li>

@@ -4,7 +4,7 @@ const ShowProductsByCategory = ({ products }) => {
   // Render your component using the fetched products
   return (
     <div>
-      {products.map(product => (
+      {products && products.map(product => (
         <div key={product.id}>{product.name}</div>
       ))}
     </div>
@@ -18,8 +18,9 @@ export async function getServerSideProps(context) {
 
   try {
     // Fetch products based on the category name from your backend
-    const response = await axios.get(`http://localhost:3000/admin/get-product-by-cat/${catName}`);
-    const products = await response.json();
+    const response = await axios.get(`https://api.tahamsbd.com/admin/get-product-by-cat/${catName}`);
+    const products = await response.data;
+    console.log(products,"23");
 
     // Pass the fetched products as props to the component
     return {

@@ -29,7 +29,7 @@ export default function ChangeCategoryImage({ item }) {
             const formData = new FormData();
             formData.append('filename', file); // Append the selected file to the FormData
 
-            await axios.post(`http://localhost:3000/admin/changeCategoryImage/${item.id}`, formData, {
+            await axios.post(`https://api.tahamsbd.com/admin/changeCategoryImage/${item.id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }, // Set proper headers for file upload
             });
 
@@ -82,7 +82,7 @@ export async function getServerSideProps(context) {
 
     console.log(id);
 
-    const response = await axios.get(`http://localhost:3000/admin/getCategoryById/${id}`);
+    const response = await axios.get(`https://api.tahamsbd.com/admin/getCategoryById/${id}`);
     const item = await response.data;
 
     return { props: { item } }

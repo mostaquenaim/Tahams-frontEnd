@@ -27,7 +27,6 @@ const Product = ({ product, sizes }) => {
         window.scrollTo(0, 100);
     }, []);
 
-    console.log(product);
     const {
         sellingPrice,
         filename,
@@ -40,17 +39,34 @@ const Product = ({ product, sizes }) => {
         color,
     } = product;
 
-    const addToWishlist = () => {
+    const addToWishlist = async () => {
         // Toggle the state to trigger the animation
         setIsAnimating(true);
-        // Add the product to the wishlist
-        // This is where you can implement your logic
-        // For demonstration, we'll just set a timeout to simulate the process
-        setTimeout(() => {
-            setAddedToWishlist(!isAddedToWishlist);
-            setIsAnimating(false);
-        }, 500); // Timeout duration should match the animation duration
+        console.log(product,"45");
+        
+        // Create a new FormData object
+        const formData = new FormData();
+        
+        // Append product ID and user ID to the FormData object
+        formData.append('productId', product.id);
+        formData.append('customerId', user && user.uid ); 
+        
+        try {
+            // Make a POST request to add the product to the wishlist
+            const res = await axios.post(`https://api.tahamsbd.com/admin/add-Wish`, formData);
+            console.log(res.data);
+            // Add the product to the wishlist
+    
+            setTimeout(() => {
+                setAddedToWishlist(!isAddedToWishlist);
+                setIsAnimating(false);
+            }, 500); // Timeout duration should match the animation duration
+        } catch (error) {
+            console.error('Error adding product to wishlist:', error);
+            // Handle error if the request fails
+        }
     };
+    
 
     const handleSizeChange = (size) => {
         setSelectedSize(size);
@@ -78,7 +94,7 @@ const Product = ({ product, sizes }) => {
             setShowGotoCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('http://localhost:3000/admin/add-to-cart', {
+                const response = await axios.post('https://api.tahamsbd.com/admin/add-to-cart', {
                     productId: product.id,
                     size: selectedSize,
                     Quantity: quantity,
@@ -127,7 +143,7 @@ const Product = ({ product, sizes }) => {
             // setIsAddedToCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('http://localhost:3000/admin/add-to-cart', {
+                const response = await axios.post('https://api.tahamsbd.com/admin/add-to-cart', {
                     productId: product.id,
                     size: selectedSize,
                     Quantity: quantity,
@@ -164,7 +180,6 @@ const Product = ({ product, sizes }) => {
         }
     };
 
-
     return (
         <div className="">
             <NavbarCompTwo />
@@ -173,7 +188,7 @@ const Product = ({ product, sizes }) => {
                     {/* Product Image */}
                     <div className="md:w-1/2">
                         <img
-                            src={`http://localhost:3000/admin/getimage/${selectedImage}`}
+                            src={`https://api.tahamsbd.com/admin/getimage/${selectedImage}`}
                             alt={name}
                             className="md:h-[500px] md:w-96 lg:h-[600px] lg:w-[500px] max-h-screen rounded mb-5 relative"
                         />
@@ -182,14 +197,14 @@ const Product = ({ product, sizes }) => {
                                 type="radio"
                                 id={`main-image`}
                                 name="productImage"
-                                value={`http://localhost:3000/admin/getimage/${filename}`}
+                                value={`https://api.tahamsbd.com/admin/getimage/${filename}`}
                                 className="hidden"
                                 defaultChecked // Ensures that the first image is initially selected
                                 onChange={() => setSelectedImage(filename)}
                             />
                             <label htmlFor={`main-image`} className="relative">
                                 <img
-                                    src={`http://localhost:3000/admin/getimage/${filename}`}
+                                    src={`https://api.tahamsbd.com/admin/getimage/${filename}`}
                                     alt={name}
                                     className="h-24 w-24 cursor-pointer"
                                 />
@@ -205,13 +220,13 @@ const Product = ({ product, sizes }) => {
                                             type="radio"
                                             id={`thumbnail-image-${idx}`}
                                             name="productImage"
-                                            value={`http://localhost:3000/admin/getimage/${pp.filename}`}
+                                            value={`https://api.tahamsbd.com/admin/getimage/${pp.filename}`}
                                             className="hidden"
                                             onChange={() => setSelectedImage(pp.filename)}
                                         />
                                         <label htmlFor={`thumbnail-image-${idx}`} className="relative">
                                             <img
-                                                src={`http://localhost:3000/admin/getimage/${pp.filename}`}
+                                                src={`https://api.tahamsbd.com/admin/getimage/${pp.filename}`}
                                                 alt={name}
                                                 className="h-24 w-24 cursor-pointer"
                                             />
@@ -359,10 +374,10 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`http://localhost:3000/admin/getProductById/${id}`);
+        const response = await fetch(`https://api.tahamsbd.com/admin/getProductById/${id}`);
         const product = await response.json();
 
-        const result = await fetch(`http://localhost:3000/admin/view-product-sizes`);
+        const result = await fetch(`https://api.tahamsbd.com/admin/view-product-sizes`);
         const sizes = await result.json();
 
         return {

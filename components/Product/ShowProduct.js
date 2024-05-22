@@ -21,7 +21,7 @@ const ShowProduct = ({ item }) => {
     const { sellingPrice, discountPercentage, id, filename, ifStock } = item
     const discountedPrice = sellingPrice * (100 - discountPercentage) / 100
 
-    const image = `http://localhost:3000/admin/get-ft-photo-by-product-id/${id}`
+    const image = `https://api.tahamsbd.com/admin/get-ft-photo-by-product-id/${id}`
 
     useEffect(() => {
         axios.get(image)
@@ -37,7 +37,7 @@ const ShowProduct = ({ item }) => {
             localStorage.setItem('showGotoCart', true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('http://localhost:3000/admin/add-to-cart', {
+                const response = await axios.post('https://api.tahamsbd.com/admin/add-to-cart', {
                     productId: item.id,
                     size: 'S',
                     Quantity: 1,
@@ -101,7 +101,7 @@ const ShowProduct = ({ item }) => {
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
                 <Link href={`details/${id}`} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <img src={`http://localhost:3000/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
+                    <img src={`https://api.tahamsbd.com/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
                     {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
                 </Link>
                 <div className="flex flex-col items-center text-center justify-center gap-3">
