@@ -7,7 +7,7 @@ const AddCategory = () => {
         event.preventDefault();
 
         try {
-            const response = await fetch('https://api.tahamsbd.com/addCategory', {
+            const response = await fetch('https://api.tahamsbd.com/admin/addCategory', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
