@@ -18,7 +18,7 @@ const UpdateCategory = ({ item }) => {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('https://api.tahamsbd.com/admin/view-product-categories');
+            const response = await axios.get('http://api.tahamsbd.com/admin/view-product-categories');
             setCategories(response.data);
         } catch (error) {
             // Handle errors here, e.g., log the error or show an error message.
@@ -44,7 +44,7 @@ const UpdateCategory = ({ item }) => {
             }
             else {
                 setSuccessColor("text-green-500"); 
-                await axios.put(`https://api.tahamsbd.com/admin/updateCategory/${item.id}`, updatedData);
+                await axios.put(`http://api.tahamsbd.com/admin/updateCategory/${item.id}`, updatedData);
                 setSuccess(' update successfully');
             }
         }
@@ -59,7 +59,7 @@ const UpdateCategory = ({ item }) => {
 
             if(confirmation){
             console.log(updatedData)
-            const response = await axios.delete(`https://api.tahamsbd.com/admin/deleteCategory/${item.id}`);
+            const response = await axios.delete(`http://api.tahamsbd.com/admin/deleteCategory/${item.id}`);
             console.log("response", response)
 
             setSuccess(' deleted successfully');
@@ -86,7 +86,7 @@ const UpdateCategory = ({ item }) => {
                     <div className="my-2">
                         {item.filename && (
                             <img
-                                src={`https://api.tahamsbd.com/admin/getImage/${item.filename}`}
+                                src={`http://api.tahamsbd.com/admin/getImage/${item.filename}`}
                                 alt="User Image"
                                 onError={(e) => {
                                     console.error("Error loading image:", e);
@@ -137,7 +137,7 @@ export async function getServerSideProps(context) {
 
     console.log(id);
 
-    const response = await axios.get(`https://api.tahamsbd.com/admin/getCategoryById/${id}`);
+    const response = await axios.get(`http://api.tahamsbd.com/admin/getCategoryById/${id}`);
     const item = await response.data;
 
     return { props: { item } }

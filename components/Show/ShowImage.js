@@ -5,7 +5,7 @@ const ShowImage = (props) => {
     return (
         <>
             <img
-                src={`https://api.tahamsbd.com/admin/getImage/${image}`}
+                src={`http://api.tahamsbd.com/admin/getImage/${image}`}
                 alt={altImg}
                 onError={(e) => {
                     console.error("Error loading image:", e);

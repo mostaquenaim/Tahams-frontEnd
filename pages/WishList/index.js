@@ -35,7 +35,7 @@ export async function getServerSideProps(context) {
     console.log(userId);
 
     try {
-        const response = await axios.get(`https://api.tahamsbd.com/admin/get-wish-by-user/${userId}`);
+        const response = await axios.get(`http://api.tahamsbd.com/admin/get-wish-by-user/${userId}`);
         const wishlist = response.data;
 
         return {

@@ -19,7 +19,7 @@ export default function AdminSignIn() {
 
         try {
 
-            const response = await axios.post('https://api.tahamsbd.com/admin/signin', { email, password });
+            const response = await axios.post('http://api.tahamsbd.com/admin/signin', { email, password });
 
             sessionStorage.setItem('email', email);
             setSuccess("Logged in")

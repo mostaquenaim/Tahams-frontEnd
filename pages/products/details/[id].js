@@ -53,7 +53,7 @@ const Product = ({ product, sizes }) => {
         
         try {
             // Make a POST request to add the product to the wishlist
-            const res = await axios.post(`https://api.tahamsbd.com/admin/add-Wish`, formData);
+            const res = await axios.post(`http://api.tahamsbd.com/admin/add-Wish`, formData);
             console.log(res.data);
             // Add the product to the wishlist
     
@@ -94,7 +94,7 @@ const Product = ({ product, sizes }) => {
             setShowGotoCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('https://api.tahamsbd.com/admin/add-to-cart', {
+                const response = await axios.post('http://api.tahamsbd.com/admin/add-to-cart', {
                     productId: product.id,
                     size: selectedSize,
                     Quantity: quantity,
@@ -143,7 +143,7 @@ const Product = ({ product, sizes }) => {
             // setIsAddedToCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('https://api.tahamsbd.com/admin/add-to-cart', {
+                const response = await axios.post('http://api.tahamsbd.com/admin/add-to-cart', {
                     productId: product.id,
                     size: selectedSize,
                     Quantity: quantity,
@@ -188,7 +188,7 @@ const Product = ({ product, sizes }) => {
                     {/* Product Image */}
                     <div className="md:w-1/2">
                         <img
-                            src={`https://api.tahamsbd.com/admin/getimage/${selectedImage}`}
+                            src={`http://api.tahamsbd.com/admin/getimage/${selectedImage}`}
                             alt={name}
                             className="md:h-[500px] md:w-96 lg:h-[600px] lg:w-[500px] max-h-screen rounded mb-5 relative"
                         />
@@ -197,14 +197,14 @@ const Product = ({ product, sizes }) => {
                                 type="radio"
                                 id={`main-image`}
                                 name="productImage"
-                                value={`https://api.tahamsbd.com/admin/getimage/${filename}`}
+                                value={`http://api.tahamsbd.com/admin/getimage/${filename}`}
                                 className="hidden"
                                 defaultChecked // Ensures that the first image is initially selected
                                 onChange={() => setSelectedImage(filename)}
                             />
                             <label htmlFor={`main-image`} className="relative">
                                 <img
-                                    src={`https://api.tahamsbd.com/admin/getimage/${filename}`}
+                                    src={`http://api.tahamsbd.com/admin/getimage/${filename}`}
                                     alt={name}
                                     className="h-24 w-24 cursor-pointer"
                                 />
@@ -220,13 +220,13 @@ const Product = ({ product, sizes }) => {
                                             type="radio"
                                             id={`thumbnail-image-${idx}`}
                                             name="productImage"
-                                            value={`https://api.tahamsbd.com/admin/getimage/${pp.filename}`}
+                                            value={`http://api.tahamsbd.com/admin/getimage/${pp.filename}`}
                                             className="hidden"
                                             onChange={() => setSelectedImage(pp.filename)}
                                         />
                                         <label htmlFor={`thumbnail-image-${idx}`} className="relative">
                                             <img
-                                                src={`https://api.tahamsbd.com/admin/getimage/${pp.filename}`}
+                                                src={`http://api.tahamsbd.com/admin/getimage/${pp.filename}`}
                                                 alt={name}
                                                 className="h-24 w-24 cursor-pointer"
                                             />
@@ -374,10 +374,10 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`https://api.tahamsbd.com/admin/getProductById/${id}`);
+        const response = await fetch(`http://api.tahamsbd.com/admin/getProductById/${id}`);
         const product = await response.json();
 
-        const result = await fetch(`https://api.tahamsbd.com/admin/view-product-sizes`);
+        const result = await fetch(`http://api.tahamsbd.com/admin/view-product-sizes`);
         const sizes = await result.json();
 
         return {

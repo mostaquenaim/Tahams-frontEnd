@@ -75,7 +75,7 @@ const Product = ({ categories }) => {
 
     const loadColors = async () => {
         try {
-            const result = await axios.get('https://api.tahamsbd.com/admin/view-colors');
+            const result = await axios.get('http://api.tahamsbd.com/admin/view-colors');
             // Sort the colors array based on categoryName
             setColors(result.data);
         } catch (error) {
@@ -208,7 +208,7 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`https://api.tahamsbd.com/admin/get-product-by-sub-sub-cat/${id}`);
+        const response = await fetch(`http://api.tahamsbd.com/admin/get-product-by-sub-sub-cat/${id}`);
         const categories = await response.json();
 
         return {

@@ -50,7 +50,7 @@ const MyCart = () => {
       confirmButtonText: 'Yes, delete it!',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const result = await axios.delete(`https://api.tahamsbd.com/admin/delete-cart/${itemId}`)
+        const result = await axios.delete(`http://api.tahamsbd.com/admin/delete-cart/${itemId}`)
         console.log(result, "53");
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
@@ -73,7 +73,7 @@ const MyCart = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const result = await axios.delete('https://api.tahamsbd.com/admin/delete-carts', {
+          const result = await axios.delete('http://api.tahamsbd.com/admin/delete-carts', {
             data: { checkedItems }
           });
           console.log(result, "53");
@@ -154,7 +154,7 @@ const MyCart = () => {
                       <td className='flex gap-3 items-center'>
                         <img
                           className='w-16 rounded-full border-black  border-2'
-                          src={`https://api.tahamsbd.com/admin/getImage/${item.product.filename}`}
+                          src={`http://api.tahamsbd.com/admin/getImage/${item.product.filename}`}
                           alt={item.ProductName}
                         />
                         {item.ProductName}

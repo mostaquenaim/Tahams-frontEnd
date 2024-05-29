@@ -11,12 +11,12 @@ const AddCategory = () => {
         setSuccess('');
 
         try {
-            const response = await fetch('https://api.tahamsbd.com/admin/addCategory', {
+            const response = await fetch('http://localhost:3000/admin/addCategory', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: categoryName }),
+                body: JSON.stringify({ categoryName: categoryName }),
             });
 
             const data = await response.json();
