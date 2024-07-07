@@ -19,7 +19,7 @@ const FilesAdd = () => {
 
             console.log(formData,"20");
             // Adjust the backend route accordingly
-            const response = await axios.post('http://api.tahamsbd.com/admin/upload', formData);
+            const response = await axios.post('http://tahamsbd.com/api/admin/upload', formData);
 
             console.log('File upload success:', response.data);
         } catch (error) {

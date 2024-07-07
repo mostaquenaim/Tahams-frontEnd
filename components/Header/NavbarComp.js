@@ -13,7 +13,7 @@ const NavbarCompTwo = () => {
     console.log(user);
 
     useEffect(() => {
-        axios.get('http://api.tahamsbd.com/admin/view-product-categories')
+        axios.get('http://tahamsbd.com/api/admin/view-product-categories')
             .then((res) => {
                 setCategories(res.data)
                 console.log(res.data,"19");
