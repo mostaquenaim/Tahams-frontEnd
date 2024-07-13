@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 
 const FilesAdd = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
+
+    const axiosPublic = useAxiosPublic();
 
     const handleFileChange = (e) => {
         const files = e.target.files;
@@ -19,7 +23,7 @@ const FilesAdd = () => {
 
             console.log(formData,"20");
             // Adjust the backend route accordingly
-            const response = await axios.post('http://tahamsbd.com/api/admin/upload', formData);
+            const response = await axiosPublic.post('/admin/upload', formData);
 
             console.log('File upload success:', response.data);
         } catch (error) {

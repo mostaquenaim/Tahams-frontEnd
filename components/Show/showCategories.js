@@ -9,7 +9,7 @@ const ShowCategories = (props) => {
                     <div className="mb-2">
                         {
                             item.filename ?
-                            <img className='h-72' src={`http://tahamsbd.com/api/admin/getimage/${item.filename}`}></img>
+                            <img className='h-72' src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}></img>
                             : "No image uploaded"
                         }
 

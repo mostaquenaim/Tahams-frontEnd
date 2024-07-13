@@ -1,4 +1,6 @@
 import axios from 'axios';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+
 import React, { useEffect, useState } from 'react';
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import ListListComponent from './components/ListListComponent';
@@ -6,8 +8,10 @@ import ListListComponent from './components/ListListComponent';
 const ListComponent = ({ cat, ListStyle, isSide = false }) => {
     const [subCategories, setSubCategories] = useState([])
 
+    const axiosPublic = useAxiosPublic();
+
     useEffect(() => {
-        axios.get(`http://tahamsbd.com/api/admin/view-product-sub-category/${cat.id}`)
+        axiosPublic.get(`/admin/view-product-sub-category/${cat.id}`)
             .then(res => {
                 setSubCategories(res.data)
                 console.log(res.data, "13");

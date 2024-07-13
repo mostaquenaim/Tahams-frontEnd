@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AuthContext } from "/Contexts/Auth/AuthProvider";
 import toast from "react-hot-toast";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
 const ShowProduct = ({ item }) => {
     console.log(item);
@@ -21,10 +22,12 @@ const ShowProduct = ({ item }) => {
     const { sellingPrice, discountPercentage, id, filename, ifStock } = item
     const discountedPrice = sellingPrice * (100 - discountPercentage) / 100
 
-    const image = `http://tahamsbd.com/api/admin/get-ft-photo-by-product-id/${id}`
+    const image = `/admin/get-ft-photo-by-product-id/${id}`
+
+    const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
-        axios.get(image)
+        axiosPublic.get(image)
             .then(res => {
                 setFtImage(res.data.filename)
             })
@@ -37,7 +40,7 @@ const ShowProduct = ({ item }) => {
             localStorage.setItem('showGotoCart', true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('http://tahamsbd.com/api/admin/add-to-cart', {
+                const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: item.id,
                     size: 'S',
                     Quantity: 1,
@@ -101,7 +104,7 @@ const ShowProduct = ({ item }) => {
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
                 <Link href={`details/${id}`} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <img src={`http://tahamsbd.com/api/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
+                    <img src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
                     {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
                 </Link>
                 <div className="flex flex-col items-center text-center justify-center gap-3">

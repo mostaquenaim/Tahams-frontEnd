@@ -15,7 +15,7 @@ const BuyingAddress = () => {
 
     const { user } = useContext(AuthContext)
     const router = useRouter()
-    const axios = useAxiosPublic()
+    const axiosPublic = useAxiosPublic();
     const [carts, setCarts] = useState([])
 
     useEffect(() => {
@@ -45,7 +45,7 @@ const BuyingAddress = () => {
             formData.append('carts', carts);
 
             // Assuming your API endpoint for adding to the cart is correct
-            const res = await axios.post(`/admin/add-to-buy`, {
+            const res = await axiosPublic.post(`/admin/add-to-buy`, {
                 fullName: data.fullName,
                 zip: data.zip,
                 state: data.state,

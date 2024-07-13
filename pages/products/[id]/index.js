@@ -5,6 +5,8 @@ import FilterComp from '/components/Filter/Filter';
 import { FaFilter } from "react-icons/fa";
 import Footer from '/components/Footer/Footer';
 import axios from 'axios';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+
 import Link from 'next/link';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
@@ -17,6 +19,8 @@ const Product = ({ categories }) => {
     const [selectedAvailability, setSelectedAvailability] = useState('');
     const [selectedOffer, setSelectedOffer] = useState('');
     const [colors, setColors] = useState([])
+
+    const axiosPublic = useAxiosPublic();
 
     const { showGotoCart } = useContext(AuthContext)
 
@@ -75,7 +79,7 @@ const Product = ({ categories }) => {
 
     const loadColors = async () => {
         try {
-            const result = await axios.get('http://tahamsbd.com/api/admin/view-colors');
+            const result = await axiosPublic.get('/admin/view-colors');
             // Sort the colors array based on categoryName
             setColors(result.data);
         } catch (error) {
@@ -208,7 +212,7 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`http://tahamsbd.com/api/admin/get-product-by-sub-sub-cat/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-sub-sub-cat/${id}`);
         const categories = await response.json();
 
         return {

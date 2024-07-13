@@ -11,8 +11,8 @@ module.exports = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'tahamsbd.com',
-        port: '3000',
+        hostname: process.env.NEXT_PUBLIC_HOSTNAME,
+        port: process.env.NEXT_PUBLIC_PORT,
       },
     ],
   },

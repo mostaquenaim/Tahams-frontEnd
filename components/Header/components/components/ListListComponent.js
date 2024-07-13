@@ -1,12 +1,15 @@
 import axios from 'axios';
+import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
+
 import React, { useEffect, useState } from 'react';
 
 const ListListComponent = ({ sub, ListStyle }) => {
+    const axiosPublic = useAxiosPublic();
 
     const [cats, setCats] = useState([])
 
     useEffect(() => {
-        axios.get(`http://tahamsbd.com/api/admin/view-product-sub-sub-category/${sub.id}`)
+        axiosPublic.get(`/admin/view-product-sub-sub-category/${sub.id}`)
             .then(res => setCats(res.data))
     }, [])
 

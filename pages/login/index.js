@@ -12,6 +12,8 @@ import { auth } from '/firebase'
 import { useLocation } from 'react-router-dom';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 const provider = new GoogleAuthProvider();
 
 const Login = () => {
@@ -19,6 +21,8 @@ const Login = () => {
     const { user } = useContext(AuthContext)
     console.log(user, "17");
     const router = useRouter()
+
+    const axiosPublic = useAxiosPublic();
 
     useEffect(() => {
         user && router.push('/')
@@ -68,7 +72,7 @@ const Login = () => {
                     uniqueId: loggedInUser.uid
                 };
 
-                axios.post('http://tahamsbd.com/api/admin/customer-login', dto, {
+                axiosPublic.post('/admin/customer-login', dto, {
                     withCredentials: true
                 })
                     .then(res => {

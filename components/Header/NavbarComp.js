@@ -4,16 +4,20 @@ import ResponsiveNavBar from './ResponsiveNavBar';
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
 import ListComponent from './components/ListComponent';
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic'
+
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const NavbarCompTwo = () => {
+    const axiosPublic = useAxiosPublic();
+
     const [searchBtn, setSearchBtn] = useState(false)
     const [categories, setCategories] = useState([])
     const { user, logOut } = useContext(AuthContext)
     console.log(user);
 
     useEffect(() => {
-        axios.get('http://tahamsbd.com/api/admin/view-product-categories')
+        axiosPublic.get('/admin/view-product-categories')
             .then((res) => {
                 setCategories(res.data)
                 console.log(res.data,"19");

@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 import { useRouter } from 'next/router';
 
 export default function Session() {
   const [email, setEmail] = useState(null);
   const router = useRouter();
+  const axiosPublic = useAxiosPublic();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -19,7 +22,7 @@ export default function Session() {
   const handleSignOut = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.get('http://tahamsbd.com/api/users/signout');
+      const response = await axiosPublic.get('/users/signout');
       console.log(response.data);
       sessionStorage.removeItem('email');
       setEmail(null);

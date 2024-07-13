@@ -5,11 +5,15 @@ import { useRouter } from 'next/router';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 import Link from 'next/link';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();
   const router = useRouter();
+
+  const axiosPublic = useAxiosPublic();
 
   // State to track checked items
   const [checkedItems, setCheckedItems] = useState([]);
@@ -50,7 +54,7 @@ const MyCart = () => {
       confirmButtonText: 'Yes, delete it!',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const result = await axios.delete(`http://tahamsbd.com/api/admin/delete-cart/${itemId}`)
+        const result = await axiosPublic.delete(`/admin/delete-cart/${itemId}`)
         console.log(result, "53");
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
@@ -73,7 +77,7 @@ const MyCart = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const result = await axios.delete('http://tahamsbd.com/api/admin/delete-carts', {
+          const result = await axiosPublic.delete('/admin/delete-carts', {
             data: { checkedItems }
           });
           console.log(result, "53");
@@ -154,7 +158,7 @@ const MyCart = () => {
                       <td className='flex gap-3 items-center'>
                         <img
                           className='w-16 rounded-full border-black  border-2'
-                          src={`http://tahamsbd.com/api/admin/getImage/${item.product.filename}`}
+                          src={`/admin/getImage/${item.product.filename}`}
                           alt={item.ProductName}
                         />
                         {item.ProductName}

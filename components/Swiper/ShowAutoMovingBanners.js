@@ -1,11 +1,15 @@
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 import React, { useEffect, useState } from 'react';
 
 const ShowAutoMovingBanners = () => {
   const [banners, setBanners] = useState([])
 
+  const axiosPublic = useAxiosPublic();
+
   const loadBanners = async () => {
-    const resp = await axios.get('banners.json')
+    const resp = await axiosPublic.get('banners.json')
     setBanners(resp.data)
   }
 

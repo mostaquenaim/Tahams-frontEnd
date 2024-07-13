@@ -18,7 +18,7 @@ export async function getServerSideProps(context) {
 
   try {
     // Fetch products based on the category name from your backend
-    const response = await axios.get(`http://tahamsbd.com/api/admin/get-product-by-cat/${catName}`);
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-cat/${catName}`);
     const products = await response.data;
     console.log(products,"23");
 

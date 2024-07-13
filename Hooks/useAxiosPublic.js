@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosPublic = axios.create({
-    baseURL: 'http://tahamsbd.com/api'
+    baseURL: process.env.NEXT_PUBLIC_API
 })
 
 const useAxiosPublic = () => {

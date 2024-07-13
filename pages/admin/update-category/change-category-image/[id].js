@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
-import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 import { useForm } from 'react-hook-form';
 
 import SessionCheck from '../../../../components/Auth/sessionCheck';
+import axios from 'axios';
 
 export default function ChangeCategoryImage({ item }) {
+
+    const axiosPublic = useAxiosPublic();
+
     const {
         register,
         handleSubmit,
@@ -29,7 +34,7 @@ export default function ChangeCategoryImage({ item }) {
             const formData = new FormData();
             formData.append('filename', file); // Append the selected file to the FormData
 
-            await axios.post(`http://tahamsbd.com/api/admin/changeCategoryImage/${item.id}`, formData, {
+            await axiosPublic.post(`/admin/changeCategoryImage/${item.id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }, // Set proper headers for file upload
             });
 
@@ -82,7 +87,7 @@ export async function getServerSideProps(context) {
 
     console.log(id);
 
-    const response = await axios.get(`http://tahamsbd.com/api/admin/getCategoryById/${id}`);
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/getCategoryById/${id}`);
     const item = await response.data;
 
     return { props: { item } }

@@ -11,7 +11,7 @@ const AddCategory = () => {
         setSuccess('');
 
         try {
-            const response = await fetch('http://tahamsbd.com/api/admin/addCategory', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/addCategory`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

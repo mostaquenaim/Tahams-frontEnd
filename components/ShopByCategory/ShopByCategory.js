@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import ShowCat from "./ShowCat";
 import Heading from "../Header/Heading";
 import axios from "axios";
+import useAxiosPublic from '../../Hooks/useAxiosPublic'
 
 const ShopByCategory = () => {
     const [cats, setCats] = useState([])
+    const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
-        // axios.get('http://tahamsbd.com/api/admin/view-product-categories')
         axios.get('/categories.json')
             .then(res => 
                 {

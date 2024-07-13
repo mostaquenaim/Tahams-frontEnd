@@ -32,11 +32,11 @@ export default PaymentProcess;
 export async function getServerSideProps(context) {
     const { params } = context;
     const { token } = params;
-    const axios = useAxiosPublic()
+    const axiosPublic = useAxiosPublic();
 
     try {
         // Make a GET request to your backend API to fetch buying history
-        const response = await axios.get(`/admin/get-buying-history-by-token/${token}`);
+        const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}`);
         const buyingHistory = response.data;
 
         return {

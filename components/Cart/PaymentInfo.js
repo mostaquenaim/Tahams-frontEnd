@@ -5,7 +5,7 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 
 const PaymentInfo = () => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
-    const axios = useAxiosPublic()
+    const axiosPublic = useAxiosPublic();
 
     const [paymentInfo, setPaymentInfo] = useState({
         bankName: '',
@@ -44,7 +44,7 @@ const PaymentInfo = () => {
             formData.append('screenshot', paymentInfo?.screenshot || null);
     
             // Assuming `your-backend-url` is the base URL of your backend
-            const response = await axios.post(`/admin/add-payment`, formData);
+            const response = await axiosPublic.post(`/admin/add-payment`, formData);
     
             if (response.status >= 200 && response.status <= 300) {
                 // Payment was successful

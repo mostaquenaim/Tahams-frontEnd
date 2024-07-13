@@ -4,6 +4,8 @@ import { FaFilter, FaShoppingCart } from 'react-icons/fa';
 import { Fragment, useContext, useEffect, useState } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa6';
 import axios from 'axios';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic'
+
 import toast, { Toaster } from 'react-hot-toast';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
@@ -21,6 +23,8 @@ const Product = ({ product, sizes }) => {
     const { user } = useContext(AuthContext)
     console.log(user, "17");
     const router = useRouter()
+
+    const axiosPublic = useAxiosPublic();
 
     useEffect(() => {
         // Scroll down by 100 pixels when the component mounts
@@ -53,7 +57,7 @@ const Product = ({ product, sizes }) => {
         
         try {
             // Make a POST request to add the product to the wishlist
-            const res = await axios.post(`http://tahamsbd.com/api/admin/add-Wish`, formData);
+            const res = await axiosPublic.post(`/admin/add-Wish`, formData);
             console.log(res.data);
             // Add the product to the wishlist
     
@@ -94,7 +98,7 @@ const Product = ({ product, sizes }) => {
             setShowGotoCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('http://tahamsbd.com/api/admin/add-to-cart', {
+                const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: product.id,
                     size: selectedSize,
                     Quantity: quantity,
@@ -143,7 +147,7 @@ const Product = ({ product, sizes }) => {
             // setIsAddedToCart(true)
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axios.post('http://tahamsbd.com/api/admin/add-to-cart', {
+                const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: product.id,
                     size: selectedSize,
                     Quantity: quantity,
@@ -188,7 +192,7 @@ const Product = ({ product, sizes }) => {
                     {/* Product Image */}
                     <div className="md:w-1/2">
                         <img
-                            src={`http://tahamsbd.com/api/admin/getimage/${selectedImage}`}
+                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
                             alt={name}
                             className="md:h-[500px] md:w-96 lg:h-[600px] lg:w-[500px] max-h-screen rounded mb-5 relative"
                         />
@@ -197,14 +201,14 @@ const Product = ({ product, sizes }) => {
                                 type="radio"
                                 id={`main-image`}
                                 name="productImage"
-                                value={`http://tahamsbd.com/api/admin/getimage/${filename}`}
+                                value={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
                                 className="hidden"
                                 defaultChecked // Ensures that the first image is initially selected
                                 onChange={() => setSelectedImage(filename)}
                             />
                             <label htmlFor={`main-image`} className="relative">
                                 <img
-                                    src={`http://tahamsbd.com/api/admin/getimage/${filename}`}
+                                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
                                     alt={name}
                                     className="h-24 w-24 cursor-pointer"
                                 />
@@ -220,13 +224,13 @@ const Product = ({ product, sizes }) => {
                                             type="radio"
                                             id={`thumbnail-image-${idx}`}
                                             name="productImage"
-                                            value={`http://tahamsbd.com/api/admin/getimage/${pp.filename}`}
+                                            value={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${pp.filename}`}
                                             className="hidden"
                                             onChange={() => setSelectedImage(pp.filename)}
                                         />
                                         <label htmlFor={`thumbnail-image-${idx}`} className="relative">
                                             <img
-                                                src={`http://tahamsbd.com/api/admin/getimage/${pp.filename}`}
+                                                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${pp.filename}`}
                                                 alt={name}
                                                 className="h-24 w-24 cursor-pointer"
                                             />
@@ -374,10 +378,10 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`http://tahamsbd.com/api/admin/getProductById/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/getProductById/${id}`);
         const product = await response.json();
 
-        const result = await fetch(`http://tahamsbd.com/api/admin/view-product-sizes`);
+        const result = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/view-product-sizes`);
         const sizes = await result.json();
 
         return {

@@ -2,8 +2,12 @@ import { useContext } from 'react';
 import NavbarCompTwo from '/components/Header/NavbarComp';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import axios from 'axios';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+
 
 const WishList = ({ wishlist }) => {
+
+    const axiosPublic = useAxiosPublic();
 
     return (
         <>
@@ -35,7 +39,7 @@ export async function getServerSideProps(context) {
     console.log(userId);
 
     try {
-        const response = await axios.get(`http://tahamsbd.com/api/admin/get-wish-by-user/${userId}`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/get-wish-by-user/${userId}`);
         const wishlist = response.data;
 
         return {

@@ -11,7 +11,7 @@ const FinalCart = ({ cartItems }) => {
     const [enableCoupon, setEnableCoupon] = useState(false)
     const [error, setError] = useState('')
 
-    const axios = useAxiosPublic()
+    const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
         // Calculate total price when cartItems change
@@ -24,7 +24,7 @@ const FinalCart = ({ cartItems }) => {
     }, [cartItems]);
 
     const handleApplyCoupon = async () => {
-        const res = await axios.get(`/admin/get-coupons`)
+        const res = await axiosPublic.get(`/admin/get-coupons`)
         console.log(res.data);
         // Add logic to apply coupon
         // toast.success('Coupon applied successfully!');
