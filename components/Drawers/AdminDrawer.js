@@ -8,8 +8,12 @@ const AdminDrawer = () => {
 
     // Define your links here
     const navLinks = [
-        { href: '/admin/Add/add-product', label: 'Add product' },
-        { href: '/admin/delete-product', label: 'Delete product' },
+        { href: '/admin/Add/add-product', label: 'Add Product' },
+        { href: '/admin/Add/add-category', label: 'Add Series / Category'},
+        { href: '/admin/Add/add-color', label: 'Add Color' },
+        { href: '/admin/Add/add-size', label: 'Add Size' },
+        { href: '/admin/Add/add-fabric', label: 'Add Fabric' },
+        { href: '/admin/delete-product', label: 'Delete Product' },
         // Add more links as needed
     ];
 

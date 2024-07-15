@@ -1,41 +1,51 @@
 import React, { useState } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 
-const AddCategory = () => {
-    const [categoryName, setCategoryName] = useState('');
+const AddFabric = () => {
+    const [fabricName, setFabricName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
         setSuccess('');
+        setLoading(true);
+
+        if (!fabricName) {
+            setError('Fabric name is required');
+            setLoading(false);
+            return;
+        }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/add-category`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/add-fabric`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ categoryName: categoryName }),
+                body: JSON.stringify({ fabricName }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to add category');
+                throw new Error(data.message || 'Failed to add fabric');
             }
 
-            setCategoryName('');
-            setSuccess('Category added successfully');
+            setFabricName('');
+            setSuccess('Fabric added successfully');
         } catch (error) {
-            console.error('Error adding category:', error.message);
+            console.error('Error adding fabric:', error.message);
             setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleChange = (event) => {
-        setCategoryName(event.target.value);
+    const handleNameChange = (event) => {
+        setFabricName(event.target.value);
     };
 
     return (
@@ -43,25 +53,27 @@ const AddCategory = () => {
             <AdminDrawer />
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Category</h2>
+                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Fabric</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Category Name</label>
+                            <label htmlFor="fabricName" className="block text-sm font-medium text-gray-700">Fabric Name</label>
                             <input
                                 type="text"
-                                id="categoryName"
-                                name="categoryName"
-                                value={categoryName}
-                                onChange={handleChange}
+                                id="fabricName"
+                                name="fabricName"
+                                value={fabricName}
+                                onChange={handleNameChange}
                                 className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="Enter category name"
+                                placeholder="Enter fabric name"
+                                required
                             />
                         </div>
                         <button
                             type="submit"
                             className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            disabled={loading}
                         >
-                            Add
+                            {loading ? 'Adding...' : 'Add'}
                         </button>
                     </form>
                     {error && <p className="mt-4 text-sm text-center text-red-600">{error}</p>}
@@ -72,4 +84,4 @@ const AddCategory = () => {
     );
 };
 
-export default AddCategory;
+export default AddFabric;
