@@ -13,12 +13,8 @@ export default function AddProduct() {
     const [subSubCategories, setSubSubCategories] = useState([])
     const [colors, setColors] = useState([])
     const [selectedCats, setSelectedCats] = useState([])
-    const [selectedCatsInfo, setSelectedCatsInfo] = useState([])
-    const [newSelectedCatsInfo, setNewSelectedCatsInfo] = useState([])
     const [selectedColor, setSelectedColor] = useState('');
-    const [sizes, setSizes] = useState([])
-    const [success, setSuccess] = useState('')
-    const [isSizeApplicable, setIsSizeApplicable] = useState([]);
+    const [longDescription, setLongDescription] = useState('');
 
     const router = useRouter();
     const axiosPublic = useAxiosPublic();
@@ -28,10 +24,19 @@ export default function AddProduct() {
         handleSubmit,
         formState: { errors },
         reset,
-        control
     } = useForm();
 
-    // load sub categories
+    const validateFile = (value) => { 
+        const file = value[0];
+        console.log(value[0]);
+        const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
+
+        if (!allowedtypes.includes(file.type)) {
+            return false;
+        }
+    }
+
+    // loads 
     const loadSubSubCategories = async () => {
         try {
             const result = await axiosPublic.get('/admin/view-product-sub-sub-categories');
@@ -58,7 +63,6 @@ export default function AddProduct() {
         }
     };
 
-    //load colors
     const loadColors = async () => {
         try {
             const result = await axiosPublic.get('/admin/view-colors');
@@ -69,130 +73,45 @@ export default function AddProduct() {
         }
     };
 
-    //load sizes
-    const loadSizes = async () => {
-        // Load your sizes from an API or define them here
-        // For demonstration, we will use hardcoded values
-        // setSizes(["XS", "S", "M", "L", "XL", "XXL"]);
-        try {
-            const result = await axiosPublic.get('/admin/view-product-sizes');
-            // Sort the subSubCategories array based on categoryName
-            setSizes(result.data);
-            console.log("result", result.data);
-        } catch (error) {
-            console.error('Error loading sizes:', error);
-        }
-    };
-
-    // use effect 
-    useEffect(() => {
-        loadSubSubCategories();
-        loadColors()
-        loadSizes()
-    }, []);
-
-    const validateFile = (value) => {
-        const file = value[0];
-        console.log(value[0]);
-        const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
-
-        if (!allowedtypes.includes(file.type)) {
-            return false;
-        }
-    }
-
     const handleCategoryChange = (event, catID) => {
         // console.log(event.target.checked);
         const isChecked = event.target.checked
 
         if (isChecked) {
-            setSelectedCats([...selectedCats,
-                catID,
-            ])
-
-            setSelectedCatsInfo([...selectedCatsInfo,
-            {
-                category: catID,
-                sizes: [
-                    // {
-                    //     id: 0,
-                    //     quantity: 0
-                    // }
-                ]
-            }
-            ])
-
-            // setNewSelectedCatsInfo([...newSelectedCatsInfo,[catID]])
-
+            setSelectedCats([...selectedCats, catID])
             return
         }
 
-        const res = selectedCats.filter(cat => cat !== catID)
+        const res = selectedCats.filter(category => category !== catID)
         setSelectedCats([...res])
-
-        const infoRes = selectedCatsInfo.filter(cat => cat.category !== catID)
-        setSelectedCatsInfo([...infoRes])
     }
 
-    const handleSizeAndQuantityChange = (event, catID, sizeId) => {
-        console.log("selectedCatsInfo", selectedCatsInfo);
+    // use effect 
+    useEffect(() => {
+        loadSubSubCategories();
+        loadColors()
+    }, []);
 
-        const categoryWiseItem = selectedCatsInfo.find(cat => cat.category == catID)
-
-        let sizeNotAvailable = true
-
-        categoryWiseItem.sizes.forEach(item => {
-            if (item.id == sizeId) {
-                sizeNotAvailable = false
-                item.quantity = event.target.value
-                return
-            }
-        })
-
-
-        if (sizeNotAvailable) {
-            const newSize = {
-                id: sizeId,
-                quantity: event.target.value
-            }
-
-            categoryWiseItem.sizes = [...categoryWiseItem.sizes, newSize]
-        }
-
-        console.log("categoryWiseItem", categoryWiseItem);
-
-        const result = selectedCatsInfo.filter(item => item.category != catID)
-
-        setSelectedCatsInfo([...result, categoryWiseItem])
-    }
-
-    const handleSizeApplicableChange = (event, catID) => {
-        const isChecked = event.target.checked
-
-        if (isChecked) {
-            setIsSizeApplicable([...isSizeApplicable, catID])
-            return
-        }
-
-        const res = isSizeApplicable.filter(category => category !== catID)
-        setIsSizeApplicable([...res])
-    }
+    const [success, setSuccess] = useState('')
 
     const onSubmit = async (data) => {
+        console.log(data);
+        console.log("cats", selectedCats);
+        console.log(data.myfile[0]);
+        console.log(data.myfiles, "97");
+        console.log(data.myfiles[0], "98");
+
+
         const formData = new FormData();
 
-        let catsInfo = []
-        selectedCatsInfo.forEach((info) => {
-            catsInfo.push(info.category)
-            info.sizes.forEach((item) => {
-                catsInfo.push([item.id,parseInt(item.quantity)])
-            })
-        })
-        
-        // console.log(selectedCats,"189",catsInfo);
+        const newCategories = subSubCategories.filter((subCat) => selectedCats.includes(subCat.id))
+
+        // data.myfiles.forEach((file) => {
+        //     formData.append('myfiles', file);
+        // });
+
+        console.log(newCategories);
         formData.append('subCategories', selectedCats)
-        formData.append('catsInfo', JSON.stringify(catsInfo))
-        formData.append('selectedCatsInfo',JSON.stringify(selectedCatsInfo))
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
         formData.append('note', data.note);
@@ -200,14 +119,14 @@ export default function AddProduct() {
         formData.append('discountPercentage', data.discountPercentage);
         formData.append('buyingPrice', data.buyingPrice);
         formData.append('sellingPrice', data.sellingPrice);
-        // formData.append('tags', data.tags);
+        formData.append('tags', data.tags);
         formData.append('description', data.description);
         formData.append('myfile', data.myfile[0]);
         formData.append('color', data.color);
-        formData.append('longDescription', data.longDescription);
+        formData.append('longDescription', longDescription);
 
         // formData.append('categories', JSON.stringify(data.categories));
-        // console.log(formData);
+        console.log(formData);
 
         try {
             const response = await axiosPublic.post("/admin/add-product",
@@ -220,7 +139,7 @@ export default function AddProduct() {
             setSuccess('Product add successfully');
             toast.success('Product add successfully');
             onSubmitPictures(data);
-            // reset();
+            reset();
 
 
         }
@@ -253,14 +172,14 @@ export default function AddProduct() {
             });
 
             setSuccess('Product pictures uploaded successfully');
-            // reset();
+            reset();
 
         } catch (error) {
             console.log(error.response.data.message);
             setSuccess('Product pictures upload unsuccessful: ' + error.response.data.message);
         }
     };
-    
+
     return (
         <>
             <AdminDrawer></AdminDrawer>
@@ -293,11 +212,90 @@ export default function AddProduct() {
                         {/* Selling Price */}
                         <ProductFormComp type='number' name='sellingPrice' label='Selling Price' register={register} errors={errors} />
 
+                        {/* Tags */}
+                        {/* <div>
+                            <label htmlFor="tags" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Tags
+                            </label>
+                            <input
+                                type="text"
+                                id="tags"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Tags"
+                                required=""
+                                {...register('tags', { required: true })}
+                            />
+                            {errors.tags && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.tags.type === 'required'
+                                            ? 'Tags is required'
+                                            : 'Invalid Tags'}
+                                    </span>
+                                </p>
+                            )}
+                        </div> */}
+
                         {/* Description */}
-                        <ProductFormComp isDesc={true} name='description' label='Short Description' placeholder={'Short description here [shown in right side]'} register={register} errors={errors} />
+                        <div>
+                            <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                rows="4"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Short description here [shown in right side]"
+                                {...register('description', { required: true })}
+                            />
+                            {errors.description && (
+                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                    <span className="font-medium">
+                                        {errors.description.type === 'required'
+                                            ? 'Description is required'
+                                            : 'Invalid Description'}
+                                    </span>
+                                </p>
+                            )}
+                        </div>
 
                         {/* Long Description */}
-                        <ProductFormComp isDesc={true} name='longDescription' label='Full Description' placeholder={'Full description here [shown below the product]'} register={register} errors={errors} />
+                        <div>
+                            <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                rows="4"
+                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
+                                placeholder="Full description here [shown below the product]"
+                                value={longDescription}
+                                onChange={(e) => setLongDescription(e.target.value)}
+                            />
+                        </div>
+
+                        {/* categories */}
+                        <div className='flex justify-around'>
+                            <label className="text-sm font-semibold mb-1">Categories:</label>
+                            <div className="space-y-1">
+                                {subSubCategories.map((category, index) => (
+                                    <div key={category.id} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name={`selectedCategories[${category.id}]`}
+                                            id={`selectedCategories_${category.id}`}
+                                            onChange={(e) => handleCategoryChange(e, category.id)}
+                                            checked={selectedCats.includes(category.id)}
+                                            className="h-4 w-4 text-blue-500 focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
+                                        />
+                                        <label htmlFor={`selectedCategories_${index}`} className="ml-2">
+                                            <span className='font-semibold text-xl'> {category.categoryName} </span>
+                                            ({category.category.categoryName}, <span className=''>{category.category.category.categoryName}</span>)
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* file upload  */}
                         <div>
@@ -346,7 +344,7 @@ export default function AddProduct() {
 
                         {/* Color Selection */}
                         <div className="mt-4">
-                            <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900">
+                            <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Select Color
                             </label>
                             <select
@@ -372,72 +370,6 @@ export default function AddProduct() {
                                     </span>
                                 </p>
                             )}
-                        </div>
-
-                        {/* Categories and Sizes */}
-                        <div className='flex justify-around'>
-                            <label className="text-sm font-semibold mb-1">Categories:</label>
-                            <div className="space-y-1">
-                                {/* categories fetch  */}
-                                {subSubCategories.map((category, index) => (
-                                    <div key={category.id} className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            name={`selectedCategories[${category.id}]`}
-                                            id={`selectedCategories_${category.id}`}
-                                            onChange={(e) => handleCategoryChange(e, category.id)}
-                                            checked={selectedCats.includes(
-                                                category.id
-                                            )}
-                                            className="h-4 w-4 text-blue-500 focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
-                                        />
-                                        <label htmlFor={`selectedCategories_${index}`} className="ml-2">
-                                            <span className='font-semibold text-xl'> {category.categoryName} </span>
-                                            ({category.category.categoryName}, <span className=''>{category.category.category.categoryName}</span>)
-                                        </label>
-                                        {/* is size applicable  */}
-                                        {selectedCats.includes(category.id) && (
-                                            <div className="ml-4 mt-4">
-                                                <label className="block mb-2 text-sm font-medium text-gray-900">
-                                                    Size Selection
-                                                </label>
-
-                                                <div className="flex items-center mb-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={`categories[${index}].sizeApplicable`}
-                                                        checked={isSizeApplicable.includes(category.id)}
-                                                        onChange={(e) => handleSizeApplicableChange(e, category.id)}
-                                                        className="mr-2"
-                                                    />
-                                                    <label htmlFor={`categories[${index}].sizeApplicable`} className="text-sm font-medium text-gray-900">
-                                                        Size applicable
-                                                    </label>
-                                                </div>
-                                                {/* size selection  */}
-                                                {isSizeApplicable.includes(category.id) ? (
-                                                    sizes.map((size) => (
-                                                        <div key={size.id} className="flex items-center mb-2">
-                                                            <label className="text-sm font-medium text-gray-900 mr-2">{size.name}</label>
-                                                            <input
-                                                                type="number"
-                                                                // defaultValue={0}
-                                                                min={0}
-                                                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
-                                                                placeholder={`Quantity for ${size.name}`}
-                                                                onInput={(e) => handleSizeAndQuantityChange(e, category.id, size.id)}
-                                                                {...register(`categories[${index}].sizes.${size.name}`, { required: false })}
-                                                            />
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <p className="text-sm text-gray-500">Size not applicable for this category</p>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
                         </div>
 
                         {/* Submit Button */}

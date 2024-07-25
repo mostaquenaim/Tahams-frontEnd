@@ -19,6 +19,7 @@ const ProductFormComp = ({ type, name, label, register, errors, placeholder, isD
                     :
                     <input
                         type={type}
+                        min={0}
                         id={name}
                         className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
                         placeholder={label}
