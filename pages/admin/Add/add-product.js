@@ -1,21 +1,24 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { useRouter } from 'next/router'
-import DateTimePicker from 'react-datetime-picker';
+import { TagsInput } from "react-tag-input-component";
 import 'react-datetime-picker/dist/DateTimePicker.css';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import AdminDrawer from "/components/Drawers/AdminDrawer";
 import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from "../../../components/Product/ProductFormComp";
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
+import SelectionFormComp from "../../../components/Product/SelectionFormComp";
 
 export default function AddProduct() {
     const [subSubCategories, setSubSubCategories] = useState([])
     const [colors, setColors] = useState([])
+    const [selectedColor, setSelectedColor] = useState('');
+    const [fabrics, setFabrics] = useState([])
+    const [selectedFabric, setSelectedFabric] = useState('');
     const [selectedCats, setSelectedCats] = useState([])
     const [selectedCatsInfo, setSelectedCatsInfo] = useState([])
-    const [newSelectedCatsInfo, setNewSelectedCatsInfo] = useState([])
-    const [selectedColor, setSelectedColor] = useState('');
+    const [selectedTags, setSelectedTags] = useState(["cloth"]);
     const [sizes, setSizes] = useState([])
     const [success, setSuccess] = useState('')
     const [isSizeApplicable, setIsSizeApplicable] = useState([]);
@@ -65,7 +68,18 @@ export default function AddProduct() {
             // Sort the subSubCategories array based on categoryName
             setColors(result.data);
         } catch (error) {
-            console.error('Error loading sub-sub-categories:', error);
+            console.error('Error loading colors:', error);
+        }
+    };
+
+    //load fabrics
+    const loadFabrics = async () => {
+        try {
+            const result = await axiosPublic.get('/admin/view-fabrics');
+            // Sort the subSubCategories array based on categoryName
+            setFabrics(result.data);
+        } catch (error) {
+            console.error('Error loading fabrics:', error);
         }
     };
 
@@ -88,6 +102,7 @@ export default function AddProduct() {
     useEffect(() => {
         loadSubSubCategories();
         loadColors()
+        loadFabrics()
         loadSizes()
     }, []);
 
@@ -185,14 +200,14 @@ export default function AddProduct() {
         selectedCatsInfo.forEach((info) => {
             catsInfo.push(info.category)
             info.sizes.forEach((item) => {
-                catsInfo.push([item.id,parseInt(item.quantity)])
+                catsInfo.push([item.id, parseInt(item.quantity)])
             })
         })
-        
+
         // console.log(selectedCats,"189",catsInfo);
         formData.append('subCategories', selectedCats)
         formData.append('catsInfo', JSON.stringify(catsInfo))
-        formData.append('selectedCatsInfo',JSON.stringify(selectedCatsInfo))
+        formData.append('selectedCatsInfo', JSON.stringify(selectedCatsInfo))
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
         formData.append('note', data.note);
@@ -200,7 +215,7 @@ export default function AddProduct() {
         formData.append('discountPercentage', data.discountPercentage);
         formData.append('buyingPrice', data.buyingPrice);
         formData.append('sellingPrice', data.sellingPrice);
-        // formData.append('tags', data.tags);
+        formData.append('tags', selectedTags);
         formData.append('description', data.description);
         formData.append('myfile', data.myfile[0]);
         formData.append('color', data.color);
@@ -260,7 +275,7 @@ export default function AddProduct() {
             setSuccess('Product pictures upload unsuccessful: ' + error.response.data.message);
         }
     };
-    
+
     return (
         <>
             <AdminDrawer></AdminDrawer>
@@ -298,6 +313,25 @@ export default function AddProduct() {
 
                         {/* Long Description */}
                         <ProductFormComp isDesc={true} name='longDescription' label='Full Description' placeholder={'Full description here [shown below the product]'} register={register} errors={errors} />
+
+                        {/* color selection  */}
+                        <SelectionFormComp label={'Select a color'} name={'color'} selectedValue={selectedColor} setFunction={setSelectedColor} defaultShown={'Choose a color'} values={colors} errors={errors} register={register} />
+
+                        {/* FABRIC SELECTION  */}
+                        <SelectionFormComp label={'Select a fabric'} name={'fabric'} selectedValue={selectedFabric} setFunction={setSelectedFabric} defaultShown={'Choose a fabric'} values={fabrics} errors={errors} register={register} />
+
+                        {/* tags  */}
+                        <div>
+                            <h1>Add Tags</h1>
+                            <pre>{JSON.stringify(selectedTags)}</pre>
+                            <TagsInput
+                                value={selectedTags}
+                                onChange={setSelectedTags}
+                                name="tags"
+                                placeHolder="enter tags"
+                            />
+                            <em>press enter add new tag</em>
+                        </div>
 
                         {/* file upload  */}
                         <div>
@@ -339,36 +373,6 @@ export default function AddProduct() {
                                         {errors.myfiles.type === 'required'
                                             ? 'Files are required'
                                             : 'Invalid file'}
-                                    </span>
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Color Selection */}
-                        <div className="mt-4">
-                            <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900">
-                                Select Color
-                            </label>
-                            <select
-                                id="color"
-                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full"
-                                {...register('color', { required: true })}
-                                value={selectedColor}
-                                onChange={(e) => setSelectedColor(e.target.value)}
-                            >
-                                <option value="" disabled>
-                                    Choose a color
-                                </option>
-                                {colors.map((color) => (
-                                    <option key={color.id} value={color.name} className="text-center" style={{ backgroundColor: color.colorCode }}>
-                                        {color.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.color && (
-                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-                                    <span className="font-medium">
-                                        {errors.color.type === 'required' ? 'Color is required' : 'Invalid Color'}
                                     </span>
                                 </p>
                             )}

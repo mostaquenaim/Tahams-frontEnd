@@ -9,7 +9,10 @@ const AdminDrawer = () => {
     // Define your links here
     const navLinks = [
         { href: '/admin/Add/add-product', label: 'Add Product' },
-        { href: '/admin/Add/add-category', label: 'Add Series / Category'},
+        { href: '/admin/publish-product', label: 'Publish/Unpublish Product' },
+        { href: '/admin/Add/add-series', label: 'Add Series '},
+        { href: '/admin/Add/add-category', label: 'Add Category of a series '},
+        { href: '/admin/Add/add-product-type', label: 'Add product type of a category '},
         { href: '/admin/Add/add-color', label: 'Add Color' },
         { href: '/admin/Add/add-size', label: 'Add Size' },
         { href: '/admin/Add/add-fabric', label: 'Add Fabric' },

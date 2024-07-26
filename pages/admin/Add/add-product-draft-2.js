@@ -382,7 +382,7 @@ export default function AddProduct() {
                     </form>
                 </div>
             </div>
-            <Toaster />
+            {/* <Toaster /> */}
         </>
     );
 }

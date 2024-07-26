@@ -101,7 +101,7 @@ const FinalCart = ({ cartItems }) => {
                 </div>
             </div>
 
-            <Toaster />
+            {/* <Toaster /> */}
         </div>
     );
 };

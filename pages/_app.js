@@ -6,20 +6,22 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import AuthProvider from '/Contexts/Auth/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient()
 export default function App({ Component, pageProps }) {
 
-  useEffect(()=>{
+  useEffect(() => {
     AOS.init();
-  },[])
+  }, [])
 
-  
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <Component {...pageProps} />
       </QueryClientProvider>
+      <Toaster />
     </AuthProvider>
   )
 

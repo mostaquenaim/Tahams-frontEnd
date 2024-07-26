@@ -164,7 +164,7 @@ const PaymentInfo = () => {
                 </button>
             </div>
 
-            <Toaster />
+            {/* <Toaster /> */}
         </div>
     );
 };

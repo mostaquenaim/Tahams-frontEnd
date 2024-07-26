@@ -5,12 +5,11 @@ import { useForm } from 'react-hook-form';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 
-const AddCategory = () => {
+const AddProductType = () => {
     const [categoryName, setCategoryName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-
-    const [categories, setCategories] = useState([])
+    const [subCategories, setSubCategories] = useState([])
     const [selectedCat, setSelectedCat] = useState('')
 
     const axiosPublic = useAxiosPublic()
@@ -18,9 +17,10 @@ const AddCategory = () => {
     //load categories
     const loadCategories = async () => {
         try {
-            const result = await axiosPublic.get('/admin/view-product-categories');
-            console.log(result.data);
-            setCategories(result.data);
+            const result = await axiosPublic.get('/admin/view-product-sub-categories');
+            const sortedSubCategories = result.data.sort((a, b) => a.name.localeCompare(b.name));
+
+            setSubCategories(sortedSubCategories);
         } catch (error) {
             console.error('Error loading Categories:', error);
         }
@@ -51,11 +51,11 @@ const AddCategory = () => {
 
         const formData = {
             name : categoryName,
-            categoryName : selectedCat,
+            categoryId : selectedCat,
         };
 
         try {
-            const response = await axiosPublic.post('/admin/add-subCategory', formData);
+            const response = await axiosPublic.post('/admin/add-sub-subCategory', formData);
             setCategoryName('');
             setSelectedCat('');
             reset();
@@ -88,8 +88,8 @@ const AddCategory = () => {
                         </div>
                         {/* SelectionFormComp = ({selectedValue, setFunction, defaultShown, values, errors, register  }) */}
                         {
-                            categories &&
-                            <SelectionFormComp label={'Select a series for this category'} name={'category'} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={categories} errors={errors} register={register} />
+                            subCategories &&
+                            <SelectionFormComp label={'Select a series for this category'} name={'category'} valueIsId={true} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={subCategories} extraItem={true} errors={errors} register={register} />
                         }
                         <button
                             type="submit"
@@ -106,4 +106,4 @@ const AddCategory = () => {
     );
 };
 
-export default AddCategory;
+export default AddProductType;
