@@ -28,7 +28,7 @@ export default function AddProduct() {
 
     const validateFile = (value) => { 
         const file = value[0];
-        console.log(value[0]);
+        // console.log(value[0]);
         const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
 
         if (!allowedtypes.includes(file.type)) {
@@ -95,11 +95,11 @@ export default function AddProduct() {
     const [success, setSuccess] = useState('')
 
     const onSubmit = async (data) => {
-        console.log(data);
-        console.log("cats", selectedCats);
-        console.log(data.myfile[0]);
-        console.log(data.myfiles, "97");
-        console.log(data.myfiles[0], "98");
+        // console.log(data);
+        // console.log("cats", selectedCats);
+        // console.log(data.myfile[0]);
+        // console.log(data.myfiles, "97");
+        // console.log(data.myfiles[0], "98");
 
 
         const formData = new FormData();
@@ -110,7 +110,7 @@ export default function AddProduct() {
         //     formData.append('myfiles', file);
         // });
 
-        console.log(newCategories);
+        // console.log(newCategories);
         formData.append('subCategories', selectedCats)
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
@@ -126,7 +126,7 @@ export default function AddProduct() {
         formData.append('longDescription', longDescription);
 
         // formData.append('categories', JSON.stringify(data.categories));
-        console.log(formData);
+        // console.log(formData);
 
         try {
             const response = await axiosPublic.post("/admin/add-product",
@@ -151,8 +151,8 @@ export default function AddProduct() {
     };
 
     const onSubmitPictures = async (data) => {
-        console.log(data); // Check if files contains the expected File objects
-        console.log(data); // Check if files contains the expected File objects
+        // console.log(data); // Check if files contains the expected File objects
+        // console.log(data); // Check if files contains the expected File objects
 
         const formData = new FormData();
 
@@ -161,7 +161,7 @@ export default function AddProduct() {
             formData.append('myfiles', file);
         });
 
-        console.log(formData);
+        // console.log(formData);
 
         try {
             const response = await axiosPublic.post("/admin/add-product-pictures",

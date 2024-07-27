@@ -19,7 +19,7 @@ const AddCategory = () => {
     const loadCategories = async () => {
         try {
             const result = await axiosPublic.get('/admin/view-product-categories');
-            console.log(result.data);
+            // console.log(result.data);
             setCategories(result.data);
         } catch (error) {
             console.error('Error loading Categories:', error);

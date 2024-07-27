@@ -85,7 +85,7 @@ export async function getServerSideProps(context) {
 
     const id = context.params.id;
 
-    console.log(id);
+    // console.log(id);
 
     const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/getCategoryById/${id}`);
     const item = await response.data;

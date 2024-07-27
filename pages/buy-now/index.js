@@ -15,7 +15,7 @@ const BuyNow = () => {
     const cartProducts = JSON.parse(localStorage.getItem("selectedItems"));
 
     // Do something with the cart products
-    console.log(cartProducts);
+    // console.log(cartProducts);
     setCartItems(cartProducts)
 
     // If you need to perform additional actions based on the cart products, you can do it here

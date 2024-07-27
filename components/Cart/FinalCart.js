@@ -25,7 +25,7 @@ const FinalCart = ({ cartItems }) => {
 
     const handleApplyCoupon = async () => {
         const res = await axiosPublic.get(`/admin/get-coupons`)
-        console.log(res.data);
+        // console.log(res.data);
         // Add logic to apply coupon
         // toast.success('Coupon applied successfully!');
         setError('Coupon not valid')

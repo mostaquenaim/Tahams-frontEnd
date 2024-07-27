@@ -7,7 +7,7 @@ export default function IndexCheck () {
 
   useEffect(() => {
     const session = sessionStorage.getItem('email');
-    console.log(session)
+    // console.log(session)
 
     if (session) {
       router.push('/admin/dashboard');

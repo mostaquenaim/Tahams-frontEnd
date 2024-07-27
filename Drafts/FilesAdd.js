@@ -21,11 +21,11 @@ const FilesAdd = () => {
                 formData.append('files', selectedFiles[i]);
             }
 
-            console.log(formData,"20");
+            // console.log(formData,"20");
             // Adjust the backend route accordingly
             const response = await axiosPublic.post('/admin/upload', formData);
 
-            console.log('File upload success:', response.data);
+            // console.log('File upload success:', response.data);
         } catch (error) {
             console.error('File upload error:', error);
         }

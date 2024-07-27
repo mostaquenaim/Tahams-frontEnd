@@ -12,7 +12,7 @@ const ShopByCategory = () => {
         axios.get('/categories.json')
             .then(res => 
                 {
-                    console.log(res.data);
+                    // console.log(res.data);
                     setCats(res.data)
                 }
                 )

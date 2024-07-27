@@ -19,7 +19,7 @@ const provider = new GoogleAuthProvider();
 const Login = () => {
     const { control, handleSubmit, formState: { errors } } = useForm();
     const { user } = useContext(AuthContext)
-    console.log(user, "17");
+    // console.log(user, "17");
     const router = useRouter()
 
     const axiosPublic = useAxiosPublic();
@@ -29,7 +29,7 @@ const Login = () => {
     }, [user])
 
     const onSubmit = (data) => {
-        console.log(data);
+        // console.log(data);
         // You can handle login logic here
     };
 
@@ -51,7 +51,7 @@ const Login = () => {
         signInWithPopup(auth, provider)
             .then((result) => {
                 const loggedInUser = result.user
-                console.log(loggedInUser);
+                // console.log(loggedInUser);
                 const userEmail = result.user.email
                 const user = { userEmail }
                 const userName = loggedInUser.displayName;
@@ -77,7 +77,7 @@ const Login = () => {
                 })
                     .then(res => {
                         if (res.data.success) {
-                            console.log(result.data);
+                            // console.log(result.data);
                             // setUser(result.user);
                             // navigate(location?.state ? location.state : '/');
                         }

@@ -23,7 +23,7 @@ export default function Session() {
     event.preventDefault();
     try {
       const response = await axiosPublic.get('/users/signout');
-      console.log(response.data);
+      // console.log(response.data);
       sessionStorage.removeItem('email');
       setEmail(null);
       router.push('/signin');

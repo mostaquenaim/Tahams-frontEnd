@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
 const ShowProduct = ({ item }) => {
-    console.log(item);
+    // console.log(item);
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
 
@@ -50,7 +50,7 @@ const ShowProduct = ({ item }) => {
 
                 if (response.status >= 200 && response.status <= 205) {
                     // Cart item added successfully
-                    console.log('Item added to the cart');
+                    // console.log('Item added to the cart');
 
                     // Show toast notification
                     toast.success('Item added to the cart', {
@@ -80,7 +80,7 @@ const ShowProduct = ({ item }) => {
             }
         }
         else {
-            console.log("in 67");
+            // console.log("in 67");
             router.push('/login')
         }
     };

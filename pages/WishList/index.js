@@ -36,7 +36,7 @@ const WishList = ({ wishlist }) => {
 export async function getServerSideProps(context) {
     const { query } = context;
     const userId = query.userId; // Get the userId from the query parameters
-    console.log(userId);
+    // console.log(userId);
 
     try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/get-wish-by-user/${userId}`);

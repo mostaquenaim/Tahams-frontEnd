@@ -14,7 +14,7 @@ const ListComponent = ({ cat, ListStyle, isSide = false }) => {
         axiosPublic.get(`/admin/view-product-sub-category/${cat.id}`)
             .then(res => {
                 setSubCategories(res.data)
-                console.log(res.data, "13");
+                // console.log(res.data, "13");
             })
     }, [])
 
@@ -33,11 +33,11 @@ const ListComponent = ({ cat, ListStyle, isSide = false }) => {
 
     return (
         <>
-            <List parentClass={isSide ? 'ulDrawerClass' : 'ulClass'} parentName={cat.categoryName}>
+            <List parentClass={isSide ? 'ulDrawerClass' : 'ulClass'} parentName={cat.name}>
                 {
                     subCategories.map((cat, index) => (
                         <ul className={` ${isSide ? '' : index + 1 != subCategories.length && 'border-r-2 border-zinc-800 pr-4'}`}>
-                            <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {cat.categoryName} </span>
+                            <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {cat.name} </span>
                             <ListListComponent ListStyle={ListStyle} sub={cat}></ListListComponent>
                         </ul>
                     ))

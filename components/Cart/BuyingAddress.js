@@ -22,12 +22,12 @@ const BuyingAddress = () => {
         const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
         const cartIds = cartItems.map((item) => item.id);
         setCarts(cartIds);
-        console.log(cartIds);
+        // console.log(cartIds);
     }, [])
 
 
     const onSubmit = async (data) => {
-        console.log(data);
+        // console.log(data);
 
         try {
             // Create FormData object
@@ -55,8 +55,8 @@ const BuyingAddress = () => {
                 BuyingDate: new Date(),
                 carts:carts
             });
-            console.log("61", res);
-            console.log(res.data);
+            // console.log("61", res);
+            // console.log(res.data);
 
             // Redirect to the home page or a confirmation page after successful submission
             if(res.status > 200 && res.status < 300)

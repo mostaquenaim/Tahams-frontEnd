@@ -4,7 +4,7 @@ import Footer from "/components/Footer/Footer";
 import NavbarCompTwo from "/components/Header/NavbarComp";
 
 const BuyNow = ({ product }) => {
-    console.log(product, "4");
+    // console.log(product, "4");
 
     return (
         <>
@@ -21,7 +21,7 @@ const BuyNow = ({ product }) => {
 export async function getServerSideProps(context) {
     const { params } = context;
     const { productId } = params;
-    console.log(productId, "16");
+    // console.log(productId, "16");
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/getProductById/${productId}`);

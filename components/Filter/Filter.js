@@ -15,7 +15,7 @@ const FilterComp = (
         colors
     }
 ) => {
-    console.log(colors);
+    // console.log(colors);
     const headingStyle = 'text-lg md:text-xl lg:text-2xl py-3 border-b-2 font-semibold';
 
     return (
@@ -52,7 +52,7 @@ const FilterComp = (
                     </span>
                 </div>
                 <RangeSlider
-                    min={100}
+                    min={1}
                     max={3000}
                     defaultValue={priceRange}
                     onInput={(value) => handlePriceChange(value)}

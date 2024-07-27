@@ -9,7 +9,7 @@ const useCart = () => {
 
     const fetchCartData = async () => {
         const res = await axiosPublic.get(`/admin/get-all-carts?email=${user.email}`);
-        console.log(res.data);
+        // console.log(res.data);
         return res.data;
     };
 

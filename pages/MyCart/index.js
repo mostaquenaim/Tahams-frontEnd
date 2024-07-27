@@ -43,7 +43,7 @@ const MyCart = () => {
 
   // Handle delete item with confirmation
   const handleDeleteItem = (itemId) => {
-    console.log(itemId, "41");
+    // console.log(itemId, "41");
     Swal.fire({
       title: 'Are you sure?',
       text: 'You won\'t be able to revert this!',
@@ -55,7 +55,7 @@ const MyCart = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const result = await axiosPublic.delete(`/admin/delete-cart/${itemId}`)
-        console.log(result, "53");
+        // console.log(result, "53");
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
           refetch()
@@ -80,7 +80,7 @@ const MyCart = () => {
           const result = await axiosPublic.delete('/admin/delete-carts', {
             data: { checkedItems }
           });
-          console.log(result, "53");
+          // console.log(result, "53");
           if (result.data.affected > 0) {
             Swal.fire('Deleted!', 'Your selected items have been deleted.', 'success');
             refetch();

@@ -14,13 +14,13 @@ const NavbarCompTwo = () => {
     const [searchBtn, setSearchBtn] = useState(false)
     const [categories, setCategories] = useState([])
     const { user, logOut } = useContext(AuthContext)
-    console.log(user);
+    // console.log(user);
 
     useEffect(() => {
         axiosPublic.get('/admin/view-product-categories')
             .then((res) => {
                 setCategories(res.data)
-                console.log(res.data,"19");
+                // console.log(res.data,"19");
             })
     }, [])
 

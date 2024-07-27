@@ -42,8 +42,8 @@ export default function AddProduct() {
             // Sort the subSubCategories array based on categoryName
             const sortedSubSubCategories = result.data.sort((a, b) => {
                 // Convert category names to lowercase for case-insensitive sorting
-                const categoryA = a.categoryName.toLowerCase();
-                const categoryB = b.categoryName.toLowerCase();
+                const categoryA = a.name.toLowerCase();
+                const categoryB = b.name.toLowerCase();
 
                 // Compare category names
                 if (categoryA < categoryB) {
@@ -92,7 +92,7 @@ export default function AddProduct() {
             const result = await axiosPublic.get('/admin/view-product-sizes');
             // Sort the subSubCategories array based on categoryName
             setSizes(result.data);
-            console.log("result", result.data);
+            // console.log("result", result.data);
         } catch (error) {
             console.error('Error loading sizes:', error);
         }
@@ -108,7 +108,7 @@ export default function AddProduct() {
 
     const validateFile = (value) => {
         const file = value[0];
-        console.log(value[0]);
+        // console.log(value[0]);
         const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
 
         if (!allowedtypes.includes(file.type)) {
@@ -117,7 +117,6 @@ export default function AddProduct() {
     }
 
     const handleCategoryChange = (event, catID) => {
-        // console.log(event.target.checked);
         const isChecked = event.target.checked
 
         if (isChecked) {
@@ -128,16 +127,9 @@ export default function AddProduct() {
             setSelectedCatsInfo([...selectedCatsInfo,
             {
                 category: catID,
-                sizes: [
-                    // {
-                    //     id: 0,
-                    //     quantity: 0
-                    // }
-                ]
+                sizes: []
             }
             ])
-
-            // setNewSelectedCatsInfo([...newSelectedCatsInfo,[catID]])
 
             return
         }
@@ -150,31 +142,39 @@ export default function AddProduct() {
     }
 
     const handleSizeAndQuantityChange = (event, catID, sizeId) => {
-        console.log("selectedCatsInfo", selectedCatsInfo);
+        // console.log("selectedCatsInfo", selectedCatsInfo);
 
         const categoryWiseItem = selectedCatsInfo.find(cat => cat.category == catID)
 
-        let sizeNotAvailable = true
+        if (!sizeId) {
+            categoryWiseItem.sizes = [
+                {
+                    quantity: event.target.value
+                }
+            ]
+        }
+        else {
+            let sizeNotAvailable = true
 
-        categoryWiseItem.sizes.forEach(item => {
-            if (item.id == sizeId) {
-                sizeNotAvailable = false
-                item.quantity = event.target.value
-                return
+            categoryWiseItem.sizes.forEach(item => {
+                if (item.id == sizeId) {
+                    sizeNotAvailable = false
+                    item.quantity = event.target.value
+                    return
+                }
+            })
+
+            if (sizeNotAvailable) {
+                const newSize = {
+                    id: sizeId,
+                    quantity: event.target.value
+                }
+
+                categoryWiseItem.sizes = [...categoryWiseItem.sizes, newSize]
             }
-        })
-
-
-        if (sizeNotAvailable) {
-            const newSize = {
-                id: sizeId,
-                quantity: event.target.value
-            }
-
-            categoryWiseItem.sizes = [...categoryWiseItem.sizes, newSize]
         }
 
-        console.log("categoryWiseItem", categoryWiseItem);
+        // console.log("categoryWiseItem", categoryWiseItem);
 
         const result = selectedCatsInfo.filter(item => item.category != catID)
 
@@ -194,6 +194,7 @@ export default function AddProduct() {
     }
 
     const onSubmit = async (data) => {
+        console.log(selectedCatsInfo);
         const formData = new FormData();
 
         let catsInfo = []
@@ -247,8 +248,8 @@ export default function AddProduct() {
     };
 
     const onSubmitPictures = async (data) => {
-        console.log(data); // Check if files contains the expected File objects
-        console.log(data); // Check if files contains the expected File objects
+        // console.log(data); // Check if files contains the expected File objects
+        // console.log(data); // Check if files contains the expected File objects
 
         const formData = new FormData();
 
@@ -257,7 +258,7 @@ export default function AddProduct() {
             formData.append('myfiles', file);
         });
 
-        console.log(formData);
+        // console.log(formData);
 
         try {
             const response = await axiosPublic.post("/admin/add-product-pictures",
@@ -396,8 +397,8 @@ export default function AddProduct() {
                                             className="h-4 w-4 text-blue-500 focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
                                         />
                                         <label htmlFor={`selectedCategories_${index}`} className="ml-2">
-                                            <span className='font-semibold text-xl'> {category.categoryName} </span>
-                                            ({category.category.categoryName}, <span className=''>{category.category.category.categoryName}</span>)
+                                            <span className='font-semibold text-xl'> {category.name} </span>
+                                            ({category.category.name}, <span className=''>{category.category.category.name}</span>)
                                         </label>
                                         {/* is size applicable  */}
                                         {selectedCats.includes(category.id) && (
@@ -435,7 +436,18 @@ export default function AddProduct() {
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <p className="text-sm text-gray-500">Size not applicable for this category</p>
+                                                    <div>
+                                                        <label className="text-sm font-medium text-gray-900 mr-2">Quantity</label>
+                                                        <input
+                                                            type="number"
+                                                            min={0}
+                                                            className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
+                                                            placeholder={`Quantity for ${category.name}`}
+                                                            onInput={(e) => handleSizeAndQuantityChange(e, category.id)}
+                                                            {...register(`categories[${index}].quantity`, { required: false })}
+                                                        // disabled={isSizeApplicable.includes(category.id)} 
+                                                        />
+                                                    </div>
                                                 )}
                                             </div>
                                         )}

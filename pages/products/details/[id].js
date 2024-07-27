@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 const Product = ({ product, sizes }) => {
-    console.log(product);
+    // console.log(product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
@@ -21,7 +21,7 @@ const Product = ({ product, sizes }) => {
     const [quantity, setQuantity] = useState(1);
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const { user } = useContext(AuthContext)
-    console.log(user, "17");
+    // console.log(user, "17");
     const router = useRouter()
 
     const axiosPublic = useAxiosPublic();
@@ -46,7 +46,7 @@ const Product = ({ product, sizes }) => {
     const addToWishlist = async () => {
         // Toggle the state to trigger the animation
         setIsAnimating(true);
-        console.log(product,"45");
+        // console.log(product,"45");
         
         // Create a new FormData object
         const formData = new FormData();
@@ -58,7 +58,7 @@ const Product = ({ product, sizes }) => {
         try {
             // Make a POST request to add the product to the wishlist
             const res = await axiosPublic.post(`/admin/add-Wish`, formData);
-            console.log(res.data);
+            // console.log(res.data);
             // Add the product to the wishlist
     
             setTimeout(() => {
@@ -108,7 +108,7 @@ const Product = ({ product, sizes }) => {
 
                 if (response.status >= 200 && response.status <= 205) {
                     // Cart item added successfully
-                    console.log('Item added to the cart');
+                    // console.log('Item added to the cart');
 
                     // Show toast notification
                     toast.success('Item added to the cart', {
@@ -157,7 +157,7 @@ const Product = ({ product, sizes }) => {
 
                 if (response.status >= 200 && response.status <= 205) {
                     // Cart item added successfully
-                    console.log('Item added to the cart');
+                    // console.log('Item added to the cart');
                     router.push('/MyCart')
                     // Show toast notification
                     // toast.success('Item added to the cart', {

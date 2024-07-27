@@ -30,7 +30,7 @@ const AddProductForm = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // You can now access the data in productData
-        console.log(productData);
+        // console.log(productData);
     };
 
     return (

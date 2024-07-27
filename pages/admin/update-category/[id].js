@@ -34,7 +34,7 @@ const UpdateCategory = ({ item }) => {
 
         try {
             for (const key in item) {
-                console.log(updatedData[key])
+                // console.log(updatedData[key])
                 if (!updatedData[key]) {
                     updatedData[key] = item[key]
                 }
@@ -62,9 +62,9 @@ const UpdateCategory = ({ item }) => {
             const confirmation = confirm("Are you sure you want to delete? ")
 
             if(confirmation){
-            console.log(updatedData)
+            // console.log(updatedData)
             const response = await axiosPublic.delete(`/admin/deleteCategory/${item.id}`);
-            console.log("response", response)
+            // console.log("response", response)
 
             setSuccess(' deleted successfully');
             router.push('/admin/categories')
@@ -139,7 +139,7 @@ export async function getServerSideProps(context) {
 
     const id = context.params.id;
 
-    console.log(id);
+    // console.log(id);
 
     const response = await axiosPublic.get(`/admin/getCategoryById/${id}`);
     const item = await response.data;
