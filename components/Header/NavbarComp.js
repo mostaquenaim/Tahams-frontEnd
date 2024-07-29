@@ -14,7 +14,6 @@ const NavbarCompTwo = () => {
     const [searchBtn, setSearchBtn] = useState(false)
     const [categories, setCategories] = useState([])
     const { user, logOut } = useContext(AuthContext)
-    // console.log(user);
 
     useEffect(() => {
         axiosPublic.get('/admin/view-product-categories')

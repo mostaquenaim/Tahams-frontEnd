@@ -1,12 +1,16 @@
 import '../styles/globals.css'
 import '/styles/custom.css'
 import '/styles/navStyle.css'
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import AuthProvider from '/Contexts/Auth/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast';
+import { useRouter } from 'next/router';
+import AdminDrawer from '../components/Drawers/AdminDrawer';
+import { AuthContext } from '../Contexts/Auth/AuthProvider';
+import AdminCheck from '../components/Auth/AdminCheck';
 
 const queryClient = new QueryClient()
 export default function App({ Component, pageProps }) {
@@ -15,13 +19,22 @@ export default function App({ Component, pageProps }) {
     AOS.init();
   }, [])
 
+  const router = useRouter();
+  const isAdminRoute = router.pathname.startsWith('/admin');
+
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <Component {...pageProps} />
+        {isAdminRoute ? (
+          <AdminCheck>
+            <Component {...pageProps} />
+          </AdminCheck>
+        ) : (
+          <Component {...pageProps} />
+        )}
+        <Toaster />
       </QueryClientProvider>
-      <Toaster />
     </AuthProvider>
   )
 

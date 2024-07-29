@@ -1,11 +1,11 @@
 // Import necessary dependencies and components
 import { useForm, Controller } from 'react-hook-form';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import NavbarCompTwo from '/components/Header/NavbarComp';
 import Footer from '/components/Footer/Footer';
 import Link from 'next/link';
 import { FcGoogle } from "react-icons/fc";
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AuthProvider, { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '/firebase'
@@ -13,12 +13,15 @@ import { useLocation } from 'react-router-dom';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import toast from 'react-hot-toast';
 
 const provider = new GoogleAuthProvider();
 
 const Login = () => {
+    const [showPassword, setShowPassword] = useState(false);
+
     const { control, handleSubmit, formState: { errors } } = useForm();
-    const { user } = useContext(AuthContext)
+    const { user, signIn, setUser } = useContext(AuthContext)
     // console.log(user, "17");
     const router = useRouter()
 
@@ -28,10 +31,45 @@ const Login = () => {
         user && router.push('/')
     }, [user])
 
-    const onSubmit = (data) => {
-        // console.log(data);
-        // You can handle login logic here
-    };
+    const onsubmit = async (data) => {
+        console.log(data);
+
+        try {
+            // Sending a POST request to the sign-in endpoint
+            const response = await axiosPublic.post('/admin/signin', {
+                email: data.email,
+                password: data.password,
+            });
+
+            console.log(response, 40);
+
+            if (response.data.status >= 200 && response.data.status <= 205 ) {
+                sessionStorage.setItem('email', data.email);
+                toast.success("Logged in");
+                setUser(response.data.data)
+                router.push('/');
+            } else {
+                toast.error(response.data.message || "Invalid credentials");
+            }
+        } catch (error) {
+            console.error("Error: " + error.message);
+
+            // Differentiating between different error types
+            if (error.response) {
+                // Server responded with a status other than 200 range
+                console.error("Error response: ", error.response.data);
+                toast.error(error.response.data.message || "An error occurred during login");
+            } else if (error.request) {
+                // Request was made but no response was received
+                console.error("Error request: ", error.request);
+                toast.error("No response from server. Please try again later.");
+            } else {
+                // Something else happened while setting up the request
+                console.error("Error message: ", error.message);
+                toast.error("An unexpected error occurred. Please try again.");
+            }
+        }
+    }
 
     // Function to generate a random password
     const generateRandomPassword = () => {
@@ -67,7 +105,7 @@ const Login = () => {
                     email: userEmail,
                     password: generatedPassword,
                     filename: proPic,
-                    created_at: currentDate.toISOString(), 
+                    created_at: currentDate.toISOString(),
                     updated_at: currentDate.toISOString(),
                     uniqueId: loggedInUser.uid
                 };
@@ -90,20 +128,21 @@ const Login = () => {
 
     }
 
+    // toggle password show 
+    const togglePasswordVisibility = () => {
+        setShowPassword(prevState => !prevState);
+    };
+
     return (
         <>
             <NavbarCompTwo />
             <div className='pt-48 pb-10'>
-                <form className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
+                <form onSubmit={handleSubmit(onsubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
                     <Link href='/'>
                         <img src='https://i.ibb.co/5FcQHFJ/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2'></img>
                     </Link>
 
-                    {/* Login with Google */}
-                    {/* <button className="btn bg-black text-white" onClick={(e)=>handleGoogleSignIn(e)}>
-                        <FcGoogle className="text-xl" /> Login with Google
-                    </button> */}
-
+                    {/* google */}
                     <span className="btn bg-black text-white" onClick={handleGoogleSignIn}>
                         <FcGoogle className="text-xl" /> Login with Google
                     </span>
@@ -129,12 +168,26 @@ const Login = () => {
                             <FiLock className="inline-block mr-2" />
                             Password:
                         </label>
-                        <Controller
-                            name="password"
-                            control={control}
-                            rules={{ required: 'Password is required' }}
-                            render={({ field }) => <input {...field} type="password" className="w-full p-2 border rounded" />}
-                        />
+                        <div className="relative">
+                            <Controller
+                                name="password"
+                                control={control}
+                                rules={{ required: 'Password is required' }}
+                                render={({ field }) =>
+                                    <input
+                                        {...field}
+                                        type={showPassword ? "text" : "password"}
+                                        className="w-full p-2 border rounded"
+                                    />
+                                }
+                            />
+                            <span
+                                className="absolute right-2 top-2 text-xl cursor-pointer"
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? <FiEyeOff /> : <FiEye />}
+                            </span>
+                        </div>
                         {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
                     </div>
 

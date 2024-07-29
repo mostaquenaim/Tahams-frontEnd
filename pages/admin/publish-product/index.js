@@ -2,10 +2,10 @@ import { useEffect, useState, useMemo } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    useReactTable,
 } from '@tanstack/react-table';
 import Link from 'next/link';
 import Modal from 'react-modal';
@@ -116,7 +116,7 @@ const Index = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <AdminDrawer />
+            {/* <AdminDrawer /> */}
             <div className="flex flex-col items-center text-center mt-8">
                 <h1 className="text-3xl font-bold mb-4">Products</h1>
                 {unpublishedProducts.length > 0 ? (

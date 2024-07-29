@@ -5,7 +5,7 @@ const DeleteProduct = () => {
 
     return (
         <div>
-            <AdminDrawer></AdminDrawer>
+            {/* <AdminDrawer></AdminDrawer> */}
         </div>
     );
 };

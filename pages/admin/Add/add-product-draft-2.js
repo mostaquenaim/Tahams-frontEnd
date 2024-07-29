@@ -182,7 +182,7 @@ export default function AddProduct() {
 
     return (
         <>
-            <AdminDrawer></AdminDrawer>
+            {/* <AdminDrawer></AdminDrawer> */}
             <div className="container mx-auto p-4 flex justify-center items-center">
                 <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
 

@@ -4,7 +4,6 @@ import ShowProduct from '/components/Product/ShowProduct';
 import FilterComp from '/components/Filter/Filter';
 import { FaFilter } from "react-icons/fa";
 import Footer from '/components/Footer/Footer';
-import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 
 import Link from 'next/link';

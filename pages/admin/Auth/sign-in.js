@@ -32,10 +32,6 @@ export default function AdminSignIn() {
         }
     };
 
-
-
-
-
     return (
         <>
             <MyHeader title="Login" />
