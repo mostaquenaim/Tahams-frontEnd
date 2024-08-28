@@ -8,11 +8,12 @@ import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 
 import Link from 'next/link';
+import Footer from '../../components/Footer/Footer';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();
+  console.log(cart, 14);
   const router = useRouter();
-
   const axiosPublic = useAxiosPublic();
 
   // State to track checked items
@@ -109,7 +110,7 @@ const MyCart = () => {
   return (
     <>
       <NavbarCompTwo />
-      <section className='pt-40'>
+      <section className='pt-40 min-h-screen'>
         <div className="overflow-x-auto">
           {cart.length > 0 ?
             <table className="table">
@@ -122,6 +123,7 @@ const MyCart = () => {
                     </label>
                   </th>
                   <th>Product Name</th>
+                  <th>Category</th>
                   <th>Size</th>
                   <th>Price</th>
                   <th>Quantity</th>
@@ -131,11 +133,11 @@ const MyCart = () => {
                       Checkout
                     </button>
                     <button
-                          onClick={handleDeleteSelected}
-                          className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-error'}`}
-                        >
-                          <RiDeleteBin5Fill />
-                        </button>
+                      onClick={handleDeleteSelected}
+                      className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-error'}`}
+                    >
+                      <RiDeleteBin5Fill />
+                    </button>
                   </th>
                 </tr>
               </thead>
@@ -158,15 +160,16 @@ const MyCart = () => {
                       <td className='flex gap-3 items-center'>
                         <img
                           className='w-16 rounded-full border-black  border-2'
-                          src={`/admin/getImage/${item.product.filename}`}
+                          src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.product.filename}`}
                           alt={item.ProductName}
                         />
                         {item.ProductName}
                       </td>
+                      <td>{item.category.category.category.name}</td>
                       <td>{item.size}</td>
-                      <td>{item.product.sellingPrice} BDT</td>
+                      <td>{item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)} BDT</td>
                       <td>{item.Quantity}</td>
-                      <td>{item.Quantity * item.product.sellingPrice}</td>
+                      <td>{item.Quantity * (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100))} BDT</td>
                       <td>
                         <button
                           onClick={() => handleDeleteItem(item.uniqueId)}
@@ -181,7 +184,6 @@ const MyCart = () => {
                 }
               </tbody>
             </table>
-
             :
             <p className='text-4xl font-bold flex justify-center items-center text-center h-screen'>
               No product is added to cart. Let's buy some goodies&nbsp;
@@ -191,6 +193,7 @@ const MyCart = () => {
           }
         </div>
       </section>
+      <Footer />
     </>
   );
 };

@@ -1,35 +1,72 @@
-import NavbarCompTwo from '/components/Header/NavbarComp';
-import Footer from '/components/Footer/Footer';
-import { FaFilter, FaShoppingCart } from 'react-icons/fa';
 import { Fragment, useContext, useEffect, useState } from 'react';
-import { FaHeart, FaRegHeart } from 'react-icons/fa6';
-import axios from 'axios';
-import useAxiosPublic from '../../../Hooks/useAxiosPublic'
-
-import toast, { Toaster } from 'react-hot-toast';
-import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { FaFilter, FaShoppingCart } from 'react-icons/fa';
+import { FaHeart, FaRegHeart } from 'react-icons/fa6';
+import toast, { Toaster } from 'react-hot-toast';
+import NavbarCompTwo from '/components/Header/NavbarComp';
+import Footer from '/components/Footer/Footer';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic'
+import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
-const Product = ({ product, sizes }) => {
-    // console.log(product);
+const Product = ({ product }) => {
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
-    const [isAnimating, setIsAnimating] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
-    const [selectedSize, setSelectedSize] = useState('L');
-    const [selectedImage, setSelectedImage] = useState(product.filename)
+    const [selectedSize, setSelectedSize] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState();
+    const [selectedImage, setSelectedImage] = useState(product && product.filename)
     const [quantity, setQuantity] = useState(1);
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const { user } = useContext(AuthContext)
-    // console.log(user, "17");
-    const router = useRouter()
+    const [userInfo, setUserInfo] = useState(null)
+    const [loading, setLoading] = useState(true)
 
+    const router = useRouter()
     const axiosPublic = useAxiosPublic();
 
+    const checkIfWished = async (productId, customerId) => {
+        try {
+            const result = await axiosPublic.get(`admin/check-wish-by-user-and-product`, {
+                params: {
+                    productId: productId,
+                    customerId: customerId
+                }
+            });
+
+            console.log(result.data);
+            setAddedToWishlist(result.data.wished)
+        } catch (error) {
+            console.error('Error checking wish:', error);
+            // Handle the error accordingly
+        }
+        finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
-        // Scroll down by 100 pixels when the component mounts
+        console.log(product);
         window.scrollTo(0, 100);
-    }, []);
+
+        checkIfWished()
+
+        // Set default selected category and size
+        if (product.pscs.length > 0) {
+            setSelectedCategory(product.pscs[0].category.id);
+            setSelectedSize(product.pscs[0].size.name);
+        }
+
+        const storedUserInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+        // console.log(storedUserInfo, storedUserInfo.role);
+        setUserInfo(storedUserInfo)
+    }, [product]);
+
+    useEffect(() => {
+        const defaultCategoryId = parseInt(localStorage.getItem('defaultCategoryId'));
+        if (defaultCategoryId) {
+          handleCategoryChange(defaultCategoryId);
+        }
+      }, []);
 
     const {
         sellingPrice,
@@ -43,37 +80,56 @@ const Product = ({ product, sizes }) => {
         color,
     } = product;
 
+    const uniqueCategories = [...new Map(product.pscs.map(p => [p.category.id, p.category])).values()];
+
+    const filteredSizes = selectedCategory
+        ? product.pscs.filter(p => p.category.id === selectedCategory).map(p => p.size)
+        : [];
+
+    // const maxQuantity = selectedCategory && selectedSize
+    //     ? product.pscs.find(p => p.category.id === selectedCategory && p.size.id === selectedSize)?.quantity || 1
+    //     : 1;
+
     const addToWishlist = async () => {
-        // Toggle the state to trigger the animation
-        setIsAnimating(true);
-        // console.log(product,"45");
-        
-        // Create a new FormData object
         const formData = new FormData();
-        
-        // Append product ID and user ID to the FormData object
+
         formData.append('productId', product.id);
-        formData.append('customerId', user && user.uid ); 
-        
-        try {
-            // Make a POST request to add the product to the wishlist
-            const res = await axiosPublic.post(`/admin/add-Wish`, formData);
-            // console.log(res.data);
-            // Add the product to the wishlist
-    
-            setTimeout(() => {
-                setAddedToWishlist(!isAddedToWishlist);
-                setIsAnimating(false);
-            }, 500); // Timeout duration should match the animation duration
-        } catch (error) {
-            console.error('Error adding product to wishlist:', error);
-            // Handle error if the request fails
+        formData.append('customerEmail', userInfo && userInfo.email);
+
+        if (!isAddedToWishlist) {
+            try {
+                // Make a POST request to add the product to the wishlist
+                const res = await axiosPublic.post(`/admin/add-Wish`, formData);
+                // console.log(res.data);
+                // Add the product to the wishlist
+                checkIfWished()
+            } catch (error) {
+                console.error('Error adding product to wishlist:', error);
+                // Handle error if the request fails
+            }
+        }
+        else {
+            try {
+                const res = await axiosPublic.delete(`/admin/remove-wish`, formData);
+                checkIfWished()
+
+            } catch (error) {
+                console.error('Error deleting wishlist:', error);
+            }
         }
     };
-    
 
     const handleSizeChange = (size) => {
         setSelectedSize(size);
+        setQuantity(1)
+    };
+
+    const handleCategoryChange = (categoryId) => {
+        console.log(categoryId,'catid');
+        setSelectedCategory(categoryId);
+        const firstSize = product.pscs.find(p => p.category.id == categoryId)?.size.name;
+        setSelectedSize(firstSize);
+        setQuantity(1);
     };
 
     const handleQuantityDecrease = () => {
@@ -83,13 +139,21 @@ const Product = ({ product, sizes }) => {
     };
 
     const handleQuantityIncrease = () => {
-        if (quantity < 30) {
-            setQuantity(quantity + 1);
-        }
+        product.pscs.map((item) => {
+            if (item.category.id === selectedCategory && item.size.name === selectedSize) {
+                if (item.quantity >= quantity && quantity < 30) {
+                    setQuantity(quantity + 1);
+                }
+                else {
+                    toast.error('Sorry! You cannot add more than that')
+                }
+            }
+        })
     };
 
     const handleAddToCart = async () => {
         if (!user) {
+            toast.error('You must login first')
             router.push('/login')
         }
 
@@ -100,6 +164,7 @@ const Product = ({ product, sizes }) => {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: product.id,
+                    category: selectedCategory,
                     size: selectedSize,
                     Quantity: quantity,
                     colorId: color.id,
@@ -149,20 +214,21 @@ const Product = ({ product, sizes }) => {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: product.id,
+                    category: selectedCategory,
                     size: selectedSize,
                     Quantity: quantity,
                     colorId: color.id,
                     customerEmail: user?.email
                 });
 
+                console.log(response.data);
+
                 if (response.status >= 200 && response.status <= 205) {
-                    // Cart item added successfully
-                    // console.log('Item added to the cart');
-                    router.push('/MyCart')
-                    // Show toast notification
-                    // toast.success('Item added to the cart', {
-                    //     duration: 3000, // Toast will be shown for 3 seconds
-                    // });
+                    localStorage.setItem('selectedItems', JSON.stringify([response.data]));
+
+                    router.push({
+                        pathname: '/buy-now',
+                    });
                 } else {
                     // Handle error
                     console.error('Failed to add item to the cart');
@@ -249,18 +315,26 @@ const Product = ({ product, sizes }) => {
                         <h1 className="text-2xl font-bold mb-2">{name}</h1>
 
                         {/* Wishlist Icon */}
-                        <div className="mb-2">
-                            <button
-                                className={`text-xl ${isAddedToWishlist ? 'text-red-500' : 'text-gray-500'}`}
-                                onClick={addToWishlist}
-                            >
-                                {isAddedToWishlist ? <FaHeart /> : <FaRegHeart />}
-                            </button>
-                        </div>
+                        {
+                            !loading ?
+                                <div className="mb-2">
+                                    <button
+                                        className={`text-xl ${isAddedToWishlist ? 'text-red-500' : 'text-gray-500'}`}
+                                        onClick={addToWishlist}
+                                    >
+                                        {isAddedToWishlist ? <FaHeart /> : <FaRegHeart />}
+                                    </button>
+                                </div>
+                                :
+                                <span className='loading loading-spinner loading-md'></span>
+                        }
 
+                        {/* description  */}
                         <p className="text-gray-600 mb-4">
                             {description}
                         </p>
+
+                        {/* price  */}
                         <p className="text-green-600 text-lg mb-2">{sellingPrice} BDT</p>
 
                         {/* Discount */}
@@ -291,16 +365,30 @@ const Product = ({ product, sizes }) => {
                             </div>
                         )}
 
+                        {/* Category Dropdown */}
+                        <div className="mb-4">
+                            <label htmlFor="category" className="block text-gray-700">Category</label>
+                            <select
+                                id="category"
+                                className="mt-1 block w-full p-2 border rounded"
+                                value={selectedCategory || ''}
+                                onChange={(e) => handleCategoryChange(parseInt(e.target.value))}
+                            >
+                                {uniqueCategories.map((category) => (
+                                    <option key={category.id} value={category.id}>{category.category.category.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* Size Selection */}
-                        {sizes && sizes.length > 0 && (
+                        {filteredSizes && filteredSizes.length > 0 && (
                             <div className="mb-4">
                                 <label className="text-gray-600 font-semibold">Select Size:</label>
                                 <div className="flex gap-3 flex-wrap">
-                                    {sizes.map((size) => (
+                                    {filteredSizes.map((size) => (
                                         <button
                                             key={size.id}
-                                            className={`btn btn-outline ${selectedSize === size.name ? 'bg-black text-white' : 'bg-white text-black'
-                                                } border-black text-black`}
+                                            className={`btn btn-outline ${selectedSize === size.name ? 'bg-black text-white' : 'bg-white text-black'} border-black text-black`}
                                             onClick={() => handleSizeChange(size.name)}
                                         >
                                             {size.name}
@@ -310,36 +398,40 @@ const Product = ({ product, sizes }) => {
                             </div>
                         )}
 
-                        {/* Quantity Selection */}
-                        <div className="mb-4">
-                            <label className="text-gray-600 font-semibold">Quantity:</label>
-                            <div className="flex space-x-2 items-center">
-                                <button
-                                    className="btn btn-outline"
-                                    onClick={handleQuantityDecrease}
-                                >
-                                    -
-                                </button>
-                                <span>{quantity}</span>
-                                <button
-                                    className="btn btn-outline"
-                                    onClick={handleQuantityIncrease}
-                                >
-                                    +
-                                </button>
-                            </div>
+                        {/* Quantity Selector */}
+                        <div className="flex items-center mb-4">
+                            <label htmlFor="quantity" className="block text-gray-700 mr-4">Quantity</label>
+                            <button
+                                className="px-2 py-1 border rounded-l bg-gray-200"
+                                onClick={handleQuantityDecrease}
+                            >
+                                -
+                            </button>
+                            <input
+                                id="quantity"
+                                type="text"
+                                className="w-12 text-center border-t border-b"
+                                value={quantity}
+                                readOnly
+                            />
+                            <button
+                                className="px-2 py-1 border rounded-r bg-gray-200"
+                                onClick={handleQuantityIncrease}
+                            >
+                                +
+                            </button>
                         </div>
 
                         {/* Add to Cart and Buy Now Buttons */}
                         <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
                             <button
-                                className={`btn btn-primary ${isAddedToCart ? 'btn-disabled' : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'}`}
+                                className={`btn btn-primary ${isAddedToCart || (userInfo && userInfo.role == 'admin') ? 'btn-disabled' : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'}`}
                                 onClick={handleAddToCart}
                             >
                                 <FaShoppingCart /> Add to Cart
                             </button>
                             <button
-                                className="btn btn-accent bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black"
+                                className={`btn btn-accent ${(userInfo && userInfo.role == 'admin') ? 'btn-disabled' : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'}`}
                                 onClick={handleBuyNow}
                             >
                                 🛍️ Buy Now
@@ -356,7 +448,6 @@ const Product = ({ product, sizes }) => {
                         {longDescription}
                     </div>
                 </div>
-
 
             </div>
             {
@@ -375,19 +466,21 @@ const Product = ({ product, sizes }) => {
 
 export async function getServerSideProps(context) {
     const { params } = context;
-    const { id } = params;
+    const { id } = params; 
+    // console.log(id,'id');
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/getProductById/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-id/${id}`);
+        // console.log(await response.json(),483);
         const product = await response.json();
 
-        const result = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/view-product-sizes`);
-        const sizes = await result.json();
+        // const result = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/view-product-sizes`);
+        // const sizes = await result.json();
 
         return {
             props: {
                 product,
-                sizes,
+                // sizes,
             },
         };
     } catch (error) {

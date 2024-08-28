@@ -14,6 +14,11 @@ module.exports = {
         hostname: process.env.NEXT_PUBLIC_HOSTNAME,
         port: process.env.NEXT_PUBLIC_PORT,
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000', // Adjust this to your development server's port if different
+      },
     ],
   },
   // nextConfig

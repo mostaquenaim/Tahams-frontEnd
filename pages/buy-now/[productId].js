@@ -24,7 +24,7 @@ export async function getServerSideProps(context) {
     // console.log(productId, "16");
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/getProductById/${productId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-id/${productId}`);
         const product = await response.json();
 
         return {

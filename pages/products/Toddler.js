@@ -1,10 +1,14 @@
+import Footer from '../../components/Footer/Footer';
 import NavbarCompTwo from '/components/Header/NavbarComp';
 
 const Toddler = () => {
     return (
         <div>
             <NavbarCompTwo></NavbarCompTwo>
-            toddle here
+            <div className='min-h-screen'>
+
+            </div>
+            <Footer />
         </div>
     );
 };

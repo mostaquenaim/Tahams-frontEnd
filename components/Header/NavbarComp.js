@@ -23,9 +23,19 @@ const NavbarCompTwo = () => {
             })
     }, [])
 
-    const handleLogout = () =>{
+    const handleLogout = () => {
         logOut()
-    }
+            .then(() => {
+                // Remove userInfo from sessionStorage
+                sessionStorage.removeItem('userInfo');
+                console.log('User logged out and userInfo removed from sessionStorage');
+            })
+            .catch((error) => {
+                console.error('Error during logout:', error.message);
+                toast.error('Error during logout. Please try again.');
+            });
+    };
+
 
     // styles 
     const navEndBtnClass = "btn btn-square btn-ghost text-xl"
@@ -54,9 +64,52 @@ const NavbarCompTwo = () => {
     );
 
     const collabs = <>
-        <ListStyle goto='/products/Men' pageName='Artist Collabs' />
-        <ListStyle goto='/products/Women' pageName='Influencer Collabs' />
+        <ListStyle goto='/collabs/artist' pageName='Artist Collabs' />
+        <ListStyle goto='/collabs/influencer' pageName='Influencer Collabs' />
     </>
+
+    const Li = ({ children }) => (
+        <li className="transition md:hover:scale-105">
+            {children}
+        </li>
+    );
+
+
+    const sideLinks = (
+        <>
+            <Li>
+                {
+                    user ?
+                        <button onClick={handleLogout}>
+                            Logout
+                        </button>
+                        :
+                        <Link href='/login'>
+                            Login
+                        </Link>
+                }
+            </Li>
+            {user &&
+                <>
+                    <Li>
+                        <Link href='/my-orders'>
+                            My orders
+                        </Link>
+                    </Li>
+                    {/* <Li>
+                        <Link href='/pending-payment'>
+                            Pending Payment
+                        </Link>
+                    </Li> */}
+                </>
+            }
+            <Li>
+                <Link href='#'>
+                    Contact Us
+                </Link>
+            </Li>
+        </>
+    )
 
     return (
         <>
@@ -92,7 +145,7 @@ const NavbarCompTwo = () => {
                         {/* menu  */}
                         <ul className="menu menu-horizontal px-1">
                             <li>
-                                <Link href={`/WishList?userId=${user?.uid}`} className={navEndBtnClass}>
+                                <Link href={`/WishList`} className={navEndBtnClass}>
                                     <AiOutlineHeart></AiOutlineHeart>
                                 </Link>
                             </li>
@@ -120,21 +173,7 @@ const NavbarCompTwo = () => {
 
                                     </summary>
                                     <ul className="p-2 bg-base-100 right-0">
-                                        <li>
-                                            {
-                                                user ?
-                                                    <button onClick={handleLogout}>
-                                                        Logout
-                                                    </button>
-                                                    :
-                                                    <Link href='/login'>
-                                                        Login
-                                                    </Link>
-                                            }
-                                        </li>
-                                        <li><Link href='#'>
-                                            Contact Us
-                                        </Link></li>
+                                        {sideLinks}
                                     </ul>
                                 </details>
                             </li>
@@ -152,7 +191,7 @@ const NavbarCompTwo = () => {
 
                 {/* second nav */}
                 <section className='fixed top-0 w-full bg-black z-10'>
-                    <ResponsiveNavBar btn={searchBtn} fnc={setSearchBtn} ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></ResponsiveNavBar>
+                    <ResponsiveNavBar btn={searchBtn} fnc={setSearchBtn} ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} sideLinks={sideLinks}></ResponsiveNavBar>
                 </section>
             </div>
         </>

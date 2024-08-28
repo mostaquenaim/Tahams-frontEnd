@@ -1,0 +1,82 @@
+[
+    {
+      "id": "R3921298",
+      "name": "Barishal",
+      "nameLocal": "Barishal",
+      "parentId": "R184640",
+      "displayName": "Barishal",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R3824588",
+      "name": "Chattogram",
+      "nameLocal": "Chattogram",
+      "parentId": "R184640",
+      "displayName": "Chattogram",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R3921322",
+      "name": "Dhaka",
+      "nameLocal": "Dhaka",
+      "parentId": "R184640",
+      "displayName": "Dhaka",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R3825003",
+      "name": "Khulna",
+      "nameLocal": "Khulna",
+      "parentId": "R184640",
+      "displayName": "Khulna",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R7318343",
+      "name": "Mymensingh",
+      "nameLocal": "Mymensingh",
+      "parentId": "R184640",
+      "displayName": "Mymensingh",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R3859335",
+      "name": "Rajshahi",
+      "nameLocal": "Rajshahi",
+      "parentId": "R184640",
+      "displayName": "Rajshahi",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R3921211",
+      "name": "Rangpur",
+      "nameLocal": "Rangpur",
+      "parentId": "R184640",
+      "displayName": "Rangpur",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    },
+    {
+      "id": "R3921222",
+      "name": "Sylhet",
+      "nameLocal": "Sylhet",
+      "parentId": "R184640",
+      "displayName": "Sylhet",
+      "isSupportDgCod": null,
+      "scope": "L2",
+      "isLeafNode": false
+    }
+  ]

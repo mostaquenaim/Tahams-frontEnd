@@ -1,0 +1,52 @@
+[
+    {
+        "id": "R80300576",
+        "name": "Dhaka - North",
+        "nameLocal": "Dhaka - North",
+        "parentId": "R3921322",
+        "displayName": "Dhaka - North",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+      },
+      {
+        "id": "R80300574",
+        "name": "Dhaka - South",
+        "nameLocal": "Dhaka - South",
+        "parentId": "R3921322",
+        "displayName": "Dhaka - South",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+      },
+      {
+        "id": "R4730836",
+        "name": "Savar",
+        "nameLocal": "Savar",
+        "parentId": "R3921322",
+        "displayName": "Savar",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+      },
+      {
+        "id": "R4734867",
+        "name": "Keraniganj - Dhaka",
+        "nameLocal": "Keraniganj - Dhaka",
+        "parentId": "R3921322",
+        "displayName": "Keraniganj - Dhaka",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+      },
+      {
+        "id": "R80314542",
+        "name": "Tongi",
+        "nameLocal": "Tongi",
+        "parentId": "R3921322",
+        "displayName": "Tongi",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+      }      
+]

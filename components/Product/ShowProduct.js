@@ -9,9 +9,10 @@ import toast from "react-hot-toast";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
 const ShowProduct = ({ item }) => {
-    // console.log(item);
+    console.log(item);
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
+    const [userInfo, setUserInfo] = useState(null)
 
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     // const [showGotoCart, setShowGotoCart] = useState(false)
@@ -27,6 +28,9 @@ const ShowProduct = ({ item }) => {
     const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
+        const storedData = JSON.parse(sessionStorage.getItem('userInfo'))
+        setUserInfo(storedData)
+
         axiosPublic.get(image)
             .then(res => {
                 setFtImage(res.data.filename)
@@ -42,8 +46,9 @@ const ShowProduct = ({ item }) => {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: item.id,
-                    size: 'S',
-                    Quantity: 1,
+                    size: item.pscs[0].size.name,
+                    category: item.pscs[0].category.id,
+                    Quantity: item.pscs[0].quantity > 0 ? 1 : 0,
                     colorId: item.color.id,
                     customerEmail: user?.email
                 });
@@ -86,7 +91,6 @@ const ShowProduct = ({ item }) => {
     };
 
     const handleMouseEnter = () => {
-
         // Set the source of the first image in productPictures as the hoveredImage
         if (item.productPictures.length > 0) {
             setHovered(true);
@@ -98,15 +102,31 @@ const ShowProduct = ({ item }) => {
         setHovered(false);
     };
 
+    const handleProductClick = () => {
+        const url = new URL(window.location.href);
+        const CatId = url.pathname.split('/').pop();
+        console.log(CatId);
+        localStorage.setItem('defaultCategoryId', CatId);
+
+        // axiosPublic.get(`/admin/get-product-by-sub-sub-cat/${CatId}`)
+        //     .then(res => {
+        //         // console.log(res.data, 'resdata')
+        //         console.log(res.data[0]?.pscs[0]?.category?.category?.category?.id, 333)
+        //         const categoryName = res.data[0]?.pscs[0]?.category?.category?.category?.id;
+        //     })
+        // sessionStorage.setItem('defaultCat',)
+        router.push(`details/${id}`)
+    }
+
     const cardBtnStyle = 'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1'
 
     return (
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
-                <Link href={`details/${id}`} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                <div onClick={handleProductClick} className="relative cursor-pointer" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                     <img src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
                     {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
-                </Link>
+                </div>
                 <div className="flex flex-col items-center text-center justify-center gap-3">
                     <h2 className="card-title">{item.name}</h2>
                     <div className="flex gap-3">
@@ -119,19 +139,19 @@ const ShowProduct = ({ item }) => {
                     <div className="card-actions justify-end">
                         <button
                             onClick={handleAddToCart}
-                            className={`btn btn-sm btn-primary ${cardBtnStyle} ${isAddedToCart ? 'btn-disabled' : 'btn-primary'}`}
+                            className={`btn btn-sm btn-primary ${cardBtnStyle} ${isAddedToCart || (userInfo && userInfo.role === 'admin') ? 'btn-disabled' : 'btn-primary'}`}
                         >
                             <FaCartShopping></FaCartShopping> Add to Cart
                         </button>
-                        <Link href={`details/${id}`}>
-                            <button className={`btn btn-sm btn-accent ${cardBtnStyle}`}>
-                                <FaEye /> View
-                            </button>
-                        </Link>
+                        {/* <Link href={`details/${id}`}> */}
+                        <button onClick={handleProductClick} className={`btn btn-sm btn-accent ${cardBtnStyle}`}>
+                            <FaEye /> View
+                        </button>
+                        {/* </Link> */}
                     </div>
                 </div>
             </div>
-            
+
         </>
     );
 };

@@ -11,7 +11,6 @@ import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '/firebase'
 import { useLocation } from 'react-router-dom';
 import { useRouter } from 'next/router';
-import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 
@@ -21,14 +20,17 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const { control, handleSubmit, formState: { errors } } = useForm();
-    const { user, signIn, setUser } = useContext(AuthContext)
+    const { user, signIn, logOut } = useContext(AuthContext)
     // console.log(user, "17");
     const router = useRouter()
 
     const axiosPublic = useAxiosPublic();
 
     useEffect(() => {
-        user && router.push('/')
+        user && (
+            console.log(user),
+            router.push('/')
+        )
     }, [user])
 
     const onsubmit = async (data) => {
@@ -40,16 +42,29 @@ const Login = () => {
                 email: data.email,
                 password: data.password,
             });
+            // console.log(response.data, 40);
 
-            console.log(response, 40);
+            if (response.data.status >= 200 && response.data.status <= 205) {
+                try {
+                    const userCredential = await signIn(data.email, data.password);
+                    console.log('Firebase user logged in:', userCredential.user);
+                    toast.success('Logged in');
+                    // console.log(JSON.stringify(response.data.data));
 
-            if (response.data.status >= 200 && response.data.status <= 205 ) {
-                sessionStorage.setItem('email', data.email);
-                toast.success("Logged in");
-                setUser(response.data.data)
-                router.push('/');
+                    sessionStorage.setItem('userInfo', JSON.stringify(response.data.data));
+                    sessionStorage.setItem('email', response.data.data.email);
+
+                } catch (firebaseError) {
+                    console.error('Firebase error:', firebaseError.message);
+                    setError(firebaseError.message);
+                    toast.error(firebaseError.message);
+                }
+
+                console.log("Registration successful");
+                // router.push('/');
             } else {
-                toast.error(response.data.message || "Invalid credentials");
+                console.log(response);
+                toast.error(response.data.error.message || "Invalid credentials");
             }
         } catch (error) {
             console.error("Error: " + error.message);
@@ -83,49 +98,63 @@ const Login = () => {
         return password;
     };
 
-    // google sign in 
-    const handleGoogleSignIn = () => {
-        // e.preventDefault()
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                const loggedInUser = result.user
-                // console.log(loggedInUser);
-                const userEmail = result.user.email
-                const user = { userEmail }
-                const userName = loggedInUser.displayName;
-                const proPic = loggedInUser.photoURL
+    const handleGoogleSignIn = async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const loggedInUser = result.user;
+            const userEmail = loggedInUser.email;
+            const userName = loggedInUser.displayName;
+            const proPic = loggedInUser.photoURL;
 
-                // Generate a random password
-                const generatedPassword = generateRandomPassword();
+            // Generate a random password
+            const generatedPassword = generateRandomPassword();
+            const currentDate = new Date();
 
-                const currentDate = new Date();
+            const dto = {
+                name: userName,
+                email: userEmail,
+                password: generatedPassword,
+                filename: proPic,
+                loggedInWith: 'Google',
+                created_at: currentDate.toISOString(),
+                updated_at: currentDate.toISOString(),
+                uniqueId: loggedInUser.uid
+            };
 
-                const dto = {
-                    name: userName,
-                    email: userEmail,
-                    password: generatedPassword,
-                    filename: proPic,
-                    created_at: currentDate.toISOString(),
-                    updated_at: currentDate.toISOString(),
-                    uniqueId: loggedInUser.uid
-                };
+            try {
+                // Check if the email is already registered
+                const emailCheckResponse = await axiosPublic.get(`/admin/check-email?email=${userEmail}`);
+                console.log(emailCheckResponse);
 
-                axiosPublic.post('/admin/customer-login', dto, {
-                    withCredentials: true
-                })
-                    .then(res => {
-                        if (res.data.success) {
-                            // console.log(result.data);
-                            // setUser(result.user);
-                            // navigate(location?.state ? location.state : '/');
-                        }
-                    })
-
-            }).catch((error) => {
-                console.log(error.message)
-                // ...
-            });
-
+                if (emailCheckResponse.data.status !== 404) {
+                    console.log("Email already registered");
+                    // You may want to sign out the user here
+                    const response = await axiosPublic.post('/admin/signin', { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS });
+                    // console.log(response.data);
+                    sessionStorage.setItem('userInfo', JSON.stringify(response.data.data));
+                    sessionStorage.setItem('email', userEmail);
+                    setSuccess("Logged in")
+                    router.push('dashboard');
+                    return;
+                }
+                else {
+                    const result = await axiosPublic.post('/admin/create', dto);
+                    if (result.data.status >= 400 && result.data.status <= 500) {
+                        setError(result.data.message);
+                        toast.error(result.data.message);
+                    }
+                }
+            } catch (emailCheckError) {
+                if (emailCheckError.response && emailCheckError.response.status !== 404) {
+                    console.error("Email check failed:", emailCheckError.message);
+                    // Sign out the user if email check fails
+                    await logOut();
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Error during Google sign-in:", error.message);
+        }
     }
 
     // toggle password show 

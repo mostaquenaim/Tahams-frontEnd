@@ -4,9 +4,9 @@ import BuyingAddress from "/components/Cart/BuyingAddress";
 import NavbarCompTwo from "/components/Header/NavbarComp";
 import Footer from "/components/Footer/Footer";
 import FinalCart from "/components/Cart/FinalCart";
-import PaymentInfo from "/components/Cart/PaymentInfo";
+import DeliveryFeeProvider from "../../Contexts/DeliveryFee";
 
-const BuyNow = () => {
+const BuyNow = ({ data }) => {
   const router = useRouter();
   const [cartItems, setCartItems] = useState([])
 
@@ -14,15 +14,9 @@ const BuyNow = () => {
     // Get the cart products from localStorage
     const cartProducts = JSON.parse(localStorage.getItem("selectedItems"));
 
-    // Do something with the cart products
-    // console.log(cartProducts);
+    console.log(cartProducts);
     setCartItems(cartProducts)
-
-    // If you need to perform additional actions based on the cart products, you can do it here
-
-    // Clear the selectedItems from localStorage if needed
-    // localStorage.removeItem("selectedItems");
-  }, []); // Empty dependency array ensures that this effect runs only once on component mount
+  }, []);
 
   const total = router.query.total;
 
@@ -30,15 +24,13 @@ const BuyNow = () => {
     <div>
       <NavbarCompTwo />
       <div className="pt-48 flex justify-around items-start container mx-auto">
-        {/* <div > */}
-        {/* <div> */}
-        <BuyingAddress />
-        {/* </div> */}
-        {/* <div>
-            <PaymentInfo />
-          </div> */}
-        {/* </div> */}
-        <FinalCart cartItems={cartItems} />
+        <DeliveryFeeProvider>
+          <BuyingAddress data={data} />
+          {/* {
+          cartItems.length > 0 &&
+        } */}
+          <FinalCart cartItems={cartItems} />
+        </DeliveryFeeProvider>
       </div>
       <Footer />
     </div>
@@ -46,3 +38,14 @@ const BuyNow = () => {
 };
 
 export default BuyNow;
+
+export async function getServerSideProps() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_LOCATION}?countryCode=BD`);
+  const data = await res.json();
+
+  return {
+    props: {
+      data,
+    },
+  };
+}

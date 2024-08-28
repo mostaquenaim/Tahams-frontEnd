@@ -28,7 +28,7 @@ const Payment = () => {
                         <img className='h-16 hover:opacity-80 mx-auto text-center' src='/cod.png'></img>
                         <img className='h-12 hover:opacity-80 mx-auto text-center' src='/bkash.png'></img>
                         <img className='h-12 hover:opacity-80 mx-auto text-center' src='/nagad.png'></img>
-                        <img className='h-12 hover:opacity-80 mx-auto text-center' src='/rcoket.png'></img>
+                        <img className='h-12 hover:opacity-80 mx-auto text-center' src='/rocket.png'></img>
                         <img className='h-16 hover:opacity-80 mx-auto text-center' src='/cop.png'></img>
                         
                     </div>

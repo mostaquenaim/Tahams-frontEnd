@@ -1,0 +1,322 @@
+[
+    {
+        "id": "R80300575",
+        "name": "Faridpur",
+        "nameLocal": "Faridpur",
+        "parentId": "R3921322",
+        "displayName": "Faridpur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300579",
+        "name": "Gazipur",
+        "nameLocal": "Gazipur",
+        "parentId": "R3921322",
+        "displayName": "Gazipur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300558",
+        "name": "Gopalganj",
+        "nameLocal": "Gopalganj",
+        "parentId": "R3921322",
+        "displayName": "Gopalganj",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300573",
+        "name": "Kishoreganj",
+        "nameLocal": "Kishoreganj",
+        "parentId": "R3921322",
+        "displayName": "Kishoreganj",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300566",
+        "name": "Madaripur",
+        "nameLocal": "Madaripur",
+        "parentId": "R3921322",
+        "displayName": "Madaripur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300564",
+        "name": "Manikganj - Shibloya",
+        "nameLocal": "Manikganj - Shibloya",
+        "parentId": "R3921322",
+        "displayName": "Manikganj - Shibloya",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300582",
+        "name": "Manikganj - Singair",
+        "nameLocal": "Manikganj - Singair",
+        "parentId": "R3921322",
+        "displayName": "Manikganj - Singair",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300584",
+        "name": "Manikganj - Town",
+        "nameLocal": "Manikganj - Town",
+        "parentId": "R3921322",
+        "displayName": "Manikganj - Town",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300572",
+        "name": "Munshiganj - Gajaria",
+        "nameLocal": "Munshiganj - Gajaria",
+        "parentId": "R3921322",
+        "displayName": "Munshiganj - Gajaria",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300583",
+        "name": "Munshiganj - Lohajong",
+        "nameLocal": "Munshiganj - Lohajong",
+        "parentId": "R3921322",
+        "displayName": "Munshiganj - Lohajong",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300585",
+        "name": "Munshiganj - Sirajdikhan",
+        "nameLocal": "Munshiganj - Sirajdikhan",
+        "parentId": "R3921322",
+        "displayName": "Munshiganj - Sirajdikhan",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300557",
+        "name": "Munshiganj - Town",
+        "nameLocal": "Munshiganj - Town",
+        "parentId": "R3921322",
+        "displayName": "Munshiganj - Town",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300559",
+        "name": "Narayanganj",
+        "nameLocal": "Narayanganj",
+        "parentId": "R3921322",
+        "displayName": "Narayanganj",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300553",
+        "name": "Narsingdi",
+        "nameLocal": "Narsingdi",
+        "parentId": "R3921322",
+        "displayName": "Narsingdi",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300561",
+        "name": "Nawabganj",
+        "nameLocal": "Nawabganj",
+        "parentId": "R3921322",
+        "displayName": "Nawabganj",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300560",
+        "name": "Rajbari - Baliakandi",
+        "nameLocal": "Rajbari - Baliakandi",
+        "parentId": "R3921322",
+        "displayName": "Rajbari - Baliakandi",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300562",
+        "name": "Rajbari - Pangsha",
+        "nameLocal": "Rajbari - Pangsha",
+        "parentId": "R3921322",
+        "displayName": "Rajbari - Pangsha",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300571",
+        "name": "Rajbari - Town",
+        "nameLocal": "Rajbari - Town",
+        "parentId": "R3921322",
+        "displayName": "Rajbari - Town",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300578",
+        "name": "Shariatpur - Naria",
+        "nameLocal": "Shariatpur - Naria",
+        "parentId": "R3921322",
+        "displayName": "Shariatpur - Naria",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300580",
+        "name": "Shariatpur - Town",
+        "nameLocal": "Shariatpur - Town",
+        "parentId": "R3921322",
+        "displayName": "Shariatpur - Town",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300567",
+        "name": "Tangail - Basail",
+        "nameLocal": "Tangail - Basail",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Basail",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300581",
+        "name": "Tangail - Bhuapur",
+        "nameLocal": "Tangail - Bhuapur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Bhuapur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300563",
+        "name": "Tangail - Deldur",
+        "nameLocal": "Tangail - Deldur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Deldur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "RBD1478",
+        "name": "Tangail - Dhanbari",
+        "nameLocal": "Tangail - Dhanbari",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Dhanbari",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300568",
+        "name": "Tangail - Ghatail",
+        "nameLocal": "Tangail - Ghatail",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Ghatail",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300577",
+        "name": "Tangail - Gopalpur",
+        "nameLocal": "Tangail - Gopalpur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Gopalpur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300569",
+        "name": "Tangail - Kalihati",
+        "nameLocal": "Tangail - Kalihati",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Kalihati",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300556",
+        "name": "Tangail - Madhupur",
+        "nameLocal": "Tangail - Madhupur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Madhupur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300565",
+        "name": "Tangail - Mirzapur",
+        "nameLocal": "Tangail - Mirzapur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Mirzapur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300586",
+        "name": "Tangail - Nagarpur",
+        "nameLocal": "Tangail - Nagarpur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Nagarpur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300554",
+        "name": "Tangail - Sakhipur",
+        "nameLocal": "Tangail - Sakhipur",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Sakhipur",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    },
+    {
+        "id": "R80300555",
+        "name": "Tangail - Town",
+        "nameLocal": "Tangail - Town",
+        "parentId": "R3921322",
+        "displayName": "Tangail - Town",
+        "isSupportDgCod": null,
+        "scope": "L3",
+        "isLeafNode": false
+    }
+]

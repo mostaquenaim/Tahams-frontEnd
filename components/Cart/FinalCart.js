@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaShoppingCart, FaRegStickyNote } from 'react-icons/fa';
 import { TiInputChecked } from 'react-icons/ti';
 import toast, { Toaster } from 'react-hot-toast';
 import PropTypes from 'prop-types';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { DeliveryContext } from '../../Contexts/DeliveryFee';
 
 const FinalCart = ({ cartItems }) => {
     const [couponCode, setCouponCode] = useState('');
@@ -11,17 +12,19 @@ const FinalCart = ({ cartItems }) => {
     const [enableCoupon, setEnableCoupon] = useState(false)
     const [error, setError] = useState('')
 
+    const {deliveryFee} = useContext(DeliveryContext)
+
     const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
         // Calculate total price when cartItems change
         const sum = cartItems.reduce((acc, item) => {
             // Assuming item.product.sellingPrice and item.Quantity are numbers
-            return acc + item.product.sellingPrice * item.Quantity;
+            return acc + (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
         }, 0);
 
-        setTotalPrice(sum);
-    }, [cartItems]);
+        setTotalPrice(sum+deliveryFee);
+    }, [cartItems, deliveryFee]);
 
     const handleApplyCoupon = async () => {
         const res = await axiosPublic.get(`/admin/get-coupons`)
@@ -42,10 +45,14 @@ const FinalCart = ({ cartItems }) => {
             <div className="mb-4 pb-4 border-b-2 border-gray-200">
                 {cartItems.map((item, index) => (
                     <div className='flex justify-between' key={index}>
-                        <p>{item.ProductName} x {item.Quantity}</p>
-                        <p>৳ {item.product.sellingPrice * item.Quantity} </p>
+                        <p>{item.ProductName} <span className='text-lg font-semibold'> x {item.Quantity}</span></p>
+                        <p>৳ {(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity} </p>
                     </div>
                 ))}
+                <p className='flex justify-between'>
+                    <span>Delivery fee</span>
+                    <span>৳ {deliveryFee && deliveryFee}</span>
+                </p>
             </div>
 
             {/* Show Coupon */}

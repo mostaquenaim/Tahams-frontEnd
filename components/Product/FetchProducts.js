@@ -9,7 +9,7 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
-const FetchProducts = ({categories, admin=false}) => {
+const FetchProducts = ({ categories, admin = false }) => {
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState([])
     // const [showGotoCart, setShowGotoCart] = useState(false)
@@ -79,13 +79,13 @@ const FetchProducts = ({categories, admin=false}) => {
         }
     };
 
-    useEffect(() => {
+    useEffect(()=>{
         loadColors()
-    }, [])
+    },[])
 
     useEffect(() => {
         // setOriginalProducts(categories);
-        categories && updateSelectedProducts(); 
+        categories && updateSelectedProducts();
     }, [selectedColors, priceRange, selectedAvailability, selectedOffer, sortOption, categories]);
 
     // Function to handle color checkbox changes

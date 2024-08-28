@@ -1,14 +1,14 @@
-// Import necessary dependencies and components
 import { useForm, Controller } from 'react-hook-form';
 import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiPhone } from 'react-icons/fi';
 import NavbarCompTwo from '/components/Header/NavbarComp';
 import Footer from '/components/Footer/Footer';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +19,7 @@ const Register = () => {
     const [error, setError] = useState('')
 
     const router = useRouter()
+    const { createUser } = useContext(AuthContext)
 
     const { control, handleSubmit, formState: { errors }, watch } = useForm();
     const axiosPublic = useAxiosPublic();
@@ -34,12 +35,13 @@ const Register = () => {
     const password = watch("password");
 
     const onRegisterSubmit = async (data) => {
+        console.log(data);
+        data.loggedInWith = 'Email-Pass'
         try {
             // Send OTP to the user's phone number or email
             const response = await axiosPublic.post('/admin/send-otp', {
                 email: data.email
             });
-            console.log(response);
             // console.log(response);
             if (response.data.success) {
                 setOtpSent(true);
@@ -47,7 +49,7 @@ const Register = () => {
                 setSuccess('[OTP sent to your email]')
                 sessionStorage.setItem('userData', JSON.stringify(data));
             }
-            else{
+            else {
                 setError(response.data.message)
                 toast.error(response.data.message)
                 setSuccess('')
@@ -61,34 +63,60 @@ const Register = () => {
 
     const onOtpSubmit = async () => {
         const userData = JSON.parse(sessionStorage.getItem('userData'));
+
         try {
             const response = await axiosPublic.post('/admin/verify-otp', {
                 email: userData.email,
                 otp: otp
             });
-            // console.log(response);
+
             if (response.data.success) {
-                setError('')
+                setError('');
+
                 // Complete registration
-                console.log(userData);
                 const result = await axiosPublic.post('/admin/create', userData);
-                if(result.data.status >= 400 && result.data.status <= 500)
-                {
-                    setError(result.data.message)
-                    toast.error(result.data.message)
+                if (result.data.status >= 400 && result.data.status <= 500) {
+                    setError(result.data.message);
+                    toast.error(result.data.message);
+                } else {
+                    // Create user in Firebase
+                    try {
+                        const userCredential = await createUser(userData.email, userData.password);
+                        console.log('Firebase user created:', userCredential.user);
+                        toast.success('Thank you for registering');
+                        await axiosPublic.post('/admin/signin', {
+                            email: userData.email,
+                            password: userData.password,
+                        });
+
+                        // console.log(result.data,'breaak',result.data.data);
+
+                        sessionStorage.setItem('userInfo', JSON.stringify(result.data.data));
+
+                        router.push('/login');
+                    } catch (firebaseError) {
+                        console.error('Firebase error:', firebaseError.message);
+                        setError(firebaseError.message);
+                        toast.error(firebaseError.message);
+                    }
+                    finally {
+                        sessionStorage.removeItem('userData')
+                        console.log("Registration successful");
+                    }
+
                 }
-                toast.success('Thank you for registering')
-                router.push('/login');
-                console.log("Registration successful");
             } else {
                 console.error("Invalid OTP");
+                setError('Invalid OTP');
+                toast.error('Invalid OTP');
             }
         } catch (error) {
-            setError('OTP verification error')
-            setSuccess('')
-            console.error(error.message);
+            setError('OTP verification error');
+            setSuccess('');
+            console.error('Error:', error.message);
+            toast.error('OTP verification error');
         }
-    };
+    }
 
     return (
         <>
@@ -100,6 +128,7 @@ const Register = () => {
                             <img src='https://i.ibb.co/5FcQHFJ/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2' alt="logo" />
                         </Link>
 
+                        {/* name */}
                         <div className="mb-6">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 <FiUser className="inline-block mr-2" />
@@ -114,6 +143,7 @@ const Register = () => {
                             {errors.name && <p className="text-red-500 text-xs italic">{errors.name.message}</p>}
                         </div>
 
+                        {/* email */}
                         <div className="mb-6">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 <FiMail className="inline-block mr-2" />
@@ -128,20 +158,27 @@ const Register = () => {
                             {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
                         </div>
 
+                        {/* phone */}
                         <div className="mb-6">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 <FiPhone className="inline-block mr-2" />
-                                Phone:
+                                Phone <span className='text-gray-400'>[optional]</span> :
                             </label>
                             <Controller
-                                name="phone"
+                                name="mbl_no"
                                 control={control}
-                                rules={{ required: 'Phone number is required' }}
+                                rules={{
+                                    pattern: {
+                                        value: /^(\+8801|01)\d{9}$/,
+                                        message: 'Invalid phone number format',
+                                    },
+                                }}
                                 render={({ field }) => <input {...field} type="tel" className="w-full p-2 border rounded" />}
                             />
-                            {errors.phone && <p className="text-red-500 text-xs italic">{errors.phone.message}</p>}
+                            {errors.mbl_no && <p className="text-red-500 text-xs italic">{errors.mbl_no.message}</p>}
                         </div>
 
+                        {/* password */}
                         <div className="mb-6">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 <FiLock className="inline-block mr-2" />
@@ -170,6 +207,7 @@ const Register = () => {
                             {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
                         </div>
 
+                        {/* confirm password */}
                         <div className="mb-6">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 <FiLock className="inline-block mr-2" />

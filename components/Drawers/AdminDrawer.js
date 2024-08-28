@@ -18,7 +18,7 @@ const AdminDrawer = () => {
         { href: '/admin/Add/add-size', label: 'Add Size' },
         { href: '/admin/Add/add-fabric', label: 'Add Fabric' },
         { href: '/admin/delete-product', label: 'Delete Product' },
-        // Add more links as needed
+        { href: '/admin/Show/show-orders', label: 'Show Orders' },
     ];
 
     const toggleDrawer = () => {
