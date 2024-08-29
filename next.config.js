@@ -19,6 +19,10 @@ module.exports = {
         hostname: 'localhost',
         port: '3000', // Adjust this to your development server's port if different
       },
+      {
+        protocol: 'http',
+        hostname: 'tahamsbd.com',
+      },
     ],
   },
   // nextConfig
