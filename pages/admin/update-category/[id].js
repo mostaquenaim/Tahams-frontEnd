@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 
 import Link from 'next/link';
 
@@ -141,7 +141,7 @@ export async function getServerSideProps(context) {
 
     // console.log(id);
 
-    const response = await axiosPublic.get(`/admin/getCategoryById/${id}`);
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/getCategoryById/${id}`);
     const item = await response.data;
 
     return { props: { item } }
