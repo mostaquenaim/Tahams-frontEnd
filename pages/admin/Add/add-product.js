@@ -194,7 +194,7 @@ export default function AddProduct() {
     }
 
     const onSubmit = async (data) => {
-        console.log(selectedCatsInfo);
+        // console.log(selectedCatsInfo);
         const formData = new FormData();
 
         let catsInfo = []

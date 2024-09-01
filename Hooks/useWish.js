@@ -9,7 +9,7 @@ const useWish = () => {
 
     const fetchWishData = async () => {
         const res = await axiosPublic.get(`/admin/get-wish-by-user/${user?.email}`);
-        console.log(res.data,'wish');
+        // console.log(res.data,'wish');
         return res.data;
     };
 

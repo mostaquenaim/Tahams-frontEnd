@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
 const ShowProduct = ({ item }) => {
-    console.log(item);
+    // console.log(item);
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)

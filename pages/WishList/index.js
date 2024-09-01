@@ -26,13 +26,12 @@ const WishList = () => {
     const handleDelete = async (item) => {
         const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
         const formData = new FormData();
-        console.log(item);
+        // console.log(item);
 
         formData.append('productId', item.product.id);
         formData.append('customerId', userInfo && userInfo.id);
 
         if (userInfo) {
-            console.log('in');
             setIsDeleting(true);
             try {
                 await axiosPublic.delete(`admin/remove-wish/`,formData);

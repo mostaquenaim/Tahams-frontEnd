@@ -11,7 +11,7 @@ import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const FetchProducts = ({ categories, admin = false }) => {
     const [sortOption, setSortOption] = useState('default');
-    const [selectedProducts, setSelectedProducts] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState(categories)
     // const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedColors, setSelectedColors] = useState([]);
     const [priceRange, setPriceRange] = useState([1, 2000]);
@@ -24,9 +24,10 @@ const FetchProducts = ({ categories, admin = false }) => {
     const { showGotoCart } = useContext(AuthContext)
 
     const updateSelectedProducts = () => {
-        console.log(categories);
+        // console.log(categories);
 
         setSelectedProducts(categories)
+        console.log('categories selected to setselect');
 
         let filteredProducts = categories.filter(product => {
             // Check color 
@@ -66,7 +67,10 @@ const FetchProducts = ({ categories, admin = false }) => {
         }
 
         // Update selected products
+        // console.log('filteredProducts - ',filteredProducts);
         setSelectedProducts(filteredProducts);
+        // console.log('categories fltered to setselect');
+
     };
 
     const loadColors = async () => {

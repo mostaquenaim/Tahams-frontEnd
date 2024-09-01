@@ -1,12 +1,13 @@
 import axios from "axios";
+import NavbarCompTwo from "../../components/Header/NavbarComp";
+import Footer from "../../components/Footer/Footer";
+import FetchProducts from "../../components/Product/FetchProducts";
 
 const ShowProductsByCategory = ({ products }) => {
-  // Render your component using the fetched products
+  // console.log(products);
   return (
     <div>
-      {products && products.map(product => (
-        <div key={product.id}>{product.name}</div>
-      ))}
+      <FetchProducts categories={products}/>
     </div>
   );
 };

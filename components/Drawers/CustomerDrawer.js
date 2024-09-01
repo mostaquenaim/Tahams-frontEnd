@@ -7,7 +7,7 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories }) => {
         // Function to close the drawer upon scrolling
         const handleScroll = () => {
             const drawerCheckbox = document.getElementById('my-drawer');
-            if (drawerCheckbox.checked) {
+            if (drawerCheckbox && drawerCheckbox.checked) {
                 drawerCheckbox.checked = false;
             }
         };

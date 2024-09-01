@@ -96,7 +96,7 @@ const BuyingAddress = ({ data }) => {
         } else {
             // setOutSideCities([])
             if (event.target.value === 'Dhaka - South' || event.target.value === 'Dhaka - North') {
-                console.log('in');
+                // console.log('in');
                 sessionStorage.setItem('deliveryFee', '80')
                 setDeliveryFee(80)
             } else if (event.target.value && !outSideCities) {
@@ -139,7 +139,7 @@ const BuyingAddress = ({ data }) => {
                         confirmButtonText: 'Yes, update it!',
                         cancelButtonText: 'No, keep the old one'
                     }).then(async (result) => {
-                        console.log('result', result);
+                        // console.log('result', result);
                         if (result.isConfirmed) {
                             await axiosPublic.put(`admin/update-user-address/${userData.id}`, {
                                 name: data.fullName,

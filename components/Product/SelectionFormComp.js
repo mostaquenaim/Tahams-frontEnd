@@ -1,5 +1,6 @@
 
 const SelectionFormComp = ({label, name, selectedValue, setFunction, defaultShown, values, errors, register, extraItem=false, valueIsId=false  }) => {
+    // console.log('values',values);
     return (
         <div className="mt-4">
             <label htmlFor={name} className="block mb-2 text-sm font-medium text-gray-900">
@@ -17,7 +18,7 @@ const SelectionFormComp = ({label, name, selectedValue, setFunction, defaultShow
                 </option>
                 {values.map((item) => (
                     <option key={item.id} value={valueIsId ? item.id : item.name} className="text-center" >
-                        {item.name} {extraItem && `, ${item.category.name}`}
+                       {item.name} {extraItem && `, ${item.category.name}`}
                     </option>
                 ))}
             </select>
