@@ -25,7 +25,7 @@ const AddFabric = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ fabricName }),
+                body: JSON.stringify({ name : fabricName }),
             });
 
             const data = await response.json();

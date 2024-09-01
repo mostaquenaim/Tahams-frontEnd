@@ -22,16 +22,12 @@ export default function Home() {
 
   return (
     <div className=''>
-
       <CompanyContext.Provider value='unused'>
-      
         <ThemeProvider>
             {/* <NavbarComp></NavbarComp> */}
-            
             <NavbarCompTwo></NavbarCompTwo>
             {/* <Bot></Bot> */}
-            <MySwiper images={images}></MySwiper>
-            
+            <MySwiper images={images}></MySwiper>            
             <NewArrival></NewArrival>
             <WhyUs></WhyUs>
             <ShopByCategory></ShopByCategory>

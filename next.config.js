@@ -20,7 +20,7 @@ module.exports = {
         port: '3000', // Adjust this to your development server's port if different
       },
       {
-        protocol: 'http',
+        protocol: 'https',
         hostname: 'tahamsbd.com',
       },
     ],
