@@ -1,5 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
-import AdminDrawer from '../../../components/Drawers/AdminDrawer';
+import { useState, useMemo } from 'react';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import {
     createColumnHelper,
@@ -9,34 +8,34 @@ import {
 } from '@tanstack/react-table';
 import Link from 'next/link';
 import Modal from 'react-modal';
+import useLoadProducts from '../../../Hooks/useLoadProducts';
 
 const Index = () => {
     const axiosPublic = useAxiosPublic();
 
-    const [products, setProducts] = useState([]);
-    const [unpublishedProducts, setUnpublishedProducts] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
-    const loadProducts = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-all-products');
-            console.log(result.data);
-            setProducts(result.data);
-            const unpublished = result.data.filter(item => !item.publishable);
-            setUnpublishedProducts(unpublished);
-        } catch (error) {
-            console.error('Error loading products:', error);
-        }
-    };
+    const [unpublishedProducts, refetch] = useLoadProducts();
 
-    const openModal = (product) => {
+    const openPublishModal = (product) => {
         setSelectedProduct(product);
-        setIsModalOpen(true);
+        setIsPublishModalOpen(true);
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
+    const closePublishModal = () => {
+        setIsPublishModalOpen(false);
+        setSelectedProduct(null);
+    };
+
+    const openDeleteModal = (product) => {
+        setSelectedProduct(product);
+        setIsDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
         setSelectedProduct(null);
     };
 
@@ -44,17 +43,25 @@ const Index = () => {
         if (selectedProduct) {
             try {
                 await axiosPublic.put(`/admin/publish-product/${selectedProduct.id}`, { publishable: true });
-                loadProducts();
-                closeModal();
+                refetch();
+                closePublishModal();
             } catch (error) {
                 console.error('Error publishing product:', error);
             }
         }
     };
 
-    useEffect(() => {
-        loadProducts();
-    }, []);
+    const handleDelete = async () => {
+        if (selectedProduct) {
+            try {
+                await axiosPublic.delete(`/admin/delete-product/${selectedProduct.id}`);
+                refetch();
+                closeDeleteModal();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+            }
+        }
+    };
 
     const columnHelper = createColumnHelper();
 
@@ -101,7 +108,8 @@ const Index = () => {
                 return (
                     <div className='flex gap-5'>
                         <Link href={`/products/details/${product.id}`} className="text-blue-500 hover:underline">Details</Link>
-                        <button className="text-blue-500 hover:underline" onClick={() => openModal(product)}>Publish</button>
+                        <button className="text-blue-500 hover:underline" onClick={() => openPublishModal(product)}>Publish</button>
+                        <button className="text-red-500 hover:underline" onClick={() => openDeleteModal(product)}>Delete</button>
                     </div>
                 );
             },
@@ -116,7 +124,6 @@ const Index = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            {/* <AdminDrawer /> */}
             <div className="flex flex-col items-center text-center mt-8">
                 <h1 className="text-3xl font-bold mb-4">Products</h1>
                 {unpublishedProducts.length > 0 ? (
@@ -180,9 +187,11 @@ const Index = () => {
                         <p className="text-lg">All products are published. Great job! 🎉</p>
                     </div>
                 )}
+
+                {/* Publish Confirmation Modal */}
                 <Modal
-                    isOpen={isModalOpen}
-                    onRequestClose={closeModal}
+                    isOpen={isPublishModalOpen}
+                    onRequestClose={closePublishModal}
                     contentLabel="Confirm Publish"
                     ariaHideApp={false}
                     className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -191,8 +200,26 @@ const Index = () => {
                         <h2 className="text-2xl font-bold mb-4">Confirm Publish</h2>
                         <p>Are you sure you want to publish this product?</p>
                         <div className="flex justify-end gap-4 mt-4">
-                            <button onClick={closeModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                            <button onClick={closePublishModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
                             <button onClick={handlePublish} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Confirm</button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onRequestClose={closeDeleteModal}
+                    contentLabel="Confirm Delete"
+                    ariaHideApp={false}
+                    className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                >
+                    <div className="bg-white p-8 rounded-lg shadow-lg">
+                        <h2 className="text-2xl font-bold mb-4">Confirm Delete</h2>
+                        <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+                        <div className="flex justify-end gap-4 mt-4">
+                            <button onClick={closeDeleteModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                            <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
                         </div>
                     </div>
                 </Modal>

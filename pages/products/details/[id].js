@@ -10,6 +10,7 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Product = ({ product }) => {
+    console.log('product',product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
@@ -52,8 +53,9 @@ const Product = ({ product }) => {
 
         // Set default selected category and size
         if (product.pscs.length > 0) {
+            console.log('product.pscs',product.pscs);
             setSelectedCategory(product.pscs[0].category.id);
-            setSelectedSize(product.pscs[0].size.name);
+            setSelectedSize(product.pscs[0].size?.name);
         }
 
         const storedUserInfo = JSON.parse(sessionStorage.getItem('userInfo'));
@@ -127,7 +129,7 @@ const Product = ({ product }) => {
     const handleCategoryChange = (categoryId) => {
         console.log(categoryId,'catid');
         setSelectedCategory(categoryId);
-        const firstSize = product.pscs.find(p => p.category.id == categoryId)?.size.name;
+        const firstSize = product.pscs.find(p => p.category.id == categoryId)?.size?.name;
         setSelectedSize(firstSize);
         setQuantity(1);
     };
@@ -140,7 +142,7 @@ const Product = ({ product }) => {
 
     const handleQuantityIncrease = () => {
         product.pscs.map((item) => {
-            if (item.category.id === selectedCategory && item.size.name === selectedSize) {
+            if (item.category.id === selectedCategory && item.size?.name === selectedSize) {
                 if (item.quantity >= quantity && quantity < 30) {
                     setQuantity(quantity + 1);
                 }
@@ -387,11 +389,11 @@ const Product = ({ product }) => {
                                 <div className="flex gap-3 flex-wrap">
                                     {filteredSizes.map((size) => (
                                         <button
-                                            key={size.id}
-                                            className={`btn btn-outline ${selectedSize === size.name ? 'bg-black text-white' : 'bg-white text-black'} border-black text-black`}
-                                            onClick={() => handleSizeChange(size.name)}
+                                            key={size?.id}
+                                            className={`btn btn-outline ${selectedSize === size?.name ? 'bg-black text-white' : 'bg-white text-black'} border-black text-black`}
+                                            onClick={() => handleSizeChange(size?.name)}
                                         >
-                                            {size.name}
+                                            {size?.name}
                                         </button>
                                     ))}
                                 </div>
@@ -467,30 +469,38 @@ const Product = ({ product }) => {
 export async function getServerSideProps(context) {
     const { params } = context;
     const { id } = params; 
-    // console.log(id,'id');
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-id/${id}`);
-        // console.log(await response.json(),483);
-        const product = await response.json();
+        
+        if (!response.ok) {
+            // If the response is not ok, throw an error to be caught below
+            throw new Error('Product not found');
+        }
 
-        // const result = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/view-product-sizes`);
-        // const sizes = await result.json();
+        const product = await response.json(); 
 
         return {
             props: {
                 product,
-                // sizes,
             },
         };
     } catch (error) {
         console.error('Error fetching data:', error);
 
-        // Return an empty object if there's an error
+        // Option 1: Redirect to a custom 404 page
         return {
-            props: {},
+            notFound: true,
         };
+
+        // Option 2: Pass an error prop to display a message on the page
+        // return {
+        //     props: {
+        //         error: 'Product not found',
+        //     },
+        // };
     }
 }
+
 
 export default Product;

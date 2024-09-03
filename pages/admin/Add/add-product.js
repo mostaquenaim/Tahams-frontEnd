@@ -9,21 +9,20 @@ import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from "../../../components/Product/ProductFormComp";
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import SelectionFormComp from "../../../components/Product/SelectionFormComp";
+import useLoadSubSubCategories from "../../../hooks/useLoadSubSubCategories";
+import useLoadColors from "../../../hooks/useLoadColors";
+import useLoadFabrics from "../../../hooks/useLoadFabrics";
+import useLoadSizes from "../../../hooks/useLoadSizes";
 
 export default function AddProduct() {
-    const [subSubCategories, setSubSubCategories] = useState([])
-    const [colors, setColors] = useState([])
     const [selectedColor, setSelectedColor] = useState('');
-    const [fabrics, setFabrics] = useState([])
     const [selectedFabric, setSelectedFabric] = useState('');
     const [selectedCats, setSelectedCats] = useState([])
     const [selectedCatsInfo, setSelectedCatsInfo] = useState([])
     const [selectedTags, setSelectedTags] = useState(["cloth"]);
-    const [sizes, setSizes] = useState([])
     const [success, setSuccess] = useState('')
     const [isSizeApplicable, setIsSizeApplicable] = useState([]);
 
-    const router = useRouter();
     const axiosPublic = useAxiosPublic();
 
     const {
@@ -34,77 +33,11 @@ export default function AddProduct() {
         control
     } = useForm();
 
-    // load sub categories
-    const loadSubSubCategories = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-product-sub-sub-categories');
-
-            // Sort the subSubCategories array based on categoryName
-            const sortedSubSubCategories = result.data.sort((a, b) => {
-                // Convert category names to lowercase for case-insensitive sorting
-                const categoryA = a.name.toLowerCase();
-                const categoryB = b.name.toLowerCase();
-
-                // Compare category names
-                if (categoryA < categoryB) {
-                    return -1;
-                }
-                if (categoryA > categoryB) {
-                    return 1;
-                }
-                return 0;
-            });
-
-            setSubSubCategories(sortedSubSubCategories);
-        } catch (error) {
-            console.error('Error loading sub-sub-categories:', error);
-        }
-    };
-
-    //load colors
-    const loadColors = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-colors');
-            // Sort the subSubCategories array based on categoryName
-            setColors(result.data);
-        } catch (error) {
-            console.error('Error loading colors:', error);
-        }
-    };
-
-    //load fabrics
-    const loadFabrics = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-fabrics');
-            // Sort the subSubCategories array based on categoryName
-            setFabrics(result.data);
-        } catch (error) {
-            console.error('Error loading fabrics:', error);
-        }
-    };
-
-    //load sizes
-    const loadSizes = async () => {
-        // Load your sizes from an API or define them here
-        // For demonstration, we will use hardcoded values
-        // setSizes(["XS", "S", "M", "L", "XL", "XXL"]);
-        try {
-            const result = await axiosPublic.get('/admin/view-product-sizes');
-            // Sort the subSubCategories array based on categoryName
-            setSizes(result.data);
-            // console.log("result", result.data);
-        } catch (error) {
-            console.error('Error loading sizes:', error);
-        }
-    };
-
-    // use effect 
-    useEffect(() => {
-        loadSubSubCategories();
-        loadColors()
-        loadFabrics()
-        loadSizes()
-    }, []);
+    // load hooks
+    const subSubCategories = useLoadSubSubCategories();
+    const colors = useLoadColors();
+    const fabrics = useLoadFabrics();
+    const sizes = useLoadSizes();
 
     const validateFile = (value) => {
         const file = value[0];
@@ -142,7 +75,7 @@ export default function AddProduct() {
     }
 
     const handleSizeAndQuantityChange = (event, catID, sizeId) => {
-        // console.log("selectedCatsInfo", selectedCatsInfo);
+        console.log("selectedCatsInfo", selectedCatsInfo, 'event',event.target.value, 'catID',catID, 'sizeId',sizeId);
 
         const categoryWiseItem = selectedCatsInfo.find(cat => cat.category == catID)
 
@@ -154,6 +87,7 @@ export default function AddProduct() {
             ]
         }
         else {
+            // initially size not available 
             let sizeNotAvailable = true
 
             categoryWiseItem.sizes.forEach(item => {
@@ -205,10 +139,13 @@ export default function AddProduct() {
             })
         })
 
-        // console.log(selectedCats,"189",catsInfo);
+        console.log('selectedCats',selectedCats)
+        console.log('catsInfo', JSON.stringify(catsInfo))
+        // console.log('selectedCatsInfo', JSON.stringify(selectedCatsInfo) );
+
         formData.append('subCategories', selectedCats)
         formData.append('catsInfo', JSON.stringify(catsInfo))
-        formData.append('selectedCatsInfo', JSON.stringify(selectedCatsInfo))
+        // formData.append('selectedCatsInfo', JSON.stringify(selectedCatsInfo))
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
         formData.append('note', data.note);
@@ -241,7 +178,7 @@ export default function AddProduct() {
 
         }
         catch (error) {
-            console.log(error.response.data.message);
+            console.error(error.response.data.message);
             setSuccess('product add unsuccessful ' + error.response.data.message);
             toast.success('product add unsuccessful ' + error.response.data.message);
         }
@@ -272,8 +209,8 @@ export default function AddProduct() {
             // reset();
 
         } catch (error) {
-            console.log(error.response.data.message);
-            setSuccess('Product pictures upload unsuccessful: ' + error.response.data.message);
+            console.error(error.message);
+            setSuccess('Product pictures upload unsuccessful: ' + error.message);
         }
     };
 
@@ -431,7 +368,7 @@ export default function AddProduct() {
                                                                 className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
                                                                 placeholder={`Quantity for ${size.name}`}
                                                                 onInput={(e) => handleSizeAndQuantityChange(e, category.id, size.id)}
-                                                                {...register(`categories[${index}].sizes.${size.name}`, { required: false })}
+                                                                // {...register(`categories[${index}].sizes.${size.name}`, { required: false })}
                                                             />
                                                         </div>
                                                     ))
