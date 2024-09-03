@@ -9,10 +9,10 @@ import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from "../../../components/Product/ProductFormComp";
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import SelectionFormComp from "../../../components/Product/SelectionFormComp";
-import useLoadSubSubCategories from "../../../hooks/useLoadSubSubCategories";
-import useLoadColors from "../../../hooks/useLoadColors";
-import useLoadFabrics from "../../../hooks/useLoadFabrics";
-import useLoadSizes from "../../../hooks/useLoadSizes";
+import useLoadSubSubCategories from "../../../Hooks/useLoadSubSubCategories";
+import useLoadColors from "../../../Hooks/useLoadColors";
+import useLoadFabrics from "../../../Hooks/useLoadFabrics";
+import useLoadSizes from "../../../Hooks/useLoadSizes";
 
 export default function AddProduct() {
     const [selectedColor, setSelectedColor] = useState('');
