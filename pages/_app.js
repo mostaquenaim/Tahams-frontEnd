@@ -11,6 +11,7 @@ import { useRouter } from 'next/router';
 import AdminDrawer from '../components/Drawers/AdminDrawer';
 import { AuthContext } from '../Contexts/Auth/AuthProvider';
 import AdminCheck from '../components/Auth/AdminCheck';
+import CustomerCheck from '../components/Auth/CustomerCheck';
 
 const queryClient = new QueryClient()
 export default function App({ Component, pageProps }) {
@@ -31,7 +32,9 @@ export default function App({ Component, pageProps }) {
             <Component {...pageProps} />
           </AdminCheck>
         ) : (
-          <Component {...pageProps} />
+          <CustomerCheck>
+            <Component {...pageProps} />
+          </CustomerCheck>
         )}
         <Toaster />
       </QueryClientProvider>

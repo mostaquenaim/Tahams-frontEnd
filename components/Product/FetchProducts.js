@@ -5,6 +5,7 @@ import FilterComp from '/components/Filter/Filter';
 import { FaFilter } from "react-icons/fa";
 import Footer from '/components/Footer/Footer';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import useLoadColors from '../../Hooks/useLoadColors'
 
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
@@ -17,8 +18,8 @@ const FetchProducts = ({ categories, admin = false }) => {
     const [priceRange, setPriceRange] = useState([1, 2000]);
     const [selectedAvailability, setSelectedAvailability] = useState('');
     const [selectedOffer, setSelectedOffer] = useState('');
-    const [colors, setColors] = useState([])
 
+    const colors = useLoadColors()
     const axiosPublic = useAxiosPublic();
 
     const { showGotoCart } = useContext(AuthContext)
@@ -72,20 +73,6 @@ const FetchProducts = ({ categories, admin = false }) => {
 
     };
 
-    const loadColors = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-colors');
-            // Sort the colors array based on categoryName
-            setColors(result.data);
-        } catch (error) {
-            console.error('Error loading colors:', error);
-        }
-    };
-
-    useEffect(()=>{
-        loadColors()
-    },[])
-
     useEffect(() => {
         // setOriginalProducts(categories);
         categories && updateSelectedProducts();
@@ -126,7 +113,7 @@ const FetchProducts = ({ categories, admin = false }) => {
 
     return (
         <div className=''>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */} 
             <div className='pt-48 mx-10 pb-10'>
                 {/* Sort By dropdown */}
                 <div className='flex text-end justify-end mr-10 md:mr-14 lg:mr-20 pb-10'>
@@ -196,7 +183,7 @@ const FetchProducts = ({ categories, admin = false }) => {
                 >Go to cart
                 </Link>
             }
-            <Footer></Footer>
+            {/* <Footer></Footer> */}
         </div>
     );
 };

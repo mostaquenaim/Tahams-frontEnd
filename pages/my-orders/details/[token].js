@@ -88,7 +88,7 @@ const OrderDetails = () => {
 
     return (
         <div>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className='container mx-auto px-4 py-8 pt-40 min-h-screen'>
                 <h1 className="text-3xl font-semibold text-center mb-8">Order Details</h1>
                 {loading ? <LoadingIndicator /> : error ? <ErrorMessage /> : orderDetails ? <OrderInfo /> : <p className="text-center text-xl text-gray-600">Order details not available.</p>}

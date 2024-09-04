@@ -109,7 +109,7 @@ const MyCart = () => {
 
   return (
     <>
-      <NavbarCompTwo />
+      {/* <NavbarCompTwo /> */}
       <section className='pt-40 min-h-screen'>
         <div className="overflow-x-auto">
           {cart.length > 0 ?

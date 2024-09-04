@@ -46,7 +46,7 @@ const WishList = () => {
 
     return (
         <>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className="container mx-auto p-4 min-h-screen">
                 <h1 className="text-2xl font-bold mb-4 p-48">Your Wishlist</h1>
                 {

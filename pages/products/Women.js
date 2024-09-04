@@ -4,11 +4,11 @@ import NavbarCompTwo from '/components/Header/NavbarComp';
 const Women = () => {
     return (
         <div>
-            <NavbarCompTwo></NavbarCompTwo>
+            {/* <NavbarCompTwo></NavbarCompTwo> */}
             <div className='min-h-screen'>
 
             </div>
-            <Footer />
+            {/* <Footer /> */}
         </div>
     );
 };

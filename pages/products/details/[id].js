@@ -20,12 +20,25 @@ const Product = ({ product }) => {
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const { user } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
 
     const router = useRouter()
     const axiosPublic = useAxiosPublic();
 
+    const viewCount = async () => {
+        // console.log(user);
+        const result = await axiosPublic.post(`/admin/increase-product-view/${product.id}?email=${user?.email}`)
+
+        // console.log(result);
+    }
+
+    useEffect(()=>{
+        user &&
+        viewCount()
+    },[user, product])
+
     const checkIfWished = async (productId, customerId) => {
+        setLoading(true)
         try {
             const result = await axiosPublic.get(`admin/check-wish-by-user-and-product`, {
                 params: {
@@ -258,7 +271,7 @@ const Product = ({ product }) => {
 
     return (
         <div className="">
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className="container mx-auto p-4 min-h-screen pt-20 lg:pt-48 pb-10">
                 <div className="flex flex-col md:flex-row">
                     {/* Product Image */}
@@ -266,7 +279,7 @@ const Product = ({ product }) => {
                         <img
                             src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
                             alt={name}
-                            className="md:h-[500px] md:w-96 lg:h-[600px] lg:w-[500px] max-h-screen rounded mb-5 relative"
+                            className="md:h-96 md:w-96 lg:h-[600px] lg:w-[600px] max-h-screen rounded mb-5 relative"
                         />
                         <div className='flex gap-4'>
                             <input

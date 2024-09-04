@@ -164,7 +164,7 @@ const Login = () => {
 
     return (
         <>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className='pt-48 pb-10'>
                 <form onSubmit={handleSubmit(onsubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
                     <Link href='/'>

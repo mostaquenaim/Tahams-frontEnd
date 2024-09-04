@@ -4,7 +4,7 @@ import NavbarCompTwo from '/components/Header/NavbarComp';
 const Toddler = () => {
     return (
         <div>
-            <NavbarCompTwo></NavbarCompTwo>
+            {/* <NavbarCompTwo></NavbarCompTwo> */}
             <div className='min-h-screen'>
 
             </div>

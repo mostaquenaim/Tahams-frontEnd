@@ -8,7 +8,7 @@ const BuyNow = ({ product }) => {
 
     return (
         <>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className="min-h-screen pt-48">
                 <BuyingAddress />
                 <FinalCart />

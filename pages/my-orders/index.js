@@ -42,7 +42,7 @@ const MyOrders = () => {
 
     return (
         <>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className="container mx-auto px-4 py-8 pt-40">
                 <h1 className="text-3xl font-semibold text-center mb-8">My Orders</h1>
 

@@ -120,7 +120,7 @@ const Register = () => {
 
     return (
         <>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className='pt-48 pb-10'>
                 {!otpSent ? (
                     <form onSubmit={handleSubmit(onRegisterSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">

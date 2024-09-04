@@ -25,7 +25,7 @@ const PaymentProcess = () => {
     // Display buying history data or implement your payment logic
     return (
         <div className="min-h-screen">
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className="pt-48 min-h-screen">
                 {
                     loading ?

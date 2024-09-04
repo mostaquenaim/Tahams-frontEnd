@@ -22,7 +22,7 @@ const BuyNow = ({ data }) => {
 
   return (
     <div>
-      <NavbarCompTwo />
+      {/* <NavbarCompTwo /> */}
       <div className="pt-48 flex justify-around items-start container mx-auto">
         <DeliveryFeeProvider>
           <BuyingAddress data={data} />

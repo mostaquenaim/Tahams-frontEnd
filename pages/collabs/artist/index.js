@@ -6,7 +6,7 @@ import { FaPaintBrush, FaHandshake, FaCheckCircle } from 'react-icons/fa';
 const Artist = () => {
     return (
         <div>
-            <NavbarCompTwo />
+            {/* <NavbarCompTwo /> */}
             <div className='min-h-screen bg-gray-100 pt-40'>
                 <div className='container mx-auto p-8'>
                     <section className='mb-12 text-center'>
