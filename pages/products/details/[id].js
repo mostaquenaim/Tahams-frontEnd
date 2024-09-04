@@ -34,9 +34,11 @@ const Product = ({ product }) => {
                 }
             });
 
+            console.log(result);
+
             // console.log(result.data);
             setAddedToWishlist(result.data.wished)
-        } catch (error) {
+        } catch (error) { 
             console.error('Error checking wish:', error);
             // Handle the error accordingly
         }
@@ -45,7 +47,13 @@ const Product = ({ product }) => {
         }
     }
 
+    useEffect(()=>{
+        const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
+        setUserInfo(storedUserInfo);
+    },[])
+
     useEffect(() => {
+        // console.log(product,userInfo);
         // Scroll to top of the page
         window.scrollTo(0, 100);
 
@@ -59,9 +67,6 @@ const Product = ({ product }) => {
             setSelectedCategory(product.pscs[0].category.id);
             setSelectedSize(product.pscs[0].size?.name);
         }
-
-        const storedUserInfo = JSON.parse(sessionStorage.getItem('userInfo'));
-        setUserInfo(storedUserInfo);
     }, [product, userInfo]);
 
     useEffect(() => {

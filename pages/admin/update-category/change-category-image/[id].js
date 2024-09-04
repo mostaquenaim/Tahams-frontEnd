@@ -47,7 +47,7 @@ export default function ChangeCategoryImage({ item }) {
     };
 
     useEffect(() => {
-        const UserEmail = sessionStorage.getItem('email');
+        const UserEmail = localStorage.getItem('email');
         setEmail(UserEmail);
     }, []);
 

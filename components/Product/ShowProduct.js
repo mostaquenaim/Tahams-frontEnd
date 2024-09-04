@@ -28,7 +28,7 @@ const ShowProduct = ({ item }) => {
     const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
-        const storedData = JSON.parse(sessionStorage.getItem('userInfo'))
+        const storedData = JSON.parse(localStorage.getItem('userInfo'))
         setUserInfo(storedData)
 
         axiosPublic.get(image)
@@ -114,7 +114,7 @@ const ShowProduct = ({ item }) => {
         //         console.log(res.data[0]?.pscs[0]?.category?.category?.category?.id, 333)
         //         const categoryName = res.data[0]?.pscs[0]?.category?.category?.category?.id;
         //     })
-        // sessionStorage.setItem('defaultCat',)
+        // localStorage.setItem('defaultCat',)
         router.push(`/products/details/${id}`)
     }
 

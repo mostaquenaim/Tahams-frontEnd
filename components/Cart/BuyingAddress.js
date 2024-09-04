@@ -30,7 +30,7 @@ const BuyingAddress = ({ data }) => {
 
     const getUserByEmail = async () => {
         try {
-            const email = sessionStorage.getItem('email')
+            const email = localStorage.getItem('email')
             const result = await axiosPublic.get(`admin/get-user-by-email/${user?.email || email}`);
             setUserData(result.data);
             reset({
@@ -58,7 +58,7 @@ const BuyingAddress = ({ data }) => {
             try {
                 const res = await axios.get(`/Dhaka-inside-delivery.json`);
                 setCities(res.data);
-                sessionStorage.setItem('deliveryFee', '80');  // Default fee for others
+                localStorage.setItem('deliveryFee', '80');  // Default fee for others
                 setDeliveryFee(80)
             } catch (error) {
                 console.error('Error fetching cities:', error);
@@ -66,7 +66,7 @@ const BuyingAddress = ({ data }) => {
         } else {
             setCities([]);
             // setOutSideCities([])
-            sessionStorage.setItem('deliveryFee', '150');  // Fee for regions outside Dhaka
+            localStorage.setItem('deliveryFee', '150');  // Fee for regions outside Dhaka
             setDeliveryFee(150)
         }
     };
@@ -78,14 +78,14 @@ const BuyingAddress = ({ data }) => {
             try {
                 if (!outSideCities) {
                     setOutSideCities(true)
-                    sessionStorage.setItem('deliveryFee', '150')
+                    localStorage.setItem('deliveryFee', '150')
                     setDeliveryFee(150)
                     const res = await axios.get(`/Dhaka-outside-delivery.json`);
                     setCities(res.data);
                 }
                 else {
                     setOutSideCities(false)
-                    sessionStorage.setItem('deliveryFee', '80')
+                    localStorage.setItem('deliveryFee', '80')
                     setDeliveryFee(80)
                     const res = await axios.get(`/Dhaka-inside-delivery.json`);
                     setCities(res.data);
@@ -97,10 +97,10 @@ const BuyingAddress = ({ data }) => {
             // setOutSideCities([])
             if (event.target.value === 'Dhaka - South' || event.target.value === 'Dhaka - North') {
                 // console.log('in');
-                sessionStorage.setItem('deliveryFee', '80')
+                localStorage.setItem('deliveryFee', '80')
                 setDeliveryFee(80)
             } else if (event.target.value && !outSideCities) {
-                sessionStorage.setItem('deliveryFee', '120');
+                localStorage.setItem('deliveryFee', '120');
                 setDeliveryFee(120)
             }
         }

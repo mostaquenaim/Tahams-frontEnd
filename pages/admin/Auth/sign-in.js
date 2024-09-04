@@ -21,7 +21,7 @@ export default function AdminSignIn() {
 
             const response = await axiosPublic.post('/admin/signin', { email, password });
 
-            sessionStorage.setItem('email', email);
+            localStorage.setItem('email', email);
             setSuccess("Logged in")
             router.push('dashboard');
 

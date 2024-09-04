@@ -9,7 +9,7 @@ const AdminCheck = ({ children }) => {
     const [userData, setUserData] = useState(null);
 
     useEffect(() => {
-        const storedUserInfo = sessionStorage.getItem('userInfo');
+        const storedUserInfo = localStorage.getItem('userInfo');
         // console.log(storedUserInfo);
         if (storedUserInfo) {
             const parsedUserInfo = JSON.parse(storedUserInfo);

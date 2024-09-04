@@ -6,7 +6,7 @@ export default function IndexCheck () {
   const router = useRouter();
 
   useEffect(() => {
-    const session = sessionStorage.getItem('email');
+    const session = localStorage.getItem('email');
     // console.log(session)
 
     if (session) {

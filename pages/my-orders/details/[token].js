@@ -21,7 +21,7 @@ const OrderDetails = () => {
             const { token } = router.query;
             if (token) {
                 try {
-                    const userEmail = sessionStorage.getItem('email');
+                    const userEmail = localStorageetItem('email');
                     const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email || userEmail}`);
                     setOrderDetails(response.data);
                 } catch (err) {

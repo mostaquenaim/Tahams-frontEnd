@@ -3,7 +3,7 @@ import { useEffect } from "react";
 const useUserInfo = () => {
 
     useEffect(() => {
-        const storedData = JSON.parse(sessionStorage.getItem('userInfo'))
+        const storedData = JSON.parse(localStorage.getItem('userInfo'))
         if (storedData) {
             return storedData
         }

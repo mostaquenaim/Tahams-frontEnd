@@ -47,7 +47,7 @@ const Register = () => {
                 setOtpSent(true);
                 setError('')
                 setSuccess('[OTP sent to your email]')
-                sessionStorage.setItem('userData', JSON.stringify(data));
+                localStorage.setItem('userData', JSON.stringify(data));
             }
             else {
                 setError(response.data.message)
@@ -62,7 +62,7 @@ const Register = () => {
     };
 
     const onOtpSubmit = async () => {
-        const userData = JSON.parse(sessionStorage.getItem('userData'));
+        const userData = JSON.parse(localStorage.getItem('userData'));
 
         try {
             const response = await axiosPublic.post('/admin/verify-otp', {
@@ -91,7 +91,7 @@ const Register = () => {
 
                         // console.log(result.data,'breaak',result.data.data);
 
-                        sessionStorage.setItem('userInfo', JSON.stringify(result.data.data));
+                        localStorage.setItem('userInfo', JSON.stringify(result.data.data));
 
                         router.push('/login');
                     } catch (firebaseError) {
@@ -100,7 +100,7 @@ const Register = () => {
                         toast.error(firebaseError.message);
                     }
                     finally {
-                        sessionStorage.removeItem('userData')
+                        localStorageemoveItem('userData')
                         console.log("Registration successful");
                     }
 

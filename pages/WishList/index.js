@@ -19,12 +19,12 @@ const WishList = () => {
     const [userInfo, setUserInfo] = useState(null)
 
     useEffect(() => {
-        const storedUserInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+        const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'))
         setUserInfo(storedUserInfo)
     }, [])
 
     const handleDelete = async (item) => {
-        const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         const formData = new FormData();
         // console.log(item);
 

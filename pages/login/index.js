@@ -51,8 +51,8 @@ const Login = () => {
                     toast.success('Logged in');
                     // console.log(JSON.stringify(response.data.data));
 
-                    sessionStorage.setItem('userInfo', JSON.stringify(response.data.data));
-                    sessionStorage.setItem('email', response.data.data.email);
+                    localStorage.setItem('userInfo', JSON.stringify(response.data.data));
+                    localStorage.setItem('email', response.data.data.email);
 
                 } catch (firebaseError) {
                     console.error('Firebase error:', firebaseError.message);
@@ -131,8 +131,8 @@ const Login = () => {
                     // You may want to sign out the user here
                     const response = await axiosPublic.post('/admin/signin', { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS });
                     // console.log(response.data);
-                    sessionStorage.setItem('userInfo', JSON.stringify(response.data.data));
-                    sessionStorage.setItem('email', userEmail);
+                    localStorage.setItem('userInfo', JSON.stringify(response.data.data));
+                    localStorageetItem('email', userEmail);
                     setSuccess("Logged in")
                     router.push('dashboard');
                     return;

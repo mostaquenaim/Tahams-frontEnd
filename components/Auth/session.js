@@ -12,7 +12,7 @@ export default function Session() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const session = sessionStorage.getItem('email');
+      const session = localStorage.getItem('email');
       if (session) {
         setEmail(session);
       }
@@ -24,7 +24,7 @@ export default function Session() {
     try {
       const response = await axiosPublic.get('/users/signout');
       // console.log(response.data);
-      sessionStorage.removeItem('email');
+      localStorage.removeItem('email');
       setEmail(null);
       router.push('/signin');
     } catch (error) {

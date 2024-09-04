@@ -26,9 +26,9 @@ const NavbarCompTwo = () => {
     const handleLogout = () => {
         logOut()
             .then(() => {
-                // Remove userInfo from sessionStorage
-                sessionStorage.removeItem('userInfo');
-                console.log('User logged out and userInfo removed from sessionStorage');
+                // Remove userInfo from localStorage
+                localStorage.removeItem('userInfo');
+                console.log('User logged out and userInfo removed from localStorage');
             })
             .catch((error) => {
                 console.error('Error during logout:', error.message);
