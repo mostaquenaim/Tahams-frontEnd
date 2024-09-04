@@ -27,7 +27,6 @@ const FetchProducts = ({ categories, admin = false }) => {
         // console.log(categories);
 
         setSelectedProducts(categories)
-        console.log('categories selected to setselect');
 
         let filteredProducts = categories.filter(product => {
             // Check color 

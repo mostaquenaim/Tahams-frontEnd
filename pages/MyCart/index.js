@@ -12,7 +12,7 @@ import Footer from '../../components/Footer/Footer';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();
-  console.log(cart, 14);
+  // console.log(cart, 14);
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
 

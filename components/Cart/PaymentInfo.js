@@ -43,7 +43,7 @@ const PaymentInfo = ({ history }) => {
 
         try {
             const formData = new FormData();
-            formData.append('paymentMethod', selectedPaymentMethod.name); // Send the name instead of ID
+            formData.append('paymentMethod', selectedPaymentMethod.id); // Send the name instead of ID
             formData.append('accountNumber', paymentInfo?.accountNumber || null);
             formData.append('screenshot', paymentInfo?.screenshot || null);
             formData.append('history', history.history.trackingToken);

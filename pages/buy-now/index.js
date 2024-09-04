@@ -14,7 +14,7 @@ const BuyNow = ({ data }) => {
     // Get the cart products from localStorage
     const cartProducts = JSON.parse(localStorage.getItem("selectedItems"));
 
-    console.log(cartProducts);
+    // console.log(cartProducts);
     setCartItems(cartProducts)
   }, []);
 

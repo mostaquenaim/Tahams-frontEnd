@@ -115,7 +115,7 @@ const ShowProduct = ({ item }) => {
         //         const categoryName = res.data[0]?.pscs[0]?.category?.category?.category?.id;
         //     })
         // sessionStorage.setItem('defaultCat',)
-        router.push(`details/${id}`)
+        router.push(`/products/details/${id}`)
     }
 
     const cardBtnStyle = 'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1'
@@ -134,7 +134,7 @@ const ShowProduct = ({ item }) => {
                             discountPercentage > 0 &&
                             <p className="line-through text-red-500">{sellingPrice} BDT</p>
                         }
-                        <p className="text-neutral">{discountedPrice} BDT</p>
+                        <p className="text-green-600 font-semibold">{discountedPrice} BDT</p>
                     </div>
                     <div className="card-actions justify-end">
                         <button

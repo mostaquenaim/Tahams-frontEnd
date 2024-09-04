@@ -76,6 +76,7 @@ const ShowOrders = () => {
                                             <p className='text-gray-600'>Address: {group.history?.address}</p>
                                             {group.history?.city && <p className='text-gray-600'>City: {group.history.city}</p>}
                                             {group.history?.region && <p className='text-gray-600'>Region: {group.history.region}</p>}
+                                            {group.history?.phone_no && <p className='text-gray-600'>Phone no: {group.history.phone_no}</p>}
                                             <p className='text-gray-600'>Payment Method: {group.history?.paymentMethod?.name}</p>
                                         </div>
 
@@ -83,7 +84,7 @@ const ShowOrders = () => {
                                         <div className='mb-4'>
                                             <h3 className='text-lg font-bold'>Order Timeline:</h3>
                                             <ul className='list-disc list-inside text-gray-600'>
-                                                <li>Order Placed: {new Date(group.history?.created_at).toLocaleDateString()}</li>
+                                                <li>Order Placed: {new Date(group.history?.BuyingDate).toLocaleDateString()}</li>
                                                 <li>Processed: {group.history?.processedDate ? new Date(group.history.processedDate).toLocaleDateString() : 'Processing...'}</li>
                                                 <li>Ready to Ship: {group.history?.readyToShipDate ? new Date(group.history.readyToShipDate).toLocaleDateString() : 'Pending'}</li>
                                                 <li>Dropped Off: {group.history?.droppedOffDate ? new Date(group.history.droppedOffDate).toLocaleDateString() : 'Pending'}</li>

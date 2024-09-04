@@ -18,7 +18,7 @@ const MyOrders = () => {
         try {
             setLoading(true);
             const res = await axiosPublic.get(`admin/get-all-buying-history?email=${user?.email}`);
-            console.log(res.data);
+            // console.log(res.data);
             setOrders(res.data);
         } catch (err) {
             setError("Failed to fetch orders. Please try again later.");

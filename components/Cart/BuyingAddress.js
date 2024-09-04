@@ -107,7 +107,7 @@ const BuyingAddress = ({ data }) => {
     };
 
     const onSubmit = async (data) => {
-        console.log(selectedCity);
+        // console.log(selectedCity);
         try {
             const formData = {
                 fullName: data.fullName,
@@ -123,7 +123,7 @@ const BuyingAddress = ({ data }) => {
             const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
 
             if (res.status >= 200 && res.status < 300) {
-                console.log(selectedCity, 'vs', userData.city);
+                // console.log(selectedCity, 'vs', userData.city);
                 const isAddressChanged =
                     data.fullName !== userData.name ||
                     selectedRegion !== userData.region ||

@@ -34,7 +34,7 @@ const Login = () => {
     }, [user])
 
     const onsubmit = async (data) => {
-        console.log(data);
+        // console.log(data);
 
         try {
             // Sending a POST request to the sign-in endpoint
@@ -63,7 +63,7 @@ const Login = () => {
                 console.log("Registration successful");
                 // router.push('/');
             } else {
-                console.log(response);
+                // console.log(response);
                 toast.error(response.data.error.message || "Invalid credentials");
             }
         } catch (error) {

@@ -10,7 +10,7 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Product = ({ product }) => {
-    console.log('product',product);
+    // console.log('product',product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
@@ -34,7 +34,7 @@ const Product = ({ product }) => {
                 }
             });
 
-            console.log(result.data);
+            // console.log(result.data);
             setAddedToWishlist(result.data.wished)
         } catch (error) {
             console.error('Error checking wish:', error);
@@ -46,29 +46,30 @@ const Product = ({ product }) => {
     }
 
     useEffect(() => {
-        console.log(product);
+        // Scroll to top of the page
         window.scrollTo(0, 100);
 
-        checkIfWished()
+        // Check if the user has added the product to the wishlist
+        if (product && userInfo) {
+            checkIfWished(product.id, userInfo.id);
+        }
 
         // Set default selected category and size
         if (product.pscs.length > 0) {
-            console.log('product.pscs',product.pscs);
             setSelectedCategory(product.pscs[0].category.id);
             setSelectedSize(product.pscs[0].size?.name);
         }
 
         const storedUserInfo = JSON.parse(sessionStorage.getItem('userInfo'));
-        // console.log(storedUserInfo, storedUserInfo.role);
-        setUserInfo(storedUserInfo)
-    }, [product]);
+        setUserInfo(storedUserInfo);
+    }, [product, userInfo]);
 
     useEffect(() => {
         const defaultCategoryId = parseInt(localStorage.getItem('defaultCategoryId'));
         if (defaultCategoryId) {
-          handleCategoryChange(defaultCategoryId);
+            handleCategoryChange(defaultCategoryId);
         }
-      }, []);
+    }, []);
 
     const {
         sellingPrice,
@@ -85,12 +86,10 @@ const Product = ({ product }) => {
     const uniqueCategories = [...new Map(product.pscs.map(p => [p.category.id, p.category])).values()];
 
     const filteredSizes = selectedCategory
-        ? product.pscs.filter(p => p.category.id === selectedCategory).map(p => p.size)
+        ? product.pscs
+            .filter(p => p.category.id === selectedCategory && p.quantity > 0)
+            .map(p => p.size)
         : [];
-
-    // const maxQuantity = selectedCategory && selectedSize
-    //     ? product.pscs.find(p => p.category.id === selectedCategory && p.size.id === selectedSize)?.quantity || 1
-    //     : 1;
 
     const addToWishlist = async () => {
         const formData = new FormData();
@@ -127,7 +126,7 @@ const Product = ({ product }) => {
     };
 
     const handleCategoryChange = (categoryId) => {
-        console.log(categoryId,'catid');
+        console.log(categoryId, 'catid');
         setSelectedCategory(categoryId);
         const firstSize = product.pscs.find(p => p.category.id == categoryId)?.size?.name;
         setSelectedSize(firstSize);
@@ -143,7 +142,7 @@ const Product = ({ product }) => {
     const handleQuantityIncrease = () => {
         product.pscs.map((item) => {
             if (item.category.id === selectedCategory && item.size?.name === selectedSize) {
-                if (item.quantity >= quantity && quantity < 30) {
+                if (item.quantity > quantity && quantity < 30) {
                     setQuantity(quantity + 1);
                 }
                 else {
@@ -223,7 +222,7 @@ const Product = ({ product }) => {
                     customerEmail: user?.email
                 });
 
-                console.log(response.data);
+                // console.log(response.data);
 
                 if (response.status >= 200 && response.status <= 205) {
                     localStorage.setItem('selectedItems', JSON.stringify([response.data]));
@@ -468,17 +467,17 @@ const Product = ({ product }) => {
 
 export async function getServerSideProps(context) {
     const { params } = context;
-    const { id } = params; 
+    const { id } = params;
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-id/${id}`);
-        
+
         if (!response.ok) {
             // If the response is not ok, throw an error to be caught below
             throw new Error('Product not found');
         }
 
-        const product = await response.json(); 
+        const product = await response.json();
 
         return {
             props: {

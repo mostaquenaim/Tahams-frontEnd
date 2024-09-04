@@ -75,7 +75,7 @@ export default function AddProduct() {
     }
 
     const handleSizeAndQuantityChange = (event, catID, sizeId) => {
-        console.log("selectedCatsInfo", selectedCatsInfo, 'event',event.target.value, 'catID',catID, 'sizeId',sizeId);
+        // console.log("selectedCatsInfo", selectedCatsInfo, 'event',event.target.value, 'catID',catID, 'sizeId',sizeId);
 
         const categoryWiseItem = selectedCatsInfo.find(cat => cat.category == catID)
 
@@ -139,8 +139,8 @@ export default function AddProduct() {
             })
         })
 
-        console.log('selectedCats',selectedCats)
-        console.log('catsInfo', JSON.stringify(catsInfo))
+        // console.log('selectedCats',selectedCats)
+        // console.log('catsInfo', JSON.stringify(catsInfo))
         // console.log('selectedCatsInfo', JSON.stringify(selectedCatsInfo) );
 
         formData.append('subCategories', selectedCats)
