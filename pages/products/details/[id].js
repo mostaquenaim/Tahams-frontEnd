@@ -32,10 +32,10 @@ const Product = ({ product }) => {
         // console.log(result);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         user &&
-        viewCount()
-    },[user, product])
+            viewCount()
+    }, [user, product])
 
     const checkIfWished = async (productId, customerId) => {
         setLoading(true)
@@ -51,7 +51,7 @@ const Product = ({ product }) => {
 
             // console.log(result.data);
             setAddedToWishlist(result.data.wished)
-        } catch (error) { 
+        } catch (error) {
             console.error('Error checking wish:', error);
             // Handle the error accordingly
         }
@@ -60,10 +60,10 @@ const Product = ({ product }) => {
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
         setUserInfo(storedUserInfo);
-    },[])
+    }, [])
 
     useEffect(() => {
         // console.log(product,userInfo);
@@ -349,9 +349,9 @@ const Product = ({ product }) => {
                         }
 
                         {/* description  */}
-                        <p className="text-gray-600 mb-4">
+                        <div className="prose prose-lg" style={{ whiteSpace: 'pre-line' }}>
                             {description}
-                        </p>
+                        </div>
 
                         {/* price  */}
                         <p className="text-green-600 text-lg mb-2">{sellingPrice} BDT</p>
@@ -463,7 +463,6 @@ const Product = ({ product }) => {
                 <div className="mt-8">
                     <h2 className="text-xl font-semibold mb-4">More about this product</h2>
                     <div className="prose prose-lg" style={{ whiteSpace: 'pre-line' }}>
-                        {/* Render long description content */}
                         {longDescription}
                     </div>
                 </div>
