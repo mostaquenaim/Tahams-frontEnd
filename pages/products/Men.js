@@ -8,7 +8,7 @@ const Men = () => {
             <div className='min-h-screen'>
 
             </div>
-            <Footer />
+            {/* <Footer /> */}
         </div>
     );
 };

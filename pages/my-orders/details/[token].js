@@ -21,8 +21,9 @@ const OrderDetails = () => {
             const { token } = router.query;
             if (token) {
                 try {
-                    const userEmail = localStorageetItem('email');
+                    const userEmail = localStorage.getItem('email');
                     const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email || userEmail}`);
+                    console.log(response.data);
                     setOrderDetails(response.data);
                 } catch (err) {
                     setError('Failed to fetch order details. Please try again later.');
@@ -51,8 +52,8 @@ const OrderDetails = () => {
     const OrderInfo = () => (
         <div className="bg-white shadow-md rounded-lg p-6">
             <div className="mb-4 text-center">
-                <h2 className="text-lg font-semibold text-gray-800">Order #{orderDetails.uniqueId}</h2>
-                <p className="text-sm text-gray-600">{new Date(orderDetails.history.BuyingDate).toLocaleDateString()}</p>
+                {/* <h2 className="text-lg font-semibold text-gray-800">Order #{orderDetails.uniqueId}</h2> */}
+                <p className="text-sm text-gray-600">Ordered at {new Date(orderDetails.history.BuyingDate).toLocaleDateString()}</p>
             </div>
             <div className="mb-4 text-center">
                 <img 
@@ -93,7 +94,7 @@ const OrderDetails = () => {
                 <h1 className="text-3xl font-semibold text-center mb-8">Order Details</h1>
                 {loading ? <LoadingIndicator /> : error ? <ErrorMessage /> : orderDetails ? <OrderInfo /> : <p className="text-center text-xl text-gray-600">Order details not available.</p>}
             </div>
-            <Footer />
+          {/* <Footer /> */} 
         </div>
     );
 };

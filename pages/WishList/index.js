@@ -85,7 +85,7 @@ const WishList = () => {
                             <p>No items in your wishlist.</p>
                         )}
             </div>
-            <Footer />
+          {/* <Footer /> */} 
         </>
     );
 };

@@ -34,7 +34,7 @@ const PaymentProcess = () => {
                         <PaymentInfo history={buyingHistory}/>
                 }
             </div>
-            <Footer />
+          {/* <Footer /> */} 
         </div>
     );
 };

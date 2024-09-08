@@ -83,7 +83,7 @@ const Artist = () => {
                     </section> */}
                 </div>
             </div>
-            <Footer />
+          {/* <Footer /> */} 
         </div>
     );
 };

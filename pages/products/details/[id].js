@@ -476,7 +476,7 @@ const Product = ({ product }) => {
                 >Go to cart
                 </Link>
             }
-            <Footer />
+          {/* <Footer /> */} 
             <Toaster />
         </div>
     );

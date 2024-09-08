@@ -33,6 +33,7 @@ const steps = [
 ];
 
 const OrderComp = ({ orderDetails }) => {
+  // console.log('orderDetails',orderDetails);
   const [currentStep, setCurrentStep] = useState(0);
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState('');
   const [completedSteps, setCompletedSteps] = useState([]);

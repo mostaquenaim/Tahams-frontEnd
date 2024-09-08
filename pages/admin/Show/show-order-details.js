@@ -47,7 +47,6 @@ const ShowOrderDetails = () => {
                             </div>
                         ))}
 
-                        {/* Add other group details as needed */}
                     </div>
             }
         </div>

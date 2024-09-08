@@ -32,7 +32,7 @@ const BuyNow = ({ data }) => {
           <FinalCart cartItems={cartItems} />
         </DeliveryFeeProvider>
       </div>
-      <Footer />
+    {/* <Footer /> */} 
     </div>
   );
 };

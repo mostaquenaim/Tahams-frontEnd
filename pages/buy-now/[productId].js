@@ -13,7 +13,7 @@ const BuyNow = ({ product }) => {
                 <BuyingAddress />
                 <FinalCart />
             </div>
-            <Footer />
+            {/* <Footer /> */}
         </>
     );
 };

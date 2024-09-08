@@ -91,7 +91,7 @@ const Influencer = () => {
                     </section> */}
                 </div>
             </div>
-            <Footer />
+          {/* <Footer /> */} 
         </div>
     );
 };
