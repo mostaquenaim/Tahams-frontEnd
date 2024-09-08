@@ -138,7 +138,7 @@ const NavbarCompTwo = () => {
                         {/* image  */}
                         <div className="absolute w-full">
                             <Link href='/' className='w-20 mx-auto text-center'>
-                                <img src='https://i.ibb.co/5FcQHFJ/logo-removebg.png' alt="Company Logo" className="w-20 p-2 mx-auto" />
+                                <img src='/logo-removebg.png' alt="Company Logo" className="w-20 p-2 mx-auto" />
                             </Link>
                         </div>
 

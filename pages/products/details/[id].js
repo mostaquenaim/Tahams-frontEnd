@@ -110,18 +110,18 @@ const Product = ({ product }) => {
         : [];
 
     const addToWishlist = async () => {
-        const formData = new FormData();
-
-        formData.append('productId', product.id);
-        formData.append('customerEmail', userInfo && userInfo.email);
 
         if (!isAddedToWishlist) {
             try {
                 // Make a POST request to add the product to the wishlist
-                const res = await axiosPublic.post(`/admin/add-Wish`, formData);
-                // console.log(res.data);
+                const res = await axiosPublic.post(`/admin/add-Wish`, {
+                    productId: product.id,
+                    customerEmail: user && user.email
+                });
                 // Add the product to the wishlist
-                checkIfWished()
+                if (product && userInfo) {
+                    checkIfWished(product.id, userInfo.id);
+                }
             } catch (error) {
                 console.error('Error adding product to wishlist:', error);
                 // Handle error if the request fails
@@ -129,8 +129,10 @@ const Product = ({ product }) => {
         }
         else {
             try {
-                const res = await axiosPublic.delete(`/admin/remove-wish`, formData);
-                checkIfWished()
+                const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${user?.email}`);
+                if (product && userInfo) {
+                    checkIfWished(product.id, userInfo.id);
+                }
 
             } catch (error) {
                 console.error('Error deleting wishlist:', error);
@@ -476,7 +478,7 @@ const Product = ({ product }) => {
                 >Go to cart
                 </Link>
             }
-          {/* <Footer /> */} 
+            {/* <Footer /> */}
             <Toaster />
         </div>
     );

@@ -54,9 +54,6 @@ const ShowProduct = ({ item }) => {
                 });
 
                 if (response.status >= 200 && response.status <= 205) {
-                    // Cart item added successfully
-                    // console.log('Item added to the cart');
-
                     // Show toast notification
                     toast.success('Item added to the cart', {
                         duration: 3000, // Toast will be shown for 3 seconds
@@ -107,14 +104,6 @@ const ShowProduct = ({ item }) => {
         const CatId = url.pathname.split('/').pop();
         console.log(CatId);
         localStorage.setItem('defaultCategoryId', CatId);
-
-        // axiosPublic.get(`/admin/get-product-by-sub-sub-cat/${CatId}`)
-        //     .then(res => {
-        //         // console.log(res.data, 'resdata')
-        //         console.log(res.data[0]?.pscs[0]?.category?.category?.category?.id, 333)
-        //         const categoryName = res.data[0]?.pscs[0]?.category?.category?.category?.id;
-        //     })
-        // localStorage.setItem('defaultCat',)
         router.push(`/products/details/${id}`)
     }
 
@@ -136,7 +125,7 @@ const ShowProduct = ({ item }) => {
                         }
                         <p className="text-green-600 font-semibold">{discountedPrice} BDT</p>
                     </div>
-                    <div className="card-actions justify-end">
+                    <div className="card-actions flex justify-center items-center lg:justify-end lg:flex-row">
                         <button
                             onClick={handleAddToCart}
                             className={`btn btn-sm btn-primary ${cardBtnStyle} ${isAddedToCart || (userInfo && userInfo.role === 'admin') ? 'btn-disabled' : 'btn-primary'}`}

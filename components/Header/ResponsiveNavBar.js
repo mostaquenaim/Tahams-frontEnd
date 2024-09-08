@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { AiOutlineHeart, AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
+import LeftDrawer from '../Drawers/LeftDrawer';
 import CustomerDrawer from '../Drawers/CustomerDrawer';
-import Drawer from '../Drawers/drawer';
 import { useContext } from 'react';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, sideLinks }) => {
     const { user } = useContext(AuthContext)
-    const navEndBtnClass = "btn btn-square btn-ghost text-xl"
+    const navEndBtnClass = "btn btn-square btn-sm btn-ghost text-xl"
 
     const handleLogout = () => {
         logOut()
@@ -31,15 +31,15 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, side
                 <div className="navbar bg-base-100">
                     <div className="flex-none">
                         <div className='hidden md:inline-block'>
-                            <CustomerDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></CustomerDrawer>
+                            <LeftDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></LeftDrawer>
                         </div>
                         <div className='md:hidden'>
-                            <Drawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></Drawer>
+                            <CustomerDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></CustomerDrawer>
                         </div>
                     </div>
                     <div className="flex-1 ml-14 md:ml-0">
                         <Link href='/' className=" btn-ghost normal-case text-xl">
-                            <img src="https://i.ibb.co/5FcQHFJ/logo-removebg.png" className='h-14' alt="" />
+                            <img src="/logo-removebg.png" className='h-14' alt="" />
                         </Link>
                     </div>
 

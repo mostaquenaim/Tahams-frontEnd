@@ -39,7 +39,7 @@ const MySwiper = ({ images=[] }) => {
                 images.map((image, index) => (
                     <SwiperSlide key={index}>
                         <img
-                            className='w-full pt-32'
+                            className='w-full pt-16 lg:pt-32'
                             src={image}
                             alt=""
                         />
