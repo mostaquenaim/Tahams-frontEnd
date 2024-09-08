@@ -23,7 +23,7 @@ const OrderDetails = () => {
                 try {
                     const userEmail = localStorage.getItem('email');
                     const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email || userEmail}`);
-                    console.log(response.data);
+                    console.log(response.data, 26);
                     setOrderDetails(response.data);
                 } catch (err) {
                     setError('Failed to fetch order details. Please try again later.');
@@ -52,39 +52,82 @@ const OrderDetails = () => {
     const OrderInfo = () => (
         <div className="bg-white shadow-md rounded-lg p-6">
             <div className="mb-4 text-center">
-                {/* <h2 className="text-lg font-semibold text-gray-800">Order #{orderDetails.uniqueId}</h2> */}
-                <p className="text-sm text-gray-600">Ordered at {new Date(orderDetails.history.BuyingDate).toLocaleDateString()}</p>
+                <h2 className="text-lg font-semibold text-gray-800">Order Details</h2>
+                {
+                    orderDetails.length > 0 &&
+                    <p className="text-sm text-gray-600">Ordered at {new Date(orderDetails[0].history.BuyingDate).toLocaleDateString()}</p>
+                }
             </div>
-            <div className="mb-4 text-center">
-                <img 
-                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${orderDetails.product.filename}`} 
-                    alt={orderDetails.product.name} 
-                    className="h-48 w-auto object-cover rounded-lg mb-4 mx-auto"
-                />
-                <p className="text-sm text-gray-700"><strong>Product:</strong> {orderDetails.product.name}</p>
-                <p className="text-sm text-gray-700"><strong>Size:</strong> {orderDetails.size || "N/A"}</p>
-                <p className="text-sm text-gray-700"><strong>Quantity:</strong> {orderDetails.Quantity}</p>
-                <p className="text-sm text-gray-700"><strong>Price:</strong> {orderDetails.totalPrice} BDT</p>
-            </div>
-            <div className="mb-4">
-                <p className={`text-sm ${orderDetails.history.deliveryStatus.name === "Delivered" ? "text-green-500" : "text-orange-500"}`}>
-                    <strong>Status:</strong> {orderDetails.history.deliveryStatus.name}
-                </p>
-                <p className="text-sm text-gray-700"><strong>Payment Method:</strong> {orderDetails.history.paymentMethod.name}</p>
-                <p className="text-sm text-gray-700"><strong>Payment Done:</strong> {orderDetails.history.PaymentDone ? "Yes" : "No"}</p>
-            </div>
-            <div className="mb-4">
-                <p className="text-sm text-gray-700"><strong>Customer Name:</strong> {orderDetails.customer.name}</p>
-                <p className="text-sm text-gray-700"><strong>Email:</strong> {orderDetails.customer.email}</p>
-                <p className="text-sm text-gray-700"><strong>Phone:</strong> {orderDetails.history.phone_no}</p>
-            </div>
-            <div className="mb-4">
-                <p className="text-sm text-gray-700"><strong>Address:</strong> {orderDetails.history.address}, {orderDetails.history.city}, {orderDetails.history.region}</p>
-                <p className="text-sm text-gray-700"><strong>Delivery Fee:</strong> {orderDetails.history.deliveryFee} BDT</p>
-            </div>
+            {orderDetails.length > 0 &&
+                <>
+                    {orderDetails.map((order, index) => (
+                        <div key={index} className="mb-4">
+                            <div className="flex justify-center mb-4">
+                                <img
+                                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
+                                    alt={order.product.name}
+                                    className="h-48 w-auto object-cover rounded-lg"
+                                />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-700">
+                                    <strong>Product:</strong> {order.product.name}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    <strong>Category:</strong> {order.category.category.category.name}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    <strong>Size:</strong> {order.size || "N/A"}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    <strong>Quantity:</strong> {order.Quantity}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    <strong>Price:</strong> {order.totalPrice} BDT
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                    <div className="mb-4">
+                        <p className={`text-sm ${orderDetails[0].history.deliveryStatus.name === "Delivered" ? "text-green-500" : "text-orange-500"}`}>
+                            <strong>Status:</strong> {orderDetails[0].history.deliveryStatus.name}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                            <strong>Payment Method:</strong> {orderDetails[0].history.paymentMethod.name}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                            <strong>Payment Done:</strong> {orderDetails[0].history.PaymentDone ? "Yes" : "No"}
+                        </p>
+                    </div>
+                    <div className="mb-4">
+                        <p className="text-sm text-gray-700">
+                            <strong>Customer Name:</strong> {orderDetails[0].customer.name}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                            <strong>Email:</strong> {orderDetails[0].customer.email}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                            <strong>Phone:</strong> {orderDetails[0].history.phone_no}
+                        </p>
+                    </div>
+                    <div className="mb-4">
+                        <p className="text-sm text-gray-700">
+                            <strong>Address:</strong> {orderDetails[0].history.address}, {orderDetails[0].history.region}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                            <strong>Delivery Fee:</strong> {orderDetails[0].history.deliveryFee} BDT
+                        </p>
+                        <div className="mb-4">
+                            <p className="text-lg font-bold text-gray-800">
+                                <strong>Total Price:</strong> {orderDetails.reduce((acc, current) => acc + current.totalPrice, 0) + orderDetails[0].history.deliveryFee} BDT
+                            </p>
+                        </div>
+                    </div>
+                </>
+            }
             {/* delivery path  */}
-            <OrderComp orderDetails={orderDetails} />
-        </div>
+            <OrderComp orderDetails={orderDetails[0]} />
+        </div >
     );
 
     return (
@@ -94,7 +137,7 @@ const OrderDetails = () => {
                 <h1 className="text-3xl font-semibold text-center mb-8">Order Details</h1>
                 {loading ? <LoadingIndicator /> : error ? <ErrorMessage /> : orderDetails ? <OrderInfo /> : <p className="text-center text-xl text-gray-600">Order details not available.</p>}
             </div>
-          {/* <Footer /> */} 
+            {/* <Footer /> */}
         </div>
     );
 };
