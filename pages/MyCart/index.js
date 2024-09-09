@@ -12,7 +12,6 @@ import Footer from '../../components/Footer/Footer';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();
-  // console.log(cart, 14);
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
 
@@ -44,7 +43,6 @@ const MyCart = () => {
 
   // Handle delete item with confirmation
   const handleDeleteItem = (itemId) => {
-    // console.log(itemId, "41");
     Swal.fire({
       title: 'Are you sure?',
       text: 'You won\'t be able to revert this!',
@@ -56,7 +54,6 @@ const MyCart = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const result = await axiosPublic.delete(`/admin/delete-cart/${itemId}`)
-        // console.log(result, "53");
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
           refetch()
@@ -65,7 +62,7 @@ const MyCart = () => {
     });
   };
 
-  // Handle delete item with confirmation
+  // Handle delete selected items
   const handleDeleteSelected = () => {
     Swal.fire({
       title: 'Are you sure?',
@@ -81,7 +78,6 @@ const MyCart = () => {
           const result = await axiosPublic.delete('/admin/delete-carts', {
             data: { checkedItems }
           });
-          // console.log(result, "53");
           if (result.data.affected > 0) {
             Swal.fire('Deleted!', 'Your selected items have been deleted.', 'success');
             refetch();
@@ -109,91 +105,74 @@ const MyCart = () => {
 
   return (
     <>
-      {/* <NavbarCompTwo /> */}
-      <section className='pt-40 min-h-screen'>
-        <div className="overflow-x-auto">
-          {cart.length > 0 ?
-            <table className="table">
-              {/* Table Head */}
-              <thead>
-                <tr>
-                  <th>
-                    <label>
-                      <input type="checkbox" className="checkbox" onChange={handleSelectAll} />
-                    </label>
-                  </th>
-                  <th>Product Name</th>
-                  <th>Category</th>
-                  <th>Size</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Total</th>
-                  <th className='flex items-center gap-2'>
-                    <button onClick={handleCheckout} className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-accent'}`}>
-                      Checkout
-                    </button>
+      <section className='pt-20 lg:pt-40 min-h-screen'>
+        <div className="container mx-auto px-4">
+          {cart.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {cart.map((item) => (
+                <div key={item.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col items-start justify-between space-y-4">
+                  <div className="flex justify-between w-full">
+                    <input
+                      type="checkbox"
+                      className="checkbox"
+                      checked={checkedItems.includes(item.id)}
+                      onChange={() => toggleItemSelection(item.id)}
+                    />
                     <button
-                      onClick={handleDeleteSelected}
-                      className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-error'}`}
+                      onClick={() => handleDeleteItem(item.uniqueId)}
+                      className="text-red-600 hover:text-red-800"
                     >
-                      <RiDeleteBin5Fill />
+                      <RiDeleteBin5Fill size={24} />
                     </button>
-                  </th>
-                </tr>
-              </thead>
-
-              {/* Table Body */}
-              <tbody>
-                {
-                  cart.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <label>
-                          <input
-                            type="checkbox"
-                            className="checkbox"
-                            checked={checkedItems.includes(item.id)}
-                            onChange={() => toggleItemSelection(item.id)}
-                          />
-                        </label>
-                      </td>
-                      <td className='flex gap-3 items-center'>
-                        <img
-                          className='w-16 rounded-full border-black  border-2'
-                          src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.product.filename}`}
-                          alt={item.ProductName}
-                        />
-                        {item.ProductName}
-                      </td>
-                      <td>{item.category.category.category.name}</td>
-                      <td>{item.size}</td>
-                      <td>{item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)} BDT</td>
-                      <td>{item.Quantity}</td>
-                      <td>{item.Quantity * (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100))} BDT</td>
-                      <td>
-                        <button
-                          onClick={() => handleDeleteItem(item.uniqueId)}
-                          className="btn btn-error"
-                        >
-                          <RiDeleteBin5Fill />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-
-                }
-              </tbody>
-            </table>
-            :
-            <p className='text-4xl font-bold flex justify-center items-center text-center h-screen'>
-              No product is added to cart. Let's buy some goodies&nbsp;
-              <Link href={'/'} className=' text-blue-600' >here</Link>
-              &nbsp;:D
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <img
+                      className='w-16 h-16 rounded-full border-black border-2'
+                      src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.product.filename}`}
+                      alt={item.ProductName}
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{item.ProductName}</span>
+                      <span className="text-gray-500 text-sm">{item.category.category.category.name}</span>
+                      <span className="text-gray-500 text-sm">Size: {item.size}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between w-full">
+                    <span className="font-bold">{item.Quantity} pcs</span>
+                    <span className="font-bold text-green-600">
+                      {item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)} BDT
+                    </span>
+                  </div>
+                  <div className="w-full flex justify-between items-center">
+                    <span className="font-semibold text-lg">Total: {item.Quantity * (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100))} BDT</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className='text-4xl font-bold text-center'>
+              No products in cart. <Link href={'/'} className='text-blue-600'>Shop now!</Link> 😃
             </p>
-          }
+          )}
+
+          {cart.length > 0 && (
+            <div className="mt-8 flex justify-end gap-4">
+              <button
+                onClick={handleCheckout}
+                className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-accent'}`}
+              >
+                Checkout
+              </button>
+              <button
+                onClick={handleDeleteSelected}
+                className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-error'}`}
+              >
+                <RiDeleteBin5Fill />
+              </button>
+            </div>
+          )}
         </div>
       </section>
-    {/* <Footer /> */} 
     </>
   );
 };
