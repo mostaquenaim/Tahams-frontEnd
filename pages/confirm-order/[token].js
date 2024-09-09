@@ -1,8 +1,5 @@
-import axios from "axios";
 import useAxiosPublic from "/Hooks/useAxiosPublic";
 import PaymentInfo from "/components/Cart/PaymentInfo";
-import Footer from "/components/Footer/Footer";
-import NavbarCompTwo from "/components/Header/NavbarComp";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../Contexts/Auth/AuthProvider";
 import { useRouter } from "next/router";
@@ -27,7 +24,7 @@ const PaymentProcess = () => {
     return (
         <div className="min-h-screen">
             {/* <NavbarCompTwo /> */}
-            <div className="pt-48 min-h-screen">
+            <div className="pt-20 lg:pt-48 min-h-screen">
                 {
                     loading ?
                         <span className="loading loading-spinner loading-md"></span>
