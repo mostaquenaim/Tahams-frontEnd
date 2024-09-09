@@ -17,6 +17,7 @@ const PaymentProcess = () => {
     useEffect(() => {
         const fetchHistory = async () => {
             const result = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email}`)
+            // console.log(result.data,'result');
             setBuyingHistory(result.data)
         }
         fetchHistory()

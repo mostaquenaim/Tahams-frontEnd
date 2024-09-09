@@ -43,11 +43,12 @@ const PaymentInfo = ({ history }) => {
 
         try {
             const formData = new FormData();
+            // console.log('history',history);
             formData.append('paymentMethod', selectedPaymentMethod.id); // Send the name instead of ID
             formData.append('accountNumber', paymentInfo?.accountNumber || null);
             formData.append('screenshot', paymentInfo?.screenshot || null);
-            formData.append('history', history.history.trackingToken);
-            formData.append('customer', history.customer.email);
+            formData.append('history', history[0].history.trackingToken);
+            formData.append('customer', history[0].customer.email);
 
             const response = await axiosPublic.post('/admin/add-payment', formData);
 

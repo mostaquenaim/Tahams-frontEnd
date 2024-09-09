@@ -3,35 +3,59 @@ import React from 'react';
 import { FaEye } from 'react-icons/fa';
 
 const ShowOrderComp = ({ group, idx, cardBtnStyle }) => {
-    // console.log('order',order);
+    console.log('group',group);
     return (
         <div
             key={idx}
-            className={`bg-gradient-to-b from-white via-slate-100 to-white p-4 rounded shadow-md relative hover:shadow-lg transition duration-300 ease-in-out`}
+            className={`bg-white p-4 md:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out transform hover:-translate-y-1`}
         >
-            <h2 className='text-lg font-bold mb-2 text-gray-800'>{group.history.paymentMethod.name}</h2>
-            <ul className='list-none mb-4'>
-                {group.orders.map((order, idx) => (
-                    <li key={idx} className='mb-2 flex items-center'>
-                        <Link className='block' href={`/products/details/${order.product.id}`}>
-                            <img src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`} alt={order.product.name}
-                                className='w-48 h-48 rounded mr-2 object-cover' />
-                        </Link>
-                        <div className='ml-2'>
-                            <Link className='text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out' href={`/products/details/${order.product.id}`}>
-                                <h3 className='font-bold'>{order.product.name}</h3>
+            <div className="flex flex-col md:space-x-6 space-y-4 md:space-y-0">
+                <div className="md:w-full lg:w-1/3">
+                    <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-1 md:mb-3">
+                        {group.history.paymentMethod.name}
+                    </h2>
+                    <p className="text-xs md:text-sm text-gray-500 mb-2 md:mb-4">
+                        Order Placed on {new Date(group.history.BuyingDate).toLocaleDateString()}
+                    </p>
+                </div>
+                <ul className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {group.orders.map((order, idx) => (
+                        <li
+                            key={idx}
+                            className="relative bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 ease-in-out"
+                        >
+                            <Link href={`/products/details/${order.product.id}`} className="block group">
+                                <img
+                                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
+                                    alt={order.product.name}
+                                    className="w-full h-40 md:h-48 object-cover rounded-lg transition-transform duration-300 ease-in-out group-hover:scale-105"
+                                />
+                                <div className="mt-2 md:mt-3">
+                                    <h3 className="text-sm md:text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300 ease-in-out">
+                                        {order.product.name}
+                                    </h3>
+                                    <p className="text-xs md:text-sm text-gray-500 mt-1">
+                                        Category: <span className="font-semibold text-gray-600">{order.category.category.name}</span>
+                                    </p>
+                                    <p className="text-xs md:text-sm text-gray-500">
+                                        Size: <span className="font-semibold text-gray-600">{order.size}</span>
+                                    </p>
+                                </div>
                             </Link>
-                            <span className='text-gray-600'>Category: <span className='font-semibold'>{order.category.category.name}</span></span>
-                            <br />
-                            <span className='text-gray-600'>Size: <span className='font-semibold'>{order.size}</span></span>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-            <p className='text-lg font-bold mb-2 text-gray-800'>Total Price: {group.totalPrice + group.deliveryFee}</p>
-            <Link className='absolute bottom-2 left-0 w-full flex justify-center' href={`my-orders/details/${group.history.trackingToken}`}>
-                <button className={`btn btn-sm btn-accent ${cardBtnStyle} hover:bg-accent-hover transition duration-300 ease-in-out`}>
-                    <FaEye /> Details
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="mt-4 md:mt-6">
+                <p className="text-lg md:text-xl font-bold text-gray-800">
+                    Total Price: <span className="text-green-600">{(group.totalPrice + group.deliveryFee).toFixed(2)} BDT</span>
+                </p>
+            </div>
+            <Link href={`my-orders/details/${group.history.trackingToken}`} className="block mt-3 md:mt-4">
+                <button
+                    className={`w-full btn btn-accent flex items-center justify-center gap-2 ${cardBtnStyle} hover:bg-accent-hover transition duration-300 ease-in-out`}
+                >
+                    <FaEye /> View Details
                 </button>
             </Link>
         </div>

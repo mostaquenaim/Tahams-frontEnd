@@ -31,7 +31,7 @@ const ShowOrders = () => {
     const cardBtnStyle = 'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1'
 
     return (
-        <div className='min-h-screen bg-gray-100 p-8 pt-40'>
+        <div className='min-h-screen bg-gray-100 p-8 pt-20 lg:pt-40'>
             <h1 className='text-3xl font-bold text-center mb-8'>Orders</h1>
             <div className='container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {loading ? (
