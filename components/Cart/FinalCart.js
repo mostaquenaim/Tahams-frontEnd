@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FaShoppingCart, FaRegStickyNote } from 'react-icons/fa';
 import { TiInputChecked } from 'react-icons/ti';
-import toast, { Toaster } from 'react-hot-toast';
 import PropTypes from 'prop-types';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { DeliveryContext } from '../../Contexts/DeliveryFee';
@@ -28,14 +27,11 @@ const FinalCart = ({ cartItems }) => {
 
     const handleApplyCoupon = async () => {
         const res = await axiosPublic.get(`/admin/get-coupons`)
-        // console.log(res.data);
-        // Add logic to apply coupon
-        // toast.success('Coupon applied successfully!');
         setError('Coupon not valid')
     };
 
     return (
-        <div className=" mt-8 p-8 bg-gray-100 border rounded-lg mb-10">
+        <div className="mt-8 p-8 bg-gray-100 border rounded-lg mb-10">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-semibold">Your Cart</h2>
                 <FaShoppingCart className="text-3xl text-blue-500" />
@@ -45,7 +41,7 @@ const FinalCart = ({ cartItems }) => {
             <div className="mb-4 pb-4 border-b-2 border-gray-200">
                 {cartItems.map((item, index) => (
                     <div className='flex justify-between' key={index}>
-                        <p>{item.ProductName} <span className='text-lg font-semibold'> x {item.Quantity}</span></p>
+                        <p className='w-2/3'>{item.ProductName} <span className='text-lg font-semibold'> x {item.Quantity}</span></p>
                         <p>৳ {(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity} </p>
                     </div>
                 ))}
@@ -85,7 +81,7 @@ const FinalCart = ({ cartItems }) => {
                     <TiInputChecked className="text-xl text-green-500 mr-2" />
                     <span className="text-lg font-semibold">Coupon</span>
                 </div>
-                <div className="flex items-center">
+                <div className="flex flex-col md:flex-row gap-3">
                     <input
                         type="text"
                         placeholder="Enter coupon code"
@@ -98,7 +94,7 @@ const FinalCart = ({ cartItems }) => {
                         onClick={handleApplyCoupon}
                         className={`btn ${couponCode ? 'btn-primary' : 'btn-disabled'}`}
                     >
-                        Apply Coupon
+                        Apply 
                     </button>
                 </div>
                 <div>
@@ -107,8 +103,6 @@ const FinalCart = ({ cartItems }) => {
                     </span>
                 </div>
             </div>
-
-            {/* <Toaster /> */}
         </div>
     );
 };

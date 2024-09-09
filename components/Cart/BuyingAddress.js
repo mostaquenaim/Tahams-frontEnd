@@ -18,7 +18,6 @@ const BuyingAddress = ({ data }) => {
     const [cities, setCities] = useState([]);
     const [outSideCities, setOutSideCities] = useState(false);
     // const [deliveryFee, setDeliveryFee] = useState(150);
-    const [isEditing, setIsEditing] = useState(false);
 
     const {
         deliveryFee,
@@ -163,7 +162,7 @@ const BuyingAddress = ({ data }) => {
     };
 
     return (
-        <div className="bg-white p-8 rounded-md shadow-md mb-10 w-2/3">
+        <div className="bg-white p-8 rounded-md shadow-md mb-10 md:w-2/3">
             <h2 className="text-2xl font-bold mb-6 text-center">Shipping Address</h2>
             <form onSubmit={handleSubmit(onSubmit)}>
                 {/* Full Name */}
