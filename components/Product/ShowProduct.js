@@ -113,7 +113,7 @@ const ShowProduct = ({ item }) => {
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
                 <div onClick={handleProductClick} className="relative cursor-pointer" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <img src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg" />
+                    <img src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg h-96" />
                     {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
                 </div>
                 <div className="flex flex-col items-center text-center justify-center gap-3">

@@ -9,16 +9,56 @@ const AdminDrawer = () => {
 
     // Define your links here
     const navLinks = [
-        { href: '/admin/Add/add-product', label: 'Add Product' },
-        { href: '/admin/publish-product', label: 'Show Unpublished Products' },
-        { href: '/admin/Add/add-series', label: 'Add Series '},
-        { href: '/admin/Add/add-category', label: 'Add Category of a series '},
-        { href: '/admin/Add/add-product-type', label: 'Add product type of a category '},
-        { href: '/admin/Add/add-color', label: 'Add Color' },
-        { href: '/admin/Add/add-size', label: 'Add Size' },
-        { href: '/admin/Add/add-fabric', label: 'Add Fabric' },
-        { href: '/admin/delete-product', label: 'Delete Product' },
-        { href: '/admin/Show/show-orders', label: 'Show Orders' },
+        {
+            Name: 'Product',
+            Tasks: [
+                { href: '/admin/Add/add-product', label: 'Add Product' },
+                { href: '/admin/publish-product', label: 'Show Unpublished Products' },
+                { href: '/admin/all-products', label: 'All Products' },
+            ]
+        },
+        {
+            Name: 'Series',
+            Tasks: [
+                { href: '/admin/Add/add-series', label: 'Add Series' },
+            ]
+        },
+        {
+            Name: 'Category',
+            Tasks: [
+                { href: '/admin/Add/add-category', label: 'Add Category of a series' },
+            ]
+        },
+        {
+            Name: 'Product Type',
+            Tasks: [
+                { href: '/admin/Add/add-product-type', label: 'Add product type of a category' },
+            ]
+        },
+        {
+            Name: 'Color',
+            Tasks: [
+                { href: '/admin/Add/add-color', label: 'Add Color' },
+            ]
+        },
+        {
+            Name: 'Size',
+            Tasks: [
+                { href: '/admin/Add/add-size', label: 'Add Size' },
+            ]
+        },
+        {
+            Name: 'Fabric',
+            Tasks: [
+                { href: '/admin/Add/add-fabric', label: 'Add Fabric' },
+            ]
+        },
+        {
+            Name: 'Orders',
+            Tasks: [
+                { href: '/admin/Show/show-orders', label: 'Show Orders' },
+            ]
+        },
     ];
 
     const toggleDrawer = () => {
@@ -42,9 +82,16 @@ const AdminDrawer = () => {
                         <ul className="space-y-2">
                             {navLinks.map((link, index) => (
                                 <li key={index}>
-                                    <Link href={link.href}>
-                                        <label className={router.pathname === link.href ? 'text-blue-600 font-semibold text-xl cursor-pointer' : 'cursor-pointer'}>{link.label}</label>
-                                    </Link>
+                                    <h2 className="text-xl underline font-semibold">{link.Name}</h2>
+                                    <ul>
+                                        {link.Tasks.map((task, taskIndex) => (
+                                            <li key={taskIndex}>
+                                                <Link href={task.href}>
+                                                    <label className={router.pathname === task.href ? 'text-blue-600 font-semibold text-xl cursor-pointer' : 'cursor-pointer'}>{task.label}</label>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </li>
                             ))}
                         </ul>

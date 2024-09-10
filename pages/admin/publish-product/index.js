@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useContext } from 'react';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import {
     createColumnHelper,
@@ -9,9 +9,11 @@ import {
 import Link from 'next/link';
 import Modal from 'react-modal';
 import useLoadProducts from '../../../Hooks/useLoadProducts';
+import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Index = () => {
     const axiosPublic = useAxiosPublic();
+    const { user } = useContext(AuthContext)
 
     const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -54,7 +56,7 @@ const Index = () => {
     const handleDelete = async () => {
         if (selectedProduct) {
             try {
-                await axiosPublic.delete(`/admin/delete-product/${selectedProduct.id}`);
+                await axiosPublic.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`);
                 refetch();
                 closeDeleteModal();
             } catch (error) {

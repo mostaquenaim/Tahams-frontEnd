@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const FetchProducts = ({ categories, admin = false }) => {
+    console.log(categories,'categories');
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState(categories)
     // const [showGotoCart, setShowGotoCart] = useState(false)
@@ -114,9 +115,11 @@ const FetchProducts = ({ categories, admin = false }) => {
     return (
         <div className=''>
             {/* <NavbarCompTwo /> */} 
-            <div className='pt-48 mx-10 pb-10'>
+            <div className='pt-20 lg:pt-48 mx-10'>
                 {/* Sort By dropdown */}
-                <div className='flex text-end justify-end mr-10 md:mr-14 lg:mr-20 pb-10'>
+                <div className='flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10'>
+                    {/* <div></div> */}
+                    <div className='font-semibold text-3xl uppercase underline'>{categories[0].pscs[0].category.category.category.name}</div>
                     <select id="sortDropdown" value={sortOption} onChange={handleSortChange}>
                         <option value="default">Sort by: Default</option>
                         <option value="priceLowToHigh">Price: Low to High</option>
