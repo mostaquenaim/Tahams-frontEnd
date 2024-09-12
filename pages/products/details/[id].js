@@ -89,6 +89,7 @@ const Product = ({ product }) => {
         }
     }, []);
 
+    // console.log(product, 'product');
     const {
         sellingPrice,
         filename,
@@ -181,6 +182,7 @@ const Product = ({ product }) => {
         else {
             setIsAddedToCart(true)
             setShowGotoCart(true)
+            // console.log(product,color);
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axiosPublic.post('/admin/add-to-cart', {

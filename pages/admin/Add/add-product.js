@@ -140,6 +140,7 @@ export default function AddProduct() {
         })
 
         // console.log('selectedCats',selectedCats)
+        console.log('selectedColor',selectedColor)
         // console.log('catsInfo', JSON.stringify(catsInfo))
         // console.log('selectedCatsInfo', JSON.stringify(selectedCatsInfo) );
 
@@ -156,7 +157,7 @@ export default function AddProduct() {
         formData.append('tags', selectedTags);
         formData.append('description', data.description);
         formData.append('myfile', data.myfile[0]);
-        formData.append('color', data.color);
+        formData.append('color', selectedColor);
         formData.append('longDescription', data.longDescription);
 
         // formData.append('categories', JSON.stringify(data.categories));
