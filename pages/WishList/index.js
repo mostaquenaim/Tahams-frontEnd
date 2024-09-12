@@ -34,7 +34,7 @@ const WishList = () => {
         if (userInfo) {
             setIsDeleting(true);
             try {
-                await axiosPublic.delete(`admin/remove-wish/`, formData);
+                await axiosPublic.delete(`admin/remove-wish/${item.product.id}?email=${user?.email}`);
                 refetch();
             } catch (error) {
                 console.error("Failed to delete item:", error);
