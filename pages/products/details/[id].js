@@ -127,7 +127,7 @@ const Product = ({ product }) => {
                 console.error('Error adding product to wishlist:', error);
                 // Handle error if the request fails
             }
-        }
+        } 
         else {
             try {
                 const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${user?.email}`);
