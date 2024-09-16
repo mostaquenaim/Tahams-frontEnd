@@ -125,7 +125,7 @@ const ShowOrderDetails = () => {
                         </div>
                     )}
 
-                    <OrderComp orderDetails={group[0]} />
+                    <OrderComp orderDetails={group[0].history} admin={true}/>
                 </div>
             )}
         </div>

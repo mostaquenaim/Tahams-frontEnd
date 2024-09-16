@@ -126,7 +126,7 @@ const OrderDetails = () => {
                 </>
             }
             {/* delivery path  */}
-            <OrderComp orderDetails={orderDetails[0]} />
+            <OrderComp orderDetails={orderDetails[0].history} />
         </div >
     );
 

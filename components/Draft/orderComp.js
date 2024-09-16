@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import { MdRadioButtonUnchecked } from 'react-icons/md';
-import Tooltip from '@mui/material/Tooltip'; // Import Tooltip from MUI
+import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
+import useAxiosPublic from '../../Hooks/useAxiosPublic'
+import { AuthContext } from '../../Contexts/Auth/AuthProvider'
+import toast from 'react-hot-toast';
+import Modal from 'react-modal';
 
 // Custom styled tooltip
 const CustomTooltip = styled(({ className, ...props }) => (
@@ -26,17 +30,21 @@ const steps = [
   { id: 'processing', label: 'Processed', date: 'processedDate' },
   { id: 'ready_to_ship', label: 'Ready to Ship', date: 'readyToShipDate' },
   { id: 'shipped', label: 'Dropped off', date: 'droppedOffDate' },
-  { id: 'out_for_delivery', label: 'Out for Delivery', date: 'outDate' },
+  // { id: 'out_for_delivery', label: 'Out for Delivery', date: 'outDate' },
   { id: 'delivered', label: 'Delivered', date: 'deliveredDate' },
   { id: 'cancelled', label: 'Cancelled', condition: 'cancelDate', date: 'cancelDate' },
   { id: 'product_returned', label: 'Product Returned', condition: 'returnDate', date: 'returnDate' },
 ];
 
-const OrderComp = ({ orderDetails }) => {
+const OrderComp = ({ orderDetails, admin = false }) => {
   // console.log('orderDetails',orderDetails);
   const [currentStep, setCurrentStep] = useState(0);
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState('');
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(null)
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const axiosPublic = useAxiosPublic()
+  const { user } = useContext(AuthContext)
 
   useEffect(() => {
     if (orderDetails) {
@@ -46,9 +54,7 @@ const OrderComp = ({ orderDetails }) => {
         readyToShipDate,
         droppedOffDate,
         deliveredDate,
-        cancelDate,
-        returnDate
-      } = orderDetails.history;
+      } = orderDetails;
 
       // Mapping step names to index
       const stepMap = {
@@ -66,8 +72,8 @@ const OrderComp = ({ orderDetails }) => {
       const completedStepsList = [];
 
       // Populate completed steps list based on available dates
-      steps.forEach((step, idx) => {
-        if (orderDetails.history[`${step.id}Date`] || (!step.condition || orderDetails.history[step.condition])) {
+      steps.forEach((step) => {
+        if (orderDetails[`${step.id}Date`] || (!step.condition || orderDetails[step.condition])) {
           completedStepsList.push(step);
         }
       });
@@ -103,7 +109,55 @@ const OrderComp = ({ orderDetails }) => {
       }
     }
   }, [orderDetails]);
-  
+
+  const openConfirmationModal = (idx) => {
+    if (admin) {
+      if (currentStep == idx - 1) {
+        setSelectedIndex(idx);
+        setIsConfirmationModalOpen(true);
+      }
+      else if (currentStep == idx) {
+        toast.error('Checked step cannot be checked')
+      }
+      else {
+        toast.error('Check/uncheck the steps serially')
+      }
+    }
+
+  };
+
+  const closeConfirmationModal = () => {
+    setIsConfirmationModalOpen(false);
+    setSelectedIndex(null);
+  };
+
+  // Handle step click for admin
+  const handleStepClick = async () => {
+    if (!admin) return; // early return if not admin
+
+    const selectedIndexValue = selectedIndex;
+    // setCurrentStep(selectedIndexValue);
+    console.log(selectedIndexValue);
+
+    const dateKey = steps[selectedIndexValue].date;
+    const updateData = { [dateKey]: new Date() };
+
+    try {
+      const response = await axiosPublic.patch(
+        `/admin/update-buying-history-status-by-token/${orderDetails.trackingToken}?email=${user?.email}`,
+        updateData, 
+      );
+
+      console.log('res =>', response.data);
+      setCurrentStep(selectedIndexValue)
+      closeConfirmationModal();
+      toast.success('Step updated successfully');
+      console.log('Step updated successfully:', response.data);
+    } catch (error) {
+      console.error('Error updating step:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className="relative w-full max-w-3xl px-4">
@@ -118,16 +172,16 @@ const OrderComp = ({ orderDetails }) => {
                 <CustomTooltip
                   title={
                     isCompleted
-                      ? `Completed on ${new Date(orderDetails.history[step.date]).toLocaleDateString()}`
+                      ? `Completed on ${new Date(orderDetails[step.date]).toLocaleDateString()}`
                       : `Not completed yet`
                   }
                   arrow
                 >
-                  <div>
+                  <div onClick={() => openConfirmationModal(index)} className={admin ? 'cursor-pointer' : ''}>
                     {isCompleted ? (
                       <FaCheckCircle className="text-green-500 text-2xl mb-2" />
                     ) : (
-                      <MdRadioButtonUnchecked className="text-gray-500 text-2xl mb-2" />
+                      <MdRadioButtonUnchecked className={`text-gray-500 text-2xl mb-2 ${admin ? 'hover:text-blue-500' : ''}`} />
                     )}
                   </div>
                 </CustomTooltip>
@@ -144,7 +198,7 @@ const OrderComp = ({ orderDetails }) => {
                 <span className="text-sm font-medium">{step.label}</span>
                 {isCompleted && (
                   <span className="text-xs text-gray-500 ml-2 block sm:inline">
-                    ({new Date(orderDetails.history[step.date]).toLocaleDateString()})
+                    ({new Date(orderDetails[step.date]).toLocaleDateString()})
                   </span>
                 )}
                 {step.label === 'Delivered' && !isCompleted && (
@@ -157,6 +211,24 @@ const OrderComp = ({ orderDetails }) => {
           );
         })}
       </div>
+
+      {/* step confirmation modal  */}
+      <Modal
+        isOpen={isConfirmationModalOpen}
+        onRequestClose={closeConfirmationModal}
+        contentLabel="Confirm step"
+        ariaHideApp={false}
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      >
+        <div className="bg-white p-8 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold mb-4">Confirm Step</h2>
+          <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+          <div className="flex justify-end gap-4 mt-4">
+            <button onClick={closeConfirmationModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+            <button onClick={handleStepClick} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
