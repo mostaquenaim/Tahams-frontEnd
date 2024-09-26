@@ -10,10 +10,10 @@ const WhyUs = () => {
                         Why Tahams?
                     </h2>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                        Your Subheading Here
+                    THE UNIQUE WAY OF LIFE.
                     </h3>
                     <p className="text-lg text-gray-600 mb-6">
-                        At Tahams, we take immense pride in offering you the finest clothing and accessories. Our unwavering commitment to excellence sets us apart, and here's why you should choose us:
+                        At Tahams, we take immense pride in offering you the finest clothing and accessories. Our unwavering commitment to excellence sets us apart
                     </p>
                 </div>
 
