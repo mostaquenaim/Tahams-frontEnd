@@ -12,10 +12,8 @@ const ShowProducts = () => {
     const [products, refetch] = useProduct({ publishable: true });
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
-
+    const [editedProducts, setEditedProducts] = useState({});
     const axiosPublic = useAxiosPublic()
-
-    console.log(products, 'products');
 
     const openDeleteModal = (id) => {
         setSelectedProduct(id);
@@ -36,6 +34,46 @@ const ShowProducts = () => {
             } catch (error) {
                 console.error('Error deleting product:', error);
             }
+        }
+    };
+
+    const handleQuantityChange = (productId, pscId, change) => {
+        setEditedProducts((prev) => {
+            const product = prev[productId] || {};
+            const updatedSizes = {
+                ...product,
+                [pscId]: (product[pscId] || 0) + change
+            };
+            return {
+                ...prev,
+                [productId]: updatedSizes
+            };
+        });
+    };
+
+    const handleCancel = (productId) => {
+        setEditedProducts((prev) => {
+            const updated = { ...prev };
+            delete updated[productId];  // Remove the changes for this product
+            return updated;
+        });
+    };
+
+    const handleSave = async (productId) => {
+        const updates = editedProducts[productId];
+        try {
+            await axiosPublic.put(`/admin/update-product-stock/${productId}`, {
+                stockChanges: updates,
+                email: user?.email
+            });
+            refetch();
+            setEditedProducts((prev) => {
+                const updated = { ...prev };
+                delete updated[productId];
+                return updated;
+            });
+        } catch (error) {
+            console.error('Error updating product stock:', error);
         }
     };
 
@@ -65,6 +103,7 @@ const ShowProducts = () => {
                                     (acc, psc) => acc + psc.quantity,
                                     0
                                 );
+                                const productChanges = editedProducts[product.id] || {};
 
                                 return (
                                     <motion.tr
@@ -83,17 +122,32 @@ const ShowProducts = () => {
                                         <td className='py-2 px-4 border-b'>{product.color.name}</td>
                                         <td className='py-2 px-4 border-b'>{product.pscs[0]?.category?.name || 'Uncategorized'}</td>
                                         <td className='py-2 px-4 border-b'>${product.sellingPrice.toFixed(2)}</td>
-                                        <td className='py-2 px-4 border-b'>
+
+                                        <td className=' py-2 px-4 border-b'>
                                             {product.pscs.map((psc) => (
-                                                <span key={psc.id} className='block'>
-                                                    {psc.size?.name}: {psc.quantity}
-                                                </span>
+                                                <div key={psc.id} className='grid grid-flow-col col-span-3 space-x-1 space-y-1'>
+                                                    <button
+                                                        className="px-2 py-1 bg-gray-300 rounded"
+                                                        onClick={() => handleQuantityChange(product.id, psc.id, -1)}
+                                                        disabled={(psc.quantity + (productChanges[psc.id] || 0)) <= 0}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span>{psc.size?.name}: {psc.quantity + (productChanges[psc.id] || 0)}</span>
+                                                    <button
+                                                        className="px-2 py-1 bg-gray-300 rounded"
+                                                        onClick={() => handleQuantityChange(product.id, psc.id, 1)}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
                                             ))}
                                         </td>
+
                                         <td className='py-2 px-4 border-b'>
                                             {totalStock > 0 ? totalStock : <span className="text-red-500">Out of stock</span>}
                                         </td>
-                                        <td className='py-2 px-4 border-b flex gap-2'>
+                                        <td className='py-2 px-4 border-b flex gap-2 items-center'>
                                             <Link href={`/products/edit/${product.id}`}>
                                                 <span className='text-blue-500 hover:underline'>Edit</span>
                                             </Link>
@@ -101,6 +155,17 @@ const ShowProducts = () => {
                                             <button onClick={() => openDeleteModal(product.id)}>
                                                 <span className='text-red-500 hover:underline'>Delete</span>
                                             </button>
+                                            <span>|</span>
+                                            <button onClick={() => handleSave(product.id)} className={`btn btn-sm ${editedProducts[product.id] ? 'btn-success' : 'btn-disabled'}`}>
+                                                <span className=' hover:underline'>
+                                                    Save
+                                                </span>
+                                            </button>
+                                            <span>|</span>
+                                            <button onClick={() => handleCancel(product.id)} className={`btn btn-sm ${editedProducts[product.id] ? 'btn-warning' : 'btn-disabled'}`}>
+                                                <span className='hover:underline'>Cancel</span>
+                                            </button>
+                                            {/* )} */}
                                         </td>
                                     </motion.tr>
                                 );
