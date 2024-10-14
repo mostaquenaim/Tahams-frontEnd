@@ -191,6 +191,8 @@ export default function AddProduct() {
 
         const formData = new FormData();
 
+        console.log(data.myfiles,'all files');
+
         // Append each file to FormData
         Array.from(data.myfiles).forEach((file) => {
             formData.append('myfiles', file);

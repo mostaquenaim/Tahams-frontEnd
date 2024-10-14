@@ -148,7 +148,7 @@ const ShowProducts = () => {
                                             {totalStock > 0 ? totalStock : <span className="text-red-500">Out of stock</span>}
                                         </td>
                                         <td className='py-2 px-4 border-b flex gap-2 items-center'>
-                                            <Link href={`/products/edit/${product.id}`}>
+                                            <Link href={`/admin/edit/product/${product.id}`}>
                                                 <span className='text-blue-500 hover:underline'>Edit</span>
                                             </Link>
                                             <span>|</span>
