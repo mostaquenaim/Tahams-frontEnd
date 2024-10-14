@@ -19,7 +19,7 @@ const EditProduct = ({ product }) => {
             discountPercentage: product.discountPercentage,
             buyingPrice: product.buyingPrice,
             sellingPrice: product.sellingPrice,
-            ifStock: product.ifStock,
+            // ifStock: product.ifStock,
             colorName: product.color.name,
             colorCode: product.color.colorCode,
             // filename: product.filename
@@ -228,14 +228,14 @@ const EditProduct = ({ product }) => {
                     </div>
 
                     {/* Stock Status */}
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                         <label className="block text-sm font-medium text-gray-700">In Stock</label>
                         <input
                             type="checkbox"
                             {...register('ifStock')}
                             className="ml-2 h-5 w-5 text-blue-600 border-gray-300 rounded"
                         />
-                    </div>
+                    </div> */}
 
                     {/* Color */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
