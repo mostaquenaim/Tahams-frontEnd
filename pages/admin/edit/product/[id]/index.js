@@ -264,7 +264,7 @@ const EditProduct = ({ product }) => {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {product.pscs.map((pscs, index) => (
                             <div key={pscs.id} className="flex items-center justify-between">
-                                <span className="text-gray-700">{pscs.size.name}</span>
+                                <span className="text-gray-700">{pscs.size?.name}</span>
                                 <input
                                     type="number"
                                     {...register(`sizes[${index}].quantity`)}
@@ -274,7 +274,7 @@ const EditProduct = ({ product }) => {
                                 <input
                                     type="hidden"
                                     {...register(`sizes[${index}].sizeId`)}
-                                    defaultValue={pscs.size.id}
+                                    defaultValue={pscs.size?.id}
                                 />
                             </div>
                         ))}
