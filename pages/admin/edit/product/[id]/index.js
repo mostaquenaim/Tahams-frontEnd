@@ -19,7 +19,7 @@ const EditProduct = ({ product }) => {
             discountPercentage: product.discountPercentage,
             buyingPrice: product.buyingPrice,
             sellingPrice: product.sellingPrice,
-            // ifStock: product.ifStock,
+            ifStock: product.ifStock,
             colorName: product.color.name,
             colorCode: product.color.colorCode,
             // filename: product.filename
@@ -36,6 +36,8 @@ const EditProduct = ({ product }) => {
     const onSubmit = async (data) => {
         const formData = new FormData();
 
+        // console.log('data',data);
+
         // Append form fields (text data)
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
@@ -45,7 +47,7 @@ const EditProduct = ({ product }) => {
         formData.append('discountPercentage', data.discountPercentage);
         formData.append('buyingPrice', data.buyingPrice);
         formData.append('sellingPrice', parseInt(data.sellingPrice));
-        formData.append('ifStock', data.ifStock ? 1 : 0);
+        formData.append('ifStock', data.ifStock);
         formData.append('colorName', data.colorName);
         formData.append('colorCode', data.colorCode);
         formData.append('filename', filename);
@@ -63,11 +65,11 @@ const EditProduct = ({ product }) => {
         //     }
         // });
 
-        console.log(data, 'data');
-        console.log(newImages, 'newImages');
-        console.log(existingImages, 'existingImages');
-        console.log(deletedImages, 'deletedImages');
-        console.log('thumbnail', filename);
+        // console.log(data, 'data');
+        // console.log(newImages, 'newImages');
+        // console.log(existingImages, 'existingImages');
+        // console.log(deletedImages, 'deletedImages');
+        // console.log('thumbnail', filename);
 
         // Append remaining existing images
         // existingImages.forEach((img, index) => {
@@ -82,7 +84,9 @@ const EditProduct = ({ product }) => {
             });
 
             toast.success('Product updated')
-            editPictures()
+
+            if (newImages.length > 0 || deletedImages.length > 0)
+                editPictures()
 
             // router.push('/admin/products'); // Redirect to product listing page after successful update
         } catch (error) {
@@ -101,7 +105,7 @@ const EditProduct = ({ product }) => {
                 formData.append('myfiles', file);
             });
         }
-        else{
+        else {
             console.log('dukse ekhane');
             // console.log(existingImages);
             Array.from(existingImages).forEach((file) => {
@@ -228,14 +232,14 @@ const EditProduct = ({ product }) => {
                     </div>
 
                     {/* Stock Status */}
-                    {/* <div className="flex items-center">
+                    <div className="flex items-center">
                         <label className="block text-sm font-medium text-gray-700">In Stock</label>
                         <input
                             type="checkbox"
                             {...register('ifStock')}
                             className="ml-2 h-5 w-5 text-blue-600 border-gray-300 rounded"
                         />
-                    </div> */}
+                    </div>
 
                     {/* Color */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
