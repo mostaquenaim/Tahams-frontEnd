@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { AiTwotoneHeart } from 'react-icons/ai';
-import { FaFacebook, FaInstagram, FaTiktok  } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 
 const Footer = () => {
     return (
@@ -9,6 +9,7 @@ const Footer = () => {
                 <nav>
                     <header className="footer-title">Contact</header>
                     <Link href='/' className="link link-hover">2nd Floor, 2-G/8, Maa House, <br></br> Golden Street, Ring Rd, Dhaka 1207</Link>
+                    <Link href='/' className="link link-hover">Display Center: 35-36, 2nd Floor, Shahabuddin Plaza,<br></br> Ring Road, Dhaka, Bangladesh 1207, Dhaka, Bangladesh</Link>
                     <Link href='/' className="link link-hover">01602054102</Link>
                     <Link href='/' className="link link-hover">tahamsbd@gmail.com</Link>
                 </nav>
@@ -41,9 +42,9 @@ const Footer = () => {
                 </aside>
                 <nav className="md:place-self-center md:justify-self-end">
                     <div className="grid grid-flow-col gap-4">
-                        <Link href='https://www.facebook.com/tahamsbd/'><FaFacebook  className='text-2xl hover:opacity-70'></FaFacebook></Link>
+                        <Link href='https://www.facebook.com/tahamsbd/'><FaFacebook className='text-2xl hover:opacity-70'></FaFacebook></Link>
                         <Link href='https://www.instagram.com/tahams_bd/'><FaInstagram className='text-2xl hover:opacity-70'></FaInstagram></Link>
-                        <Link href='https://www.tiktok.com/@tahams_bd'><FaTiktok    className='text-2xl hover:opacity-70'></FaTiktok></Link>
+                        <Link href='https://www.tiktok.com/@tahams_bd'><FaTiktok className='text-2xl hover:opacity-70'></FaTiktok></Link>
                     </div>
                 </nav>
             </footer>

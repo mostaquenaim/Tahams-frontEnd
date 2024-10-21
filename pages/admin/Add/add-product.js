@@ -40,12 +40,15 @@ export default function AddProduct() {
     const sizes = useLoadSizes();
 
     const validateFile = (value) => {
-        const file = value[0];
-        // console.log(value[0]);
-        const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
+        console.log('value', value);
+        if (value.length > 0) {
+            const file = value[0];
+            // console.log(value[0]);
+            const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
 
-        if (!allowedtypes.includes(file.type)) {
-            return false;
+            if (!allowedtypes.includes(file.type)) {
+                return false;
+            }
         }
     }
 
@@ -140,7 +143,7 @@ export default function AddProduct() {
         })
 
         // console.log('selectedCats',selectedCats)
-        console.log('selectedColor',selectedColor)
+        console.log('selectedColor', selectedColor)
         // console.log('catsInfo', JSON.stringify(catsInfo))
         // console.log('selectedCatsInfo', JSON.stringify(selectedCatsInfo) );
 
@@ -173,7 +176,9 @@ export default function AddProduct() {
 
             setSuccess('Product add successfully');
             toast.success('Product add successfully');
-            onSubmitPictures(data);
+
+            data.myfiles.length > 0 &&
+                onSubmitPictures(data);
             // reset();
 
 
@@ -191,7 +196,7 @@ export default function AddProduct() {
 
         const formData = new FormData();
 
-        console.log(data.myfiles,'all files');
+        console.log(data.myfiles, 'all files');
 
         // Append each file to FormData
         Array.from(data.myfiles).forEach((file) => {
@@ -305,15 +310,17 @@ export default function AddProduct() {
                                 type="file"
                                 id="file_input"
                                 className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
-                                {...register('myfiles', { required: true, validate: validateFile })}
+                                {...register('myfiles', { validate: validateFile })}
                                 multiple // Allow multiple file selection
                             />
                             {errors.myfiles && (
                                 <p className="mt-2 text-xs text-red-600 dark:text-red-400">
                                     <span className="font-medium">
-                                        {errors.myfiles.type === 'required'
+                                        {/* {errors.myfiles.type === 'required'
                                             ? 'Files are required'
-                                            : 'Invalid file'}
+                                            :  */}
+                                        Invalid file
+                                        {/* } */}
                                     </span>
                                 </p>
                             )}
@@ -371,7 +378,7 @@ export default function AddProduct() {
                                                                 className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
                                                                 placeholder={`Quantity for ${size.name}`}
                                                                 onInput={(e) => handleSizeAndQuantityChange(e, category.id, size.id)}
-                                                                // {...register(`categories[${index}].sizes.${size.name}`, { required: false })}
+                                                            // {...register(`categories[${index}].sizes.${size.name}`, { required: false })}
                                                             />
                                                         </div>
                                                     ))
@@ -405,6 +412,23 @@ export default function AddProduct() {
                         </button>
                     </form>
                 </div>
+            </div>
+            <div className="fixed bottom-5 right-5 flex flex-col space-y-3">
+                {/* Scroll to Top Button */}
+                <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
+                >
+                    ↑
+                </button>
+
+                {/* Scroll to Bottom Button */}
+                <button
+                    onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                    className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
+                >
+                    ↓
+                </button>
             </div>
             <Toaster />
         </>
