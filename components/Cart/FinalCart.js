@@ -11,7 +11,7 @@ const FinalCart = ({ cartItems }) => {
     const [enableCoupon, setEnableCoupon] = useState(false)
     const [error, setError] = useState('')
 
-    const {deliveryFee} = useContext(DeliveryContext)
+    const { deliveryFee } = useContext(DeliveryContext)
 
     const axiosPublic = useAxiosPublic()
 
@@ -22,7 +22,7 @@ const FinalCart = ({ cartItems }) => {
             return acc + (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
         }, 0);
 
-        setTotalPrice(sum+deliveryFee);
+        setTotalPrice(sum + deliveryFee);
     }, [cartItems, deliveryFee]);
 
     const handleApplyCoupon = async () => {
@@ -94,7 +94,7 @@ const FinalCart = ({ cartItems }) => {
                         onClick={handleApplyCoupon}
                         className={`btn ${couponCode ? 'btn-primary' : 'btn-disabled'}`}
                     >
-                        Apply 
+                        Apply
                     </button>
                 </div>
                 <div>

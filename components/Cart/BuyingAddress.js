@@ -17,7 +17,6 @@ const BuyingAddress = ({ data }) => {
     const [regions, setRegions] = useState(data ? data.module : []);
     const [cities, setCities] = useState([]);
     const [outSideCities, setOutSideCities] = useState(false);
-    // const [deliveryFee, setDeliveryFee] = useState(150);
 
     const {
         deliveryFee,
