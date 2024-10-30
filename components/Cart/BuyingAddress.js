@@ -106,8 +106,36 @@ const BuyingAddress = ({ data }) => {
     };
 
     const onSubmit = async (data) => {
-        // console.log(selectedCity);
         try {
+            const isAddressChanged =
+                data.fullName !== userData.name ||
+                selectedRegion !== userData.region ||
+                selectedCity !== userData.city ||
+                data.address !== userData.address;
+    
+            // Check if the address has changed before proceeding
+            if (isAddressChanged) {
+                const result = await Swal.fire({
+                    title: 'Address Information Changed',
+                    text: 'Do you want to update your default address with this new information?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, update it!',
+                    cancelButtonText: 'No, keep the old one'
+                });
+    
+                // If the user confirms, update the address
+                if (result.isConfirmed) {
+                    await axiosPublic.put(`admin/update-user-address/${userData.id}`, {
+                        name: data.fullName,
+                        region: selectedRegion,
+                        city: selectedCity,
+                        address: data.address,
+                    });
+                }
+            }
+    
+            // Regardless of whether the address was changed, proceed to submit the order
             const formData = {
                 fullName: data.fullName,
                 region: selectedRegion,
@@ -118,43 +146,11 @@ const BuyingAddress = ({ data }) => {
                 carts,
                 deliveryFee,
             };
-
+    
             const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
-
+    
             if (res.status >= 200 && res.status < 300) {
-                // console.log(selectedCity, 'vs', userData.city);
-                const isAddressChanged =
-                    data.fullName !== userData.name ||
-                    selectedRegion !== userData.region ||
-                    selectedCity !== userData.city ||
-                    data.address !== userData.address
-
-                if (isAddressChanged) {
-                    Swal.fire({
-                        title: 'Address Information Changed',
-                        text: 'Do you want to update your default address with this new information?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, update it!',
-                        cancelButtonText: 'No, keep the old one'
-                    }).then(async (result) => {
-                        // console.log('result', result);
-                        if (result.isConfirmed) {
-                            await axiosPublic.put(`admin/update-user-address/${userData.id}`, {
-                                name: data.fullName,
-                                region: selectedRegion,
-                                city: selectedCity,
-                                address: data.address,
-                            });
-                        }
-                        else if (result.dismiss === 'backdrop') {
-                            return
-                        }
-                        router.push(`/confirm-order/${res.data.trackingToken}`);
-                    });
-                } else {
-                    router.push(`/confirm-order/${res.data.trackingToken}`);
-                }
+                router.push(`/confirm-order/${res.data.trackingToken}`);
             }
         } catch (error) {
             console.error('Error submitting the form:', error);

@@ -53,7 +53,7 @@ const PaymentInfo = ({ history }) => {
 
             if (response.status >= 200 && response.status <= 300) {
                 toast.success('Payment confirmed!');
-                router.push('/');
+                router.push('/my-orders');
             } else {
                 toast.error('Payment failed. Please try again.');
             }

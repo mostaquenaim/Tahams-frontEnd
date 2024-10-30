@@ -15,6 +15,7 @@ const WishList = () => {
     // const [wishes, setWishes] = useState([])
     const { user } = useContext(AuthContext)
     const [loading, wish, refetch] = useWish();
+    // console.log(wish,'wish');
     const [isDeleting, setIsDeleting] = useState(false);
     const [userInfo, setUserInfo] = useState(null)
 

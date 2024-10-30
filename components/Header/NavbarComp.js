@@ -77,20 +77,13 @@ const NavbarCompTwo = () => {
 
     const sideLinks = (
         <>
-            <Li>
-                {
-                    user ?
-                        <button onClick={handleLogout}>
-                            Logout
-                        </button>
-                        :
-                        <Link href='/login'>
-                            Login
-                        </Link>
-                }
-            </Li>
             {user &&
                 <>
+                    <Li>
+                        <Link href='/dashboard'>
+                            Dashboard
+                        </Link>
+                    </Li>
                     <Li>
                         <Link href='/my-orders'>
                             My orders
@@ -107,6 +100,18 @@ const NavbarCompTwo = () => {
                 <Link href='/Contact'>
                     Contact Us
                 </Link>
+            </Li>
+            <Li>
+                {
+                    user ?
+                        <button onClick={handleLogout}>
+                            Logout
+                        </button>
+                        :
+                        <Link href='/login'>
+                            Login
+                        </Link>
+                }
             </Li>
         </>
     )

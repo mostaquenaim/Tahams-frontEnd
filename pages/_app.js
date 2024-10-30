@@ -12,6 +12,7 @@ import AdminDrawer from '../components/Drawers/AdminDrawer';
 import { AuthContext } from '../Contexts/Auth/AuthProvider';
 import AdminCheck from '../components/Auth/AdminCheck';
 import CustomerCheck from '../components/Auth/CustomerCheck';
+import CountProvider from '../Contexts/CountProvider';
 
 const queryClient = new QueryClient()
 export default function App({ Component, pageProps }) {
@@ -26,18 +27,20 @@ export default function App({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        {isAdminRoute ? (
-          <AdminCheck>
-            <Component {...pageProps} />
-          </AdminCheck>
-        ) : (
-          <CustomerCheck>
-            <Component {...pageProps} />
-          </CustomerCheck>
-        )}
-        <Toaster />
-      </QueryClientProvider>
+      <CountProvider>
+        <QueryClientProvider client={queryClient}>
+          {isAdminRoute ? (
+            <AdminCheck>
+              <Component {...pageProps} />
+            </AdminCheck>
+          ) : (
+            <CustomerCheck>
+              <Component {...pageProps} />
+            </CustomerCheck>
+          )}
+          <Toaster />
+        </QueryClientProvider>
+      </CountProvider>
     </AuthProvider>
   )
 

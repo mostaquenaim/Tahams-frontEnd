@@ -3,17 +3,22 @@ import React from 'react';
 import { FaEye } from 'react-icons/fa';
 
 const ShowOrderComp = ({ group, idx, cardBtnStyle }) => {
-    console.log('group',group);
+    console.log('group', group);
     return (
         <div
             key={idx}
             className={`bg-white p-4 md:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out transform hover:-translate-y-1`}
         >
             <div className="flex flex-col md:space-x-6 space-y-4 md:space-y-0">
-                <div className="md:w-full lg:w-1/3">
-                    <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-1 md:mb-3">
-                        {group.history.paymentMethod.name}
-                    </h2>
+                <div className="">
+                    <div className='flex justify-between'>
+                        <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-1 md:mb-3">
+                            {group.history.paymentMethod.name}
+                        </h2>
+                        <button>
+                            {/* ... icon  */}
+                        </button>
+                    </div>
                     <p className="text-xs md:text-sm text-gray-500 mb-2 md:mb-4">
                         Order Placed on {new Date(group.history.BuyingDate).toLocaleDateString()}
                     </p>

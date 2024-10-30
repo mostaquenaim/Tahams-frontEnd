@@ -1,11 +1,23 @@
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
 import { AiOutlineMenu } from "react-icons/ai";
+import { CountContext } from '../../Contexts/CountProvider';
+import { Badge } from '@mui/material';
+import useGroupOrders from '../../Hooks/useGroupOrders';
 
 const AdminDrawer = () => {
     const [isOpen, setIsOpen] = useState(true);
     const router = useRouter();
+    const [sortedGroupedOrdersArray] = useGroupOrders()
+    const { setShowCount } = useContext(CountContext)
+
+    const uncheckedCount = sortedGroupedOrdersArray.filter(group => !group.history.isChecked).length;
+    // console.log(uncheckedCount, 'uncheckedCount');
+    setShowCount(uncheckedCount)
+
+    const { showCount } = useContext(CountContext)
+    console.log(showCount && showCount, 'showCount');
 
     // Define your links here
     const navLinks = [
@@ -56,7 +68,15 @@ const AdminDrawer = () => {
         {
             Name: 'Orders',
             Tasks: [
-                { href: '/admin/Show/show-orders', label: 'Show Orders' },
+                {
+                    href: '/admin/Show/show-orders',
+                    label: (
+                        <Badge badgeContent={showCount} color="secondary" overlap="rectangular">
+                            Show Orders
+                        </Badge>
+                    ),
+                },
+                { href: '/admin/Show/show-requests', label: 'Cancel/Return req' },
             ]
         },
     ];
