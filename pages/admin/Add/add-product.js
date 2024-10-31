@@ -34,7 +34,7 @@ export default function AddProduct() {
     } = useForm();
 
     // load hooks
-    const subSubCategories = useLoadSubSubCategories();
+    const [subSubCategories] = useLoadSubSubCategories();
     const colors = useLoadColors();
     const fabrics = useLoadFabrics();
     const sizes = useLoadSizes();

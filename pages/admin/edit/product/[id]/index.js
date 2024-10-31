@@ -58,24 +58,6 @@ const EditProduct = ({ product }) => {
             formData.append(`sizes[${index}][quantity]`, sizeObj.quantity);
         });
 
-        // Append new images if uploaded
-        // newImages.forEach((file, index) => {
-        //     if (file) {
-        //         formData.append(`newImages[${index}]`, file); // Adding new images
-        //     }
-        // });
-
-        // console.log(data, 'data');
-        // console.log(newImages, 'newImages');
-        // console.log(existingImages, 'existingImages');
-        // console.log(deletedImages, 'deletedImages');
-        // console.log('thumbnail', filename);
-
-        // Append remaining existing images
-        // existingImages.forEach((img, index) => {
-        //     formData.append(`existingImages[${index}]`, img.filename);
-        // });
-
         try {
             const response = await axiosPublic.put(`/admin/update-product/${product.id}`, formData, {
                 headers: {

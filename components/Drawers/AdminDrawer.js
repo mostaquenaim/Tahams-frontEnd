@@ -45,6 +45,8 @@ const AdminDrawer = () => {
             Name: 'Product Type',
             Tasks: [
                 { href: '/admin/Add/add-product-type', label: 'Add product type of a category' },
+                // { href: '/admin/edit/edit-product-type', label: 'Edit product type' },
+                { href: '/admin/Show/product-type', label: 'Show product types' },
             ]
         },
         {
