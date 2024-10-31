@@ -388,15 +388,6 @@ const Product = ({ product }) => {
                             </div>
                         )}
 
-                        {/* size chart  */}
-                        <div>
-                            <p className="text-gray-600 font-semibold">Size Chart:</p>
-                            {
-                                product.pscs[0].category.filename &&
-                                <img className="" src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.pscs[0].category.filename}`} alt="Size Chart" />
-                            }
-                        </div>
-
                         {/* Category Dropdown */}
                         <div className="mb-4">
                             <label htmlFor="category" className="block text-gray-700">Category</label>
@@ -468,6 +459,15 @@ const Product = ({ product }) => {
                             >
                                 🛍️ Buy Now
                             </button>
+                        </div>
+
+                        {/* size chart  */}
+                        <div className='pt-4'>
+                            <p className="text-gray-600 font-semibold">Size Chart:</p>
+                            {
+                                product.pscs[0].category.filename &&
+                                <img className="" src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.pscs[0].category.filename}`} alt="Size Chart" />
+                            }
                         </div>
                     </div>
                 </div>
