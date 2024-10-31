@@ -10,7 +10,7 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Product = ({ product }) => {
-    // console.log('product',product);
+    console.log('product', product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
@@ -127,7 +127,7 @@ const Product = ({ product }) => {
                 console.error('Error adding product to wishlist:', error);
                 // Handle error if the request fails
             }
-        } 
+        }
         else {
             try {
                 const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${user?.email}`);
@@ -387,6 +387,15 @@ const Product = ({ product }) => {
                                 </div>
                             </div>
                         )}
+
+                        {/* size chart  */}
+                        <div>
+                            <p className="text-gray-600 font-semibold">Size Chart:</p>
+                            {
+                                product.pscs[0].category.filename &&
+                                <img className="" src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.pscs[0].category.filename}`} alt="Size Chart" />
+                            }
+                        </div>
 
                         {/* Category Dropdown */}
                         <div className="mb-4">
