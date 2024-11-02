@@ -251,7 +251,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
       >
         <div className="bg-white p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold mb-4">Confirm Step</h2>
-          <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+          <p>This action cannot be undone.</p>
           <div className="flex justify-end gap-4 mt-4">
             <button onClick={closeConfirmationModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
             <button onClick={handleStepClick} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>

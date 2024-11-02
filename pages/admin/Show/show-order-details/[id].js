@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
 import Loading from '../../../../components/Loading';
 import Image from 'next/image';
@@ -8,20 +8,44 @@ import OrderComp from '../../../../components/orderComp';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Link from 'next/link';
+import { FaTrash } from 'react-icons/fa';
+import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
+import Modal from 'react-modal';
 
 const ShowOrderDetails = () => {
     const router = useRouter();
     const { id } = router.query;
+    const { user } = useContext(AuthContext)
     const [orders] = useOrder();
     const { loading } = useContext(AuthContext);
+    const axiosPublic = useAxiosPublic();
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
-    const group = orders.filter(order => order.history?.id == id);
+    // Filtered Order Details
+    const group = orders.filter(order => order.history?.id == id );
     if (group.length === 0) {
         return <div className='min-h-screen flex items-center justify-center text-xl'>No order details found</div>;
     }
 
     const customer = group[0]?.customer;
     const history = group[0]?.history;
+    console.log(history);
+
+    // Modal handlers
+    const openConfirmationModal = () => setIsConfirmationModalOpen(true);
+    const closeConfirmationModal = () => setIsConfirmationModalOpen(false);
+
+    // Handle delete with confirmation
+    const handleDelete = async () => {
+        try {
+            const res = await axiosPublic.put(`/admin/delete-history/${history?.trackingToken}?email=${user?.email}`);
+            console.log(res.data);
+            closeConfirmationModal(); // Close modal on success
+            router.push('/admin/Show/show-orders'); // Redirect to orders page or any other page
+        } catch (error) {
+            console.error("Failed to delete order history:", error);
+        }
+    };
 
     return (
         <div className='min-h-screen bg-gray-100 p-6 flex justify-center'>
@@ -30,9 +54,14 @@ const ShowOrderDetails = () => {
                     <Loading />
                 </div>
             ) : (
-                <div className='w-full max-w-5xl bg-white rounded-lg shadow-lg p-8'>
+                <div className='w-full max-w-5xl bg-white rounded-lg shadow-lg p-8 relative'>
+                    {/* Delete Icon with Modal Trigger */}
+                    <FaTrash
+                        className='absolute top-4 right-4 text-red-500 cursor-pointer'
+                        onClick={openConfirmationModal}
+                    />
                     <h1 className='text-3xl font-bold text-center mb-8'>Order Details</h1>
-                    
+
                     {/* Tabs for Sections */}
                     <Tabs className='space-y-6'>
                         <TabList className='flex justify-center mb-6'>
@@ -50,12 +79,14 @@ const ShowOrderDetails = () => {
                             </Tab>
                         </TabList>
 
+                        {/* Tab Panels */}
+
                         {/* Order Summary Tab */}
                         <TabPanel>
                             <div>
                                 <h2 className='text-xl font-semibold mb-4'>Order Summary</h2>
                                 <p className='text-gray-700'>
-                                    Total Price: BDT {group.reduce((acc, order) => acc + order.totalPrice, 0) + history.deliveryFee} 
+                                    Total Price: BDT {group.reduce((acc, order) => acc + order.totalPrice, 0) + history.deliveryFee}
                                     (Delivery fee: BDT {history.deliveryFee})
                                 </p>
                             </div>
@@ -125,7 +156,25 @@ const ShowOrderDetails = () => {
                         </div>
                     )}
 
-                    <OrderComp orderDetails={group[0].history} admin={true}/>
+                    <OrderComp orderDetails={group[0].history} admin={true} />
+
+                    {/* Delete Confirmation Modal */}
+                    <Modal
+                        isOpen={isConfirmationModalOpen}
+                        onRequestClose={closeConfirmationModal}
+                        contentLabel="Confirm Deletion"
+                        ariaHideApp={false}
+                        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                    >
+                        <div className="bg-white p-8 rounded-lg shadow-lg">
+                            <h2 className="text-2xl font-bold mb-4">Confirm Deletion</h2>
+                            <p>Are you sure you want to delete this order? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-4 mt-4">
+                                <button onClick={closeConfirmationModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                                <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
+                            </div>
+                        </div>
+                    </Modal>
                 </div>
             )}
         </div>

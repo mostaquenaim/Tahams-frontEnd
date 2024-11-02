@@ -5,17 +5,17 @@ import useAxiosPublic from "./useAxiosPublic";
 
 const useGroupOrders = () => {
     const { user, loading } = useContext(AuthContext);
-    // const [orders] = useOrder()
-    const axiosPublic = useAxiosPublic()
-
+    const axiosPublic = useAxiosPublic();
 
     const fetchGroupOrderData = async () => {
-        console.log('in 2');
+        console.log('Fetching Group Orders...');
         const res = await axiosPublic.get(`/admin/get-all-buying-history?email=${user?.email}`);
-        const orders = res.data
-        // console.log(orders);
+        const orders = res.data;
 
-        const groupedOrders = orders.reduce((acc, order) => {
+        // Filter to keep only orders where history.isDraft === true
+        const filteredOrders = orders.filter(order => !order.history?.isDraft);
+
+        const groupedOrders = filteredOrders.reduce((acc, order) => {
             const key = order.history?.id;
             if (!acc[key]) {
                 acc[key] = {
@@ -45,7 +45,6 @@ const useGroupOrders = () => {
             }
         });
 
-        // console.log(sortedGroupedOrdersArray);
         return sortedGroupedOrdersArray;
     };
 

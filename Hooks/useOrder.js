@@ -10,9 +10,6 @@ const useOrder = () => {
     const fetchCartData = async () => {
         const res = await axiosPublic.get(`/admin/get-all-buying-history?email=${user?.email}`);
         // console.log(res.data,'res.data');
-        // const result = res.data.filter(item=>item.isBought)
-        // console.log('result',result);
-        // console.log(res.data);
         return res.data;
     };
 
