@@ -37,7 +37,8 @@ const ShowOrders = () => {
                                 <th className='py-2 px-4 border-b'>Phone Number</th>
                                 <th className='py-2 px-4 border-b'>Product Names</th>
                                 <th className='py-2 px-4 border-b'>Payment Details</th>
-                                <th className='py-2 px-4 border-b'>Buying Date</th>
+                                <th className='py-2 px-4 border-b'>Order Date</th>
+                                <th className='py-2 px-4 border-b'>Status</th>
                                 <th className='py-2 px-4 border-b'>Actions</th>
                                 <th className='py-2 px-4 border-b'>ID</th>
                             </tr>
@@ -64,6 +65,9 @@ const ShowOrders = () => {
                                     <td className='py-2 px-4 border-b'>{group.history?.paymentMethod?.name}</td>
                                     <td className='py-2 px-4 border-b'>
                                         {new Date(group.history?.BuyingDate).toLocaleDateString()}
+                                    </td>
+                                    <td className={`${group.history.deliveryStatus.id > 6 ? 'text-red-500' : 'text-green-500'} py-2 px-4 border-b`}>
+                                        {group.history?.deliveryStatus.name}
                                     </td>
                                     <td className='py-2 px-4 border-b flex gap-2'>
                                         <Link href={`show-order-details/${group.history?.id}`}>

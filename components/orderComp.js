@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimes } from 'react-icons/fa';
 import { MdRadioButtonUnchecked } from 'react-icons/md';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
@@ -24,6 +24,7 @@ const CustomTooltip = styled(({ className, ...props }) => (
   },
 });
 
+// steps 
 const steps = [
   { id: 'order_placed', label: 'Order Placed', date: 'BuyingDate' },
   { id: 'order_received', label: 'Order Received', date: 'receivedDate' },
@@ -36,7 +37,7 @@ const steps = [
 ];
 
 const OrderComp = ({ orderDetails, admin = false }) => {
-  console.log('orderDetails', orderDetails);
+  // console.log('orderDetails', orderDetails);
   const [currentStep, setCurrentStep] = useState(0);
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState('');
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -95,6 +96,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
       } else {
         const orderDate = new Date(BuyingDate);
 
+        // estimated delivery date 
         if (droppedOffDate) {
           const startDate = new Date(orderDate);
           startDate.setDate(orderDate.getDate() + 1); // Start of estimate (1 day after shipment)
@@ -118,6 +120,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
     }
   }, [orderDetails]);
 
+  // modal open 
   const openConfirmationModal = (idx) => {
     console.log(idx);
     if (admin) {
@@ -135,12 +138,13 @@ const OrderComp = ({ orderDetails, admin = false }) => {
 
   };
 
+  // modal close
   const closeConfirmationModal = () => {
     setIsConfirmationModalOpen(false);
     setSelectedIndex(null);
   };
 
-  // Handle step click for admin
+  // Handle step update
   const handleStepClick = async () => {
     if (!admin) return; // early return if not admin
 
@@ -171,7 +175,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
     <div className="flex flex-col items-center">
       <div className="relative w-full max-w-3xl px-4">
         {completedSteps.map((step, index) => {
-          const isCompleted = index <= currentStep;
+          const isCompleted = index <= currentStep; //is completed check 
           const isLastCompletedStep = index === currentStep;
           const showLine = index < completedSteps.length - 1;
 
@@ -186,14 +190,24 @@ const OrderComp = ({ orderDetails, admin = false }) => {
                   }
                   arrow
                 >
-                  <div onClick={() => openConfirmationModal(index)} className={admin ? 'cursor-pointer' : ''}>
+                  <div>
                     {isCompleted ? (
-                      <FaCheckCircle className={`${((orderDetails.cancelDate || orderDetails.returnDate)) ? 'text-gray-500' : 'text-green-500'} text-2xl mb-2 `} />
+                      // <FaTimes></FaTimes>
+                      (orderDetails.cancelDate || orderDetails.returnDate) && !orderDetails[step.date]
+                        ?
+                        <FaTimes className=' text-red-500 text-2xl mb-2'></FaTimes>
+                        :
+                        <FaCheckCircle
+                          onClick={() => openConfirmationModal(index)}
+                          className={`${admin && 'cursor-pointer'} text-green-500 text-2xl mb-2 `} />
                     ) : (
-                      <MdRadioButtonUnchecked className={`text-gray-500 text-2xl mb-2 ${admin ? 'hover:text-blue-500' : ''}`} />
+                      <MdRadioButtonUnchecked
+                        onClick={() => openConfirmationModal(index)}
+                        className={`text-gray-500 text-2xl mb-2 ${admin ? 'cursor-pointer hover:text-blue-500' : ''}`} />
                     )}
                   </div>
                 </CustomTooltip>
+                {/* show line  */}
                 {showLine && (
                   <div
                     className={`h-10 w-px ${isLastCompletedStep || !isCompleted || orderDetails.cancelDate || orderDetails.returnDate
@@ -203,11 +217,17 @@ const OrderComp = ({ orderDetails, admin = false }) => {
                   ></div>
                 )}
               </div>
+              {/* date show  */}
               <div className="ml-4 text-center sm:text-left">
                 <span className="text-sm font-medium">{step.label}</span>
                 {isCompleted && (
                   <span className="text-xs text-gray-500 ml-2 block sm:inline">
-                    ({new Date(orderDetails[step.date]).toLocaleDateString()})
+                    {
+                      orderDetails[step.date] &&
+                      (
+                        new Date(orderDetails[step.date]).toLocaleDateString()
+                      )
+                    }
                   </span>
                 )}
                 {step.label === 'Delivered' && !isCompleted && (
