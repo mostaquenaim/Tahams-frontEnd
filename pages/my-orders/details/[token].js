@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdMoreHoriz } from 'react-icons/md';
-import OrderComp from '../../../components/Draft/orderComp';
+import OrderComp from '../../../components/orderComp';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Modal from 'react-modal';
 

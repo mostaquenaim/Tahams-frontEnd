@@ -4,7 +4,7 @@ import Loading from '../../../../components/Loading';
 import Image from 'next/image';
 import useOrder from '../../../../Hooks/useOrder';
 import { AuthContext } from '../../../../Contexts/Auth/AuthProvider';
-import OrderComp from '../../../../components/Draft/orderComp';
+import OrderComp from '../../../../components/orderComp';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Link from 'next/link';

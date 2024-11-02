@@ -3,8 +3,8 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { MdRadioButtonUnchecked } from 'react-icons/md';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
-import useAxiosPublic from '../../Hooks/useAxiosPublic'
-import { AuthContext } from '../../Contexts/Auth/AuthProvider'
+import useAxiosPublic from '../Hooks/useAxiosPublic'
+import { AuthContext } from '../Contexts/Auth/AuthProvider'
 import toast from 'react-hot-toast';
 import Modal from 'react-modal';
 
@@ -30,14 +30,13 @@ const steps = [
   { id: 'processing', label: 'Processed', date: 'processedDate' },
   { id: 'ready_to_ship', label: 'Ready to Ship', date: 'readyToShipDate' },
   { id: 'shipped', label: 'Dropped off', date: 'droppedOffDate' },
-  // { id: 'out_for_delivery', label: 'Out for Delivery', date: 'outDate' },
   { id: 'delivered', label: 'Delivered', date: 'deliveredDate' },
   { id: 'cancelled', label: 'Cancelled', condition: 'cancelDate', date: 'cancelDate' },
   { id: 'product_returned', label: 'Product Returned', condition: 'returnDate', date: 'returnDate' },
 ];
 
 const OrderComp = ({ orderDetails, admin = false }) => {
-  // console.log('orderDetails',orderDetails);
+  console.log('orderDetails', orderDetails);
   const [currentStep, setCurrentStep] = useState(0);
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState('');
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -78,6 +77,15 @@ const OrderComp = ({ orderDetails, admin = false }) => {
         }
       });
 
+      if (admin) {
+        if (!orderDetails.cancelDate) {
+          completedStepsList.push(steps.find(step => step.id === 'cancelled'));
+        }
+        if (!orderDetails.returnDate) {
+          completedStepsList.push(steps.find(step => step.id === 'product_returned'));
+        }
+      }
+
       setCompletedSteps(completedStepsList);
       setCurrentStep(stepMap[deliveryStatus.name] || 0);
 
@@ -111,8 +119,9 @@ const OrderComp = ({ orderDetails, admin = false }) => {
   }, [orderDetails]);
 
   const openConfirmationModal = (idx) => {
+    console.log(idx);
     if (admin) {
-      if (currentStep == idx - 1) {
+      if (currentStep == idx - 1 || idx == 6 || idx == 7) {
         setSelectedIndex(idx);
         setIsConfirmationModalOpen(true);
       }
@@ -145,7 +154,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
     try {
       const response = await axiosPublic.patch(
         `/admin/update-buying-history-status-by-token/${orderDetails.trackingToken}?email=${user?.email}`,
-        updateData, 
+        updateData,
       );
 
       console.log('res =>', response.data);
@@ -179,7 +188,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
                 >
                   <div onClick={() => openConfirmationModal(index)} className={admin ? 'cursor-pointer' : ''}>
                     {isCompleted ? (
-                      <FaCheckCircle className="text-green-500 text-2xl mb-2" />
+                      <FaCheckCircle className={`${((orderDetails.cancelDate || orderDetails.returnDate)) ? 'text-gray-500' : 'text-green-500'} text-2xl mb-2 `} />
                     ) : (
                       <MdRadioButtonUnchecked className={`text-gray-500 text-2xl mb-2 ${admin ? 'hover:text-blue-500' : ''}`} />
                     )}
@@ -187,7 +196,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
                 </CustomTooltip>
                 {showLine && (
                   <div
-                    className={`h-10 w-px ${isLastCompletedStep || !isCompleted
+                    className={`h-10 w-px ${isLastCompletedStep || !isCompleted || orderDetails.cancelDate || orderDetails.returnDate
                       ? 'bg-gray-300'
                       : 'bg-green-500'
                       }`}
