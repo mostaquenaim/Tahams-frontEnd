@@ -6,11 +6,13 @@ import useRequests from '../../../Hooks/useRequests';
 import Loading from '../../../components/Loading';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'next/router';
 
 const ShowRequests = () => {
     const [requests, refetch, isPending] = useRequests()
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const router = useRouter()
 
     const handleApproveClick = (request) => {
         setSelectedRequest(request);
@@ -38,6 +40,11 @@ const ShowRequests = () => {
             setIsModalOpen(false);
         }
     };
+
+    const handleDetails = (req) => {
+        console.log(req);
+        router.push(`/admin/Show/show-order-details/${req.cart.history.id}`)
+    }
 
     return (
         <div className="container mx-auto pt-20 lg:pt-40">
@@ -84,7 +91,7 @@ const ShowRequests = () => {
                                                         <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
                                                     </button>
                                             }
-                                            <button className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+                                            <button onClick={()=>handleDetails(request)} className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
                                                 Details
                                             </button>
                                         </td>
