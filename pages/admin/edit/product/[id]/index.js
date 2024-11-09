@@ -4,11 +4,14 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import Loading from '../../../../../components/Loading';
 import useAxiosPublic from '../../../../../Hooks/useAxiosPublic';
-import { FiTrash2 } from 'react-icons/fi'; // Importing trash icon from react-icons
+import { FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import useLoadColors from '../../../../../Hooks/useLoadColors';
 
 const EditProduct = ({ product }) => {
     console.log('product', product);
+    const colors = useLoadColors(); // Fetch colors from the hook
+    console.log(colors);
     const { register, handleSubmit, setValue, watch } = useForm({
         defaultValues: {
             name: product.name,
@@ -21,22 +24,24 @@ const EditProduct = ({ product }) => {
             sellingPrice: product.sellingPrice,
             ifStock: product.ifStock,
             colorName: product.color.name,
-            colorCode: product.color.colorCode,
-            // filename: product.filename
         },
     });
+
     const [loading, setLoading] = useState(false);
     const [existingImages, setExistingImages] = useState(product.productPictures);
-    const [filename, setFilename] = useState(product.filename)
-    const [deletedImages, setDeletedImages] = useState([])
+    const [filename, setFilename] = useState(product.filename);
+    const [deletedImages, setDeletedImages] = useState([]);
     const [newImages, setNewImages] = useState([]);
     const router = useRouter();
     const axiosPublic = useAxiosPublic();
 
+    // onsubmit 
+    const colorName = watch('colorName');
+    const selectedColor = colors.find((color) => color.name === colorName);
+    setValue('colorCode', selectedColor?.colorCode || '');
+
     const onSubmit = async (data) => {
         const formData = new FormData();
-
-        // console.log('data',data);
 
         // Append form fields (text data)
         formData.append('name', data.name);
@@ -49,7 +54,7 @@ const EditProduct = ({ product }) => {
         formData.append('sellingPrice', parseInt(data.sellingPrice));
         formData.append('ifStock', data.ifStock);
         formData.append('colorName', data.colorName);
-        formData.append('colorCode', data.colorCode);
+        formData.append('colorCode', selectedColor.colorCode); // Use selected color code
         formData.append('filename', filename);
 
         // Append sizes data
@@ -65,12 +70,8 @@ const EditProduct = ({ product }) => {
                 },
             });
 
-            toast.success('Product updated')
-
-            if (newImages.length > 0 || deletedImages.length > 0)
-                editPictures()
-
-            // router.push('/admin/products'); // Redirect to product listing page after successful update
+            toast.success('Product updated');
+            if (newImages.length > 0 || deletedImages.length > 0) editPictures();
         } catch (error) {
             console.error('Error updating product:', error);
         }
@@ -125,8 +126,6 @@ const EditProduct = ({ product }) => {
         const files = Array.from(e.target.files);
         setNewImages([...newImages, ...files]);
     };
-
-
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -223,21 +222,30 @@ const EditProduct = ({ product }) => {
                         />
                     </div>
 
-                    {/* Color */}
+                    {/* Color Dropdown */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Color Name</label>
-                            <input
+                            <select
                                 {...register('colorName')}
                                 className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
-                            />
+                            >
+                                <option value={product.color.name}>{product.color.name}</option>
+                                {colors.map((color) => (
+                                    <option key={color.id} value={color.name}>
+                                        {color.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Color Code</label>
                             <input
                                 type="text"
                                 {...register('colorCode')}
-                                className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+                                value={selectedColor?.colorCode || ''}
+                                disabled
+                                className="mt-1 p-2 block w-full border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
                             />
                         </div>
                     </div>
