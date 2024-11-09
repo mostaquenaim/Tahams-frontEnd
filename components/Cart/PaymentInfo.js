@@ -52,7 +52,26 @@ const PaymentInfo = ({ history }) => {
             const response = await axiosPublic.post('/admin/add-payment', formData);
 
             if (response.status >= 200 && response.status <= 300) {
-                toast.success('Payment confirmed!');
+                toast.success(
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div>
+                            <strong style={{ fontSize: '1.1em', color: '#000' }}>Payment Complete!</strong>
+                            <p style={{ margin: 0, fontSize: '0.9em', color: '#333' }}>
+                                Thank you for your payment.<br />Our representative will contact you shortly.
+                            </p>
+                        </div>
+                    </div>,
+                    {
+                        duration: 5000,
+                        style: {
+                            background: '#ffffff',
+                            border: '1px solid #000000',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            color: '#000000'
+                        }
+                    }
+                );
                 router.push('/my-orders');
             } else {
                 toast.error('Payment failed. Please try again.');

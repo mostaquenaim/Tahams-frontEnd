@@ -10,7 +10,7 @@ import useGroupOrders from '../../../Hooks/useGroupOrders';
 const ShowOrders = () => {
     const { user, loading } = useContext(AuthContext);
     const [sortedGroupedOrdersArray, refetch, isPending] = useGroupOrders();
-    console.log(sortedGroupedOrdersArray,'sortedGroupedOrdersArray');
+    console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
     const axiosPublic = useAxiosPublic();
 
     const handleCheck = async (history) => {
@@ -66,7 +66,7 @@ const ShowOrders = () => {
                                     <td className='py-2 px-4 border-b'>
                                         {new Date(group.history?.BuyingDate).toLocaleDateString()}
                                     </td>
-                                    <td className={`${group.history.deliveryStatus.id > 6 ? 'text-red-500' : 'text-green-500'} py-2 px-4 border-b`}>
+                                    <td className={`${group.history.deliveryStatus.id > 6 ? 'text-red-500' : group.history.deliveryStatus.id == 6 ? 'text-green-500' : 'text-yellow-500'} py-2 px-4 border-b`}>
                                         {group.history?.deliveryStatus.name}
                                     </td>
                                     <td className='py-2 px-4 border-b flex gap-2'>
