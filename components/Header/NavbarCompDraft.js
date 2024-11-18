@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ResponsiveNavBar from './ResponsiveNavBar';
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
 import ListComponent from './components/ListComponent';
+import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic'
 
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
@@ -12,21 +13,12 @@ const NavbarCompTwo = () => {
 
     const [searchBtn, setSearchBtn] = useState(false)
     const [categories, setCategories] = useState([])
-    const [genders, setGenders] = useState([])
     const { user, logOut } = useContext(AuthContext)
 
     useEffect(() => {
         axiosPublic.get('/admin/view-product-categories')
             .then((res) => {
                 setCategories(res.data)
-                // console.log(res.data,"19");
-            })
-    }, [])
-
-    useEffect(() => {
-        axiosPublic.get('/admin/view-genders')
-            .then((res) => {
-                setGenders(res.data)
                 // console.log(res.data,"19");
             })
     }, [])
@@ -62,17 +54,9 @@ const NavbarCompTwo = () => {
         <>
             <ListStyle goto='/' pageName='Home' />
             {
-                genders &&
-                genders.map((gender, index) => (
-                    <ListComponent key={index} cat={gender} cats={categories} ListStyle={ListStyle}></ListComponent>
-                ))
-            }
-            {
                 categories &&
                 categories.map((cat, index) => (
-                    !cat.isGenderVaried ? <ListComponent key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
-                        :
-                        ''
+                    <ListComponent key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
                 ))
             }
         </>
@@ -103,6 +87,11 @@ const NavbarCompTwo = () => {
                             My orders
                         </Link>
                     </Li>
+                    {/* <Li>
+                        <Link href='/pending-payment'>
+                            Pending Payment
+                        </Link>
+                    </Li> */}
                 </>
             }
             <Li>
@@ -205,7 +194,7 @@ const NavbarCompTwo = () => {
 
                 {/* second nav */}
                 <section className='fixed top-0 w-full bg-black z-10'>
-                    <ResponsiveNavBar btn={searchBtn} fnc={setSearchBtn} ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders} sideLinks={sideLinks}></ResponsiveNavBar>
+                    <ResponsiveNavBar btn={searchBtn} fnc={setSearchBtn} ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} sideLinks={sideLinks}></ResponsiveNavBar>
                 </section>
             </div>
         </>

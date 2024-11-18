@@ -9,9 +9,9 @@ import toast from 'react-hot-toast';
 import useLoadColors from '../../../../../Hooks/useLoadColors';
 
 const EditProduct = ({ product }) => {
-    console.log('product', product);
+    // console.log('product', product);
     const colors = useLoadColors(); // Fetch colors from the hook
-    console.log(colors);
+    // console.log(colors);
     const { register, handleSubmit, setValue, watch } = useForm({
         defaultValues: {
             name: product.name,

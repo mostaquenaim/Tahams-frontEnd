@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { AiOutlineMenu } from "react-icons/ai";
 
-const LeftDrawer = ({ ListStyle, ListComponent, categories }) => {
+const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
     useEffect(() => {
         // Function to close the drawer upon scrolling
         const handleScroll = () => {
@@ -24,10 +24,21 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories }) => {
         <>
             <ListStyle goto='/' pageName='Home' />
 
-            {categories &&
+            {
+                genders &&
+                genders.map((gender, index) => (
+                    <ListComponent isSide={true} key={index} cat={gender} cats={categories} ListStyle={ListStyle}></ListComponent>
+                ))
+            }
+            {
+                categories &&
                 categories.map((cat, index) => (
-                    <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
-                ))}
+                    !cat.isGenderVaried ?
+                        <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
+                        :
+                        ''
+                ))
+            }
         </>
     );
 
@@ -42,7 +53,7 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories }) => {
                 </div>
                 <div className="drawer-side">
                     <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-                    <ul className="relative menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+                    <ul className="relative menu p-4 w-96 min-h-full bg-base-200 text-base-content">
                         {links}
                     </ul>
                 </div>

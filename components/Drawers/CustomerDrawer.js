@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
-const CustomerDrawer = ({ ListStyle, ListComponent, categories }) => {
+const CustomerDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const toggleDrawer = () => {
@@ -12,11 +12,18 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories }) => {
     const links =
         <>
             <ListStyle goto='/' pageName='Home' />
-
+            {
+                genders &&
+                genders.map((gender, index) => (
+                    <ListComponent isSide={true} key={index} cat={gender} cats={categories} ListStyle={ListStyle}></ListComponent>
+                ))
+            }
             {
                 categories &&
                 categories.map((cat, index) => (
-                    <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
+                    !cat.isGenderVaried ? <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
+                        :
+                        ''
                 ))
             }
         </>
@@ -38,16 +45,18 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories }) => {
                     className="mt-2 fixed top-0 left-0 inline-block p-4 bg-black transition-all duration-500 rounded-lg peer-checked:rotate-180 peer-checked:left-64"
                 >
                     {/* Change icon based on drawer state */}
-                    <FontAwesomeIcon 
-                        icon={drawerOpen ? faTimes : faBars} 
+                    <FontAwesomeIcon
+                        icon={drawerOpen ? faTimes : faBars}
                         className="text-white w-6 h-6"
                     />
                 </label>
                 <div
                     className="overflow-y-auto fixed top-0 left-0 z-20 w-64 h-full transition-all duration-500 transform -translate-x-full bg-base-200 shadow-lg peer-checked:translate-x-0"
                 >
-                    <div className="px-6 py-4">
-                        <ul className={`menu p-4 min-h-full bg-base-200 text-base-content`} >
+                    <div className="
+                    
+                    py-4">
+                        <ul className={`p-5 space-y-5 flex flex-col min-h-full bg-base-200 text-base-content`} >
                             {links}
                         </ul>
                     </div>
@@ -56,5 +65,6 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories }) => {
         </div>
     );
 };
-
+// px-6 
+// p-4 
 export default CustomerDrawer;

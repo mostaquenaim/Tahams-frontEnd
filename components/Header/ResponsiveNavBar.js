@@ -5,22 +5,8 @@ import CustomerDrawer from '../Drawers/CustomerDrawer';
 import { useContext } from 'react';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
-const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, sideLinks }) => {
-    const { user } = useContext(AuthContext)
+const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, genders, sideLinks }) => {
     const navEndBtnClass = "btn btn-square btn-sm btn-ghost text-xl"
-
-    const handleLogout = () => {
-        logOut()
-            .then(() => {
-                // Remove userInfo from localStorage
-                localStorage.removeItem('userInfo');
-                console.log('User logged out and userInfo removed from localStorage')
-            })
-            .catch((error) => {
-                console.error('Error during logout:', error.message);
-                toast.error('Error during logout. Please try again.');
-            });
-    };
 
     return (
         <div>
@@ -31,10 +17,10 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, side
                 <div className="navbar bg-base-100">
                     <div className="flex-none">
                         <div className='hidden md:inline-block'>
-                            <LeftDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></LeftDrawer>
+                            <LeftDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></LeftDrawer>
                         </div>
                         <div className='md:hidden'>
-                            <CustomerDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories}></CustomerDrawer>
+                            <CustomerDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></CustomerDrawer>
                         </div>
                     </div>
                     <div className="flex-1 ml-14 md:ml-0">
