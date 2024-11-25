@@ -12,6 +12,7 @@ const SelectionFormComp = ({
     extraItem = false,
     valueIsId = false,
 }) => {
+    console.log(values, 'item');
     const [isOpen, setIsOpen] = useState(false);
 
     const handleSelect = (item) => {
@@ -43,7 +44,21 @@ const SelectionFormComp = ({
                             >
                                 <span>
                                     {item.name}
-                                    {extraItem && `, ${item.category.name}`}
+                                    {
+                                        !item?.isGenderVaried ? ''
+                                            :
+                                            item?.isForMen ? ', Men'
+                                                :
+                                                item?.isForWomen && ', Women'
+                                    }
+                                    {extraItem && `, ${item.category.name}
+                                    ${!item.category?.isGenderVaried ? ''
+                                            :
+                                            item.category?.isForMen ? ', Men'
+                                                :
+                                                item.category?.isForWomen && ', Women'
+                                        }
+                                    `}
                                 </span>
                                 {item.colorCode && (
                                     <span

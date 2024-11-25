@@ -8,7 +8,7 @@ import OrderComp from '../../../../components/orderComp';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Link from 'next/link';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaXbox } from 'react-icons/fa';
 import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
 
@@ -22,7 +22,7 @@ const ShowOrderDetails = () => {
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
     // Filtered Order Details
-    const group = orders.filter(order => order.history?.id == id );
+    const group = orders.filter(order => order.history?.id == id);
     if (group.length === 0) {
         return <div className='min-h-screen flex items-center justify-center text-xl'>No order details found</div>;
     }
@@ -47,6 +47,10 @@ const ShowOrderDetails = () => {
         }
     };
 
+    const handleCancellation = () => {
+        router.push(`/my-orders/details/cancel-or-return/${history?.trackingToken}`)
+    }
+
     return (
         <div className='min-h-screen bg-gray-100 p-6 flex justify-center'>
             {loading ? (
@@ -60,6 +64,12 @@ const ShowOrderDetails = () => {
                         className='absolute top-4 right-4 text-red-500 cursor-pointer'
                         onClick={openConfirmationModal}
                     />
+                    <span
+                        className='absolute top-4 left-4 text-red-500 cursor-pointer'
+                        onClick={handleCancellation}
+                    >
+                        Cancel
+                    </span>
                     <h1 className='text-3xl font-bold text-center mb-8'>Order Details</h1>
 
                     {/* Tabs for Sections */}

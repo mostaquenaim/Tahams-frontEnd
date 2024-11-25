@@ -345,7 +345,14 @@ export default function AddProduct() {
                                         />
                                         <label htmlFor={`selectedCategories_${index}`} className="ml-2">
                                             <span className='font-semibold text-xl'> {category.name} </span>
-                                            ({category.category.name}, <span className=''>{category.category.category.name}</span>)
+                                            ({category.category.name}, <span className=''>{category.category.category.name}
+                                                {
+                                                    category.category.category.isGenderVaried &&
+                                                        category.category.category.isForMen ?
+                                                        ', Men' :
+                                                        ', Women'
+                                                }
+                                            </span>)
                                         </label>
                                         {/* is size applicable  */}
                                         {selectedCats.includes(category.id) && (

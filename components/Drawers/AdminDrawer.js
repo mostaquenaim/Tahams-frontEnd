@@ -79,6 +79,7 @@ const AdminDrawer = () => {
                     ),
                 },
                 { href: '/admin/Show/show-requests', label: 'Cancel/Return req' },
+                { href: '/MyCart', label: 'Show Carts' },
             ]
         },
     ];

@@ -398,7 +398,14 @@ const Product = ({ product }) => {
                                 onChange={(e) => handleCategoryChange(parseInt(e.target.value))}
                             >
                                 {uniqueCategories.map((category) => (
-                                    <option key={category.id} value={category.id}>{category.category.category.name}</option>
+                                    <option key={category.id} value={category.id}>{category.category.category.name}
+                                        {
+                                            category.category.category.isGenderVaried &&
+                                                category.category.category.isForMen ?
+                                                ', Men' :
+                                                ', Women'
+                                        }
+                                    </option>
                                 ))}
                             </select>
                         </div>

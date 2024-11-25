@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
@@ -7,9 +7,11 @@ import useAxiosPublic from '../../../../../Hooks/useAxiosPublic';
 import { FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useLoadColors from '../../../../../Hooks/useLoadColors';
+import useLoadSubSubCategories from '../../../../../Hooks/useLoadSubSubCategories';
+import useLoadSizes from '../../../../../Hooks/useLoadSizes';
 
 const EditProduct = ({ product }) => {
-    // console.log('product', product);
+    console.log('product', product);
     const colors = useLoadColors(); // Fetch colors from the hook
     // console.log(colors);
     const { register, handleSubmit, setValue, watch } = useForm({
@@ -27,13 +29,136 @@ const EditProduct = ({ product }) => {
         },
     });
 
+    const [subSubCategories] = useLoadSubSubCategories()
+    const sizes = useLoadSizes()
+    // console.log(subSubCategories, 'subSubCategories');
+
     const [loading, setLoading] = useState(false);
     const [existingImages, setExistingImages] = useState(product.productPictures);
     const [filename, setFilename] = useState(product.filename);
     const [deletedImages, setDeletedImages] = useState([]);
     const [newImages, setNewImages] = useState([]);
+    const [selectedCats, setSelectedCats] = useState([])
+    const [selectedCatsInfo, setSelectedCatsInfo] = useState([])
+    const [isSizeApplicable, setIsSizeApplicable] = useState([]);
+
     const router = useRouter();
     const axiosPublic = useAxiosPublic();
+
+    useEffect(() => {
+        // selected categories 
+        const tempCats = new Set(); // Use a Set to store unique category IDs
+        const tempCatsInfo = new Map(); // Use a Map to store category info with sizes
+        const tempSizeApp = new Set();
+
+        product.pscs.forEach((cat) => {
+            console.log(cat);
+            tempCats.add(cat.category.id); // Add category ID to the Set
+
+            // Initialize category info if not already present
+            if (!tempCatsInfo.has(cat.category.id)) {
+                tempCatsInfo.set(cat.category.id, {
+                    category: cat.category.id,
+                    sizes: []
+                });
+            }
+
+            // Check if size is applicable and add size info
+            if (cat.size?.id) {
+                tempSizeApp.add(cat.category.id);
+                tempCatsInfo.get(cat.category.id).sizes.push({
+                    id: cat.size.id,
+                    quantity: cat.quantity
+                });
+            }
+
+        });
+
+        console.log(tempCatsInfo);
+        setSelectedCats([...tempCats]);
+        setSelectedCatsInfo([...tempCatsInfo.values()]); // Convert Map values to an array
+        setIsSizeApplicable([...tempSizeApp]);
+
+    }, [product.pscs]); // Add product.pscs as a dependency to re-run the effect when it changes
+
+    // category change 
+    const handleCategoryChange = (event, catID) => {
+        const isChecked = event.target.checked
+
+        if (isChecked) {
+            setSelectedCats([...selectedCats,
+                catID,
+            ])
+
+            setSelectedCatsInfo([...selectedCatsInfo,
+            {
+                category: catID,
+                sizes: []
+            }
+            ])
+
+            return
+        }
+
+        const res = selectedCats.filter(cat => cat !== catID)
+        setSelectedCats([...res])
+
+        const infoRes = selectedCatsInfo.filter(cat => cat.category !== catID)
+        setSelectedCatsInfo([...infoRes])
+    }
+
+    // check if size available 
+    const handleSizeApplicableChange = (event, catID) => {
+        const isChecked = event.target.checked
+
+        if (isChecked) {
+            setIsSizeApplicable([...isSizeApplicable, catID])
+            return
+        }
+
+        const res = isSizeApplicable.filter(category => category !== catID)
+        setIsSizeApplicable([...res])
+    }
+
+    // size and quantity handle 
+    const handleSizeAndQuantityChange = (event, catID, sizeId) => {
+        // console.log("selectedCatsInfo", selectedCatsInfo, 'event',event.target.value, 'catID',catID, 'sizeId',sizeId);
+
+        const categoryWiseItem = selectedCatsInfo.find(cat => cat.category == catID) //find the item
+
+        // if size id not availble only keep quantity
+        if (!sizeId) {
+            categoryWiseItem.sizes = [
+                {
+                    quantity: event.target.value
+                }
+            ]
+        }
+        else {
+            // initially size not available 
+            let sizeNotAvailable = true
+
+            categoryWiseItem.sizes.forEach(item => {
+                if (item.id == sizeId) {
+                    sizeNotAvailable = false
+                    item.quantity = event.target.value
+                    return
+                }
+            })
+
+            if (sizeNotAvailable) {
+                const newSize = {
+                    id: sizeId,
+                    quantity: event.target.value
+                }
+
+                categoryWiseItem.sizes = [...categoryWiseItem.sizes, newSize]
+            }
+        }
+
+        const result = selectedCatsInfo.filter(item => item.category != catID)
+        setSelectedCatsInfo([...result, categoryWiseItem])
+    }
 
     // onsubmit 
     const colorName = watch('colorName');
@@ -43,7 +168,16 @@ const EditProduct = ({ product }) => {
     const onSubmit = async (data) => {
         const formData = new FormData();
 
+        let catsInfo = []
+        selectedCatsInfo.forEach((info) => {
+            catsInfo.push(info.category)
+            info.sizes.forEach((item) => {
+                catsInfo.push([item.id, parseInt(item.quantity)])
+            })
+        })
+
         // Append form fields (text data)
+        formData.append('catsInfo', JSON.stringify(catsInfo))
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
         formData.append('description', data.description);
@@ -222,6 +356,107 @@ const EditProduct = ({ product }) => {
                         />
                     </div>
 
+                    {/* Categories and Sizes */}
+                    <div className='flex justify-around'>
+                        <label className="text-sm font-semibold mb-1">Categories:</label>
+                        <div className="space-y-1">
+                            {subSubCategories.map((category, index) => (
+                                <div key={category.id} className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        name={`selectedCategories[${category.id}]`}
+                                        id={`selectedCategories_${category.id}`}
+                                        onChange={(e) => handleCategoryChange(e, category.id)}
+                                        checked={selectedCats.includes(category.id)}
+                                        className="h-4 w-4 text-blue-500 focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
+                                    />
+                                    <label htmlFor={`selectedCategories_${index}`} className="ml-2">
+                                        <span className='font-semibold text-xl'> {category.name} </span>
+                                        ({category.category.name}, <span className=''>{category.category.category.name}
+                                            {
+                                                category.category.category.isGenderVaried &&
+                                                    category.category.category.isForMen ?
+                                                    ', Men' :
+                                                    ', Women'
+                                            }
+                                        </span>)
+                                    </label>
+                                    {selectedCats.includes(category.id) && (
+                                        <div className="ml-4 mt-4">
+                                            <label className="block mb-2 text-sm font-medium text-gray-900">
+                                                Size Selection
+                                            </label>
+
+                                            <div className="flex items-center mb-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`categories[${index}].sizeApplicable`}
+                                                    checked={isSizeApplicable.includes(category.id)}
+                                                    onChange={(e) => handleSizeApplicableChange(e, category.id)}
+                                                    className="mr-2"
+                                                />
+                                                <label htmlFor={`categories[${index}].sizeApplicable`} className="text-sm font-medium text-gray-900">
+                                                    Size applicable
+                                                </label>
+                                            </div>
+                                            {isSizeApplicable.includes(category.id) ? (
+                                                sizes.map((size) => {
+                                                    const categoryInfo = selectedCatsInfo.find(cat => cat.category === category.id);
+                                                    const sizeInfo = categoryInfo?.sizes.find(s => s.id === size.id);
+                                                    return (
+                                                        <div key={size.id} className="flex items-center mb-2">
+                                                            <label className="text-sm font-medium text-gray-900 mr-2">{size.name}</label>
+                                                            <input
+                                                                type="number"
+                                                                min={0}
+                                                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
+                                                                placeholder={`Quantity for ${size.name}`}
+                                                                defaultValue={sizeInfo ? sizeInfo.quantity : 0} // Set default value here
+                                                                onInput={(e) => handleSizeAndQuantityChange(e, category.id, size.id)}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })
+                                            ) : (
+                                                <div>
+                                                    <label className="text-sm font-medium text-gray-900 mr-2">Quantity</label>
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
+                                                        placeholder={`Quantity for ${category.name}`}
+                                                        onInput={(e) => handleSizeAndQuantityChange(e, category.id)}
+                                                        {...register(`categories[${index}].quantity`, { required: false })}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Product Sizes */}
+                    {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {product.pscs.map((pscs, index) => (
+                            <div key={pscs.id} className="flex items-center justify-between">
+                                <span className="text-gray-700">{pscs.size?.name}</span>
+                                <input
+                                    type="number"
+                                    {...register(`sizes[${index}].quantity`)}
+                                    defaultValue={pscs.quantity}
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
+                                />
+                                <input
+                                    type="hidden"
+                                    {...register(`sizes[${index}].sizeId`)}
+                                    defaultValue={pscs.size?.id}
+                                />
+                            </div>
+                        ))}
+                    </div> */}
+
                     {/* Color Dropdown */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -248,26 +483,6 @@ const EditProduct = ({ product }) => {
                                 className="mt-1 p-2 block w-full border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
                             />
                         </div>
-                    </div>
-
-                    {/* Product Sizes */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {product.pscs.map((pscs, index) => (
-                            <div key={pscs.id} className="flex items-center justify-between">
-                                <span className="text-gray-700">{pscs.size?.name}</span>
-                                <input
-                                    type="number"
-                                    {...register(`sizes[${index}].quantity`)}
-                                    defaultValue={pscs.quantity}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
-                                />
-                                <input
-                                    type="hidden"
-                                    {...register(`sizes[${index}].sizeId`)}
-                                    defaultValue={pscs.size?.id}
-                                />
-                            </div>
-                        ))}
                     </div>
 
                     {/* thumbnail image  */}
