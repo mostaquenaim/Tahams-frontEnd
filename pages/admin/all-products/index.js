@@ -10,6 +10,7 @@ import Modal from 'react-modal';
 const ShowProducts = () => {
     const { user, loading } = useContext(AuthContext);
     const [products, refetch] = useProduct({ publishable: true });
+    console.log(products);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [editedProducts, setEditedProducts] = useState({});
@@ -120,7 +121,7 @@ const ShowProducts = () => {
                                             </Link>
                                         </td>
                                         <td className='py-2 px-4 border-b'>{product.color.name}</td>
-                                        <td className='py-2 px-4 border-b'>{product.pscs[0]?.category?.name || 'Uncategorized'}</td>
+                                        <td className='py-2 px-4 border-b'>{product.pscs[0]?.category?.name}, {product.pscs[0]?.size?.name} (Total {product.pscs.length} sizes)</td>
                                         <td className='py-2 px-4 border-b'>${product.sellingPrice.toFixed(2)}</td>
 
                                         <td className=' py-2 px-4 border-b'>

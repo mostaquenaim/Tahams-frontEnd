@@ -401,9 +401,11 @@ const Product = ({ product }) => {
                                     <option key={category.id} value={category.id}>{category.category.category.name}
                                         {
                                             category.category.category.isGenderVaried &&
+                                            (
                                                 category.category.category.isForMen ?
-                                                ', Men' :
-                                                ', Women'
+                                                    ', Men' :
+                                                    ', Women'
+                                            )
                                         }
                                     </option>
                                 ))}
