@@ -82,6 +82,13 @@ const AdminDrawer = () => {
                 { href: '/MyCart', label: 'Show Carts' },
             ]
         },
+        {
+            Name: 'Statistics',
+            Tasks: [
+                { href: '/admin/Show/show-views', label: 'Show Views' },
+                // { href: '/MyCart', label: 'Show Carts' },
+            ]
+        },
     ];
 
     const toggleDrawer = () => {

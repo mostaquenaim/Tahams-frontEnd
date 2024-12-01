@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import useProduct from '../../../Hooks/useProduct';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
+import { FaSync } from 'react-icons/fa';
 
 const ShowProducts = () => {
     const { user, loading } = useContext(AuthContext);
@@ -78,9 +79,28 @@ const ShowProducts = () => {
         }
     };
 
+    const handleSyncViews = async () => {
+        try {
+            const response = await axiosPublic.get('/admin/sync-view-count');
+            // You can handle the response data here, e.g., updating the state or logging the result
+            console.log('Sync view count response:', response.data);
+        } catch (error) {
+            console.error('Error fetching sync view count:', error);
+            // Optionally, handle the error further (e.g., show a notification to the user)
+        }
+    };
+
     return (
         <div className='min-h-screen bg-gray-100 p-8'>
             <h1 className='text-3xl font-bold text-center mb-8'>Products</h1>
+            <p className="flex justify-end">
+                <button 
+                onClick={handleSyncViews}
+                className="btn btn-accent m-2"
+                >
+                    <FaSync /> Sync views
+                </button>
+            </p>
             <div className='container mx-auto'>
                 {loading ? (
                     <Loading />
@@ -90,6 +110,7 @@ const ShowProducts = () => {
                             <tr>
                                 <th className='py-2 px-4 border-b'>ID</th>
                                 <th className='py-2 px-4 border-b'>Product Name</th>
+                                <th className='py-2 px-4 border-b'>Views</th>
                                 <th className='py-2 px-4 border-b'>Color</th>
                                 <th className='py-2 px-4 border-b'>Category</th>
                                 <th className='py-2 px-4 border-b'>Price</th>
@@ -120,6 +141,7 @@ const ShowProducts = () => {
                                                 <span className='text-blue-500 hover:underline'>{product.name}</span>
                                             </Link>
                                         </td>
+                                        <td className='py-2 px-4 border-b'>{product?.totalViews}</td>
                                         <td className='py-2 px-4 border-b'>{product.color.name}</td>
                                         <td className='py-2 px-4 border-b'>{product.pscs[0]?.category?.name}, {product.pscs[0]?.size?.name} (Total {product.pscs.length} sizes)</td>
                                         <td className='py-2 px-4 border-b'>${product.sellingPrice.toFixed(2)}</td>

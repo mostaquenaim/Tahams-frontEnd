@@ -1,8 +1,8 @@
 import { Fragment, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { FaFilter, FaShoppingCart } from 'react-icons/fa';
-import { FaHeart, FaRegHeart } from 'react-icons/fa6';
+import { FaEye, FaFilter, FaShoppingCart } from 'react-icons/fa';
+import { FaHand, FaHeart, FaRegHeart } from 'react-icons/fa6';
 import toast, { Toaster } from 'react-hot-toast';
 import NavbarCompTwo from '/components/Header/NavbarComp';
 import Footer from '/components/Footer/Footer';
@@ -10,7 +10,7 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Product = ({ product }) => {
-    console.log('product', product);
+    // console.log('product', product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
@@ -99,6 +99,7 @@ const Product = ({ product }) => {
         ifStock,
         name,
         vatPercentage,
+        totalViews,
         color,
     } = product;
 
@@ -374,6 +375,15 @@ const Product = ({ product }) => {
 
                         {/* VAT */}
                         <p className="text-gray-600 mb-4">VAT: {vatPercentage}%</p>
+
+                        {/* views */}
+                        {
+                            userInfo?.role == 'admin'
+                            &&
+                            <>
+                                <button className='btn btn-accent'><FaEye /> {totalViews}</button>
+                            </>
+                        }
 
                         {/* Color Information */}
                         {color && (
