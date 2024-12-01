@@ -16,6 +16,7 @@ const ShowProducts = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [editedProducts, setEditedProducts] = useState({});
     const axiosPublic = useAxiosPublic()
+    const [syncing, setSyncing] = useState(false)
 
     const openDeleteModal = (id) => {
         setSelectedProduct(id);
@@ -81,6 +82,7 @@ const ShowProducts = () => {
 
     const handleSyncViews = async () => {
         try {
+            setSyncing(true)
             const response = await axiosPublic.get('/admin/sync-view-count');
             // You can handle the response data here, e.g., updating the state or logging the result
             console.log('Sync view count response:', response.data);
@@ -88,17 +90,30 @@ const ShowProducts = () => {
             console.error('Error fetching sync view count:', error);
             // Optionally, handle the error further (e.g., show a notification to the user)
         }
+        finally {
+            setSyncing(false)
+        }
     };
 
     return (
         <div className='min-h-screen bg-gray-100 p-8'>
             <h1 className='text-3xl font-bold text-center mb-8'>Products</h1>
             <p className="flex justify-end">
-                <button 
-                onClick={handleSyncViews}
-                className="btn btn-accent m-2"
+                <button
+                    onClick={handleSyncViews}
+                    className={`btn ${syncing ? 'btn-disabled' : 'btn-accent'} m-2`}
                 >
-                    <FaSync /> Sync views
+                    <FaSync />
+                    {
+                        syncing ?
+                            <>
+                                Syncing
+                            </>
+                            :
+                            <>
+                                Sync views
+                            </>
+                    }
                 </button>
             </p>
             <div className='container mx-auto'>
