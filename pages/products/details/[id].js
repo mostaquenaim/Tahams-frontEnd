@@ -10,10 +10,12 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 
 const Product = ({ product }) => {
-    // console.log('product', product);
+    console.log('product', product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
+    const [selectedMaleSize, setSelectedMaleSize] = useState('');
+    const [selectedFemaleSize, setSelectedFemaleSize] = useState('');
     const [selectedCategory, setSelectedCategory] = useState();
     const [selectedImage, setSelectedImage] = useState(product && product.filename)
     const [quantity, setQuantity] = useState(1);
@@ -145,7 +147,15 @@ const Product = ({ product }) => {
     const handleSizeChange = (size) => {
         setSelectedSize(size);
         setQuantity(1)
+        if (product.pscs[0].category.category.category.name == 'Couples') {
+            setSelectedMaleSize(size)
+        }
     };
+
+    const handleFemaleSizeChange = (size) => {
+        setSelectedFemaleSize(size);
+        setQuantity(1)
+    }
 
     const handleCategoryChange = (categoryId) => {
         console.log(categoryId, 'catid');
@@ -179,7 +189,12 @@ const Product = ({ product }) => {
             toast.error('You must login first')
             router.push('/login')
         }
-
+        else if (product.pscs[0].category.category.category.name == 'Couples'
+            &&
+            (!selectedFemaleSize || !selectedSize)
+        ) {
+            toast.error('You have to select a size for each')
+        }
         else {
             setIsAddedToCart(true)
             setShowGotoCart(true)
@@ -190,6 +205,8 @@ const Product = ({ product }) => {
                     productId: product.id,
                     category: selectedCategory,
                     size: selectedSize,
+                    maleSize: selectedMaleSize,
+                    femaleSize: selectedFemaleSize,
                     Quantity: quantity,
                     colorId: color.id,
                     customerEmail: user?.email
@@ -232,6 +249,12 @@ const Product = ({ product }) => {
         if (!user) {
             router.push('/login')
         }
+        else if (product.pscs[0].category.category.category.name == 'Couples'
+            &&
+            (!selectedFemaleSize || !selectedSize)
+        ) {
+            toast.error('You have to select a size for each')
+        }
         else {
             // setIsAddedToCart(true)
             try {
@@ -240,6 +263,8 @@ const Product = ({ product }) => {
                     productId: product.id,
                     category: selectedCategory,
                     size: selectedSize,
+                    maleSize: selectedMaleSize,
+                    femaleSize: selectedFemaleSize,
                     Quantity: quantity,
                     colorId: color.id,
                     customerEmail: user?.email
@@ -426,6 +451,11 @@ const Product = ({ product }) => {
                         {filteredSizes && filteredSizes.length > 0 && (
                             <div className="mb-4">
                                 <label className="text-gray-600 font-semibold">Select Size:</label>
+                                {
+                                    product.pscs[0].category.category.category.name == 'Couples'
+                                    &&
+                                    <p className="text-gray-600 p-2 text-xl font-semibold">Male:</p>
+                                }
                                 <div className="flex gap-3 flex-wrap">
                                     {filteredSizes.map((size) => (
                                         <button
@@ -437,32 +467,57 @@ const Product = ({ product }) => {
                                         </button>
                                     ))}
                                 </div>
+                                {
+                                    product.pscs[0].category.category.category.name == 'Couples'
+                                    &&
+                                    <div>
+                                        <p className="text-gray-600 p-2 text-xl font-semibold">Female:</p>
+
+                                        <div className="flex gap-3 flex-wrap">
+                                            {filteredSizes.map((size) => (
+                                                <button
+                                                    key={size?.id}
+                                                    className={`btn btn-outline ${selectedFemaleSize === size?.name ? 'bg-black text-white' : 'bg-white text-black'} border-black text-black`}
+                                                    onClick={() => handleFemaleSizeChange(size?.name)}
+                                                >
+                                                    {size?.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         )}
 
                         {/* Quantity Selector */}
-                        <div className="flex items-center mb-4">
-                            <label htmlFor="quantity" className="block text-gray-700 mr-4">Quantity</label>
-                            <button
-                                className="px-2 py-1 border rounded-l bg-gray-200"
-                                onClick={handleQuantityDecrease}
-                            >
-                                -
-                            </button>
-                            <input
-                                id="quantity"
-                                type="text"
-                                className="w-12 text-center border-t border-b"
-                                value={quantity}
-                                readOnly
-                            />
-                            <button
-                                className="px-2 py-1 border rounded-r bg-gray-200"
-                                onClick={handleQuantityIncrease}
-                            >
-                                +
-                            </button>
-                        </div>
+                        {
+                            product.pscs[0].category.category.category.name == 'Couples'
+                                ?
+                                ''
+                                :
+                                <div className="flex items-center mb-4">
+                                    <label htmlFor="quantity" className="block text-gray-700 mr-4">Quantity</label>
+                                    <button
+                                        className="px-2 py-1 border rounded-l bg-gray-200"
+                                        onClick={handleQuantityDecrease}
+                                    >
+                                        -
+                                    </button>
+                                    <input
+                                        id="quantity"
+                                        type="text"
+                                        className="w-12 text-center border-t border-b"
+                                        value={quantity}
+                                        readOnly
+                                    />
+                                    <button
+                                        className="px-2 py-1 border rounded-r bg-gray-200"
+                                        onClick={handleQuantityIncrease}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                        }
 
                         {/* Add to Cart and Buy Now Buttons */}
                         <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">

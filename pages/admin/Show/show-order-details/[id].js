@@ -142,7 +142,19 @@ const ShowOrderDetails = () => {
                                         <div className='flex flex-col justify-between'>
                                             <h3 className='text-lg font-semibold mb-2'>{order.product?.name}</h3>
                                             <p className='text-gray-600'>Category: <span className='font-semibold text-lg'>{order.category.name}, {order.category.category.name}, {order.category.category.category.name}</span></p>
-                                            <p className='text-gray-600'>Size: {order.size}</p>
+                                            <p className='text-gray-600'>{
+                                                order.category.category.category.name == 'Couples'
+                                                &&
+                                                <span>Male </span>
+                                            }
+                                                Size: {order.size}</p>
+                                            {
+                                                order.category.category.category.name == 'Couples'
+                                                &&
+                                                <div>
+                                                    <p className='text-gray-600'>Female Size: {order.femaleSize}</p>
+                                                </div>
+                                            }
                                             <p className='text-gray-600'>Quantity: {order.Quantity}</p>
                                             <p className='text-gray-700 font-semibold'>Price: BDT {order.totalPrice}</p>
                                         </div>
