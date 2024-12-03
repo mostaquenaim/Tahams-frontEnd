@@ -14,7 +14,7 @@ const ListListComponent = ({ sub, ListStyle }) => {
     }, [])
 
     return (
-        <div className='lg:space-y-3'>
+        <div className='space-y-3'>
             {
                 cats.map((cat, index) => (
                     <ListStyle key={index} goto={`/products/${cat.id}`} pageName={cat.name} extraClass='opacity-80 text-sm' />
