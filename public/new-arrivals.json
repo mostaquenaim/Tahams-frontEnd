@@ -2,25 +2,33 @@
   {
     "id": 1,
     "name": "Full Sleeve SweatShirt",
-    "category": "T-Shirts",
+    "category": "Couples",
     "price": 20.00,
     "description": "A classic, comfortable t-shirt for everyday wear.",
-    "image": "/cvr-clothings.jpg"
+    "image": "/kang-cp-beige.jpg"
   },
   {
     "id": 2,
     "name": "Hoodie",
-    "category": "Sweatshirts",
+    "category": "Couples",
     "price": 35.00,
     "description": "Stay warm and stylish with our cozy hoodie.",
-    "image": "/cvr-crop-jhulano.jpg"
+    "image": "/sleeveless-zip-red.jpg"
   },
   {
     "id": 3,
     "name": "Half Sleeve Zipper Hoodie",
-    "category": "Accessories",
+    "category": "Couples",
     "price": 12.00,
     "description": "Enjoy your favorite beverages in our branded mug.",
-    "image": "/cvr-tshirt-jhulano.jpg"
+    "image": "/bigboss-sw-green.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Half Sleeve Zipper Hoodie",
+    "category": "Couples",
+    "price": 12.00,
+    "description": "Enjoy your favorite beverages in our branded mug.",
+    "image": "/bigboss-fullsleeve-aquamarine.jpg"
   }
 ]
