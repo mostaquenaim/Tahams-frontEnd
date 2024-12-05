@@ -16,7 +16,7 @@ const FetchProducts = ({ categories, admin = false }) => {
     const [selectedProducts, setSelectedProducts] = useState(categories)
     // const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedColors, setSelectedColors] = useState([]);
-    const [priceRange, setPriceRange] = useState([1, 2000]);
+    const [priceRange, setPriceRange] = useState([1, 4000]);
     const [selectedAvailability, setSelectedAvailability] = useState('');
     const [selectedOffer, setSelectedOffer] = useState('');
 

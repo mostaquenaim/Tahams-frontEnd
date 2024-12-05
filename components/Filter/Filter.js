@@ -53,7 +53,7 @@ const FilterComp = (
                 </div>
                 <RangeSlider
                     min={1}
-                    max={3000}
+                    max={10000}
                     defaultValue={priceRange}
                     onInput={(value) => handlePriceChange(value)}
                 />
