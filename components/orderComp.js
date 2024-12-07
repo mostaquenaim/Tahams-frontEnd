@@ -122,7 +122,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
 
   // modal open 
   const openConfirmationModal = (idx) => {
-    console.log(idx);
+    // console.log(idx);
     if (admin) {
       if (currentStep == idx - 1 || idx == 6 || idx == 7) {
         setSelectedIndex(idx);
@@ -150,7 +150,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
 
     const selectedIndexValue = selectedIndex;
     // setCurrentStep(selectedIndexValue);
-    console.log(selectedIndexValue);
+    // console.log(selectedIndexValue);
 
     const dateKey = steps[selectedIndexValue].date;
     const updateData = { [dateKey]: new Date() };
@@ -161,11 +161,11 @@ const OrderComp = ({ orderDetails, admin = false }) => {
         updateData,
       );
 
-      console.log('res =>', response.data);
+      // console.log('res =>', response.data);
       setCurrentStep(selectedIndexValue)
       closeConfirmationModal();
       toast.success('Step updated successfully');
-      console.log('Step updated successfully:', response.data);
+      // console.log('Step updated successfully:', response.data);
     } catch (error) {
       console.error('Error updating step:', error);
     }

@@ -8,6 +8,9 @@ import NavbarCompTwo from '/components/Header/NavbarComp';
 import Footer from '/components/Footer/Footer';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
+import InnerImageZoom from 'react-inner-image-zoom';
+import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
+import ImageZoom from '../../draft/image-zoom-inner';
 
 const Product = ({ product }) => {
     console.log('product', product);
@@ -306,11 +309,12 @@ const Product = ({ product }) => {
                 <div className="flex flex-col md:flex-row">
                     {/* Product Image */}
                     <div className="md:w-1/2">
-                        <img
+                        {/* <img
                             src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
                             alt={name}
                             className="md:h-96 md:w-96 lg:h-[600px] lg:w-[600px] max-h-screen rounded mb-5 relative"
-                        />
+                        /> */}
+                        <ImageZoom photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}/>
                         <div className='flex gap-4'>
                             <input
                                 type="radio"

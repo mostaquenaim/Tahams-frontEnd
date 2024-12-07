@@ -14,7 +14,7 @@ const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
         axiosPublic.get(`/admin/view-product-sub-category/${cat.id}`)
             .then(res => {
                 setSubCategories(res.data)
-                console.log(res.data, "13");
+                // console.log(res.data, "13");
             })
         // }
     }, [])

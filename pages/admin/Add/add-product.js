@@ -40,7 +40,7 @@ export default function AddProduct() {
     const sizes = useLoadSizes();
 
     const validateFile = (value) => {
-        console.log('value', value);
+        // console.log('value', value);
         if (value.length > 0) {
             const file = value[0];
             // console.log(value[0]);
@@ -196,7 +196,7 @@ export default function AddProduct() {
 
         const formData = new FormData();
 
-        console.log(data.myfiles, 'all files');
+        // console.log(data.myfiles, 'all files');
 
         // Append each file to FormData
         Array.from(data.myfiles).forEach((file) => {

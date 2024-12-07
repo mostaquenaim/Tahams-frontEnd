@@ -11,7 +11,7 @@ import { FaSync } from 'react-icons/fa';
 const ShowProducts = () => {
     const { user, loading } = useContext(AuthContext);
     const [products, refetch] = useProduct({ publishable: true });
-    console.log(products);
+    // console.log(products);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [editedProducts, setEditedProducts] = useState({});
