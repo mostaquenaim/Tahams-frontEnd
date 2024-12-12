@@ -1,33 +1,26 @@
 import React, { useContext, useEffect, useState } from 'react';
-import NavbarCompTwo from '/components/Header/NavbarComp';
 import ShowProduct from '/components/Product/ShowProduct';
 import FilterComp from '/components/Filter/Filter';
 import { FaFilter } from "react-icons/fa";
-import Footer from '/components/Footer/Footer';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import useLoadColors from '../../Hooks/useLoadColors'
 
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const FetchProducts = ({ categories, admin = false }) => {
-    // console.log(categories,'categories');
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState(categories)
-    // const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedColors, setSelectedColors] = useState([]);
     const [priceRange, setPriceRange] = useState([1, 4000]);
     const [selectedAvailability, setSelectedAvailability] = useState('');
     const [selectedOffer, setSelectedOffer] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(12);
 
     const colors = useLoadColors()
-    const axiosPublic = useAxiosPublic();
-
     const { showGotoCart } = useContext(AuthContext)
 
     const updateSelectedProducts = () => {
-        // console.log(categories);
-
         setSelectedProducts(categories)
 
         let filteredProducts = categories.filter(product => {
@@ -49,7 +42,6 @@ const FetchProducts = ({ categories, admin = false }) => {
 
             // Check offer filter
             if (selectedOffer === 'discount' && product.discountPercentage <= 0) {
-                // console.log("41");
                 return false;
             }
 
@@ -58,24 +50,16 @@ const FetchProducts = ({ categories, admin = false }) => {
 
         // Apply sorting
         if (sortOption === 'priceLowToHigh') {
-            // console.log("50")
             filteredProducts = filteredProducts.sort((a, b) => parseInt(a.sellingPrice * (100 - a.discountPercentage) / 100) - parseInt(b.sellingPrice * (100 - b.discountPercentage) / 100));
-            // console.log(filteredProducts);
         } else if (sortOption === 'priceHighToLow') {
-            // console.log("53");
             filteredProducts = filteredProducts.sort((a, b) => parseInt(b.sellingPrice * (100 - b.discountPercentage) / 100) - parseInt(a.sellingPrice * (100 - a.discountPercentage) / 100));
-            // console.log(filteredProducts);
         }
 
         // Update selected products
-        // console.log('filteredProducts - ',filteredProducts);
         setSelectedProducts(filteredProducts);
-        // console.log('categories fltered to setselect');
-
     };
 
     useEffect(() => {
-        // setOriginalProducts(categories);
         categories && updateSelectedProducts();
     }, [selectedColors, priceRange, selectedAvailability, selectedOffer, sortOption, categories]);
 
@@ -91,30 +75,37 @@ const FetchProducts = ({ categories, admin = false }) => {
 
     // Function to handle price range change
     const handlePriceChange = (value) => {
-        // console.log(priceRange);
         setPriceRange(value);
     };
 
     // Function to handle availability change
     const handleAvailabilityChange = (event) => {
-        // Update the selected availability
         setSelectedAvailability(event.target.value);
     };
 
     // Function to handle offer change
     const handleOfferChange = (event) => {
-        // Update the selected offer
         setSelectedOffer(event.target.value);
     };
 
     const handleSortChange = (event) => {
-        // console.log(event.target.value);
         setSortOption(event.target.value);
     };
 
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    const paginatedProducts = selectedProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.ceil(selectedProducts.length / itemsPerPage);
+
     return (
         <div className=''>
-            {/* <NavbarCompTwo /> */} 
+            {/* <NavbarCompTwo /> */}
             <div className='pt-20 lg:pt-48 mx-10'>
                 {/* Sort By dropdown */}
                 <div className='flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10'>
@@ -169,14 +160,105 @@ const FetchProducts = ({ categories, admin = false }) => {
                         ></FilterComp>
                     </div>
                     {
-                        selectedProducts.length > 0 ?
-                            selectedProducts.map((category, index) => (
+                        paginatedProducts.length > 0 ? (
+                            paginatedProducts.map((category, index) => (
                                 <ShowProduct key={index} item={category}></ShowProduct>
                             ))
-                            :
-                            <div className='text-3xl text-center'>No product to show!😢</div>
+                        ) : (
+                            <div className="text-3xl text-center">No product to show! 😢</div>
+                        )
                     }
                 </div>
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center my-5 space-x-2">
+                        {/* Previous Button */}
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
+                ${currentPage === 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-white"}`}
+                        >
+                            Prev
+                        </button>
+
+                        {/* Page Buttons with Ellipses */}
+                        {Array.from({ length: totalPages }, (_, index) => {
+                            const page = index + 1;
+
+                            // Always show first and last pages
+                            if (page === 1 || page === totalPages) {
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => handlePageChange(page)}
+                                        className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
+                            ${currentPage === page ? "bg-black text-white scale-105" : "bg-white"}`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            }
+
+                            // Show pages near the current page for larger screens
+                            if (
+                                (page === currentPage - 1 || page === currentPage || page === currentPage + 1) &&
+                                window.innerWidth >= 640
+                            ) {
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => handlePageChange(page)}
+                                        className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
+                            ${currentPage === page ? "bg-black text-white scale-105" : "bg-white"}`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            }
+
+                            // Show ellipses for larger screens
+                            if (
+                                window.innerWidth >= 640 &&
+                                (page === currentPage - 2 ||
+                                    page === currentPage + 2 ||
+                                    (currentPage === 1 && page === 3) ||
+                                    (currentPage === totalPages && page === totalPages - 2))
+                            ) {
+                                return <span key={page} className="px-2 text-gray-500">...</span>;
+                            }
+
+                            // Show a limited set of buttons for smaller screens
+                            if (
+                                (page === currentPage - 1 || page === currentPage || page === currentPage + 1) &&
+                                window.innerWidth < 640
+                            ) {
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => handlePageChange(page)}
+                                        className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
+                            ${currentPage === page ? "bg-black text-white scale-105" : "bg-white"}`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            }
+
+                            return null;
+                        })}
+
+                        {/* Next Button */}
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
+                ${currentPage === totalPages ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-white"}`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+
             </div>
             {
                 // showGotoCart &&
@@ -186,7 +268,6 @@ const FetchProducts = ({ categories, admin = false }) => {
                 >Go to cart
                 </Link>
             }
-            {/* <Footer></Footer> */}
         </div>
     );
 };

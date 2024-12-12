@@ -169,7 +169,7 @@ const OrderComp = ({ orderDetails, admin = false }) => {
     } catch (error) {
       console.error('Error updating step:', error);
     }
-  };
+  }
 
   return (
     <div className="flex flex-col items-center">

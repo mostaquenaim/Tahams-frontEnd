@@ -8,7 +8,7 @@ import OrderComp from '../../../../components/orderComp';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Link from 'next/link';
-import { FaTrash, FaXbox } from 'react-icons/fa';
+import { FaEnvelope, FaSms, FaTrash, FaXbox } from 'react-icons/fa';
 import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
 
@@ -20,6 +20,8 @@ const ShowOrderDetails = () => {
     const { loading } = useContext(AuthContext);
     const axiosPublic = useAxiosPublic();
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [isConfirmationMessageBoxOpen, setIsConfirmationMessageBoxOpen] = useState(false);
+    const [message, setMessage] = useState('');
 
     // Filtered Order Details
     const group = orders.filter(order => order.history?.id == id);
@@ -32,6 +34,9 @@ const ShowOrderDetails = () => {
     console.log(history);
 
     // Modal handlers
+    const openMessageBox = () => setIsConfirmationMessageBoxOpen(true);
+    const closeMessageBox = () => setIsConfirmationMessageBoxOpen(false);
+
     const openConfirmationModal = () => setIsConfirmationModalOpen(true);
     const closeConfirmationModal = () => setIsConfirmationModalOpen(false);
 
@@ -44,6 +49,18 @@ const ShowOrderDetails = () => {
             router.push('/admin/Show/show-orders'); // Redirect to orders page or any other page
         } catch (error) {
             console.error("Failed to delete order history:", error);
+        }
+    };
+
+    // Handle message sending
+    const handleSendMessage = async () => {
+        try {
+            // const res = await axiosPublic.put(`/admin/delete-history/${history?.trackingToken}?email=${user?.email}`);
+            // console.log(res.data);
+            // closeConfirmationModal(); // Close modal on success
+            // router.push('/admin/Show/show-orders'); // Redirect to orders page or any other page
+        } catch (error) {
+            console.error("Failed to send message:", error);
         }
     };
 
@@ -64,6 +81,12 @@ const ShowOrderDetails = () => {
                         className='absolute top-4 right-4 text-red-500 cursor-pointer'
                         onClick={openConfirmationModal}
                     />
+
+                    <FaEnvelope
+                        className='absolute top-4 right-12 text-green-500 cursor-pointer'
+                        onClick={openMessageBox}
+                    />
+
                     <span
                         className='absolute top-4 left-4 text-red-500 cursor-pointer'
                         onClick={handleCancellation}
@@ -194,6 +217,40 @@ const ShowOrderDetails = () => {
                             <div className="flex justify-end gap-4 mt-4">
                                 <button onClick={closeConfirmationModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
                                 <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {/* Message Confirmation Modal */}
+                    <Modal
+                        isOpen={isConfirmationMessageBoxOpen}
+                        onRequestClose={closeMessageBox}
+                        contentLabel="Send Message"
+                        ariaHideApp={false}
+                        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                    >
+                        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                            <h2 className="text-2xl font-bold mb-4 text-center">Send a Message</h2>
+                            <textarea
+                                className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                placeholder="Type your message here..."
+                                rows="5"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)} // Bind the message state
+                            />
+                            <div className="flex justify-end gap-4 mt-6">
+                                <button
+                                    onClick={closeMessageBox}
+                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSendMessage}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                                >
+                                    Send
+                                </button>
                             </div>
                         </div>
                     </Modal>

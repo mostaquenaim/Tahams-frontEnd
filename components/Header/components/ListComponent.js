@@ -4,7 +4,7 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import ListListComponent from './components/ListListComponent';
 
 const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
-    console.log(cat, 7);
+    // console.log(cat, 78);
     const [subCategories, setSubCategories] = useState([])
 
     const axiosPublic = useAxiosPublic();
