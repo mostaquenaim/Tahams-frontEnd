@@ -140,11 +140,11 @@ const MyCart = () => {
                   <div className="flex justify-between w-full">
                     <span className="font-bold">{item.Quantity} pcs</span>
                     <span className="font-bold text-green-600">
-                      {item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)} BDT
+                      {item.product.sellingPrice - parseInt(item.product.sellingPrice * item.product.discountPercentage / 100) + parseInt(item.product.sellingPrice * item.product.vatPercentage / 100)} BDT
                     </span>
                   </div>
                   <div className="w-full flex justify-between items-center">
-                    <span className="font-semibold text-lg">Total: {item.Quantity * (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100))} BDT</span>
+                    <span className="font-semibold text-lg">Total: {item.Quantity * parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + parseInt(item.product.sellingPrice * item.product.vatPercentage / 100))} BDT</span>
                   </div>
                 </div>
               ))}

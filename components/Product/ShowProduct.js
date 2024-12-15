@@ -21,7 +21,7 @@ const ShowProduct = ({ item }) => {
     const [ftImage, setFtImage] = useState('https://static-01.daraz.com.bd/p/13e6157acd98dfb45b8f2c9de90fe6bd.jpg')
 
     const { sellingPrice, discountPercentage, id, filename, ifStock } = item
-    const discountedPrice = sellingPrice * (100 - discountPercentage) / 100
+    const discountedPrice = parseInt(sellingPrice * (100 - discountPercentage) / 100)
 
     const image = `/admin/get-ft-photo-by-product-id/${id}`
 

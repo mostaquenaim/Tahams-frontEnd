@@ -69,7 +69,7 @@ const WishList = () => {
                                         <div className="p-4">
                                             <Link href={`products/details/${item.product.id}`} className="transition duration-300 hover:scale-105">
                                                 <h2 className="text-sm md:text-base lg:text-lg xl:text-xl font-semibold">{item.product.name}</h2>
-                                                <p className="text-xs md:text-sm lg:text-base xl:text-lg">{item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage)} BDT</p>
+                                                <p className="text-xs md:text-sm lg:text-base xl:text-lg">{item.product.sellingPrice - parseInt(item.product.sellingPrice * item.product.discountPercentage / 100) + parseInt(item.product.sellingPrice * item.product.vatPercentage)} BDT</p>
                                             </Link>
                                         </div>
                                         <button

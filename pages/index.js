@@ -65,7 +65,6 @@ export default function Home() {
               </button>
             </div>
           </Modal>
-
           {/* Main Content */}
           {!isModalOpen && <MySwiper images={images}></MySwiper>}
           <NewArrival></NewArrival>

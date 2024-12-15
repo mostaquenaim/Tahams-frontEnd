@@ -400,7 +400,7 @@ const Product = ({ product }) => {
 
                                 discountPercentage > 0
                                     ?
-                                    <span>{sellingPrice * (100 - discountPercentage) / 100} </span>
+                                    <span>{parseInt(sellingPrice * (100 - discountPercentage) / 100)} </span>
                                     :
                                     <span>{sellingPrice} </span>
                             }

@@ -19,7 +19,7 @@ const FinalCart = ({ cartItems }) => {
         // Calculate total price when cartItems change
         const sum = cartItems.reduce((acc, item) => {
             // Assuming item.product.sellingPrice and item.Quantity are numbers
-            return acc + (item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
+            return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
         }, 0);
 
         setTotalPrice(sum + deliveryFee);
@@ -42,7 +42,7 @@ const FinalCart = ({ cartItems }) => {
                 {cartItems.map((item, index) => (
                     <div className='flex justify-between' key={index}>
                         <p className='w-2/3'>{item.ProductName} <span className='text-lg font-semibold'> x {item.Quantity}</span></p>
-                        <p>৳ {(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity} </p>
+                        <p>৳ {parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity} </p>
                     </div>
                 ))}
                 <p className='flex justify-between'>
