@@ -314,7 +314,7 @@ const Product = ({ product }) => {
                             alt={name}
                             className="md:h-96 md:w-96 lg:h-[600px] lg:w-[600px] max-h-screen rounded mb-5 relative"
                         /> */}
-                        <ImageZoom photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}/>
+                        <ImageZoom photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`} />
                         <div className='flex gap-4'>
                             <input
                                 type="radio"
@@ -387,15 +387,25 @@ const Product = ({ product }) => {
                             {description}
                         </div>
 
-                        {/* price  */}
-                        <p className="text-green-600 text-lg mb-2">{sellingPrice} BDT</p>
-
                         {/* Discount */}
                         {discountPercentage > 0 && (
                             <p className="text-red-500 line-through mb-2">
-                                {sellingPrice + (sellingPrice * discountPercentage) / 100} BDT
+                                {sellingPrice} BDT
                             </p>
                         )}
+
+                        {/* price  */}
+                        <p className="text-green-600 text-lg mb-2">
+                            {
+
+                                discountPercentage > 0
+                                    ?
+                                    <span>{sellingPrice * (100 - discountPercentage) / 100} </span>
+                                    :
+                                    <span>{sellingPrice} </span>
+                            }
+                            BDT
+                        </p>
 
                         {/* Stock Status */}
                         <p className={`mb-2 ${ifStock ? 'text-green-500' : 'text-red-500'}`}>

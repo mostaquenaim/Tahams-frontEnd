@@ -11,7 +11,7 @@ const ListListComponent = ({ sub, ListStyle }) => {
     useEffect(() => {
         axiosPublic.get(`/admin/view-product-sub-sub-category/${sub.id}`)
             .then(res => {
-                console.log(res.data, 99);
+                // console.log(res.data, 99);
                 setCats(res.data)
             })
     }, [])
