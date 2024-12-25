@@ -7,11 +7,11 @@ import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
 
-export const CompanyContext = createContext(null); {/* unused */}
+export const CompanyContext = createContext(null); {/* unused */ }
 
 export default function Home() {
   const [images, setImages] = useState([]);
-  // const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   useEffect(() => {
     fetch('/banner-images.json')
@@ -19,24 +19,24 @@ export default function Home() {
       .then((data) => setImages(data));
   }, []);
 
-  // const handleCloseModal = () => {
-  //   setIsModalOpen(false);
-  //   localStorage.setItem('decDiscountShow', true);
-  // };
-  
-  // useEffect(() => {
-  //   const isDiscountShown = localStorage.getItem('decDiscountShow') === 'true';
-  //   if (isDiscountShown) {
-  //     setIsModalOpen(false);
-  //   }
-  // }, []);  
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    localStorage.setItem('decDiscountShow', true);
+  };
+
+  useEffect(() => {
+    const isDiscountShown = localStorage.getItem('decDiscountShow') === 'true';
+    if (isDiscountShown) {
+      setIsModalOpen(false);
+    }
+  }, []);
 
   return (
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           {/* Modal */}
-          {/* <Modal
+          <Modal
             isOpen={isModalOpen}
             onRequestClose={handleCloseModal}
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
@@ -45,7 +45,7 @@ export default function Home() {
           >
             <div className="relative bg-white rounded-lg p-6 text-center max-w-sm mx-auto shadow-lg">
               <img
-                src="/16DECPopUp.jpg"
+                src="/christmas-pop-up.jpg"
                 alt="Pop-Up"
                 className="w-full rounded-md"
               />
@@ -64,11 +64,11 @@ export default function Home() {
                 ×
               </button>
             </div>
-          </Modal> */}
+          </Modal>
           {/* Main Content */}
-          {/* {!isModalOpen &&  */}
-          <MySwiper images={images}></MySwiper>
-          {/* } */}
+          {!isModalOpen &&
+            <MySwiper images={images}></MySwiper>
+          }
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
           <ShopByCategory></ShopByCategory>
