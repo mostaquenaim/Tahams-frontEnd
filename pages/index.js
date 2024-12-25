@@ -21,11 +21,11 @@ export default function Home() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    localStorage.setItem('decDiscountShow', true);
+    localStorage.setItem('christDiscountShow', true);
   };
 
   useEffect(() => {
-    const isDiscountShown = localStorage.getItem('decDiscountShow') === 'true';
+    const isDiscountShown = localStorage.getItem('christDiscountShow') === 'true';
     if (isDiscountShown) {
       setIsModalOpen(false);
     }
