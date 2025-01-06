@@ -8,11 +8,10 @@ import AuthProvider from '/Contexts/Auth/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import AdminDrawer from '../components/Drawers/AdminDrawer';
-import { AuthContext } from '../Contexts/Auth/AuthProvider';
 import AdminCheck from '../components/Auth/AdminCheck';
 import CustomerCheck from '../components/Auth/CustomerCheck';
 import CountProvider from '../Contexts/CountProvider';
+import Head from 'next/head';
 
 const queryClient = new QueryClient()
 export default function App({ Component, pageProps }) {
@@ -28,6 +27,11 @@ export default function App({ Component, pageProps }) {
   return (
     <AuthProvider>
       <CountProvider>
+        <Head>
+          <link rel="icon" href="/favicon.ico" />
+          <title>Tahams - The Unique Way of Life </title>
+        </Head>
+
         <QueryClientProvider client={queryClient}>
           {isAdminRoute ? (
             <AdminCheck>
