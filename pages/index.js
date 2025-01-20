@@ -19,24 +19,24 @@ export default function Home() {
       .then((data) => setImages(data));
   }, []);
 
-  // const handleCloseModal = () => {
-  //   setIsModalOpen(false);
-  //   localStorage.setItem('christDiscountShow', true);
-  // };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    localStorage.setItem('winterDiscountShow', true);
+  };
 
-  // useEffect(() => {
-  //   const isDiscountShown = localStorage.getItem('christDiscountShow') === 'true';
-  //   if (isDiscountShown) {
-  //     setIsModalOpen(false);
-  //   }
-  // }, []);
+  useEffect(() => {
+    const isDiscountShown = localStorage.getItem('winterDiscountShow') === 'true';
+    if (isDiscountShown) {
+      setIsModalOpen(false);
+    }
+  }, []);
 
   return (
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           {/* Modal */}
-          {/* <Modal
+          <Modal
             isOpen={isModalOpen}
             onRequestClose={handleCloseModal}
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
@@ -45,7 +45,7 @@ export default function Home() {
           >
             <div className="relative bg-white rounded-lg p-6 text-center max-w-sm mx-auto shadow-lg">
               <img
-                src="/christmas-pop-up.jpg"
+                src="/winter-stock-clear-pop-up.png"
                 alt="Pop-Up"
                 className="w-full rounded-md"
               />
@@ -64,11 +64,11 @@ export default function Home() {
                 ×
               </button>
             </div>
-          </Modal> */}
+          </Modal>
           {/* Main Content */}
-          {/* {!isModalOpen && */}
+          {!isModalOpen &&
             <MySwiper images={images}></MySwiper>
-          {/* } */}
+          }
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
           <ShopByCategory></ShopByCategory>
