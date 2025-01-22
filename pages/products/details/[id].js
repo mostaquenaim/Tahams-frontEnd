@@ -189,8 +189,50 @@ const Product = ({ product }) => {
 
     const handleAddToCart = async () => {
         if (!user) {
-            toast.error('You must login first')
-            router.push('/login')
+            // Check for guest customer info in localStorage
+            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
+    
+            if (!guestCustomerInfo) {
+                // If not available, create a new guest customer info
+                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
+
+                // Create guest customer info
+                guestCustomerInfo = {
+                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
+                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
+                };
+    
+                // Save guest customer info to localStorage
+                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
+            }
+    
+            // Use guest customer info for cart addition
+            try {
+                // Make a POST request to the backend endpoint for adding to the cart
+                const response = await axiosPublic.post('/admin/add-to-cart', {
+                    productId: product.id,
+                    category: selectedCategory,
+                    size: selectedSize,
+                    maleSize: selectedMaleSize,
+                    femaleSize: selectedFemaleSize,
+                    quantity: quantity,
+                    colorId: color.id,
+                    customerEmail: guestCustomerInfo.email, // Use guest email
+                });
+    
+                if (response.status >= 200 && response.status <= 205) {
+                    // Cart item added successfully
+                    toast.success('Item added to the cart', {
+                        duration: 3000,
+                    });
+                } else {
+                    // Handle error
+                    toast.error('Failed to add item to the cart');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toast.error('An error occurred while adding to the cart');
+            }
         }
         else if (product.pscs[0].category.category.category.name == 'Couples'
             &&
