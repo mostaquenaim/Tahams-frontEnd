@@ -13,7 +13,13 @@ const PaymentProcess = () => {
 
     useEffect(() => {
         const fetchHistory = async () => {
-            const result = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email}`)
+            const email = user?.email || JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
+
+            if (!email) {
+                throw new Error('No email found for the user or guest');
+            }
+
+            const result = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${email}`)
             // console.log(result.data,'result');
             setBuyingHistory(result.data)
         }

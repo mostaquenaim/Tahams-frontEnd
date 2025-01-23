@@ -1,14 +1,10 @@
 import { useState } from 'react';
-import NavbarCompTwo from '/components/Header/NavbarComp';
 import useCart from '/Hooks/useCart';
 import { useRouter } from 'next/router';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import Swal from 'sweetalert2';
-import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
-
 import Link from 'next/link';
-import Footer from '../../components/Footer/Footer';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();

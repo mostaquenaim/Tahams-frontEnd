@@ -8,15 +8,21 @@ const useOrder = () => {
     const { user, loading } = useContext(AuthContext);
 
     const fetchCartData = async () => {
-        const res = await axiosPublic.get(`/admin/get-all-buying-history?email=${user?.email}`);
-        // console.log(res.data,'res.data');
+        const tmpEmail = user?.email || JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
+
+        if (!tmpEmail) {
+            throw new Error('No email found for the user or guest');
+        }
+
+        const res = await axiosPublic.get(`/admin/get-all-buying-history?email=${tmpEmail}`);
+        console.log(res.data, 'res.data');
         return res.data;
     };
 
     const { refetch, data: orders = [] } = useQuery({
-        queryKey: ['orders', user?.email], 
+        queryKey: ['orders', user?.email || JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email],
         queryFn: fetchCartData,
-        enabled: !loading && !!user, // Enable the query when the user is not loading and is authenticated
+        enabled: !loading && (!!user?.email || !!JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email),
     });
 
     return [orders, refetch];

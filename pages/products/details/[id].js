@@ -191,7 +191,7 @@ const Product = ({ product }) => {
         if (!user) {
             // Check for guest customer info in localStorage
             let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
-    
+
             if (!guestCustomerInfo) {
                 // If not available, create a new guest customer info
                 const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
@@ -201,11 +201,13 @@ const Product = ({ product }) => {
                     username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
                     email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
                 };
-    
+
                 // Save guest customer info to localStorage
                 localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
             }
-    
+
+            setIsAddedToCart(true)
+            setShowGotoCart(true)
             // Use guest customer info for cart addition
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
@@ -215,11 +217,11 @@ const Product = ({ product }) => {
                     size: selectedSize,
                     maleSize: selectedMaleSize,
                     femaleSize: selectedFemaleSize,
-                    quantity: quantity,
+                    Quantity: quantity,
                     colorId: color.id,
                     customerEmail: guestCustomerInfo.email, // Use guest email
                 });
-    
+
                 if (response.status >= 200 && response.status <= 205) {
                     // Cart item added successfully
                     toast.success('Item added to the cart', {
@@ -232,6 +234,15 @@ const Product = ({ product }) => {
             } catch (error) {
                 console.error('Error:', error);
                 toast.error('An error occurred while adding to the cart');
+            } finally {
+                // Set a timer to reset the state after 700 milliseconds
+                setTimeout(() => {
+                    setIsAddedToCart(false);
+                }, 700);
+
+                setTimeout(() => {
+                    setShowGotoCart(false);
+                }, 3000);
             }
         }
         else if (product.pscs[0].category.category.category.name == 'Couples'
@@ -258,9 +269,6 @@ const Product = ({ product }) => {
                 });
 
                 if (response.status >= 200 && response.status <= 205) {
-                    // Cart item added successfully
-                    // console.log('Item added to the cart');
-
                     // Show toast notification
                     toast.success('Item added to the cart', {
                         duration: 3000, // Toast will be shown for 3 seconds

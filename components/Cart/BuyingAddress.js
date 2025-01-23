@@ -28,18 +28,25 @@ const BuyingAddress = ({ data }) => {
 
     const getUserByEmail = async () => {
         try {
-            const email = localStorage.getItem('email')
-            const result = await axiosPublic.get(`admin/get-user-by-email/${user?.email || email}`);
+            // Get email from AuthContext or guestCustomerInfo in localStorage
+            const email = user?.email || JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
+
+            if (!email) {
+                throw new Error('No email found for the user or guest');
+            }
+
+            const result = await axiosPublic.get(`admin/get-user-by-email/${email}`);
             setUserData(result.data);
+
             reset({
-                fullName: result.data.name,
-                address: result.data.address,
-                phoneNumber: result.data.mbl_no,
+                fullName: result.data?.name || '',
+                address: result.data?.address || '',
+                phoneNumber: result.data?.mbl_no || '',
                 city: selectedCity || '',
-                region: selectedRegion,
-            })
+                region: selectedRegion || '',
+            });
         } catch (error) {
-            console.error('Error fetching user data for email:', user?.email, error);
+            console.error('Error fetching user data for email:', error);
         }
     };
 
@@ -111,7 +118,7 @@ const BuyingAddress = ({ data }) => {
                 selectedRegion !== userData.region ||
                 selectedCity !== userData.city ||
                 data.address !== userData.address;
-    
+
             // Check if the address has changed before proceeding
             if (isAddressChanged) {
                 const result = await Swal.fire({
@@ -122,7 +129,7 @@ const BuyingAddress = ({ data }) => {
                     confirmButtonText: 'Yes, update it!',
                     cancelButtonText: 'No, keep the old one'
                 });
-    
+
                 // If the user confirms, update the address
                 if (result.isConfirmed) {
                     await axiosPublic.put(`admin/update-user-address/${userData.id}`, {
@@ -133,7 +140,7 @@ const BuyingAddress = ({ data }) => {
                     });
                 }
             }
-    
+
             // Regardless of whether the address was changed, proceed to submit the order
             const formData = {
                 fullName: data.fullName,
@@ -145,9 +152,9 @@ const BuyingAddress = ({ data }) => {
                 carts,
                 deliveryFee,
             };
-    
+
             const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
-    
+
             if (res.status >= 200 && res.status < 300) {
                 router.push(`/confirm-order/${res.data.trackingToken}`);
             }
