@@ -29,8 +29,10 @@ const Dashboard = () => {
         logOut()
             .then(() => {
                 // Remove userInfo from localStorage
-                localStorage.removeItem('userInfo');
-                console.log('User logged out and userInfo removed from localStorage');
+                if (typeof window !== "undefined") {
+                    localStorage.removeItem('userInfo');
+                    console.log('User logged out and userInfo removed from localstorage');
+                }
             })
             .catch((error) => {
                 console.error('Error during logout:', error.message);

@@ -7,7 +7,6 @@ import ShowOrderComp from '../../components/Show/ShowOrderComp';
 const ShowOrders = () => {
     const { user, loading } = useContext(AuthContext);
     const [orders] = useOrder();
-    console.log(orders,'o');
     // const axiosPublic = useAxiosPublic();
 
     // Group orders by history ID

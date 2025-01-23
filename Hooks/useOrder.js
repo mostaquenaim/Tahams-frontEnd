@@ -8,7 +8,8 @@ const useOrder = () => {
     const { user, loading } = useContext(AuthContext);
 
     const fetchCartData = async () => {
-        const tmpEmail = user?.email || JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
+        const tmpEmail = user?.email || 
+            (typeof window !== "undefined" && JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email);
 
         if (!tmpEmail) {
             throw new Error('No email found for the user or guest');
@@ -20,9 +21,11 @@ const useOrder = () => {
     };
 
     const { refetch, data: orders = [] } = useQuery({
-        queryKey: ['orders', user?.email || JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email],
+        queryKey: ['orders', user?.email || 
+            (typeof window !== "undefined" && JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email)],
         queryFn: fetchCartData,
-        enabled: !loading && (!!user?.email || !!JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email),
+        enabled: !loading && (!!user?.email || 
+            (typeof window !== "undefined" && !!JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email)),
     });
 
     return [orders, refetch];
