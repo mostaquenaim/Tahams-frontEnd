@@ -91,8 +91,8 @@ const NavbarCompTwo = () => {
 
     const sideLinks = (
         <>
-            {user &&
-                <>
+            {/* {user &&
+                <> */}
                     <Li>
                         <Link href='/dashboard'>
                             Dashboard
@@ -103,8 +103,8 @@ const NavbarCompTwo = () => {
                             My orders
                         </Link>
                     </Li>
-                </>
-            }
+                {/* </>
+            } */}
             <Li>
                 <Link href='/Contact'>
                     Contact Us
