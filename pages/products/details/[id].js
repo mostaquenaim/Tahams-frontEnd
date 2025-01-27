@@ -300,18 +300,25 @@ const Product = ({ product }) => {
 
     const handleBuyNow = async () => {
         if (!user) {
-            router.push('/login')
-        }
-        else if (product.pscs[0].category.category.category.name == 'Couples'
-            &&
-            (!selectedFemaleSize || !selectedSize)
-        ) {
-            toast.error('You have to select a size for each')
-        }
-        else {
-            // setIsAddedToCart(true)
+            // Handle guest customer info in localStorage
+            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
+
+            if (!guestCustomerInfo) {
+                // If not available, create a new guest customer info
+                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
+
+                // Create guest customer info
+                guestCustomerInfo = {
+                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
+                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
+                };
+
+                // Save guest customer info to localStorage
+                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
+            }
+
             try {
-                // Make a POST request to the backend endpoint for adding to the cart
+                // Add product to the cart for the guest customer
                 const response = await axiosPublic.post('/admin/add-to-cart', {
                     productId: product.id,
                     category: selectedCategory,
@@ -320,34 +327,56 @@ const Product = ({ product }) => {
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
                     colorId: color.id,
-                    customerEmail: user?.email
+                    customerEmail: guestCustomerInfo.email, // Use guest email
                 });
-
-                // console.log(response.data);
 
                 if (response.status >= 200 && response.status <= 205) {
                     localStorage.setItem('selectedItems', JSON.stringify([response.data]));
 
+                    // Redirect to the buy-now page
                     router.push({
                         pathname: '/buy-now',
                     });
                 } else {
-                    // Handle error
-                    console.error('Failed to add item to the cart');
-
-                    // Show toast notification for the error
                     toast.error('Failed to buy item');
                 }
             } catch (error) {
                 console.error('Error:', error);
-
-                // Show toast notification for the error
                 toast.error('An error occurred while buying');
-            } finally {
-                // Set a timer to reset the state after 700 milliseconds
-                // setTimeout(() => {
-                //     setIsAddedToCart(false);
-                // }, 700);
+            }
+        } else if (
+            product.pscs[0].category.category.category.name === 'Couples' &&
+            (!selectedFemaleSize || !selectedSize)
+        ) {
+            // Ensure sizes are selected for couples' products
+            toast.error('You have to select a size for each');
+        } else {
+            try {
+                // Add product to the cart for the logged-in user
+                const response = await axiosPublic.post('/admin/add-to-cart', {
+                    productId: product.id,
+                    category: selectedCategory,
+                    size: selectedSize,
+                    maleSize: selectedMaleSize,
+                    femaleSize: selectedFemaleSize,
+                    Quantity: quantity,
+                    colorId: color.id,
+                    customerEmail: user?.email, // Use logged-in user's email
+                });
+
+                if (response.status >= 200 && response.status <= 205) {
+                    localStorage.setItem('selectedItems', JSON.stringify([response.data]));
+
+                    // Redirect to the buy-now page
+                    router.push({
+                        pathname: '/buy-now',
+                    });
+                } else {
+                    toast.error('Failed to buy item');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toast.error('An error occurred while buying');
             }
         }
     };
