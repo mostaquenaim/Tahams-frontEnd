@@ -17,16 +17,24 @@ const OrderDetails = () => {
     const [showOptions, setShowOptions] = useState(false);  // State for showing return/cancel options
     const router = useRouter();
     const axiosPublic = useAxiosPublic();
-    
+
     const { token } = router.query;
-    
+
     const { user } = useContext(AuthContext);
     useEffect(() => {
         const fetchOrderDetails = async () => {
             if (token) {
                 try {
                     const userEmail = localStorage.getItem('email');
-                    const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email || userEmail}`);
+
+                    const tmpEmail = user?.email || userEmail ||
+                        (typeof window !== "undefined" && JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email);
+
+                    if (!tmpEmail) {
+                        throw new Error('No email found for the user or guest');
+                    }
+
+                    const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${tmpEmail}`);
                     console.log(response.data, 26);
                     setOrderDetails(response.data);
                 } catch (err) {
