@@ -1,11 +1,11 @@
-import '../styles/globals.css'
-import '/styles/custom.css'
-import '/styles/navStyle.css'
+import '../styles/globals.css';
+import '/styles/custom.css';
+import '/styles/navStyle.css';
 import { useContext, useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import AuthProvider from '/Contexts/Auth/AuthProvider';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import AdminCheck from '../components/Auth/AdminCheck';
@@ -13,23 +13,36 @@ import CustomerCheck from '../components/Auth/CustomerCheck';
 import CountProvider from '../Contexts/CountProvider';
 import Head from 'next/head';
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 export default function App({ Component, pageProps }) {
-
   useEffect(() => {
     AOS.init();
-  }, [])
+  }, []);
 
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin');
 
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      if (window.gtag) {
+        window.gtag('config', 'G-PP551NL7F0', {
+          page_path: url,
+        });
+      }
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
 
   return (
     <AuthProvider>
       <CountProvider>
         <Head>
           <link rel="icon" href="/favicon.ico" />
-          <title>Tahams - The Unique Way of Life </title>
+          <title>Tahams - The Unique Way of Life</title>
         </Head>
 
         <QueryClientProvider client={queryClient}>
@@ -46,6 +59,5 @@ export default function App({ Component, pageProps }) {
         </QueryClientProvider>
       </CountProvider>
     </AuthProvider>
-  )
-
+  );
 }
