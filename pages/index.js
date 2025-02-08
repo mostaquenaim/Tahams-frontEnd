@@ -6,6 +6,7 @@ import NewArrival from '/components/NewArrival/NewArrival';
 import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
+import TagManager from "react-gtm-module";
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
@@ -13,7 +14,12 @@ export default function Home() {
   const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(true);
 
+  const tagManagerArgs = {
+    gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
+  };
+  
   useEffect(() => {
+    TagManager.initialize(tagManagerArgs);
     fetch('/banner-images.json')
       .then((res) => res.json())
       .then((data) => setImages(data));
