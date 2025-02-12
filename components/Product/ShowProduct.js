@@ -105,6 +105,17 @@ const ShowProduct = ({ item }) => {
         console.log(CatId);
         localStorage.setItem('defaultCategoryId', CatId);
         router.push(`/products/details/${id}`)
+
+        window.dataLayer.push({
+            event: "view_item",
+            ecommerce: {
+              items: [
+                {
+                  item_id: id,
+                },
+              ],
+            },
+          });
     }
 
     const cardBtnStyle = 'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1'

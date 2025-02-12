@@ -18,6 +18,7 @@ export default function Home() {
     gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
   };
   
+  
   useEffect(() => {
     TagManager.initialize(tagManagerArgs);
     fetch('/banner-images.json')

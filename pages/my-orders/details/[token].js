@@ -7,7 +7,6 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdMoreHoriz } from 'react-icons/md';
 import OrderComp from '../../../components/orderComp';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
-import Modal from 'react-modal';
 
 const OrderDetails = () => {
     const [orderDetails, setOrderDetails] = useState([]);
