@@ -13,7 +13,7 @@ import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import ImageZoom from '../../draft/image-zoom-inner';
 
 const Product = ({ product }) => {
-    console.log('product', product);
+    console.log('product-test', product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
@@ -31,11 +31,60 @@ const Product = ({ product }) => {
     const axiosPublic = useAxiosPublic();
 
     const viewCount = async () => {
-        // console.log(user);
-        const result = await axiosPublic.post(`/admin/increase-product-view/${product.id}?email=${user?.email}`)
+        let customerEmail = ''
+        if (!user) {
+            // Check for guest customer info in localStorage
+            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
 
-        // console.log(result);
-    }
+            if (!guestCustomerInfo) {
+                // If not available, create a new guest customer info
+                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
+
+                // Create guest customer info
+                guestCustomerInfo = {
+                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
+                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
+                };
+
+                // Save guest customer info to localStorage
+                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
+            }
+
+            customerEmail = guestCustomerInfo.email
+        }
+        else {
+            customerEmail = user?.email
+        }
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: "view_item",
+            ecommerce: {
+                items: [
+                    {
+                        item_id: product.id,
+                        item_name: product.name,
+                        item_color: product.color?.name || "Unknown",
+                        item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+                        main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+                        sub_category: product.pscs?.[0]?.category?.name || "N/A",
+                        price: product.buyingPrice || 0,
+                        total_views: product.totalViews || 0,
+                        discount_percent: product.discountPercentage || 0,
+                        currency: "BDT",
+                        quantity: 1,
+                        user_email: customerEmail
+                    }
+                ]
+            }
+        });
+
+        try {
+            await axiosPublic.post(`/admin/increase-product-view/${product.id}?email=${customerEmail}`);
+        } catch (error) {
+            console.error("Error updating view count:", error);
+        }
+    };
 
     useEffect(() => {
         user &&
@@ -188,6 +237,7 @@ const Product = ({ product }) => {
     };
 
     const handleAddToCart = async () => {
+        let customEmail = ''
         if (!user) {
             // Check for guest customer info in localStorage
             let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
@@ -204,6 +254,7 @@ const Product = ({ product }) => {
 
                 // Save guest customer info to localStorage
                 localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
+                customEmail = guestCustomerInfo.email
             }
 
             setIsAddedToCart(true)
@@ -252,6 +303,8 @@ const Product = ({ product }) => {
             toast.error('You have to select a size for each')
         }
         else {
+            customEmail = user?.email
+
             setIsAddedToCart(true)
             setShowGotoCart(true)
             // console.log(product,color);
@@ -296,6 +349,29 @@ const Product = ({ product }) => {
                 }, 3000);
             }
         }
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: "view_item",
+            ecommerce: {
+                items: [
+                    {
+                        item_id: product.id,
+                        item_name: product.name,
+                        item_color: product.color?.name || "Unknown",
+                        item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+                        main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+                        sub_category: product.pscs?.[0]?.category?.name || "N/A",
+                        price: product.buyingPrice || 0,
+                        total_views: product.totalViews || 0,
+                        discount_percent: product.discountPercentage || 0,
+                        currency: "BDT",
+                        quantity: 1,
+                        user_email: customEmail
+                    }
+                ]
+            }
+        });
     };
 
     const handleBuyNow = async () => {
