@@ -166,13 +166,59 @@ const Product = ({ product }) => {
         : [];
 
     const addToWishlist = async () => {
+        let customEmail = ''
+        if (!user) {
+            // Check for guest customer info in localStorage
+            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
+
+            if (!guestCustomerInfo) {
+                // If not available, create a new guest customer info
+                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
+
+                // Create guest customer info
+                guestCustomerInfo = {
+                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
+                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
+                };
+
+                // Save guest customer info to localStorage
+                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
+                customEmail = guestCustomerInfo.email
+            }
+        }
+        else {
+            customEmail = user?.email
+        }
 
         if (!isAddedToWishlist) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: "add_to_wish",
+                ecommerce: {
+                    items: [
+                        {
+                            item_id: product.id,
+                            item_name: product.name,
+                            item_color: product.color?.name || "Unknown",
+                            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+                            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+                            sub_category: product.pscs?.[0]?.category?.name || "N/A",
+                            price: product.buyingPrice || 0,
+                            total_views: product.totalViews || 0,
+                            discount_percent: product.discountPercentage || 0,
+                            currency: "BDT",
+                            quantity: 1,
+                            user_email: customEmail
+                        }
+                    ]
+                }
+            });
+
             try {
                 // Make a POST request to add the product to the wishlist
                 const res = await axiosPublic.post(`/admin/add-Wish`, {
                     productId: product.id,
-                    customerEmail: user && user.email
+                    customerEmail: customEmail
                 });
                 // Add the product to the wishlist
                 if (product && userInfo) {
@@ -184,8 +230,31 @@ const Product = ({ product }) => {
             }
         }
         else {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: "remove_from_wish",
+                ecommerce: {
+                    items: [
+                        {
+                            item_id: product.id,
+                            item_name: product.name,
+                            item_color: product.color?.name || "Unknown",
+                            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+                            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+                            sub_category: product.pscs?.[0]?.category?.name || "N/A",
+                            price: product.buyingPrice || 0,
+                            total_views: product.totalViews || 0,
+                            discount_percent: product.discountPercentage || 0,
+                            currency: "BDT",
+                            quantity: 1,
+                            user_email: customEmail
+                        }
+                    ]
+                }
+            });
+
             try {
-                const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${user?.email}`);
+                const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${customEmail}`);
                 if (product && userInfo) {
                     checkIfWished(product.id, userInfo.id);
                 }
@@ -352,7 +421,7 @@ const Product = ({ product }) => {
 
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
-            event: "view_item",
+            event: "add_to_cart",
             ecommerce: {
                 items: [
                     {
@@ -364,6 +433,10 @@ const Product = ({ product }) => {
                         sub_category: product.pscs?.[0]?.category?.name || "N/A",
                         price: product.buyingPrice || 0,
                         total_views: product.totalViews || 0,
+                        selected_category: selectedCategory,
+                        selected_size: selectedSize,
+                        selected_maleSize: selectedMaleSize,
+                        selected_femaleSize: selectedFemaleSize,
                         discount_percent: product.discountPercentage || 0,
                         currency: "BDT",
                         quantity: 1,
@@ -375,6 +448,7 @@ const Product = ({ product }) => {
     };
 
     const handleBuyNow = async () => {
+        let customEmail = ''
         if (!user) {
             // Handle guest customer info in localStorage
             let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
@@ -392,6 +466,8 @@ const Product = ({ product }) => {
                 // Save guest customer info to localStorage
                 localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
             }
+
+            customEmail = guestCustomerInfo.email
 
             try {
                 // Add product to the cart for the guest customer
@@ -427,6 +503,7 @@ const Product = ({ product }) => {
             // Ensure sizes are selected for couples' products
             toast.error('You have to select a size for each');
         } else {
+            customEmail = user?.email
             try {
                 // Add product to the cart for the logged-in user
                 const response = await axiosPublic.post('/admin/add-to-cart', {
@@ -455,6 +532,33 @@ const Product = ({ product }) => {
                 toast.error('An error occurred while buying');
             }
         }
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: "add_to_cart",
+            ecommerce: {
+                items: [
+                    {
+                        item_id: product.id,
+                        item_name: product.name,
+                        item_color: product.color?.name || "Unknown",
+                        item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+                        main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+                        sub_category: product.pscs?.[0]?.category?.name || "N/A",
+                        price: product.buyingPrice || 0,
+                        selected_category: selectedCategory,
+                        selected_size: selectedSize,
+                        selected_maleSize: selectedMaleSize,
+                        selected_femaleSize: selectedFemaleSize,
+                        total_views: product.totalViews || 0,
+                        discount_percent: product.discountPercentage || 0,
+                        currency: "BDT",
+                        quantity: 1,
+                        user_email: customEmail
+                    }
+                ]
+            }
+        });
     };
 
     return (
