@@ -38,7 +38,8 @@ const MyCart = () => {
   };
 
   // Handle delete item with confirmation
-  const handleDeleteItem = (itemId) => {
+  const handleDeleteItem = (item) => {
+    // console.log('itemId==', item);
     Swal.fire({
       title: 'Are you sure?',
       text: 'You won\'t be able to revert this!',
@@ -49,7 +50,33 @@ const MyCart = () => {
       confirmButtonText: 'Yes, delete it!',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const result = await axiosPublic.delete(`/admin/delete-cart/${itemId}`)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: "remove_from_cart",
+          ecommerce: {
+            items: [
+              {
+                item_id: item.product.id,
+                item_name: item.product.name,
+                item_color: item.ProductName?.split(" ")[0] || "Unknown",
+                item_series: item.category?.category?.category?.name || "N/A",
+                main_category: item.category?.category?.name || "N/A",
+                sub_category: item.category?.name || "N/A",
+                price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
+                total_views: item.product.totalViews || 0,
+                // selected_category: selectedCategory,
+                selected_size: item.size,
+                selected_maleSize: item.maleSize || null,
+                selected_femaleSize: item.femaleSize || null,
+                discount_percent: item.product.discountPercentage || 0,
+                currency: "BDT",
+                quantity: item.Quantity,
+                // user_email: customEmail
+              }
+            ]
+          }
+        });
+        const result = await axiosPublic.delete(`/admin/delete-cart/${item.uniqueId}`)
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
           refetch()
@@ -115,7 +142,7 @@ const MyCart = () => {
                       onChange={() => toggleItemSelection(item.id)}
                     />
                     <button
-                      onClick={() => handleDeleteItem(item.uniqueId)}
+                      onClick={() => handleDeleteItem(item)}
                       className="text-red-600 hover:text-red-800"
                     >
                       <RiDeleteBin5Fill size={24} />

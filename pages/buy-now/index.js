@@ -11,11 +11,10 @@ const BuyNow = ({ data }) => {
   useEffect(() => {
     // Get the cart products from localStorage
     const cartProducts = JSON.parse(localStorage.getItem("selectedItems"));
-
     setCartItems(cartProducts)
   }, []);
 
-  const total = router.query.total;
+  // const total = router.query.total;
 
   return (
     <div>

@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { useRouter } from 'next/router';
+import { DeliveryContext } from '../../Contexts/DeliveryFee';
 
 const PaymentInfo = ({ history }) => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
     const axiosPublic = useAxiosPublic();
     const router = useRouter();
+
+    const deliveryFee = useContext(DeliveryContext)
 
     const [paymentInfo, setPaymentInfo] = useState({
         accountNumber: '',
@@ -34,6 +37,8 @@ const PaymentInfo = ({ history }) => {
     }, []);
 
     const handleConfirmPayment = async () => {
+        // console.log(history);
+
         if ([2, 3, 4, 5, 6, 7].includes(selectedPaymentMethod.id)) {
             if (!paymentInfo.accountNumber || !paymentInfo.screenshot) {
                 toast.error('Please fill up all the fields.');
@@ -43,11 +48,60 @@ const PaymentInfo = ({ history }) => {
 
         try {
             const formData = new FormData();
+            // console.log(selectedPaymentMethod,'===',history);
             formData.append('paymentMethod', selectedPaymentMethod.id);
             formData.append('accountNumber', paymentInfo?.accountNumber || null);
             formData.append('screenshot', paymentInfo?.screenshot || null);
             formData.append('history', history[0].history.trackingToken);
             formData.append('customer', history[0].customer.email);
+
+            const tempItems = []
+            const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
+
+            const sum = cartItems.reduce((acc, item) => {
+                // Assuming item.product.sellingPrice and item.Quantity are numbers
+                return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
+            }, 0);
+
+            const newTotalPrice = sum + deliveryFee;
+
+            cartItems.forEach((item) => {
+                tempItems.push({
+                    item_id: item.product.id,
+                    item_name: item.product.name,
+                    item_color: item.ProductName.split(" ")[0] || "Unknown",
+                    item_series: item.category?.category?.category?.name || "N/A",
+                    main_category: item.category?.category?.name || "N/A",
+                    sub_category: item.category?.name || "N/A",
+                    price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
+                    total_views: item.product.totalViews || 0,
+                    // selected_category: selectedCategory,
+                    selected_size: item.size || null,
+                    selected_maleSize: item.maleSize || null,
+                    selected_femaleSize: item.femaleSize || null,
+                    discount_percent: item.product.discountPercentage || 0,
+                    quantity: item.Quantity,
+                })
+            })
+
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: "buy_product",
+                ecommerce: {
+                    currency: "BDT",
+                    totalPrice: newTotalPrice,
+                    coupon: cartItems[0]?.coupon,
+                    payment_method: selectedPaymentMethod.name,
+                    customer_email: history[0].customer.email,
+                    customer_name: history[0].customer.name,
+                    buying_date: history[0].history.BuyingDate,
+                    region: history[0].history.region,
+                    address: history[0].history.address,
+                    delivery_fee: history[0].history.deliveryFee,
+                    phone_no: history[0].history.phone_no,
+                    items: tempItems
+                }
+            });
 
             const response = await axiosPublic.post('/admin/add-payment', formData);
 

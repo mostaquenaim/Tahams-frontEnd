@@ -22,7 +22,42 @@ const FinalCart = ({ cartItems }) => {
             return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
         }, 0);
 
-        setTotalPrice(sum + deliveryFee);
+        const newTotalPrice = sum + deliveryFee;
+        setTotalPrice(newTotalPrice);
+
+
+        console.log(cartItems);
+        const tempItems = []
+
+        cartItems.forEach((item) => {
+            tempItems.push({
+                item_id: item.product.id,
+                item_name: item.product.name,
+                item_color: item.ProductName.split(" ")[0] || "Unknown",
+                item_series: item.category?.category?.category?.name || "N/A",
+                main_category: item.category?.category?.name || "N/A",
+                sub_category: item.category?.name || "N/A",
+                price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
+                total_views: item.product.totalViews || 0,
+                // selected_category: selectedCategory,
+                selected_size: item.size || null,
+                selected_maleSize: item.maleSize || null,
+                selected_femaleSize: item.femaleSize || null,
+                discount_percent: item.product.discountPercentage || 0,
+                quantity: item.Quantity,
+            })
+        })
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: "begin_checkout",
+            ecommerce: {
+                currency: "BDT",
+                totalPrice: newTotalPrice,
+                coupon: cartItems[0]?.coupon,
+                items: tempItems
+            }
+        });
     }, [cartItems, deliveryFee]);
 
     const handleApplyCoupon = async () => {

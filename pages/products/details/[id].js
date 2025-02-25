@@ -168,6 +168,7 @@ const Product = ({ product }) => {
     const addToWishlist = async () => {
         let customEmail = ''
         if (!user) {
+            // console.log('naaiii');
             // Check for guest customer info in localStorage
             let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
 
@@ -183,10 +184,12 @@ const Product = ({ product }) => {
 
                 // Save guest customer info to localStorage
                 localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
-                customEmail = guestCustomerInfo.email
             }
+            customEmail = guestCustomerInfo.email
+            // console.log(customEmail, 'sjfhbshf');
         }
         else {
+            // console.log('acheee');
             customEmail = user?.email
         }
 
@@ -216,6 +219,7 @@ const Product = ({ product }) => {
 
             try {
                 // Make a POST request to add the product to the wishlist
+                // console.log(customEmail, 'csrmm');
                 const res = await axiosPublic.post(`/admin/add-Wish`, {
                     productId: product.id,
                     customerEmail: customEmail

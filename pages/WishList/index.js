@@ -1,14 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import NavbarCompTwo from '/components/Header/NavbarComp';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
-import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
-import useUserInfo from '../../Hooks/useUserInfo';
 import useWish from '../../Hooks/useWish';
-import Image from 'next/image';
 import Link from 'next/link';
-import Footer from '../../components/Footer/Footer';
-
 
 const WishList = () => {
     const axiosPublic = useAxiosPublic();
@@ -27,21 +21,48 @@ const WishList = () => {
     const handleDelete = async (item) => {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         const formData = new FormData();
-        // console.log(item);
+        console.log(item,'=item');
 
         formData.append('productId', item.product.id);
         formData.append('customerId', userInfo && userInfo.id);
 
         if (userInfo) {
-            setIsDeleting(true);
-            try {
-                await axiosPublic.delete(`admin/remove-wish/${item.product.id}?email=${user?.email}`);
-                refetch();
-            } catch (error) {
-                console.error("Failed to delete item:", error);
-            } finally {
-                setIsDeleting(false);
-            }
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: "remove_from_wish",
+                ecommerce: {
+                    items: [
+                        {
+                            item_id: item.product.id,
+                            item_name: item.product.name,
+                            item_color: item.product.color?.name || "Unknown",
+                            item_series: item.product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+                            main_category: item.product.pscs?.[0]?.category?.category?.name || "N/A",
+                            sub_category: item.product.pscs?.[0]?.category?.name || "N/A",
+                            price: item.product.buyingPrice || 0,
+                            total_views: item.product.totalViews || 0,
+                            // selected_category: selectedCategory,
+                            // selected_size: selectedSize,
+                            // selected_maleSize: selectedMaleSize,
+                            // selected_femaleSize: selectedFemaleSize,
+                            discount_percent: item.product.discountPercentage || 0,
+                            currency: "BDT",
+                            quantity: 1,
+                            user_email: customEmail
+                        }
+                    ]
+                }
+            });
+
+            // setIsDeleting(true);
+            // try {
+            //     await axiosPublic.delete(`admin/remove-wish/${item.product.id}?email=${user?.email}`);
+            //     refetch();
+            // } catch (error) {
+            //     console.error("Failed to delete item:", error);
+            // } finally {
+            //     setIsDeleting(false);
+            // }
         }
     };
 
