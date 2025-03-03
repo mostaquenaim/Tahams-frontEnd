@@ -38,54 +38,56 @@ const ShowProduct = ({ item }) => {
     }, [])
 
     const handleAddToCart = async () => {
-        if (user) {
-            setIsAddedToCart(true)
-            setShowGotoCart(true)
-            localStorage.setItem('showGotoCart', true)
-            try {
-                // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: item.id,
-                    size: item.pscs[0].size.name,
-                    category: item.pscs[0].category.id,
-                    Quantity: item.pscs[0].quantity > 0 ? 1 : 0,
-                    colorId: item.color.id,
-                    customerEmail: user?.email
-                });
-
-                if (response.status >= 200 && response.status <= 205) {
-                    // Show toast notification
-                    toast.success('Item added to the cart', {
-                        duration: 3000, // Toast will be shown for 3 seconds
-                    });
-                } else {
-                    // Handle error
-                    console.error('Failed to add item to the cart');
-
-                    // Show toast notification for the error
-                    toast.error('Failed to add item to the cart');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-
-                // Show toast notification for the error
-                toast.error('An error occurred while adding to the cart');
-            } finally {
-                // Set a timer to reset the state after 700 milliseconds
-                setTimeout(() => {
-                    setIsAddedToCart(false);
-                }, 700);
-                setTimeout(() => {
-                    // localStorage.removeItem('showGotoCart')
-                    setShowGotoCart(false)
-                }, 4000);
+        let customEmail = user?.email || '';
+    
+        if (!user) {
+            // Check if guest customer info exists in localStorage
+            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
+    
+            if (!guestCustomerInfo) {
+                // Generate a unique guest email
+                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
+                guestCustomerInfo = {
+                    username: `guest${Date.now()}${randomNumber}`,
+                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`,
+                };
+    
+                // Store guest info in localStorage
+                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
             }
+    
+            customEmail = guestCustomerInfo.email;
         }
-        else {
-            // console.log("in 67");
-            router.push('/login')
+    
+        setIsAddedToCart(true);
+        setShowGotoCart(true);
+        localStorage.setItem('showGotoCart', true);
+    
+        try {
+            // Make a POST request to the backend for adding to the cart
+            const response = await axiosPublic.post('/admin/add-to-cart', {
+                productId: item.id,
+                size: item.pscs[0].size.name,
+                category: item.pscs[0].category.id,
+                Quantity: item.pscs[0].quantity > 0 ? 1 : 0,
+                colorId: item.color.id,
+                customerEmail: customEmail, // Use guest or logged-in user email
+            });
+    
+            if (response.status >= 200 && response.status <= 205) {
+                toast.success('Item added to the cart', { duration: 3000 });
+            } else {
+                toast.error('Failed to add item to the cart');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('An error occurred while adding to the cart');
+        } finally {
+            setTimeout(() => setIsAddedToCart(false), 700);
+            setTimeout(() => setShowGotoCart(false), 4000);
         }
     };
+    
 
     const handleMouseEnter = () => {
         // Set the source of the first image in productPictures as the hoveredImage

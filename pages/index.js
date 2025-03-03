@@ -12,7 +12,7 @@ export const CompanyContext = createContext(null); {/* unused */ }
 
 export default function Home() {
   const [images, setImages] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  // const [isModalOpen, setIsModalOpen] = useState(true);
 
   const tagManagerArgs = {
     gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
@@ -26,24 +26,24 @@ export default function Home() {
       .then((data) => setImages(data));
   }, []);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    localStorage.setItem('winterDiscountShow', true);
-  };
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false);
+  //   localStorage.setItem('winterDiscountShow', true);
+  // };
 
-  useEffect(() => {
-    const isDiscountShown = localStorage.getItem('winterDiscountShow') === 'true';
-    if (isDiscountShown) {
-      setIsModalOpen(false);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const isDiscountShown = localStorage.getItem('winterDiscountShow') === 'true';
+  //   if (isDiscountShown) {
+  //     setIsModalOpen(false);
+  //   }
+  // }, []);
 
   return (
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           {/* Modal */}
-          <Modal
+          {/* <Modal
             isOpen={isModalOpen}
             onRequestClose={handleCloseModal}
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
@@ -71,11 +71,11 @@ export default function Home() {
                 ×
               </button>
             </div>
-          </Modal>
+          </Modal> */}
           {/* Main Content */}
-          {!isModalOpen &&
+          {/* {!isModalOpen && */}
             <MySwiper images={images}></MySwiper>
-          }
+          {/* } */}
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
           <ShopByCategory></ShopByCategory>

@@ -124,6 +124,7 @@ const Product = ({ product }) => {
         // Scroll to top of the page
         window.scrollTo(0, 100);
 
+        console.log(product,'grr',userInfo);
         // Check if the user has added the product to the wishlist
         if (product && userInfo) {
             checkIfWished(product.id, userInfo.id);
@@ -881,6 +882,5 @@ export async function getServerSideProps(context) {
         // };
     }
 }
-
 
 export default Product;

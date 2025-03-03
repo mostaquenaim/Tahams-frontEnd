@@ -132,7 +132,7 @@ const Login = () => {
                     const response = await axiosPublic.post('/admin/signin', { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS });
                     // console.log(response.data);
                     localStorage.setItem('userInfo', JSON.stringify(response.data.data));
-                    localStorageetItem('email', userEmail);
+                    localStorage.setItem('email', userEmail);
                     setSuccess("Logged in")
                     router.push('dashboard');
                     return;
