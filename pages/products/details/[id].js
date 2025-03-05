@@ -1,19 +1,17 @@
 import { Fragment, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { FaEye, FaFilter, FaShoppingCart } from 'react-icons/fa';
-import { FaHand, FaHeart, FaRegHeart } from 'react-icons/fa6';
+import { FaEye, FaShoppingCart } from 'react-icons/fa';
+import { FaHeart, FaRegHeart } from 'react-icons/fa6';
 import toast, { Toaster } from 'react-hot-toast';
-import NavbarCompTwo from '/components/Header/NavbarComp';
-import Footer from '/components/Footer/Footer';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
-import InnerImageZoom from 'react-inner-image-zoom';
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import ImageZoom from '../../draft/image-zoom-inner';
+import { getGuestCustomerInfo } from '../../../utils/guestCustomer';
 
 const Product = ({ product }) => {
-    console.log('product-test', product);
+    // console.log('product-test', product);
     const [isAddedToWishlist, setAddedToWishlist] = useState(false);
     const [showGotoCart, setShowGotoCart] = useState(false)
     const [selectedSize, setSelectedSize] = useState('');
@@ -33,23 +31,7 @@ const Product = ({ product }) => {
     const viewCount = async () => {
         let customerEmail = ''
         if (!user) {
-            // Check for guest customer info in localStorage
-            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
-
-            if (!guestCustomerInfo) {
-                // If not available, create a new guest customer info
-                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
-
-                // Create guest customer info
-                guestCustomerInfo = {
-                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
-                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
-                };
-
-                // Save guest customer info to localStorage
-                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
-            }
-
+            const guestCustomerInfo = getGuestCustomerInfo();
             customerEmail = guestCustomerInfo.email
         }
         else {
@@ -91,13 +73,13 @@ const Product = ({ product }) => {
             viewCount()
     }, [user, product])
 
-    const checkIfWished = async (productId, customerId) => {
+    const checkIfWished = async (productId, customerEmail) => {
         setLoading(true)
         try {
             const result = await axiosPublic.get(`admin/check-wish-by-user-and-product`, {
                 params: {
                     productId: productId,
-                    customerId: customerId
+                    customerEmail: customerEmail
                 }
             });
 
@@ -124,10 +106,9 @@ const Product = ({ product }) => {
         // Scroll to top of the page
         window.scrollTo(0, 100);
 
-        console.log(product,'grr',userInfo);
         // Check if the user has added the product to the wishlist
         if (product && userInfo) {
-            checkIfWished(product.id, userInfo.id);
+            checkIfWished(product.id, userInfo.email);
         }
 
         // Set default selected category and size
@@ -169,25 +150,8 @@ const Product = ({ product }) => {
     const addToWishlist = async () => {
         let customEmail = ''
         if (!user) {
-            // console.log('naaiii');
-            // Check for guest customer info in localStorage
-            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
-
-            if (!guestCustomerInfo) {
-                // If not available, create a new guest customer info
-                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
-
-                // Create guest customer info
-                guestCustomerInfo = {
-                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
-                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
-                };
-
-                // Save guest customer info to localStorage
-                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
-            }
-            customEmail = guestCustomerInfo.email
-            // console.log(customEmail, 'sjfhbshf');
+            const guestCustomerInfo = getGuestCustomerInfo();
+            customEmail = guestCustomerInfo.email;
         }
         else {
             // console.log('acheee');
@@ -227,7 +191,7 @@ const Product = ({ product }) => {
                 });
                 // Add the product to the wishlist
                 if (product && userInfo) {
-                    checkIfWished(product.id, userInfo.id);
+                    checkIfWished(product.id, userInfo.email);
                 }
             } catch (error) {
                 console.error('Error adding product to wishlist:', error);
@@ -261,7 +225,7 @@ const Product = ({ product }) => {
             try {
                 const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${customEmail}`);
                 if (product && userInfo) {
-                    checkIfWished(product.id, userInfo.id);
+                    checkIfWished(product.id, userInfo.email);
                 }
 
             } catch (error) {
@@ -313,23 +277,8 @@ const Product = ({ product }) => {
     const handleAddToCart = async () => {
         let customEmail = ''
         if (!user) {
-            // Check for guest customer info in localStorage
-            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
-
-            if (!guestCustomerInfo) {
-                // If not available, create a new guest customer info
-                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
-
-                // Create guest customer info
-                guestCustomerInfo = {
-                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
-                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
-                };
-
-                // Save guest customer info to localStorage
-                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
-                customEmail = guestCustomerInfo.email
-            }
+            const guestCustomerInfo = getGuestCustomerInfo();
+            customEmail = guestCustomerInfo.email
 
             setIsAddedToCart(true)
             setShowGotoCart(true)
@@ -344,7 +293,7 @@ const Product = ({ product }) => {
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
                     colorId: color.id,
-                    customerEmail: guestCustomerInfo.email, // Use guest email
+                    customerEmail: customEmail, // Use guest email
                 });
 
                 if (response.status >= 200 && response.status <= 205) {
@@ -455,23 +404,7 @@ const Product = ({ product }) => {
     const handleBuyNow = async () => {
         let customEmail = ''
         if (!user) {
-            // Handle guest customer info in localStorage
-            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
-
-            if (!guestCustomerInfo) {
-                // If not available, create a new guest customer info
-                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
-
-                // Create guest customer info
-                guestCustomerInfo = {
-                    username: `guest${Date.now()}${randomNumber}`, // Unique username with random number
-                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`, // Unique email with random number
-                };
-
-                // Save guest customer info to localStorage
-                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
-            }
-
+            const guestCustomerInfo = getGuestCustomerInfo();
             customEmail = guestCustomerInfo.email
 
             try {
@@ -484,7 +417,7 @@ const Product = ({ product }) => {
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
                     colorId: color.id,
-                    customerEmail: guestCustomerInfo.email, // Use guest email
+                    customerEmail: customEmail, // Use guest email
                 });
 
                 if (response.status >= 200 && response.status <= 205) {

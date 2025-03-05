@@ -184,7 +184,7 @@ const BuyingAddress = ({ data }) => {
 
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push({
-                event: "buy_product",
+                event: "begin_checkout", //begin_checkout
                 ecommerce: {
                     currency: "BDT",
                     totalPrice: newTotalPrice,

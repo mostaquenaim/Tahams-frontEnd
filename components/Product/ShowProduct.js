@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { AuthContext } from "/Contexts/Auth/AuthProvider";
 import toast from "react-hot-toast";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import { getGuestCustomerInfo } from "../../utils/guestCustomer";
 
 const ShowProduct = ({ item }) => {
     // console.log(item);
@@ -39,30 +40,16 @@ const ShowProduct = ({ item }) => {
 
     const handleAddToCart = async () => {
         let customEmail = user?.email || '';
-    
+
         if (!user) {
-            // Check if guest customer info exists in localStorage
-            let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
-    
-            if (!guestCustomerInfo) {
-                // Generate a unique guest email
-                const randomNumber = Math.floor(Math.random() * 1000); // Random number between 0-999
-                guestCustomerInfo = {
-                    username: `guest${Date.now()}${randomNumber}`,
-                    email: `guest${Date.now()}${randomNumber}@tahamsbd.com`,
-                };
-    
-                // Store guest info in localStorage
-                localStorage.setItem('guestCustomerInfo', JSON.stringify(guestCustomerInfo));
-            }
-    
+            const guestCustomerInfo = getGuestCustomerInfo();
             customEmail = guestCustomerInfo.email;
         }
-    
+
         setIsAddedToCart(true);
         setShowGotoCart(true);
         localStorage.setItem('showGotoCart', true);
-    
+
         try {
             // Make a POST request to the backend for adding to the cart
             const response = await axiosPublic.post('/admin/add-to-cart', {
@@ -73,7 +60,7 @@ const ShowProduct = ({ item }) => {
                 colorId: item.color.id,
                 customerEmail: customEmail, // Use guest or logged-in user email
             });
-    
+
             if (response.status >= 200 && response.status <= 205) {
                 toast.success('Item added to the cart', { duration: 3000 });
             } else {
@@ -87,7 +74,6 @@ const ShowProduct = ({ item }) => {
             setTimeout(() => setShowGotoCart(false), 4000);
         }
     };
-    
 
     const handleMouseEnter = () => {
         // Set the source of the first image in productPictures as the hoveredImage

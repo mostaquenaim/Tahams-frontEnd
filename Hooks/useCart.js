@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosPublic from "./useAxiosPublic";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "/Contexts/Auth/AuthProvider";
+import { getGuestCustomerInfo } from "../utils/guestCustomer";
 
 const useCart = () => {
     const axiosPublic = useAxiosPublic();
@@ -11,17 +12,8 @@ const useCart = () => {
     // Check localStorage only on the client side
     useEffect(() => {
         if (typeof window !== "undefined") {
-            let storedGuestInfo = localStorage.getItem("guestCustomerInfo");
-            if (!storedGuestInfo) {
-                // Create guest user if it doesn't exist in localStorage
-                const guestCustomerInfo = {
-                    username: `guest${Date.now()}${Math.floor(Math.random() * 1000)}`,
-                    email: `guest${Date.now()}${Math.floor(Math.random() * 1000)}@tahamsbd.com`,
-                };
-                localStorage.setItem("guestCustomerInfo", JSON.stringify(guestCustomerInfo));
-                storedGuestInfo = JSON.stringify(guestCustomerInfo);
-            }
-            setGuestUser(JSON.parse(storedGuestInfo)); // Parse and set the guest user
+            const guestCustomerInfo = getGuestCustomerInfo();
+            setGuestUser(guestCustomerInfo); 
         }
     }, []);
 
