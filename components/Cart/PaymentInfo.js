@@ -86,7 +86,7 @@ const PaymentInfo = ({ history }) => {
 
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push({
-                event: "buy_product",
+                event: "purchase",
                 ecommerce: {
                     currency: "BDT",
                     totalPrice: newTotalPrice,

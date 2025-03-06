@@ -29,6 +29,7 @@ const Product = ({ product }) => {
     const axiosPublic = useAxiosPublic();
 
     const viewCount = async () => {
+        console.log('line 32');
         let customerEmail = ''
         if (!user) {
             const guestCustomerInfo = getGuestCustomerInfo();
@@ -38,26 +39,33 @@ const Product = ({ product }) => {
             customerEmail = user?.email
         }
 
+        console.log("Event: view_item");
+
+        const item = {
+            item_id: product.id,
+            item_name: product.name,
+            item_color: product.color?.name || "Unknown",
+            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+            sub_category: product.pscs?.[0]?.category?.name || "N/A",
+            price: product.buyingPrice || 0,
+            total_views: product.totalViews || 0,
+            discount_percent: product.discountPercentage || 0,
+            currency: "BDT",
+            // quantity: 1,
+            user_email: customerEmail
+        };
+
+        // Object.entries(item).forEach(([key, value]) => {
+        //     console.log(`${key}:`, value);
+        // });
+
+        // Pushing data to dataLayer
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: "view_item",
             ecommerce: {
-                items: [
-                    {
-                        item_id: product.id,
-                        item_name: product.name,
-                        item_color: product.color?.name || "Unknown",
-                        item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-                        main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
-                        sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                        price: product.buyingPrice || 0,
-                        total_views: product.totalViews || 0,
-                        discount_percent: product.discountPercentage || 0,
-                        currency: "BDT",
-                        quantity: 1,
-                        user_email: customerEmail
-                    }
-                ]
+                items: [item]
             }
         });
 
@@ -69,9 +77,8 @@ const Product = ({ product }) => {
     };
 
     useEffect(() => {
-        user &&
-            viewCount()
-    }, [user, product])
+        viewCount()
+    }, [])
 
     const checkIfWished = async (productId, customerEmail) => {
         setLoading(true)
@@ -471,32 +478,32 @@ const Product = ({ product }) => {
             }
         }
 
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            event: "add_to_cart",
-            ecommerce: {
-                items: [
-                    {
-                        item_id: product.id,
-                        item_name: product.name,
-                        item_color: product.color?.name || "Unknown",
-                        item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-                        main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
-                        sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                        price: product.buyingPrice || 0,
-                        selected_category: selectedCategory,
-                        selected_size: selectedSize,
-                        selected_maleSize: selectedMaleSize,
-                        selected_femaleSize: selectedFemaleSize,
-                        total_views: product.totalViews || 0,
-                        discount_percent: product.discountPercentage || 0,
-                        currency: "BDT",
-                        quantity: 1,
-                        user_email: customEmail
-                    }
-                ]
-            }
-        });
+        // window.dataLayer = window.dataLayer || [];
+        // window.dataLayer.push({
+        //     event: "add_to_cart",
+        //     ecommerce: {
+        //         items: [
+        //             {
+        //                 item_id: product.id,
+        //                 item_name: product.name,
+        //                 item_color: product.color?.name || "Unknown",
+        //                 item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+        //                 main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+        //                 sub_category: product.pscs?.[0]?.category?.name || "N/A",
+        //                 price: product.buyingPrice || 0,
+        //                 selected_category: selectedCategory,
+        //                 selected_size: selectedSize,
+        //                 selected_maleSize: selectedMaleSize,
+        //                 selected_femaleSize: selectedFemaleSize,
+        //                 total_views: product.totalViews || 0,
+        //                 discount_percent: product.discountPercentage || 0,
+        //                 currency: "BDT",
+        //                 quantity: 1,
+        //                 user_email: customEmail
+        //             }
+        //         ]
+        //     }
+        // });
     };
 
     return (
