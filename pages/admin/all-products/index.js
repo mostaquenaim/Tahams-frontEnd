@@ -157,7 +157,7 @@ const ShowProducts = () => {
                                             </Link>
                                         </td>
                                         <td className='py-2 px-4 border-b'>{product?.totalViews}</td>
-                                        <td className='py-2 px-4 border-b'>{product.color.name}</td>
+                                        <td className='py-2 px-4 border-b'>{product.color?.name}</td>
                                         <td className='py-2 px-4 border-b'>{product.pscs[0]?.category?.name}, {product.pscs[0]?.size?.name} (Total {product.pscs.length} sizes)</td>
                                         <td className='py-2 px-4 border-b'>${product.sellingPrice.toFixed(2)}</td>
 

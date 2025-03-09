@@ -29,15 +29,17 @@ const Product = ({ product }) => {
     const axiosPublic = useAxiosPublic();
 
     const viewCount = async () => {
-        console.log('line 32');
-        let customerEmail = ''
-        if (!user) {
-            const guestCustomerInfo = getGuestCustomerInfo();
-            customerEmail = guestCustomerInfo.email
-        }
-        else {
-            customerEmail = user?.email
-        }
+        // console.log('line 32');
+        const customerEmail = user?.email || getGuestCustomerInfo()?.email;
+
+        // let customerEmail = ''
+        // if (!user) {
+        //     const guestCustomerInfo = getGuestCustomerInfo();
+        //     customerEmail = guestCustomerInfo.email
+        // }
+        // else {
+        //     customerEmail = user?.email
+        // }
 
         console.log("Event: view_item");
 
@@ -636,7 +638,7 @@ const Product = ({ product }) => {
                                     className="p-5 w-32 rounded-full text-center border-black border-2"
                                     style={{ backgroundColor: color.colorCode }}
                                 >
-                                    <span className={`text-black text-center ${color.colorCode === '#000000' && 'text-white'}`}>{color.name}</span>
+                                    <span className={`text-black text-center ${color.colorCode === '#000000' && 'text-white'}`}>{color?.name}</span>
                                 </div>
                             </div>
                         )}

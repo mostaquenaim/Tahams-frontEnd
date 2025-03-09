@@ -25,7 +25,7 @@ const EditProduct = ({ product }) => {
             buyingPrice: product.buyingPrice,
             sellingPrice: product.sellingPrice,
             ifStock: product.ifStock,
-            colorName: product.color.name,
+            colorName: product.color?.name || '',
         },
     });
 
