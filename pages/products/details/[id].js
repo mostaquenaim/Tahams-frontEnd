@@ -382,6 +382,7 @@ const Product = ({ product }) => {
             }
         }
 
+        // console.log('come here');
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: "add_to_cart",
@@ -394,7 +395,7 @@ const Product = ({ product }) => {
                         item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                         main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
                         sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                        price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * item.Quantity || 0,
+                        price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
                         total_views: product.totalViews || 0,
                         selected_category: selectedCategory,
                         selected_size: selectedSize,
