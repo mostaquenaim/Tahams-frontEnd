@@ -11,7 +11,7 @@ import useLoadSubSubCategories from '../../../../../Hooks/useLoadSubSubCategorie
 import useLoadSizes from '../../../../../Hooks/useLoadSizes';
 
 const EditProduct = ({ product }) => {
-    console.log('product', product);
+    // console.log('product', product);
     const colors = useLoadColors(); // Fetch colors from the hook
     // console.log(colors);
     const { register, handleSubmit, setValue, watch } = useForm({
@@ -187,8 +187,8 @@ const EditProduct = ({ product }) => {
         formData.append('buyingPrice', data.buyingPrice);
         formData.append('sellingPrice', parseInt(data.sellingPrice));
         formData.append('ifStock', data.ifStock);
-        formData.append('colorName', data.colorName);
-        formData.append('colorCode', selectedColor.colorCode); // Use selected color code
+        data.colorName && formData.append('colorName', data.colorName);
+        selectedColor && formData.append('colorCode', selectedColor.colorCode); // Use selected color code
         formData.append('filename', filename);
 
         // Append sizes data
@@ -465,7 +465,7 @@ const EditProduct = ({ product }) => {
                                 {...register('colorName')}
                                 className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
                             >
-                                <option value={product.color.name}>{product.color.name}</option>
+                                <option value={product.color?.name}>{product.color?.name}</option>
                                 {colors.map((color) => (
                                     <option key={color.id} value={color.name}>
                                         {color.name}

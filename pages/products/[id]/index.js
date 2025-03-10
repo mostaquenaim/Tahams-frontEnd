@@ -1,6 +1,7 @@
 import FetchProducts from '../../../components/Product/FetchProducts';
 
 const Product = ({ categories }) => {
+    console.log('categories',categories);
     return <FetchProducts categories={categories}/>
 };
 

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const FetchProducts = ({ categories, admin = false }) => {
+    // console.log('categories-fp',categories);
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState(categories)
     const [selectedColors, setSelectedColors] = useState([]);
@@ -105,7 +106,6 @@ const FetchProducts = ({ categories, admin = false }) => {
 
     return (
         <div className=''>
-            {/* <NavbarCompTwo /> */}
             <div className='pt-20 lg:pt-48 mx-10'>
                 {/* Sort By dropdown */}
                 <div className='flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10'>
@@ -160,6 +160,7 @@ const FetchProducts = ({ categories, admin = false }) => {
                         ></FilterComp>
                     </div>
                     {
+                        paginatedProducts ?
                         paginatedProducts.length > 0 ? (
                             paginatedProducts.map((category, index) => (
                                 <ShowProduct key={index} item={category}></ShowProduct>
@@ -167,6 +168,8 @@ const FetchProducts = ({ categories, admin = false }) => {
                         ) : (
                             <div className="text-3xl text-center">No product to show! 😢</div>
                         )
+                        :
+                        <div className="text-3xl text-center">Loading...</div>
                     }
                 </div>
                 {totalPages > 1 && (
