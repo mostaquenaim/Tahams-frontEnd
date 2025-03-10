@@ -24,6 +24,7 @@ const MyCart = () => {
   };
 
   // Handle checkout
+  // Handle checkout
   const handleCheckout = () => {
     // Get the selected items from the cart
     const selectedItems = cart.filter((item) => checkedItems.includes(item.id));
@@ -31,11 +32,45 @@ const MyCart = () => {
     // Store the selected items in localStorage
     localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
 
+    // Calculate total price
+    const totalPrice = selectedItems.reduce((acc, item) => {
+      return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
+    }, 0);
+
+    // Prepare items for dataLayer
+    const tempItems = selectedItems.map((item) => ({
+      item_id: item.product.id,
+      item_name: item.product.name,
+      item_color: item.ProductName?.split(" ")[0] || "Unknown",
+      item_series: item.category?.category?.category?.name || "N/A",
+      main_category: item.category?.category?.name || "N/A",
+      sub_category: item.category?.name || "N/A",
+      price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
+      total_views: item.product.totalViews || 0,
+      selected_size: item.size || null,
+      selected_maleSize: item.maleSize || null,
+      selected_femaleSize: item.femaleSize || null,
+      discount_percent: item.product.discountPercentage || 0,
+      quantity: item.Quantity,
+    }));
+
+    // Push checkout data to dataLayer
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "begin_checkout",
+      ecommerce: {
+        currency: "BDT",
+        totalPrice: totalPrice,
+        items: tempItems
+      }
+    });
+
     // Navigate to the buy-now page
     router.push({
       pathname: '/buy-now',
     });
   };
+
 
   // Handle delete item with confirmation
   const handleDeleteItem = (item) => {

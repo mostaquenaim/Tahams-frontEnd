@@ -50,7 +50,7 @@ const Product = ({ product }) => {
             item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
             main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
             sub_category: product.pscs?.[0]?.category?.name || "N/A",
-            price: product.buyingPrice || 0,
+            price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
             total_views: product.totalViews || 0,
             discount_percent: product.discountPercentage || 0,
             currency: "BDT",
@@ -180,7 +180,7 @@ const Product = ({ product }) => {
                             item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                             main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
                             sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                            price: product.buyingPrice || 0,
+                            price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
                             total_views: product.totalViews || 0,
                             discount_percent: product.discountPercentage || 0,
                             currency: "BDT",
@@ -220,7 +220,7 @@ const Product = ({ product }) => {
                             item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                             main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
                             sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                            price: product.buyingPrice || 0,
+                            price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
                             total_views: product.totalViews || 0,
                             discount_percent: product.discountPercentage || 0,
                             currency: "BDT",
@@ -383,6 +383,7 @@ const Product = ({ product }) => {
         }
 
         // console.log('come here');
+        // console.log(parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity);
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
             event: "add_to_cart",

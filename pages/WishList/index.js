@@ -39,7 +39,7 @@ const WishList = () => {
                             item_series: item.product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                             main_category: item.product.pscs?.[0]?.category?.category?.name || "N/A",
                             sub_category: item.product.pscs?.[0]?.category?.name || "N/A",
-                            price: item.product.buyingPrice || 0,
+                            price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) || 0,
                             total_views: item.product.totalViews || 0,
                             // selected_category: selectedCategory,
                             // selected_size: selectedSize,
@@ -47,7 +47,7 @@ const WishList = () => {
                             // selected_femaleSize: selectedFemaleSize,
                             discount_percent: item.product.discountPercentage || 0,
                             currency: "BDT",
-                            quantity: 1,
+                            // quantity: 1,
                             user_email: customEmail
                         }
                     ]
