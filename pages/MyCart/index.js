@@ -24,7 +24,6 @@ const MyCart = () => {
   };
 
   // Handle checkout
-  // Handle checkout
   const handleCheckout = () => {
     // Get the selected items from the cart
     const selectedItems = cart.filter((item) => checkedItems.includes(item.id));

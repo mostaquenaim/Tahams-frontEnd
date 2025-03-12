@@ -53,7 +53,7 @@ const ShowOrders = () => {
                                     className={group.history.isChecked ? 'bg-green-100' : 'bg-white'}
                                 >
                                     <td className='py-2 px-4 border-b'>{group.history.id}</td>
-                                    <td className='py-2 px-4 border-b'>{group.customer?.name}</td>
+                                    <td className='py-2 px-4 border-b'>{group.customer?.name || group.history?.fullName}</td>
                                     <td className='py-2 px-4 border-b'>{group.history?.phone_no}</td>
                                     <td className='py-2 px-4 border-b'>
                                         {group.orders.map((order, idx) => (
