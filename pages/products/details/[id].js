@@ -305,6 +305,9 @@ const Product = ({ product }) => {
                     customerEmail: customEmail, // Use guest email
                 });
 
+                // console.log(response.data,'cart data');
+                localStorage.setItem('defaultCartItem',response.data.id)
+
                 if (response.status >= 200 && response.status <= 205) {
                     // Cart item added successfully
                     toast.success('Item added to the cart', {
@@ -758,13 +761,13 @@ const Product = ({ product }) => {
                         </div>
 
                         {/* size chart  */}
-                        <div className='pt-4'>
-                            <p className="text-gray-600 font-semibold">Size Chart:</p>
-                            {
-                                product.pscs[0].category.filename &&
+                        {
+                            product.pscs[0].category.filename &&
+                            <div className='pt-4'>
+                                <p className="text-gray-600 font-semibold">Size Chart:</p>
                                 <img className="" src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.pscs[0].category.filename}`} alt="Size Chart" />
-                            }
-                        </div>
+                            </div>
+                        }
                     </div>
                 </div>
 

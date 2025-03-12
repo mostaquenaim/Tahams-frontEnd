@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useCart from '/Hooks/useCart';
 import { useRouter } from 'next/router';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
@@ -14,8 +14,15 @@ const MyCart = () => {
   // State to track checked items
   const [checkedItems, setCheckedItems] = useState([]);
 
+  useEffect(()=>{
+    const cartItem = parseInt(localStorage.getItem('defaultCartItem'))
+    console.log('cartItem',cartItem);
+    setCheckedItems([cartItem])
+  },[])
+
   // Toggle the selection of an item
   const toggleItemSelection = (itemId) => {
+    console.log('cartItem',itemId);
     if (checkedItems.includes(itemId)) {
       setCheckedItems(checkedItems.filter((id) => id !== itemId));
     } else {
@@ -164,6 +171,7 @@ const MyCart = () => {
     <>
       <section className='pt-20 lg:pt-40 min-h-screen'>
         <div className="container mx-auto px-4">
+          <h1 className='font-semibold text-xl m-5'>Select cart items to checkout</h1>
           {cart.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {cart.map((item) => (
@@ -171,7 +179,7 @@ const MyCart = () => {
                   <div className="flex justify-between w-full">
                     <input
                       type="checkbox"
-                      className="checkbox"
+                      className="checkbox border-2 border-black"
                       checked={checkedItems.includes(item.id)}
                       onChange={() => toggleItemSelection(item.id)}
                     />
