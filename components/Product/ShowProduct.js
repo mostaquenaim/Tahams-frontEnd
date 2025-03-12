@@ -57,7 +57,7 @@ const ShowProduct = ({ item }) => {
                 size: item.pscs[0].size.name,
                 category: item.pscs[0].category.id,
                 Quantity: item.pscs[0].quantity > 0 ? 1 : 0,
-                colorId: item.color.id,
+                colorId: item.color?.id,
                 customerEmail: customEmail, // Use guest or logged-in user email
             });
 

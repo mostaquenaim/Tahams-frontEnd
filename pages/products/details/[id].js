@@ -301,7 +301,7 @@ const Product = ({ product }) => {
                     maleSize: selectedMaleSize,
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
-                    colorId: color.id,
+                    colorId: color?.id,
                     customerEmail: customEmail, // Use guest email
                 });
 
