@@ -2,6 +2,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const ShowNewArrival = ({ prop }) => {
+    console.log(prop,'proooooo');
     if (!prop) return null;
 
     return (
@@ -11,7 +12,7 @@ const ShowNewArrival = ({ prop }) => {
             transition={{ duration: 0.8, ease: "easeOut" }} 
             className="relative w-full max-w-sm mx-auto group cursor-pointer"
         >
-            <Link href={`/categories/${prop.category}`} className="block overflow-hidden rounded-xl shadow-lg">
+            <Link href={`/products/${prop.subsub?.id}`} className="block overflow-hidden rounded-xl shadow-lg">
                 {/* Image with Animated Hover Effect */}
                 <div className="relative overflow-hidden rounded-xl">
                     <motion.img 
@@ -37,7 +38,7 @@ const ShowNewArrival = ({ prop }) => {
                             transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }} 
                             className="text-gray-300 text-sm uppercase tracking-wider"
                         >
-                            {prop.category}
+                            {prop.subsub?.name}
                         </motion.p>
                     </div>
                     

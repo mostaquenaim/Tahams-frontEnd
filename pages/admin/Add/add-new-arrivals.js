@@ -1,22 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import axios from 'axios';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 
 const AddNewArrivals = ({ previousArrivals }) => {
+    const [subSubCategories] = useLoadSubSubCategories();
     const axiosPublic = useAxiosPublic();
     const [formData, setFormData] = useState(
-        [...previousArrivals, ...Array(Math.max(0, 4 - previousArrivals.length)).fill({ name: '', description: '', category: '', filename: null })]
+        [...previousArrivals, ...Array(Math.max(0, 4 - previousArrivals.length)).fill({ name: '', description: '', category: '', subSubCategory: '', filename: null })]
     );
 
     const handleChange = (index, e) => {
-        const updatedFormData = [...formData];
-        if (e.target.name === 'filename') {
-            updatedFormData[index][e.target.name] = e.target.files[0];
-        } else {
-            updatedFormData[index][e.target.name] = e.target.value;
-        }
-        setFormData(updatedFormData);
+        const { name, value, files } = e.target;
+        setFormData((prevState) => {
+            const updatedFormData = [...prevState];
+            updatedFormData[index] = {
+                ...updatedFormData[index],
+                [name]: name === 'filename' ? files[0] : value,
+            };
+            return updatedFormData;
+        });
     };
 
     const handleUpload = async (index) => {
@@ -25,10 +29,13 @@ const AddNewArrivals = ({ previousArrivals }) => {
         formDataToSend.append('name', item.name);
         formDataToSend.append('serial', index + 1);
         formDataToSend.append('description', item.description);
-        formDataToSend.append('category', item.category);
+        formDataToSend.append('category', item.subSubCategory);
+        // formDataToSend.append('subSubCategory', item.subSubCategory);
         if (item.filename) {
             formDataToSend.append('filename', item.filename);
         }
+
+        console.log(item.subSubCategory);
 
         try {
             const response = await axiosPublic.post(`admin/add-new-arrivals`, formDataToSend, {
@@ -67,15 +74,21 @@ const AddNewArrivals = ({ previousArrivals }) => {
                             required
                         ></textarea>
 
-                        <input
-                            type="text"
-                            name="category"
-                            value={item.category}
+                        {/* Sub-Subcategory Dropdown */}
+                        <select
+                            name="subSubCategory"
+                            value={item.subSubCategory}
                             onChange={(e) => handleChange(index, e)}
                             className="w-full md:w-1/4 p-2 border rounded"
-                            placeholder="Category"
                             required
-                        />
+                        >
+                            <option value="" disabled>Select Sub-Subcategory</option>
+                            {subSubCategories.map((subSubCategory) => (
+                                <option key={subSubCategory.id} value={subSubCategory.id}>
+                                    {subSubCategory.name}, {subSubCategory.category.name}, {subSubCategory.category.category.name}
+                                </option>
+                            ))}
+                        </select>
 
                         <input
                             type="file"
