@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import ShowNewArrival from './ShowNewArrival';
 import Heading from '../Header/Heading';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
 
 const NewArrival = () => {
     const [products, setProducts] = useState([])
+    const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
-        fetch('/new-arrivals.json')
-            .then(res => res.json())
-            .then(data => setProducts(data))
+        fetchNewArrivals()
     }, [])
+
+    const fetchNewArrivals = async () => {
+        const res = await axiosPublic.get(`/admin/view-new-arrivals`)
+        // console.log(res);
+        setProducts(res.data)
+    }
+
     return (
         <>
             <div className="pt-20 md:pt-16 lg:pt-10 shadow-md px-10">

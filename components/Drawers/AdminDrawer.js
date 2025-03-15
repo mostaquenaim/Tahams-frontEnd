@@ -62,9 +62,9 @@ const AdminDrawer = () => {
             ]
         },
         {
-            Name: 'Fabric',
+            Name: 'Add',
             Tasks: [
-                { href: '/admin/Add/add-fabric', label: 'Add Fabric' },
+                { href: '/admin/Add/add-new-arrivals', label: 'Update New Arrivals' },
             ]
         },
         {
@@ -80,6 +80,12 @@ const AdminDrawer = () => {
                 },
                 { href: '/admin/Show/show-requests', label: 'Cancel/Return req' },
                 { href: '/MyCart', label: 'Show Carts' },
+            ]
+        },
+        {
+            Name: 'Fabric',
+            Tasks: [
+                { href: '/admin/Add/add-fabric', label: 'Add Fabric' },
             ]
         },
         {
