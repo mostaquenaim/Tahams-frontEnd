@@ -1,6 +1,4 @@
 import axios from "axios";
-import NavbarCompTwo from "../../components/Header/NavbarComp";
-import Footer from "../../components/Footer/Footer";
 import FetchProducts from "../../components/Product/FetchProducts";
 
 const ShowProductsByCategory = ({ products }) => {

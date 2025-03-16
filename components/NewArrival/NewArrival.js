@@ -21,7 +21,7 @@ const NewArrival = () => {
         <>
             <div className="pt-20 md:pt-16 lg:pt-10 shadow-md px-10">
                 <Heading first='NEW' second='ARRIVALS'></Heading>
-                <div className="pt-10 pb-20 grid grid-cols-2 md:grid-cols-4 gap-5">
+                <div className="pt-10 pb-10 grid grid-cols-2 md:grid-cols-4 gap-5">
                     {
                         products.map((product, index) => (
                             <ShowNewArrival key={index} prop={product}></ShowNewArrival>

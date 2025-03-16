@@ -2,7 +2,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const ShowNewArrival = ({ prop }) => {
-    console.log(prop,'proooooo');
+    // console.log(prop,'proooooo');
     if (!prop) return null;
 
     return (
@@ -10,7 +10,7 @@ const ShowNewArrival = ({ prop }) => {
             initial={{ opacity: 0, y: 30 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.8, ease: "easeOut" }} 
-            className="relative w-full max-w-sm mx-auto group cursor-pointer"
+            className="relative w-4/5 h-full mx-auto group cursor-pointer"
         >
             <Link href={`/products/${prop.subsub?.id}`} className="block overflow-hidden rounded-xl shadow-lg">
                 {/* Image with Animated Hover Effect */}
@@ -18,7 +18,7 @@ const ShowNewArrival = ({ prop }) => {
                     <motion.img 
                         src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${prop.filename}` || "/placeholder.jpg"} 
                         alt={prop.name || "New Arrival"} 
-                        className="w-full h-80 object-cover rounded-xl transition-all duration-700 group-hover:scale-110 group-hover:rotate-1 group-hover:brightness-90"
+                        className="w-full h-full object-cover rounded-xl transition-all duration-700 group-hover:scale-110 group-hover:rotate-1 group-hover:brightness-90"
                         loading="lazy"
                     />
                     
