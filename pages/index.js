@@ -7,6 +7,7 @@ import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
 import TagManager from "react-gtm-module";
+import Head from 'next/head';
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
@@ -17,8 +18,8 @@ export default function Home() {
   const tagManagerArgs = {
     gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
   };
-  
-  
+
+
   useEffect(() => {
     TagManager.initialize(tagManagerArgs);
     fetch('/banner-images.json')
@@ -42,6 +43,12 @@ export default function Home() {
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
+
+          {/* <Head>
+            <link rel="icon" href="/favicon.ico" />
+            <title>Tahams - The Unique Way of Life </title>
+          </Head> */}
+
           {/* Modal */}
           {/* <Modal
             isOpen={isModalOpen}
@@ -74,7 +81,7 @@ export default function Home() {
           </Modal> */}
           {/* Main Content */}
           {/* {!isModalOpen && */}
-            <MySwiper images={images}></MySwiper>
+          <MySwiper images={images}></MySwiper>
           {/* } */}
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>

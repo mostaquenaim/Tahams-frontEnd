@@ -28,14 +28,14 @@ const ShowNewArrival = ({ prop }) => {
                             initial={{ y: 20, opacity: 0 }} 
                             animate={{ y: 0, opacity: 1 }} 
                             transition={{ duration: 0.5, ease: "easeOut" }} 
-                            className="text-white text-2xl font-bold tracking-wide drop-shadow-md"
+                            className="text-white text-base md:text-lg lg:text-xl font-bold tracking-wide drop-shadow-md"
                         >
                             {prop.name}
                         </motion.h3>
                         <motion.p 
                             initial={{ y: 20, opacity: 0 }} 
                             animate={{ y: 0, opacity: 1 }} 
-                            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }} 
+                            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
                             className="text-gray-300 text-sm uppercase tracking-wider"
                         >
                             {prop.subsub?.name}
