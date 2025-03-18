@@ -437,26 +437,6 @@ const EditProduct = ({ product }) => {
                         </div>
                     </div>
 
-                    {/* Product Sizes */}
-                    {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {product.pscs.map((pscs, index) => (
-                            <div key={pscs.id} className="flex items-center justify-between">
-                                <span className="text-gray-700">{pscs.size?.name}</span>
-                                <input
-                                    type="number"
-                                    {...register(`sizes[${index}].quantity`)}
-                                    defaultValue={pscs.quantity}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md"
-                                />
-                                <input
-                                    type="hidden"
-                                    {...register(`sizes[${index}].sizeId`)}
-                                    defaultValue={pscs.size?.id}
-                                />
-                            </div>
-                        ))}
-                    </div> */}
-
                     {/* Color Dropdown */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
