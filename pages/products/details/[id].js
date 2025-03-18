@@ -562,7 +562,7 @@ const Product = ({ product }) => {
                                             <img
                                                 src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${pp.filename}`}
                                                 alt={name}
-                                                className="h-24 w-24 cursor-pointer"
+                                                className="h-32 w-24 cursor-pointer"
                                             />
                                             {selectedImage === pp.filename && (
                                                 <div className="overlay bg-white opacity-50 absolute top-0 left-0 w-full h-full"></div>
