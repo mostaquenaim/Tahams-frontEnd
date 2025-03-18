@@ -12,10 +12,10 @@ const NewArrival = () => {
     }, [])
 
     const fetchNewArrivals = async () => {
-        const res = await axiosPublic.get(`/admin/view-new-arrivals`)
-        // console.log(res);
-        setProducts(res.data)
-    }
+        const res = await axiosPublic.get(`/admin/view-new-arrivals`);
+        const sortedProducts = res.data.sort((a, b) => a.serial - b.serial); // Sorting by serial
+        setProducts(sortedProducts);
+    };
 
     return (
         <>
