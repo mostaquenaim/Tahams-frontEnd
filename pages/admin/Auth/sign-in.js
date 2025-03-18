@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useRouter } from 'next/router';
 import LoggedCheck from '/components/Auth/loggedCheck';
 import MyHeader from '/components/Header/header';
+import Head from 'next/head';
 
 
 export default function AdminSignIn() {
@@ -34,6 +35,9 @@ export default function AdminSignIn() {
 
     return (
         <>
+            <Head>
+                <title>Sign in Auth</title>
+            </Head>
             <MyHeader title="Login" />
             <LoggedCheck />
             <section className="flex h-screen items-center justify-center text-center bg-gradient-to-b from-zinc-50 to-blue-100">
@@ -47,8 +51,8 @@ export default function AdminSignIn() {
                                 <tr>
                                     <td colSpan="2">
                                         <h1 className='font-bold text-black text-xl'>Admin Login</h1>
-                                        {success? <p className="text-green-500">{success}</p>
-                                        :<p className="text-red-500">{error}</p>}
+                                        {success ? <p className="text-green-500">{success}</p>
+                                            : <p className="text-red-500">{error}</p>}
                                     </td>
                                 </tr>
                                 <tr>

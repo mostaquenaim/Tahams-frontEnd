@@ -9,6 +9,7 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import Head from 'next/head';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -121,6 +122,9 @@ const Register = () => {
     return (
         <>
             {/* <NavbarCompTwo /> */}
+            <Head>
+                <title>Register - Tahams </title>
+            </Head>
             <div className='pt-48 pb-10'>
                 {!otpSent ? (
                     <form onSubmit={handleSubmit(onRegisterSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">

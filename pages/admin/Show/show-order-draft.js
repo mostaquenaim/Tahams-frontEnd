@@ -3,6 +3,7 @@ import useOrder from '../../../Hooks/useOrder';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Image from 'next/image';
 import Loading from '../../../components/Loading';
+import Head from 'next/head';
 
 const ShowOrdersDraft = () => {
     const { user, loading } = useContext(AuthContext);
@@ -33,6 +34,9 @@ const ShowOrdersDraft = () => {
 
     return (
         <div className='min-h-screen bg-gray-100 p-8'>
+        <Head>
+            <title>Show order draft </title>
+        </Head>
             <h1 className='text-3xl font-bold text-center mb-8'>Orders</h1>
             <div className='container mx-auto'>
                 {

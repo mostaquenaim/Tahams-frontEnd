@@ -44,10 +44,9 @@ export default function Home() {
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
 
-          {/* <Head>
-            <link rel="icon" href="/favicon.ico" />
-            <title>Tahams - The Unique Way of Life </title>
-          </Head> */}
+          <Head>
+            <title>Homepage - Tahams </title>
+          </Head>
 
           {/* Modal */}
           {/* <Modal

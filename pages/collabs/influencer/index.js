@@ -2,10 +2,14 @@ import React from 'react';
 import NavbarCompTwo from '../../../components/Header/NavbarComp';
 import Footer from '../../../components/Footer/Footer';
 import { FaBullhorn, FaHandshake, FaGift } from 'react-icons/fa';
+import Head from 'next/head';
 
 const Influencer = () => {
     return (
         <div>
+            <Head>
+                <title>Influencer Collaboration</title>
+            </Head>
             {/* <NavbarCompTwo /> */}
             <div className='min-h-screen bg-gray-100 pt-40'>
                 <div className='container mx-auto p-8'>
@@ -91,7 +95,7 @@ const Influencer = () => {
                     </section> */}
                 </div>
             </div>
-          {/* <Footer /> */} 
+            {/* <Footer /> */}
         </div>
     );
 };

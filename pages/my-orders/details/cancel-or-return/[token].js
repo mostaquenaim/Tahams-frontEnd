@@ -3,6 +3,7 @@ import { AuthContext } from '../../../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
+import Head from 'next/head';
 
 const CancelOrReturn = () => {
     const [selectedProducts, setSelectedProducts] = useState([]);
@@ -55,7 +56,7 @@ const CancelOrReturn = () => {
                 selectedProducts,
                 reason,
             });
-    
+
             if (res.data.success === true) {
                 toast.success('Your cancellation request has been sent', {
                     position: "top-center",
@@ -66,7 +67,7 @@ const CancelOrReturn = () => {
                     draggable: true,
                     progress: undefined,
                 });
-    
+
                 // Redirect after showing toast
                 router.push(`/my-orders/details/${token}`);
             }
@@ -107,43 +108,48 @@ const CancelOrReturn = () => {
     );
 
     return (
-        <div className="pt-20 lg:pt-40 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold mb-4">
-                    Confirm {orderDetails.length > 0 && (orderDetails[0].history.deliveryStatus.id < 4 ? 'Cancellation' : 'Return')}
-                </h2>
-                <div>
-                    <h1 className='font-semibold text-lg'>Select product to return</h1>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                            <thead>
-                                <tr>
-                                    <th className="py-2 px-4 text-left border-b">Name</th>
-                                    <th className="py-2 px-4 text-left border-b">Category</th>
-                                    <th className="py-2 px-4 text-left border-b">Quantity</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {renderOrderDetails()}
-                            </tbody>
-                        </table>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Reason for Cancellation/Return:</label>
-                            <textarea
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                className="border border-gray-300 rounded p-2 w-full h-24"
-                                placeholder="Please provide a reason..."
-                            />
+        <>
+            <Head>
+                <title>Cancellation/Return - {token && token} </title>
+            </Head>
+            <div className="pt-20 lg:pt-40 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white p-8 rounded-lg shadow-lg">
+                    <h2 className="text-2xl font-bold mb-4">
+                        Confirm {orderDetails.length > 0 && (orderDetails[0].history.deliveryStatus.id < 4 ? 'Cancellation' : 'Return')}
+                    </h2>
+                    <div>
+                        <h1 className='font-semibold text-lg'>Select product to return</h1>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr>
+                                        <th className="py-2 px-4 text-left border-b">Name</th>
+                                        <th className="py-2 px-4 text-left border-b">Category</th>
+                                        <th className="py-2 px-4 text-left border-b">Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {renderOrderDetails()}
+                                </tbody>
+                            </table>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Reason for Cancellation/Return:</label>
+                                <textarea
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    className="border border-gray-300 rounded p-2 w-full h-24"
+                                    placeholder="Please provide a reason..."
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                </div>
-                <div className="flex justify-end gap-4 mt-4">
-                    <button onClick={handleConfirm} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
+                    </div>
+                    <div className="flex justify-end gap-4 mt-4">
+                        <button onClick={handleConfirm} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

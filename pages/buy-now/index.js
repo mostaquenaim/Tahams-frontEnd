@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import BuyingAddress from "/components/Cart/BuyingAddress";
 import FinalCart from "/components/Cart/FinalCart";
 import DeliveryFeeProvider from "../../Contexts/DeliveryFee";
+import Head from "next/head";
 
 const BuyNow = ({ data }) => {
   const router = useRouter();
@@ -18,6 +19,9 @@ const BuyNow = ({ data }) => {
 
   return (
     <div>
+      <Head>
+        <title>Purchase Product</title>
+      </Head>
       <div className="pt-20 lg:pt-48 flex flex-col md:flex-row justify-around items-start container mx-auto">
         <DeliveryFeeProvider>
             <BuyingAddress data={data} />

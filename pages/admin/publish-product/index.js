@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Modal from 'react-modal';
 import useLoadProducts from '../../../Hooks/useLoadProducts';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
+import Head from 'next/head';
 
 const Index = () => {
     const axiosPublic = useAxiosPublic();
@@ -126,6 +127,9 @@ const Index = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
+            <Head>
+                <title>Publish Product</title>
+            </Head>
             <div className="flex flex-col items-center text-center mt-8">
                 <h1 className="text-3xl font-bold mb-4">Products</h1>
                 {unpublishedProducts.length > 0 ? (

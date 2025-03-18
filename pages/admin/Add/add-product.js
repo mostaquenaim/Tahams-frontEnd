@@ -13,6 +13,7 @@ import useLoadSubSubCategories from "../../../Hooks/useLoadSubSubCategories";
 import useLoadColors from "../../../Hooks/useLoadColors";
 import useLoadFabrics from "../../../Hooks/useLoadFabrics";
 import useLoadSizes from "../../../Hooks/useLoadSizes";
+import Head from "next/head";
 
 export default function AddProduct() {
     const [selectedColor, setSelectedColor] = useState('');
@@ -224,6 +225,9 @@ export default function AddProduct() {
 
     return (
         <>
+        <Head>
+            <title>Add Product - Admin</title>
+        </Head>
             {/* <AdminDrawer></AdminDrawer> */}
             <div className="container mx-auto p-4 flex justify-center items-center">
                 <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">

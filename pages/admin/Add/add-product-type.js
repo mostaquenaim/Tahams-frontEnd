@@ -4,6 +4,7 @@ import SelectionFormComp from '../../../components/Product/SelectionFormComp';
 import { useForm } from 'react-hook-form';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
+import Head from 'next/head';
 
 const AddProductType = () => {
     const [categoryName, setCategoryName] = useState('');
@@ -69,6 +70,9 @@ const AddProductType = () => {
 
     return (
         <>
+        <Head>
+            <title>Add Product Type - Admin</title>
+        </Head>
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

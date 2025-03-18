@@ -9,6 +9,7 @@ import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import ImageZoom from '../../draft/image-zoom-inner';
 import { getGuestCustomerInfo } from '../../../utils/guestCustomer';
+import Head from 'next/head';
 
 const Product = ({ product }) => {
     // console.log('product-test', product);
@@ -306,7 +307,7 @@ const Product = ({ product }) => {
                 });
 
                 // console.log(response.data,'cart data');
-                localStorage.setItem('defaultCartItem',response.data.id)
+                localStorage.setItem('defaultCartItem', response.data.id)
 
                 if (response.status >= 200 && response.status <= 205) {
                     // Cart item added successfully
@@ -514,7 +515,10 @@ const Product = ({ product }) => {
     };
 
     return (
-        <div className="">
+        <div>
+            <Head>
+                <title>{product.name}</title>
+            </Head>
             {/* <NavbarCompTwo /> */}
             <div className="container mx-auto p-4 min-h-screen pt-20 lg:pt-48 pb-10">
                 <div className="flex flex-col md:flex-row">

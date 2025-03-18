@@ -2,6 +2,7 @@ import { useState } from "react";
 import useLoadSubSubCategories from "../../../../Hooks/useLoadSubSubCategories";
 import useAxiosPublic from "../../../../Hooks/useAxiosPublic";
 import Loading from "../../../../components/Loading";
+import Head from "next/head";
 
 const ProductType = () => {
     const [subSubCategories, refetch, isPending] = useLoadSubSubCategories();
@@ -57,6 +58,9 @@ const ProductType = () => {
 
     return (
         <div className="container mx-auto pt-20 lg:pt-40">
+            <Head>
+                <title>Product Type</title>
+            </Head>
             <h1 className="text-2xl font-bold mb-6 text-center">Product Types</h1>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border">

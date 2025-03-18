@@ -3,13 +3,14 @@ import PaymentInfo from "/components/Cart/PaymentInfo";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../Contexts/Auth/AuthProvider";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const PaymentProcess = () => {
     const { user, loading } = useContext(AuthContext)
     const axiosPublic = useAxiosPublic()
     const [buyingHistory, setBuyingHistory] = useState()
     const router = useRouter()
-    const {token} = router.query
+    const { token } = router.query
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -29,16 +30,19 @@ const PaymentProcess = () => {
     // Display buying history data or implement your payment logic
     return (
         <div className="min-h-screen">
+            <Head>
+                <title>Confirm  Order</title>
+            </Head>
             {/* <NavbarCompTwo /> */}
             <div className="pt-20 lg:pt-48 min-h-screen">
                 {
                     loading ?
                         <span className="loading loading-spinner loading-md"></span>
                         :
-                        <PaymentInfo history={buyingHistory}/>
+                        <PaymentInfo history={buyingHistory} />
                 }
             </div>
-          {/* <Footer /> */} 
+            {/* <Footer /> */}
         </div>
     );
 };

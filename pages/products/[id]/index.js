@@ -1,8 +1,15 @@
+import Head from 'next/head';
 import FetchProducts from '../../../components/Product/FetchProducts';
 
-const Product = ({ categories }) => {
-    // console.log('categories',categories);
-    return <FetchProducts categories={categories}/>
+const Product = ({ cat, categories }) => {
+    return (
+        <>
+            <Head>
+                <title>{cat}</title>
+            </Head>
+            <FetchProducts categories={categories} />
+        </>
+    )
 };
 
 export async function getServerSideProps(context) {
@@ -10,12 +17,16 @@ export async function getServerSideProps(context) {
     const { id } = params;
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-sub-sub-cat/${id}`);
-        const categories = await response.json();
+        const response1 = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-sub-sub-cat-by-id/${id}`);
+        const cat = await response1.json();
+
+        const response2 = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-sub-sub-cat/${id}`);
+        const categories = await response2.json();
 
         return {
             props: {
-                categories,
+                cat: cat.name,
+                categories
             },
         };
     } catch (error) {

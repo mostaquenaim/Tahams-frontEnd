@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import useLoadColors from '../../../../../Hooks/useLoadColors';
 import useLoadSubSubCategories from '../../../../../Hooks/useLoadSubSubCategories';
 import useLoadSizes from '../../../../../Hooks/useLoadSizes';
+import Head from 'next/head';
 
 const EditProduct = ({ product }) => {
     // console.log('product', product);
@@ -263,6 +264,9 @@ const EditProduct = ({ product }) => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <Head>
+                <title>Edit Product</title>
+            </Head>
             <div className="w-full max-w-5xl p-8 bg-white shadow-lg rounded-lg">
                 <h1 className="text-2xl font-bold mb-6 text-center">Edit Product - {product.name}</h1>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

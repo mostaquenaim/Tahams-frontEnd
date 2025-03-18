@@ -1,9 +1,17 @@
 import axios from "axios";
 import FetchProducts from "../../components/Product/FetchProducts";
+import { useRouter } from "next/router";
+import Head from "next/head";
 
 const ShowProductsByCategory = ({ products }) => {
+  const router = useRouter()
+  const catname = router.query.catName
+
   return (
     <div>
+      <Head>
+        <title>{catname} - Tahams</title>
+      </Head>
       <FetchProducts categories={products} />
     </div>
   );

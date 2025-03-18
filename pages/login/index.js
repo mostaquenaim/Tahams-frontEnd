@@ -13,6 +13,7 @@ import { useLocation } from 'react-router-dom';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
+import Head from 'next/head';
 
 const provider = new GoogleAuthProvider();
 
@@ -164,6 +165,9 @@ const Login = () => {
 
     return (
         <>
+            <Head>
+                <title>Login - Tahams</title>
+            </Head>
             {/* <NavbarCompTwo /> */}
             <div className='pt-48 pb-10'>
                 <form onSubmit={handleSubmit(onsubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
@@ -239,7 +243,7 @@ const Login = () => {
                     </p>
                 </form>
             </div>
-          {/* <Footer /> */} 
+            {/* <Footer /> */}
         </>
     );
 };

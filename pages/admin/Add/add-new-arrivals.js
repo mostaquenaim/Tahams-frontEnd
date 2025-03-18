@@ -4,6 +4,7 @@ import axios from 'axios';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 import toast from 'react-hot-toast';
+import Head from 'next/head';
 
 const AddNewArrivals = ({ previousArrivals }) => {
     const [subSubCategories] = useLoadSubSubCategories();
@@ -61,6 +62,9 @@ const AddNewArrivals = ({ previousArrivals }) => {
 
     return (
         <div className="p-4 bg-gray-100 min-h-screen flex items-center justify-center">
+        <Head>
+            <title>Add New Arrival - Admin</title>
+        </Head>
             <div className="bg-white p-6 rounded-lg shadow-md max-w-3xl w-full">
                 <h2 className="text-xl font-semibold mb-4 text-center">Add New Arrivals</h2>
                 {formData.map((item, index) => (

@@ -4,13 +4,14 @@ import useOrder from '../../../Hooks/useOrder';
 import Loading from '../../../components/Loading';
 import Image from 'next/image';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
+import Head from 'next/head';
 
 const ShowOrderDetails = () => {
     const router = useRouter();
     const { id } = router.query;
     const [orders] = useOrder();
-    const {loading} = useContext(AuthContext)
-    console.log('orders',orders);
+    const { loading } = useContext(AuthContext)
+    console.log('orders', orders);
 
     const group = orders.find(order => order.history?.id === id);
 
@@ -20,6 +21,9 @@ const ShowOrderDetails = () => {
 
     return (
         <div className='min-h-screen bg-gray-100 p-8'>
+            <Head>
+                <title>Order details - Admin</title>
+            </Head>
             <h1 className='text-3xl font-bold text-center mb-8'>Order Details</h1>
             {
                 loading ?

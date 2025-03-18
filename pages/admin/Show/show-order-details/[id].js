@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { FaEnvelope, FaSms, FaTrash, FaXbox } from 'react-icons/fa';
 import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
+import Head from 'next/head';
 
 const ShowOrderDetails = () => {
     const router = useRouter();
@@ -70,6 +71,9 @@ const ShowOrderDetails = () => {
 
     return (
         <div className='min-h-screen bg-gray-100 p-6 flex justify-center'>
+            <Head>
+                <title>Order details/id</title>
+            </Head>
             {loading ? (
                 <div className='flex justify-center items-center min-h-screen'>
                     <Loading />

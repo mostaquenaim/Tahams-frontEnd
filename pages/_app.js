@@ -22,6 +22,7 @@ export default function App({ Component, pageProps }) {
 
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin');
+  const isAdminAdd = router.pathname.startsWith('/admin/Add');
 
 
   return (
@@ -29,7 +30,13 @@ export default function App({ Component, pageProps }) {
       <CountProvider>
         <Head>
           <link rel="icon" href="/favicon.ico" />
-          <title>Tahams - The Unique Way of Life </title>
+          {
+            isAdminAdd ?
+              <title>Admin - Add</title>
+              : isAdminRoute ?
+                <title>Admin Dashboard</title>
+                : <title>Tahams - The Unique Way of Life </title>
+          }
         </Head>
 
         <QueryClientProvider client={queryClient}>

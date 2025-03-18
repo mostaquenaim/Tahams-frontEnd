@@ -7,6 +7,7 @@ import useProduct from '../../../Hooks/useProduct';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
 import { FaSync } from 'react-icons/fa';
+import Head from 'next/head';
 
 const ShowProducts = () => {
     const { user, loading } = useContext(AuthContext);
@@ -119,24 +120,11 @@ const ShowProducts = () => {
 
     return (
         <div className='min-h-screen bg-gray-100 p-8'>
+            <Head>
+                <title>All Products</title>
+            </Head>
             <h1 className='text-3xl font-bold text-center mb-8'>Products</h1>
             <p className="flex justify-end">
-                {/* <button
-                    onClick={handleSyncViews}
-                    className={`btn ${syncing ? 'btn-disabled' : 'btn-accent'} m-2`}
-                >
-                    <FaSync />
-                    {
-                        syncing ?
-                            <>
-                                Syncing
-                            </>
-                            :
-                            <>
-                                Sync views
-                            </>
-                    }
-                </button> */}
 
                 <div className='m-3'>
                     <label for="default-search" className="mb-2 text-sm font-medium sr-only">Search</label>

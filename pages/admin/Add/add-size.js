@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
+import Head from 'next/head';
 
 const AddSize = () => {
     const [sizeName, setSizeName] = useState('');
@@ -50,6 +51,9 @@ const AddSize = () => {
 
     return (
         <>
+            <Head>
+                <title>Add Size - Admin</title>
+            </Head>
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

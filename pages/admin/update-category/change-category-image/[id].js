@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 
 import SessionCheck from '../../../../components/Auth/sessionCheck';
 import axios from 'axios';
+import Head from 'next/head';
 
 export default function ChangeCategoryImage({ item }) {
 
@@ -53,6 +54,9 @@ export default function ChangeCategoryImage({ item }) {
 
     return (
         <>
+            <Head>
+                <title>Change Category Image </title>
+            </Head>
             <SessionCheck />
 
             <section className="bg-gradient-to-b from-zinc-50 to-blue-100 min-h-full flex justify-center items-center text-black ">

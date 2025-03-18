@@ -5,6 +5,7 @@ import { RiDeleteBin5Fill } from 'react-icons/ri';
 import Swal from 'sweetalert2';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Link from 'next/link';
+import Head from 'next/head';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();
@@ -14,15 +15,15 @@ const MyCart = () => {
   // State to track checked items
   const [checkedItems, setCheckedItems] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
     const cartItem = parseInt(localStorage.getItem('defaultCartItem'))
-    console.log('cartItem',cartItem);
+    console.log('cartItem', cartItem);
     setCheckedItems([cartItem])
-  },[])
+  }, [])
 
   // Toggle the selection of an item
   const toggleItemSelection = (itemId) => {
-    console.log('cartItem',itemId);
+    console.log('cartItem', itemId);
     if (checkedItems.includes(itemId)) {
       setCheckedItems(checkedItems.filter((id) => id !== itemId));
     } else {
@@ -169,6 +170,9 @@ const MyCart = () => {
 
   return (
     <>
+      <Head>
+        <title>My Cart - Tahams</title>
+      </Head>
       <section className='pt-20 lg:pt-40 min-h-screen'>
         <div className="container mx-auto px-4">
           <h1 className='font-semibold text-xl m-5'>Select cart items to checkout</h1>

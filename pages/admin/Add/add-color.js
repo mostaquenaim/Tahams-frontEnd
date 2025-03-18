@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
+import Head from 'next/head';
 
 const AddColor = () => {
     const [colorName, setColorName] = useState('');
@@ -60,6 +61,9 @@ const AddColor = () => {
 
     return (
         <>
+        <Head>
+            <title>Add Color - Admin</title>
+        </Head>
         {/* <AdminDrawer/> */}
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

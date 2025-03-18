@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import React, { useState } from 'react';
 
 const AddPaymentMethod = () => {
@@ -49,6 +50,9 @@ const AddPaymentMethod = () => {
 
     return (
         <>
+            <Head>
+                <title>Add Payment Method - Admin</title>
+            </Head>
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

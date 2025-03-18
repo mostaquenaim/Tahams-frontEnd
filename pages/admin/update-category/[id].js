@@ -4,6 +4,7 @@ import axios from 'axios';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 
 import Link from 'next/link';
+import Head from 'next/head';
 
 const UpdateCategory = ({ item }) => {
 
@@ -14,7 +15,7 @@ const UpdateCategory = ({ item }) => {
 
     const [success, setSuccess] = useState('')
     const [categories, setCategories] = useState([])
-    const [successColor, setSuccessColor] = useState(""); 
+    const [successColor, setSuccessColor] = useState("");
 
     useEffect(() => {
         fetchCategories();
@@ -41,13 +42,12 @@ const UpdateCategory = ({ item }) => {
             }
 
             const checkAvailability = categories.some((category) => category.categoryName === updatedData.categoryName)
-            if (checkAvailability) 
-            {
-                setSuccessColor("text-red-500"); 
+            if (checkAvailability) {
+                setSuccessColor("text-red-500");
                 setSuccess(`${updatedData.categoryName} already exists`);
             }
             else {
-                setSuccessColor("text-green-500"); 
+                setSuccessColor("text-green-500");
                 await axiosPublic.put(`/admin/updateCategory/${item.id}`, updatedData);
                 setSuccess(' update successfully');
             }
@@ -61,13 +61,13 @@ const UpdateCategory = ({ item }) => {
         try {
             const confirmation = confirm("Are you sure you want to delete? ")
 
-            if(confirmation){
-            // console.log(updatedData)
-            const response = await axiosPublic.delete(`/admin/deleteCategory/${item.id}`);
-            // console.log("response", response)
+            if (confirmation) {
+                // console.log(updatedData)
+                const response = await axiosPublic.delete(`/admin/deleteCategory/${item.id}`);
+                // console.log("response", response)
 
-            setSuccess(' deleted successfully');
-            router.push('/admin/categories')
+                setSuccess(' deleted successfully');
+                router.push('/admin/categories')
             }
         }
         catch (error) {
@@ -82,7 +82,9 @@ const UpdateCategory = ({ item }) => {
 
     return (
         <>
-
+            <Head>
+                <title>Update Category </title>
+            </Head>
             <div className="flex flex-col justify-center items-center text-center bg-gradient-to-b from-zinc-50 to-blue-100 h-screen">
                 <div className="p-5 bg-white shadow-md w-96 flex flex-col gap-3 rounded-lg">
                     <h1 className="text-xl font-bold">Update Category</h1>
