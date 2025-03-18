@@ -3,6 +3,7 @@ import { GetServerSideProps } from 'next';
 import axios from 'axios';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
+import toast from 'react-hot-toast';
 
 const AddNewArrivals = ({ previousArrivals }) => {
     const [subSubCategories] = useLoadSubSubCategories();
@@ -41,7 +42,10 @@ const AddNewArrivals = ({ previousArrivals }) => {
             const response = await axiosPublic.post(`admin/add-new-arrivals`, formDataToSend, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            console.log('Upload successful:', response.data);
+            if (response.status >= 200 && response.status <= 205){
+                toast.success("New Arrival Uploaded")
+            }
+                console.log('Upload successful:', response);
         } catch (error) {
             console.error('Upload failed:', error);
         }
@@ -52,66 +56,67 @@ const AddNewArrivals = ({ previousArrivals }) => {
             <div className="bg-white p-6 rounded-lg shadow-md max-w-3xl w-full">
                 <h2 className="text-xl font-semibold mb-4 text-center">Add New Arrivals</h2>
 
-                {formData.map((item, index) => (
-                    <div key={index} className="flex flex-col md:flex-row space-x-4 mb-4 items-center border p-4 rounded-lg">
-                        <p className="font-semibold">Serial: {index + 1}</p>
-                        <input
-                            type="text"
-                            name="name"
-                            value={item.name}
-                            onChange={(e) => handleChange(index, e)}
-                            className="w-full md:w-1/4 p-2 border rounded"
-                            placeholder="Name"
-                            required
-                        />
-
-                        <textarea
-                            name="description"
-                            value={item.description}
-                            onChange={(e) => handleChange(index, e)}
-                            className="w-full md:w-1/4 p-2 border rounded"
-                            placeholder="Description"
-                            required
-                        ></textarea>
-
-                        {/* Sub-Subcategory Dropdown */}
-                        <select
-                            name="subSubCategory"
-                            value={item.subSubCategory}
-                            onChange={(e) => handleChange(index, e)}
-                            className="w-full md:w-1/4 p-2 border rounded"
-                            required
-                        >
-                            <option value="" disabled>Select Sub-Subcategory</option>
-                            {subSubCategories.map((subSubCategory) => (
-                                <option key={subSubCategory.id} value={subSubCategory.id}>
-                                    {subSubCategory.name}, {subSubCategory.category.name}, {subSubCategory.category.category.name}
-                                </option>
-                            ))}
-                        </select>
-
-                        <input
-                            type="file"
-                            name="filename"
-                            onChange={(e) => handleChange(index, e)}
-                            className="w-full md:w-1/4 p-2 border rounded"
-                        />
-
-                        {item.filename && (
-                            <img
-                                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
-                                alt="Preview"
-                                className="w-20 h-20 object-cover mt-2"
+                {
+                    formData.map((item, index) => (
+                        <div key={index} className="flex flex-col md:flex-row space-x-4 mb-4 items-center border p-4 rounded-lg">
+                            <p className="font-semibold">Serial: {index + 1}</p>
+                            <input
+                                type="text"
+                                name="name"
+                                value={item.name}
+                                onChange={(e) => handleChange(index, e)}
+                                className="w-full md:w-1/4 p-2 border rounded"
+                                placeholder="Name"
+                                required
                             />
-                        )}
 
-                        <button
-                            onClick={() => handleUpload(index)}
-                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-2 md:mt-0">
-                            Upload
-                        </button>
-                    </div>
-                ))}
+                            <textarea
+                                name="description"
+                                value={item.description}
+                                onChange={(e) => handleChange(index, e)}
+                                className="w-full md:w-1/4 p-2 border rounded"
+                                placeholder="Description"
+                                required
+                            ></textarea>
+
+                            {/* Sub-Subcategory Dropdown */}
+                            <select
+                                name="subSubCategory"
+                                value={item.subSubCategory}
+                                onChange={(e) => handleChange(index, e)}
+                                className="w-full md:w-1/4 p-2 border rounded"
+                                required
+                            >
+                                <option value="" disabled>Select Sub-Subcategory</option>
+                                {subSubCategories.map((subSubCategory) => (
+                                    <option key={subSubCategory.id} value={subSubCategory.id}>
+                                        {subSubCategory.name}, {subSubCategory.category.name}, {subSubCategory.category.category.name}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <input
+                                type="file"
+                                name="filename"
+                                onChange={(e) => handleChange(index, e)}
+                                className="w-full md:w-1/4 p-2 border rounded"
+                            />
+
+                            {item.filename && (
+                                <img
+                                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
+                                    alt="Preview"
+                                    className="w-20 h-20 object-cover mt-2"
+                                />
+                            )}
+
+                            <button
+                                onClick={() => handleUpload(index)}
+                                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-2 md:mt-0">
+                                Upload
+                            </button>
+                        </div>
+                    ))}
             </div>
         </div>
     );

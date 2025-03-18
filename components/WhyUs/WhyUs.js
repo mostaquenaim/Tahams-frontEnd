@@ -20,7 +20,7 @@ const WhyUs = () => {
                 {/* Right Section */}
                 <div className="lg:w-1/2 lg:px-8 mx-auto">
                     {/* Add your image here */}
-                    <img className="w-full h-auto" src="https://i.ibb.co/f22ckGR/bgrmvy-removebg-preview.png" alt="Image" />
+                    <img className="w-full h-auto" src="/why-tahams-pic.png" alt="Image" />
                 </div>
             </div>
         </section>
