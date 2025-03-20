@@ -182,10 +182,15 @@ const BuyingAddress = ({ data }) => {
 
             const newTotalPrice = sum + deliveryFee;
 
+            const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
+            // console.log(res.data,'buyy now');
+
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push({
                 event: "purchase", //begin_checkout
                 ecommerce: {
+                    transaction_id: res.data.trackingToken,
+                    order_id: res.data.id,
                     currency: "BDT",
                     totalPrice: newTotalPrice,
                     coupon: cartItems[0]?.coupon,
@@ -198,8 +203,6 @@ const BuyingAddress = ({ data }) => {
                     items: tempItems
                 }
             });
-
-            const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
 
             if (res.status >= 200 && res.status < 300) {
                 router.push(`/confirm-order/${res.data.trackingToken}`);

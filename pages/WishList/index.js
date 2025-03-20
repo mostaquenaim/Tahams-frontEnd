@@ -42,13 +42,8 @@ const WishList = () => {
                             sub_category: item.product.pscs?.[0]?.category?.name || "N/A",
                             price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) || 0,
                             total_views: item.product.totalViews || 0,
-                            // selected_category: selectedCategory,
-                            // selected_size: selectedSize,
-                            // selected_maleSize: selectedMaleSize,
-                            // selected_femaleSize: selectedFemaleSize,
                             discount_percent: item.product.discountPercentage || 0,
                             currency: "BDT",
-                            // quantity: 1,
                             user_email: customEmail
                         }
                     ]
