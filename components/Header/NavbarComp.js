@@ -132,7 +132,7 @@ const NavbarCompTwo = () => {
     const router = useRouter()
 
     const handleSearch = () => {
-        router.push(`search-product?search=${searchInput}`)    
+        router.push(`search-product?search=${searchInput}`)
     };
 
     return (
@@ -163,7 +163,8 @@ const NavbarCompTwo = () => {
                                         onClick={() => handleSearch()}
                                     >
                                         Search
-                                    </button>                                </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

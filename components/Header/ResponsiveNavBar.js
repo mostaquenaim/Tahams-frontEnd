@@ -2,12 +2,20 @@ import Link from 'next/link';
 import { AiOutlineHeart, AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
 import LeftDrawer from '../Drawers/LeftDrawer';
 import CustomerDrawer from '../Drawers/CustomerDrawer';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { useRouter } from 'next/router';
 
 const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, genders, sideLinks }) => {
     const navEndBtnClass = "btn btn-square btn-sm btn-ghost text-xl"
+    const [searchInput, setSearchInput] = useState('')
 
+    const router = useRouter()
+
+    const handleSearch = () => {
+        router.push(`search-product?search=${searchInput}`)
+    };
+    
     return (
         <div>
             <div
@@ -76,11 +84,21 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, gend
                 <div className="join w-full px-10 py-5">
                     <div className='w-full'>
                         <div>
-                            <input className="input input-bordered join-item w-full" placeholder="Search" />
+                            <input
+                                className="input input-bordered join-item w-full"
+                                placeholder="Search"
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                            />
                         </div>
                     </div>
                     <div className="indicator">
-                        <button className="btn join-item">Search</button>
+                        <button
+                            className="btn join-item"
+                            onClick={() => handleSearch()}
+                        >
+                            Search
+                        </button>
                     </div>
                 </div>
             </div>
