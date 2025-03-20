@@ -12,7 +12,7 @@ const ShowNewArrival = ({ prop }) => {
             transition={{ duration: 0.8, ease: "easeOut" }} 
             className="relative w-4/5 h-full mx-auto group cursor-pointer"
         >
-            <Link href={`/products/${prop.subsub?.id}`} className="block overflow-hidden rounded-xl shadow-lg">
+            <Link href={`/search-product?search=${prop.name}`} className="block overflow-hidden rounded-xl shadow-lg">
                 {/* Image with Animated Hover Effect */}
                 <div className="relative overflow-hidden rounded-xl">
                     <motion.img 

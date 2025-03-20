@@ -1,42 +1,26 @@
 import Head from 'next/head';
 import FetchProducts from '../../../components/Product/FetchProducts';
+import { useEffect } from 'react';
+import useLoadProductsByCat from '/Hooks/useLoadProductsByCat';
+import useLoadProductName from '/Hooks/useLoadProductName';
+import { useRouter } from 'next/router';
+import Loading from '/components/Loading';
 
-const Product = ({ cat, categories }) => {
+const Product = () => {
+    const router = useRouter();
+    const getidfromurl = router.query.id; // Extract ID from the URL
+
+    const [productsByCat, isPending] = useLoadProductsByCat(getidfromurl);
+    const [productNameByCat] = useLoadProductName(getidfromurl);
+
     return (
         <>
             <Head>
-                <title>{cat}</title>
+                <title>{productNameByCat}</title>
             </Head>
-            <FetchProducts categories={categories} />
+            <FetchProducts categories={productsByCat} isLoading={isPending} />
         </>
-    )
+    );
 };
-
-export async function getServerSideProps(context) {
-    const { params } = context;
-    const { id } = params;
-
-    try {
-        const response1 = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-sub-sub-cat-by-id/${id}`);
-        const cat = await response1.json();
-
-        const response2 = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/get-product-by-sub-sub-cat/${id}`);
-        const categories = await response2.json();
-
-        return {
-            props: {
-                cat: cat.name,
-                categories
-            },
-        };
-    } catch (error) {
-        console.error('Error fetching data:', error);
-
-        // Return an empty object if there's an error
-        return {
-            props: {},
-        };
-    }
-}
 
 export default Product;

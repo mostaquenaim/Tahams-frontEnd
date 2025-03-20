@@ -6,6 +6,7 @@ import ListComponent from './components/ListComponent';
 import useAxiosPublic from '../../Hooks/useAxiosPublic'
 
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
+import { useRouter } from 'next/router';
 
 const NavbarCompTwo = () => {
     const axiosPublic = useAxiosPublic();
@@ -14,6 +15,9 @@ const NavbarCompTwo = () => {
     const [categories, setCategories] = useState([])
     const [genders, setGenders] = useState([])
     const { user, logOut } = useContext(AuthContext)
+    const [searchInput, setSearchInput] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+
 
     useEffect(() => {
         axiosPublic.get('/admin/view-product-categories')
@@ -93,17 +97,17 @@ const NavbarCompTwo = () => {
         <>
             {/* {user &&
                 <> */}
-                    <Li>
-                        <Link href='/dashboard'>
-                            Dashboard
-                        </Link>
-                    </Li>
-                    <Li>
-                        <Link href='/my-orders'>
-                            My orders
-                        </Link>
-                    </Li>
-                {/* </>
+            <Li>
+                <Link href='/dashboard'>
+                    Dashboard
+                </Link>
+            </Li>
+            <Li>
+                <Link href='/my-orders'>
+                    My orders
+                </Link>
+            </Li>
+            {/* </>
             } */}
             <Li>
                 <Link href='/Contact'>
@@ -125,6 +129,12 @@ const NavbarCompTwo = () => {
         </>
     )
 
+    const router = useRouter()
+
+    const handleSearch = () => {
+        router.push(`search-product?search=${searchInput}`)    
+    };
+
     return (
         <>
 
@@ -139,12 +149,21 @@ const NavbarCompTwo = () => {
                             <div className="join w-full px-20 py-5">
                                 <div className='w-full'>
                                     <div>
-                                        <input className="input input-bordered join-item w-full" placeholder="Search" />
+                                        <input
+                                            className="input input-bordered join-item w-full"
+                                            placeholder="Search"
+                                            value={searchInput}
+                                            onChange={(e) => setSearchInput(e.target.value)}
+                                        />
                                     </div>
                                 </div>
                                 <div className="indicator">
-                                    <button className="btn join-item">Search</button>
-                                </div>
+                                    <button
+                                        className="btn join-item"
+                                        onClick={() => handleSearch()}
+                                    >
+                                        Search
+                                    </button>                                </div>
                             </div>
                         </div>
 

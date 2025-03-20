@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import Loading from '../Loading';
 
-const FetchProducts = ({ categories, admin = false }) => {
+const FetchProducts = ({ categories, admin = false, query = '', isLoading=false }) => {
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState(categories);
     const [selectedColors, setSelectedColors] = useState([]);
@@ -23,7 +23,7 @@ const FetchProducts = ({ categories, admin = false }) => {
 
     useEffect(() => {
         typeof window !== 'undefined' ? setWindowWidth(window.innerWidth) : setWindowWidth(0)
-        
+
         const handleResize = () => {
             setWindowWidth(window.innerWidth);
         };
@@ -85,8 +85,10 @@ const FetchProducts = ({ categories, admin = false }) => {
         }
     }, [selectedColors, priceRange, selectedAvailability, selectedOffer, sortOption, categories]);
 
-    if (!categories) {
-        return <Loading />;
+    if (!categories || isLoading) {
+        return <div className='min-h-screen flex justify-center items-center text-center'>
+            <Loading />
+        </div>;
     }
 
     const handleColorChange = (color) => {
@@ -114,7 +116,7 @@ const FetchProducts = ({ categories, admin = false }) => {
     };
 
     const handlePageChange = (page) => {
-        setCurrentPage(page); 
+        setCurrentPage(page);
     };
 
     const paginatedProducts = selectedProducts.slice(
@@ -129,7 +131,7 @@ const FetchProducts = ({ categories, admin = false }) => {
             <div className='pt-20 lg:pt-48 mx-10'>
                 {/* Sort By dropdown */}
                 <div className='flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10'>
-                    <div className='font-semibold text-3xl uppercase underline'>{categories[0]?.pscs[0]?.category.category.category.name}</div>
+                    <div className='font-semibold text-3xl uppercase underline'>{categories[0]?.pscs[0]?.category?.category?.category?.name || query}</div>
                     <select id="sortDropdown" value={sortOption} onChange={handleSortChange}>
                         <option value="default">Sort by: Default</option>
                         <option value="priceLowToHigh">Price: Low to High</option>
