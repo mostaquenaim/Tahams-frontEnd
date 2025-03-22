@@ -3,6 +3,7 @@ import FetchProducts from '/components/Product/FetchProducts';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 const SearchProduct = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -39,6 +40,9 @@ const SearchProduct = () => {
 
     return (
         <div>
+            <Head>
+                <title>{searchQuery} - search results</title>
+            </Head>
             <FetchProducts categories={products} query={searchQuery} isLoading={isLoading}/>
         </div>
     );

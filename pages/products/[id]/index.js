@@ -16,7 +16,7 @@ const Product = () => {
     return (
         <>
             <Head>
-                <title>{productNameByCat}</title>
+                <title>{productNameByCat.name}</title>
             </Head>
             <FetchProducts categories={productsByCat} isLoading={isPending} />
         </>

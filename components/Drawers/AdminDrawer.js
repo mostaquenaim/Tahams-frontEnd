@@ -107,7 +107,14 @@ const AdminDrawer = () => {
             <div className={`flex flex-col bg-white border-r border-gray-200 h-screen ${isOpen ? 'w-64' : 'w-16'} transition-width duration-300`}>
                 {/* Drawer Header */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    {isOpen && <span className="text-lg font-semibold">Admin Panel</span>}
+                    {isOpen && (
+                        <Link
+                            href="/admin"
+                            className="text-lg font-semibold uppercase text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out"
+                        >
+                            Admin Panel
+                        </Link>
+                    )}
                     <div className="drawer-button cursor-pointer" onClick={toggleDrawer}>
                         <AiOutlineMenu className='text-3xl' />
                     </div>

@@ -8,7 +8,7 @@ const useGroupOrders = () => {
     const axiosPublic = useAxiosPublic();
 
     const fetchGroupOrderData = async () => {
-        console.log('Fetching Group Orders...');
+        // console.log('Fetching Group Orders...');
         const res = await axiosPublic.get(`/admin/get-all-buying-history?email=${user?.email}`);
         const orders = res.data;
 

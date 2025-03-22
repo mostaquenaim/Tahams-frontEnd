@@ -11,7 +11,7 @@ import Head from 'next/head';
 const ShowOrders = () => {
     const { user, loading } = useContext(AuthContext);
     const [sortedGroupedOrdersArray, refetch, isPending] = useGroupOrders();
-    console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
+    // console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
     const axiosPublic = useAxiosPublic();
 
     const handleCheck = async (history) => {
