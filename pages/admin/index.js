@@ -152,9 +152,8 @@ const Admin = () => {
               </LineChart>
             </div>
 
-
             {/* Pie Chart */}
-            <div className="bg-white p-6 rounded-lg shadow">
+            {/* <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-lg font-semibold text-gray-700 mb-4">User Activity</h2>
               <PieChart width={500} height={300}>
                 <Pie
@@ -175,7 +174,7 @@ const Admin = () => {
                 <Tooltip />
                 <Legend />
               </PieChart>
-            </div>
+            </div> */}
           </div>
         </div>
       </main>
