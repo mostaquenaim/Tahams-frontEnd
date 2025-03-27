@@ -6,7 +6,7 @@ const useLoadProductsByCat = (id) => {
 
     const fetchProductData = async () => {
         const res = await axiosPublic.get(`/admin/get-product-by-sub-sub-cat/${id}`);
-        console.log('products bny cat',res.data);
+        // console.log('products bny cat',res.data);
         return res.data;
     };
 

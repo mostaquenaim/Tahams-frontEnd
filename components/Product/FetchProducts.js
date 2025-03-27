@@ -131,6 +131,7 @@ const FetchProducts = ({ categories, admin = false, query = '', isLoading=false 
             <div className='pt-20 lg:pt-48 mx-10'>
                 {/* Sort By dropdown */}
                 <div className='flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10'>
+                    
                     <div className='font-semibold text-3xl uppercase underline'>{categories[0]?.pscs[0]?.category?.category?.category?.name}</div>
                     <select id="sortDropdown" value={sortOption} onChange={handleSortChange}>
                         <option value="default">Sort by: Default</option>
