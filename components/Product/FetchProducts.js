@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import Loading from '../Loading';
 
-const FetchProducts = ({ categories, admin = false, query = '', isLoading=false }) => {
+const FetchProducts = ({ categories, admin = false, query = '', isLoading = false }) => {
     const [sortOption, setSortOption] = useState('default');
     const [selectedProducts, setSelectedProducts] = useState(categories);
     const [selectedColors, setSelectedColors] = useState([]);
@@ -131,7 +131,6 @@ const FetchProducts = ({ categories, admin = false, query = '', isLoading=false 
             <div className='pt-20 lg:pt-48 mx-10'>
                 {/* Sort By dropdown */}
                 <div className='flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10'>
-                    
                     <div className='font-semibold text-3xl uppercase underline'>{categories[0]?.pscs[0]?.category?.category?.category?.name}</div>
                     <select id="sortDropdown" value={sortOption} onChange={handleSortChange}>
                         <option value="default">Sort by: Default</option>
@@ -140,6 +139,7 @@ const FetchProducts = ({ categories, admin = false, query = '', isLoading=false 
                     </select>
                 </div>
 
+                {/* filter  */}
                 <div className='flex text-center items-center justify-center gap-2 py-3 md:hidden'>
                     <div className="drawer">
                         <input id="filter-drawer" type="checkbox" className="drawer-toggle" />
@@ -179,6 +179,7 @@ const FetchProducts = ({ categories, admin = false, query = '', isLoading=false 
                             colors={colors}
                         ></FilterComp>
                     </div>
+                    {/* show product  */}
                     {
                         paginatedProducts ?
                             paginatedProducts.length > 0 ? (
@@ -279,7 +280,7 @@ const FetchProducts = ({ categories, admin = false, query = '', isLoading=false 
                 // showGotoCart &&
                 <Link
                     href={'/MyCart'}
-                    className={` w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
+                    className={`border border-t-8 border-black w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
                 >Go to cart
                 </Link>
             }

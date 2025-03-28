@@ -101,8 +101,29 @@ const ShowProduct = ({ item }) => {
     return (
         <>
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
-                <div onClick={handleProductClick} className="relative cursor-pointer h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px]" >
-                    <img src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${hovered ? hoveredImage : item.filename}`} alt={item.name} className="rounded-t-lg h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px]" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}/>
+                <div
+                    onClick={handleProductClick}
+                    className="relative cursor-pointer h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] overflow-hidden rounded-t-lg"
+                >
+                    {/* Main Image (Fades out on hover) */}
+                    <img
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.filename}`}
+                        alt={item.name}
+                        className={`rounded-t-lg h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    />
+
+                    {/* Hover Image (Fades in on hover) */}
+                    <img
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.productPictures[0]?.filename}`}
+                        alt={item.name}
+                        className={`rounded-t-lg h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    />
+
+                    {/* Out of Stock Badge */}
                     {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
                 </div>
 

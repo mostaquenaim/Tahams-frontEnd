@@ -47,17 +47,6 @@ const FinalCart = ({ cartItems }) => {
                 quantity: item.Quantity,
             })
         })
-
-        // window.dataLayer = window.dataLayer || [];
-        // window.dataLayer.push({
-        //     event: "begin_checkout",
-        //     ecommerce: {
-        //         currency: "BDT",
-        //         totalPrice: newTotalPrice,
-        //         coupon: cartItems[0]?.coupon,
-        //         items: tempItems
-        //     }
-        // });
     }, [cartItems, deliveryFee]);
 
     const handleApplyCoupon = async () => {

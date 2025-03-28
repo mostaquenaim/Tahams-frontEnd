@@ -164,7 +164,7 @@ const BuyingAddress = ({ data }) => {
                     item_series: item.category?.category?.category?.name || "N/A",
                     main_category: item.category?.category?.name || "N/A",
                     sub_category: item.category?.name || "N/A",
-                    price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
+                    item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
                     total_views: item.product.totalViews || 0,
                     // selected_category: selectedCategory,
                     selected_size: item.size || null,
@@ -180,7 +180,8 @@ const BuyingAddress = ({ data }) => {
                 return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
             }, 0);
 
-            const newTotalPrice = sum + deliveryFee;
+            const newTotalPrice = sum ;
+            // const newTotalPrice = sum + deliveryFee;
 
             const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
             // console.log(res.data,'buyy now');
@@ -189,7 +190,7 @@ const BuyingAddress = ({ data }) => {
             window.dataLayer.push({
                 event: "purchase", //begin_checkout
                 ecommerce: {
-                    transaction_id: res.data.trackingToken,
+                    // transaction_id: res.data.trackingToken,
                     order_id: res.data.id,
                     currency: "BDT",
                     totalPrice: newTotalPrice,
@@ -203,6 +204,10 @@ const BuyingAddress = ({ data }) => {
                     items: tempItems
                 }
             });
+
+
+            // console.log(tempItems,'cartt');
+            // console.log('total',newTotalPrice);
 
             if (res.status >= 200 && res.status < 300) {
                 router.push(`/confirm-order/${res.data.trackingToken}`);
