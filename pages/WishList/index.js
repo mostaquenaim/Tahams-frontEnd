@@ -40,7 +40,7 @@ const WishList = () => {
                             item_series: item.product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                             main_category: item.product.pscs?.[0]?.category?.category?.name || "N/A",
                             sub_category: item.product.pscs?.[0]?.category?.name || "N/A",
-                            price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) || 0,
+                            item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) || 0,
                             total_views: item.product.totalViews || 0,
                             discount_percent: item.product.discountPercentage || 0,
                             currency: "BDT",

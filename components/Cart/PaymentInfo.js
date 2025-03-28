@@ -73,7 +73,7 @@ const PaymentInfo = ({ history }) => {
                     item_series: item.category?.category?.category?.name || "N/A",
                     main_category: item.category?.category?.name || "N/A",
                     sub_category: item.category?.name || "N/A",
-                    price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
+                    item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
                     total_views: item.product.totalViews || 0,
                     // selected_category: selectedCategory,
                     selected_size: item.size || null,

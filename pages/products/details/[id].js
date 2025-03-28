@@ -51,7 +51,7 @@ const Product = ({ product }) => {
             item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
             main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
             sub_category: product.pscs?.[0]?.category?.name || "N/A",
-            price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
+            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
             total_views: product.totalViews || 0,
             discount_percent: product.discountPercentage || 0,
             currency: "BDT",
@@ -181,11 +181,11 @@ const Product = ({ product }) => {
                             item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                             main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
                             sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                            price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
+                            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
                             total_views: product.totalViews || 0,
                             discount_percent: product.discountPercentage || 0,
                             currency: "BDT",
-                            quantity: 1,
+                            // quantity: 1,
                             user_email: customEmail
                         }
                     ]
@@ -221,11 +221,11 @@ const Product = ({ product }) => {
                             item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                             main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
                             sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                            price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
+                            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
                             total_views: product.totalViews || 0,
                             discount_percent: product.discountPercentage || 0,
                             currency: "BDT",
-                            quantity: 1,
+                            // quantity: 1,
                             user_email: customEmail
                         }
                     ]
@@ -347,13 +347,13 @@ const Product = ({ product }) => {
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: product.id,
+                    productId: product?.id,
                     category: selectedCategory,
                     size: selectedSize,
                     maleSize: selectedMaleSize,
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
-                    colorId: color.id,
+                    colorId: color?.id,
                     customerEmail: user?.email
                 });
 
@@ -400,7 +400,7 @@ const Product = ({ product }) => {
                         item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
                         main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
                         sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                        price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
+                        item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
                         total_views: product.totalViews || 0,
                         selected_category: selectedCategory,
                         selected_size: selectedSize,
