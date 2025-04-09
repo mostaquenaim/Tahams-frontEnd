@@ -20,7 +20,6 @@ export default function Home() {
     gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
   };
 
-
   useEffect(() => {
     TagManager.initialize(tagManagerArgs);
     fetch('/banner-images.json')
@@ -50,7 +49,7 @@ export default function Home() {
           </Head>
 
           {/* Modal */}
-          <Modal
+          {/* <Modal
             isOpen={isModalOpen}
             onRequestClose={handleCloseModal}
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
@@ -78,12 +77,12 @@ export default function Home() {
                 ×
               </button>
             </div>
-          </Modal>
+          </Modal> */}
           {/* Main Content */}
-          {!isModalOpen &&
+          {/* {!isModalOpen && */}
             <MySwiper images={images}></MySwiper>
           // {/* <TriangleLoader/> */}
-           }
+           {/* } */}
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
           <ShopByCategory></ShopByCategory>
