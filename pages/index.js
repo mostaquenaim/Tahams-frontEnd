@@ -9,12 +9,15 @@ import Modal from 'react-modal';
 import TagManager from "react-gtm-module";
 import Head from 'next/head';
 import TriangleLoader from '/components/Loading/TriangleLoading';
+import useLoadActivePop from '/./Hooks/useLoadActivePop';
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
 export default function Home() {
   const [images, setImages] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const activePop = useLoadActivePop()
+  console.log(activePop);
 
   const tagManagerArgs = {
     gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
@@ -29,27 +32,40 @@ export default function Home() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    localStorage.setItem('eidDiscount', true);
+    if (activePop?.title) {
+      localStorage.setItem(activePop.title, 'true');
+    }
   };
 
   useEffect(() => {
-    const isDiscountShown = localStorage.getItem('eidDiscount') === 'true';
-    if (isDiscountShown) {
+    if (!activePop || !activePop.isActive) return;
+
+    // console.log(localStorage.getItem(activePop.title) == 'true');
+    const isPopupSeen = localStorage.getItem(activePop.title) == 'true';
+    const now = new Date();
+
+    if (!isPopupSeen &&
+      new Date(activePop.startDate) <= now &&
+      new Date(activePop.endDate) >= now
+    ) {
+      setIsModalOpen(true);
+    }
+    else{
       setIsModalOpen(false);
     }
-  }, []);
+  }, [activePop]);
+
 
   return (
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
-
           <Head>
             <title>Homepage - Tahams </title>
           </Head>
 
           {/* Modal */}
-          {/* <Modal
+          <Modal
             isOpen={isModalOpen}
             onRequestClose={handleCloseModal}
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
@@ -58,7 +74,7 @@ export default function Home() {
           >
             <div className="relative bg-white rounded-lg p-6 text-center max-w-sm mx-auto shadow-lg">
               <img
-                src="/tahams-25-percent.jpg"
+                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${activePop?.filename}`}
                 alt="Pop-Up"
                 className="w-full rounded-md"
               />
@@ -77,12 +93,12 @@ export default function Home() {
                 ×
               </button>
             </div>
-          </Modal> */}
+          </Modal>
           {/* Main Content */}
           {/* {!isModalOpen && */}
             <MySwiper images={images}></MySwiper>
-          // {/* <TriangleLoader/> */}
-           {/* } */}
+            // {/* <TriangleLoader/> */}
+          {/* } */}
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
           <ShopByCategory></ShopByCategory>

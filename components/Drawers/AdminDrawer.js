@@ -17,7 +17,6 @@ const AdminDrawer = () => {
     setShowCount(uncheckedCount)
 
     const { showCount } = useContext(CountContext)
-    console.log(showCount && showCount, 'showCount');
 
     // Define your links here
     const navLinks = [
@@ -65,6 +64,13 @@ const AdminDrawer = () => {
             Name: 'Add',
             Tasks: [
                 { href: '/admin/Add/add-new-arrivals', label: 'Update New Arrivals' },
+                { href: '/admin/Add/add-new-pop-up', label: 'Add New Pop Up' },
+            ]
+        },
+        {
+            Name: 'Update',
+            Tasks: [
+                { href: '/admin/edit/update-pop-up', label: 'Update Pop Up' },
             ]
         },
         {
