@@ -95,7 +95,7 @@ export default function Home() {
           {/* Main Content */}
           {/* {!isModalOpen && */}
             <MySwiper images={images}></MySwiper>
-            // {/* <TriangleLoader/> */}
+             {/* <TriangleLoader/> */}
           {/* } */}
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
