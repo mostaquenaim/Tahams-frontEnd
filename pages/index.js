@@ -8,7 +8,6 @@ import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
 import TagManager from "react-gtm-module";
 import Head from 'next/head';
-import TriangleLoader from '/components/Loading/TriangleLoading';
 import useLoadActivePop from '/./Hooks/useLoadActivePop';
 
 export const CompanyContext = createContext(null); {/* unused */ }
@@ -54,7 +53,6 @@ export default function Home() {
       setIsModalOpen(false);
     }
   }, [activePop]);
-
 
   return (
     <div>
