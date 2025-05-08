@@ -35,6 +35,21 @@ const AdminDrawer = () => {
             ]
         },
         {
+            Name: 'Orders',
+            Tasks: [
+                {
+                    href: '/admin/Show/show-orders',
+                    label: (
+                        <Badge badgeContent={showCount} color="secondary" overlap="rectangular">
+                            Show Orders
+                        </Badge>
+                    ),
+                },
+                { href: '/admin/Show/show-requests', label: 'Cancel/Return req' },
+                { href: '/MyCart', label: 'Show Carts' },
+            ]
+        },
+        {
             Name: 'Category',
             Tasks: [
                 { href: '/admin/Add/add-category', label: 'Add Category of a series' },
@@ -71,21 +86,6 @@ const AdminDrawer = () => {
             Name: 'Update',
             Tasks: [
                 { href: '/admin/edit/update-pop-up', label: 'Update Pop Up' },
-            ]
-        },
-        {
-            Name: 'Orders',
-            Tasks: [
-                {
-                    href: '/admin/Show/show-orders',
-                    label: (
-                        <Badge badgeContent={showCount} color="secondary" overlap="rectangular">
-                            Show Orders
-                        </Badge>
-                    ),
-                },
-                { href: '/admin/Show/show-requests', label: 'Cancel/Return req' },
-                { href: '/MyCart', label: 'Show Carts' },
             ]
         },
         {

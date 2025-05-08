@@ -16,7 +16,6 @@ export default function Home() {
   const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const activePop = useLoadActivePop()
-  console.log(activePop);
 
   const tagManagerArgs = {
     gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
@@ -39,7 +38,6 @@ export default function Home() {
   useEffect(() => {
     if (!activePop || !activePop.isActive) return;
 
-    // console.log(localStorage.getItem(activePop.title) == 'true');
     const isPopupSeen = localStorage.getItem(activePop.title) == 'true';
     const now = new Date();
 

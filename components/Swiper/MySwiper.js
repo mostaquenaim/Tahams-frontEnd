@@ -14,10 +14,6 @@ const MySwiper = ({ images=[] }) => {
         <Swiper
             modules={[
                 Autoplay,
-                // Navigation, 
-                // Pagination, 
-                // Scrollbar, 
-                // A11y, 
                 EffectFade
             ]}
             spaceBetween={50}
@@ -28,18 +24,12 @@ const MySwiper = ({ images=[] }) => {
                 pauseOnMouseEnter: true,
                 disableOnInteraction: false, // Optional, but recommended
             }}
-
-        // navigation
-        // pagination={{ clickable: true }}
-        // scrollbar={{ draggable: true }}
-        // onSwiper={(swiper) => // console.log(swiper)}
-        // onSlideChange={() => // console.log('slide change')}
         >
             {
                 images.map((image, index) => (
                     <SwiperSlide key={index}>
                         <img
-                            className='w-full pt-16 lg:pt-32'
+                            className='w-full aspect-[5/2] object-cover pt-16 lg:pt-32'
                             src={image}
                             alt=""
                         />
