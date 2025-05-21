@@ -91,6 +91,7 @@ const Register = () => {
                         });
 
                         // console.log(result.data,'breaak',result.data.data);
+                        localStorage.setItem('access_token', response.data.access_token)
 
                         localStorage.setItem('userInfo', JSON.stringify(result.data.data));
 
@@ -101,7 +102,7 @@ const Register = () => {
                         toast.error(firebaseError.message);
                     }
                     finally {
-                        localStorageemoveItem('userData')
+                        localStorage.removeItem('userData')
                         console.log("Registration successful");
                     }
 
@@ -286,7 +287,7 @@ const Register = () => {
                     </form>
                 )}
             </div>
-          {/* <Footer /> */} 
+            {/* <Footer /> */}
         </>
     );
 };

@@ -196,7 +196,7 @@ const Product = ({ product }) => {
                 // Make a POST request to add the product to the wishlist
                 // console.log(customEmail, 'csrmm');
                 const res = await axiosPublic.post(`/admin/add-Wish`, {
-                    productId: product.id,
+                    productId: product?.id,
                     customerEmail: customEmail
                 });
                 // Add the product to the wishlist
@@ -296,7 +296,7 @@ const Product = ({ product }) => {
             try {
                 // Make a POST request to the backend endpoint for adding to the cart
                 const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: product.id,
+                    productId: product?.id,
                     category: selectedCategory,
                     size: selectedSize,
                     maleSize: selectedMaleSize,
@@ -425,13 +425,13 @@ const Product = ({ product }) => {
             try {
                 // Add product to the cart for the guest customer
                 const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: product.id,
+                    productId: product?.id,
                     category: selectedCategory,
                     size: selectedSize,
                     maleSize: selectedMaleSize,
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
-                    colorId: color.id,
+                    colorId: color?.id,
                     customerEmail: customEmail, // Use guest email
                 });
 
@@ -460,13 +460,13 @@ const Product = ({ product }) => {
             try {
                 // Add product to the cart for the logged-in user
                 const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: product.id,
+                    productId: product?.id,
                     category: selectedCategory,
                     size: selectedSize,
                     maleSize: selectedMaleSize,
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
-                    colorId: color.id,
+                    colorId: color?.id,
                     customerEmail: user?.email, // Use logged-in user's email
                 });
 

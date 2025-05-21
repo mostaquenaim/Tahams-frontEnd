@@ -51,7 +51,7 @@ const Login = () => {
                     console.log('Firebase user logged in:', userCredential.user);
                     toast.success('Logged in');
                     // console.log(JSON.stringify(response.data.data));
-
+                    localStorage.setItem('access_token', response.data.access_token)
                     localStorage.setItem('userInfo', JSON.stringify(response.data.data));
                     localStorage.setItem('email', response.data.data.email);
 
@@ -130,8 +130,11 @@ const Login = () => {
                 if (emailCheckResponse.data.status !== 404) {
                     console.log("Email already registered");
                     // You may want to sign out the user here
-                    const response = await axiosPublic.post('/admin/signin', { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS });
-                    // console.log(response.data);
+                    const response = await axiosPublic.post('/admin/signin',
+                        { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS }
+                    );
+                    // console.log(response.data, 'resp-dat');
+                    localStorage.setItem('access_token', response.data.access_token)         
                     localStorage.setItem('userInfo', JSON.stringify(response.data.data));
                     localStorage.setItem('email', userEmail);
                     setSuccess("Logged in")
