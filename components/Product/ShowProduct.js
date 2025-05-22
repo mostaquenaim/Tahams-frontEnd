@@ -109,7 +109,7 @@ const ShowProduct = ({ item }) => {
                     <img
                         src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.filename}`}
                         alt={item.name}
-                        className={`rounded-t-lg h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
+                        className={`rounded-t-lg absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     />
@@ -118,7 +118,7 @@ const ShowProduct = ({ item }) => {
                     <img
                         src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.productPictures[0]?.filename}`}
                         alt={item.name}
-                        className={`rounded-t-lg h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+                        className={`rounded-t-lg absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     />
