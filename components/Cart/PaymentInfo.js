@@ -23,13 +23,13 @@ const PaymentInfo = ({ history }) => {
 
     const paymentMethods = [
         { id: 1, name: 'Cash on Delivery', icon: '/cod.png', process: 'Payment upon delivery' },
-        { id: 2, name: 'BKash', icon: '/bkash.png', process: 'Merchant Number: 01314188605 (PAYMENT)\nReference: Your name and amount you pay' },
-        { id: 3, name: 'Nagad', icon: '/nagad.png', process: 'Merchant Number: 01602054102 (PAYMENT)\nReference: Your name and amount you pay' },
-        { id: 4, name: 'Rocket', icon: '/rocket.png', process: 'Number: 01602054102 (Send Money)\nReference: Your name and amount you pay' },
-        { id: 5, name: 'Visa Card', icon: '/visa.png', process: 'Please proceed with your Visa Card details.\n\nBank Name: The City Bank Ltd.\nBranch Name: Shyamoli\nA/C NAME: TAHAMS\nA/C NUMBER: 1233871270001' },
-        { id: 6, name: 'MasterCard', icon: '/mastercard.png', process: 'Please proceed with your MasterCard details.\n\nBank Name: The City Bank Ltd.\nBranch Name: Shyamoli\nA/C NAME: TAHAMS\nA/C NUMBER: 1233871270001' },
-        { id: 7, name: 'Amex Card', icon: '/amex.png', process: 'Please proceed with your AMEX Card details.\n\nBank Name: The City Bank Ltd.\nBranch Name: Shyamoli\nA/C NAME: TAHAMS\nA/C NUMBER: 1233871270001' },
-        { id: 8, name: 'Pick-Up Point', icon: '/cop.png', process: 'Pay when you pick up your item.' },
+        { id: 2, name: 'BKash', icon: '/bkash-bnw.png', process: 'Merchant Number: 01314188605 (PAYMENT)\nReference: Your name and amount you pay' },
+        { id: 3, name: 'Nagad', icon: '/nagad-bnw.png', process: 'Merchant Number: 01602054102 (PAYMENT)\nReference: Your name and amount you pay' },
+        { id: 4, name: 'Rocket', icon: '/rocket-bnw.png', process: 'Number: 01602054102 (Send Money)\nReference: Your name and amount you pay' },
+        // { id: 5, name: 'Visa Card', icon: '/visa.png', process: 'Please proceed with your Visa Card details.\n\nBank Name: The City Bank Ltd.\nBranch Name: Shyamoli\nA/C NAME: TAHAMS\nA/C NUMBER: 1233871270001' },
+        { id: 6, name: 'Bank Transfer', icon: '/bank-transfer.jpg', process: 'Please proceed with your Bank details.\n\nBank Name: The City Bank Ltd.\nBranch Name: Shyamoli\nA/C NAME: TAHAMS\nA/C NUMBER: 1233871270001' },
+        // { id: 7, name: 'Amex Card', icon: '/amex.png', process: 'Please proceed with your AMEX Card details.\n\nBank Name: The City Bank Ltd.\nBranch Name: Shyamoli\nA/C NAME: TAHAMS\nA/C NUMBER: 1233871270001' },
+        { id: 8, name: 'Pick-Up Point', icon: '/cop-bnw.png', process: 'Pay when you pick up your item.' },
     ];
 
     useEffect(() => {
@@ -39,7 +39,7 @@ const PaymentInfo = ({ history }) => {
     const handleConfirmPayment = async () => {
         // console.log(history);
 
-        if ([2, 3, 4, 5, 6, 7].includes(selectedPaymentMethod.id)) {
+        if ([2, 3, 4, 6].includes(selectedPaymentMethod.id)) {
             if (!paymentInfo.accountNumber || !paymentInfo.screenshot) {
                 toast.error('Please fill up all the fields.');
                 return;
@@ -170,7 +170,7 @@ const PaymentInfo = ({ history }) => {
                 </div>
 
                 {/* Additional fields based on the selected payment method */}
-                {[2, 3, 4, 5, 6, 7].includes(selectedPaymentMethod.id) && (
+                {[2, 3, 4, 6].includes(selectedPaymentMethod.id) && (
                     <div className="flex flex-col gap-4 mb-4">
                         <div className="flex flex-col">
                             <label htmlFor="accountNumber" className="font-semibold mb-2">Account Number:</label>
