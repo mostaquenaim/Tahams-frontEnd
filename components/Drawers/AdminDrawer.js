@@ -86,6 +86,7 @@ const AdminDrawer = () => {
             Name: 'Update',
             Tasks: [
                 { href: '/admin/edit/update-pop-up', label: 'Update Pop Up' },
+                { href: '/admin/edit/update-discount', label: 'Update Discount' },
             ]
         },
         {
