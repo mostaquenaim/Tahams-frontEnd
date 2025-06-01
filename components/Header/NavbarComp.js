@@ -95,8 +95,6 @@ const NavbarCompTwo = () => {
 
     const sideLinks = (
         <>
-            {/* {user &&
-                <> */}
             <Li>
                 <Link href='/dashboard'>
                     Dashboard
@@ -107,8 +105,6 @@ const NavbarCompTwo = () => {
                     My orders
                 </Link>
             </Li>
-            {/* </>
-            } */}
             <Li>
                 <Link href='/Contact'>
                     Contact Us
@@ -137,7 +133,6 @@ const NavbarCompTwo = () => {
 
     return (
         <>
-
             <div
                 data-theme='black'
                 className='relative'>

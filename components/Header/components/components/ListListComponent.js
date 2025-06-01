@@ -1,54 +1,69 @@
+'use client';
+import React, { useEffect, useState } from 'react';
 import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 
-import React, { useEffect, useState } from 'react';
-
 const ListListComponent = ({ sub, ListStyle }) => {
-    // console.log(sub,99);
     const axiosPublic = useAxiosPublic();
 
-    const [cats, setCats] = useState([])
+    const [cats, setCats] = useState([]);
+    const [printedCats, setPrintedCats] = useState([]);
+
+    const xtraClass = 'opacity-80 text-sm';
 
     useEffect(() => {
         axiosPublic.get(`/admin/view-product-sub-sub-category/${sub.id}`)
             .then(res => {
-                // console.log(res.data, 99);
-                setCats(res.data)
-            })
-    }, [])
+                const all = res.data || [];
+
+                const printed = all.filter(cat =>
+                    cat.name.toLowerCase().includes('printed')
+                );
+
+                const nonPrinted = all
+                    .filter(cat =>
+                        !cat.name.toLowerCase().includes('printed')
+                    )
+                    .sort((a, b) =>
+                        a.name.localeCompare(b.name)
+                    );
+
+                setPrintedCats(printed);
+                setCats(nonPrinted);
+            });
+    }, [axiosPublic, sub.id]);
+
+    const renderListItems = (items) =>
+        items.map(cat => (
+            <ListStyle
+                key={cat.id}
+                goto={`/products/${cat.id}`}
+                pageName={cat.name}
+                extraClass={xtraClass}
+            />
+        ));
 
     return (
-        <div className='space-y-3'>
-            {
-                sub.isEnablePremium ?
-                    <>
-                        <p
-                            className='text-sm underline'
-                        // 'bg-white text-black'
-                        >Elite</p>
-                        {
-                            cats.map((cat, index) => (
-                                cat.isPremium &&
-                                <ListStyle key={index} goto={`/products/${cat.id}`} pageName={cat.name} extraClass='opacity-80 text-sm' />
-                            ))
-                        }
+        <div className="space-y-3">
+            {sub.isEnablePremium ? (
+                <>
+                    <p className="text-sm underline">Elite</p>
+                    {renderListItems(cats.filter(cat => cat.isPremium))}
 
-                        <p
-                            className='text-sm underline'
-                        // 'bg-white text-black'
-                        >Regular</p>
-                        {
-                            cats.map((cat, index) => (
-                                !cat.isPremium &&
-                                <ListStyle key={index} goto={`/products/${cat.id}`} pageName={cat.name} extraClass='opacity-80 text-sm' />
-                            ))
-                        }
-                    </>
-                    :
-                    cats.map((cat, index) => (
-                        <ListStyle key={index} goto={`/products/${cat.id}`} pageName={cat.name} extraClass='opacity-80 text-sm' />
-                    ))
+                    <p className="text-sm underline">Regular</p>
+                    {renderListItems(cats.filter(cat => !cat.isPremium))}
+                </>
+            ) : (
+                <>
+                    {renderListItems(cats)}
 
-            }
+                    {printedCats.length > 0 && (
+                        <>
+                            <p className="text-sm underline">Printed</p>
+                            {renderListItems(printedCats)}
+                        </>
+                    )}
+                </>
+            )}
         </div>
     );
 };
