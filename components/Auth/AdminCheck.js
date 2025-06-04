@@ -4,13 +4,14 @@ import AdminDrawer from '../Drawers/AdminDrawer';
 import NavbarCompTwo from '../Header/NavbarComp';
 import Footer from '../Footer/Footer';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import Loading from '../Loading';
 
 const AdminCheck = ({ children }) => {
-    const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const [isAdmin, setIsAdmin] = useState(null); //
 
-    useEffect(() => {
+  useEffect(() => {
     const checkAdminStatus = async () => {
       try {
         const token = localStorage.getItem('access_token');
@@ -36,7 +37,9 @@ const AdminCheck = ({ children }) => {
   }, [user]);
 
   if (isAdmin === null) {
-    return <div className="text-center py-10">Checking admin access...</div>;
+    return <div className="text-center py-10">
+      <Loading />
+    </div>;
   }
 
   if (isAdmin) {

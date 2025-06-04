@@ -103,7 +103,7 @@ const ShowProduct = ({ item }) => {
             <div className="flex flex-col items-center pb-7 border-r-2 border-b-2 rounded-lg bg-base-100 shadow-md">
                 <div
                     onClick={handleProductClick}
-                    className="relative cursor-pointer h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] overflow-hidden rounded-t-lg"
+                    className="relative cursor-pointer h-72 w-56 md:h-[400px] md:w-80 lg:w-72 lg:h-[360px] xl:w-72 xl:h-[360px] overflow-hidden rounded-t-lg flex justify-center items-center"
                 >
                     {/* Main Image (Fades out on hover) */}
                     <img
