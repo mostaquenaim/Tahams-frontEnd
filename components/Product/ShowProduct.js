@@ -126,7 +126,6 @@ const ShowProduct = ({ item }) => {
                     {/* Out of Stock Badge */}
                     {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-48" />}
                 </div>
-
                 <div className="flex flex-col items-center text-center justify-center gap-3">
                     <h2 className="card-title">{item.name}</h2>
                     <div className="flex gap-3">

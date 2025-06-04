@@ -10,6 +10,7 @@ import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import ImageZoom from '../../draft/image-zoom-inner';
 import { getGuestCustomerInfo } from '../../../utils/guestCustomer';
 import Head from 'next/head';
+import Loading from '/components/Loading';
 
 const Product = ({ product }) => {
     // console.log('product-test', product);
@@ -19,7 +20,7 @@ const Product = ({ product }) => {
     const [selectedMaleSize, setSelectedMaleSize] = useState('');
     const [selectedFemaleSize, setSelectedFemaleSize] = useState('');
     const [selectedCategory, setSelectedCategory] = useState();
-    const [selectedImage, setSelectedImage] = useState(product && product.filename)
+    const [selectedImage, setSelectedImage] = useState('')
     const [quantity, setQuantity] = useState(1);
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const { user } = useContext(AuthContext)
@@ -32,17 +33,6 @@ const Product = ({ product }) => {
     const viewCount = async () => {
         // console.log('line 32');
         const customerEmail = user?.email || getGuestCustomerInfo()?.email;
-
-        // let customerEmail = ''
-        // if (!user) {
-        //     const guestCustomerInfo = getGuestCustomerInfo();
-        //     customerEmail = guestCustomerInfo.email
-        // }
-        // else {
-        //     customerEmail = user?.email
-        // }
-
-        console.log("Event: view_item");
 
         const item = {
             item_id: product.id,
@@ -59,10 +49,6 @@ const Product = ({ product }) => {
             user_email: customerEmail
         };
 
-        // Object.entries(item).forEach(([key, value]) => {
-        //     console.log(`${key}:`, value);
-        // });
-
         // Pushing data to dataLayer
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
@@ -78,6 +64,10 @@ const Product = ({ product }) => {
             console.error("Error updating view count:", error);
         }
     };
+
+    useEffect(() => {
+        setSelectedImage(product && product.filename)
+    }, [product])
 
     useEffect(() => {
         viewCount()
@@ -112,7 +102,6 @@ const Product = ({ product }) => {
     }, [])
 
     useEffect(() => {
-        // console.log(product,userInfo);
         // Scroll to top of the page
         window.scrollTo(0, 100);
 
@@ -497,12 +486,12 @@ const Product = ({ product }) => {
                 <div className="flex flex-col md:flex-row">
                     {/* Product Image */}
                     <div className="md:w-1/2">
-                        {/* <img
-                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
-                            alt={name}
-                            className="md:h-96 md:w-96 lg:h-[600px] lg:w-[600px] max-h-screen rounded mb-5 relative"
-                        /> */}
-                        <ImageZoom photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`} />
+                        {
+                            selectedImage ?
+                                <ImageZoom photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`} />
+                                :
+                                <Loading />
+                        }
                         <div className='flex gap-4'>
                             <input
                                 type="radio"

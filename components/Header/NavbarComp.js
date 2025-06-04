@@ -17,7 +17,8 @@ const NavbarCompTwo = () => {
     const { user, logOut } = useContext(AuthContext)
     const [searchInput, setSearchInput] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-
+    const [isLoading, setIsLoading] = useState(false)
+    const [searchedProducts, setSearchedProducts] = useState([])
 
     useEffect(() => {
         axiosPublic.get('/admin/view-product-categories')
@@ -128,7 +129,28 @@ const NavbarCompTwo = () => {
     const router = useRouter()
 
     const handleSearch = () => {
-        router.push(`search-product?search=${searchInput}`)
+        router.push(`/search-product?search=${searchInput}`)
+        setSearchInput('')
+    };
+
+    const handleSearchInput = async (e) => {
+        const query = e.target.value;
+        setSearchInput(query);
+        setIsLoading(true);
+
+        try {
+            const response = await axiosPublic.get(`admin/search-products?q=${query}`);
+            setSearchedProducts(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResultClick = (id) => {
+        setSearchInput('')
+        router.push(`/products/details/${id}`);
     };
 
     return (
@@ -142,21 +164,37 @@ const NavbarCompTwo = () => {
                         {/* search  */}
                         <div className={`w-1/3 text-center z-40`}>
                             <div className="join w-full px-20 py-5">
-                                <div className='w-full'>
-                                    <div>
-                                        <input
-                                            className="input input-bordered join-item w-full"
-                                            placeholder="Search"
-                                            value={searchInput}
-                                            onChange={(e) => setSearchInput(e.target.value)}
-                                        />
-                                    </div>
+                                <div className="w-full relative">
+                                    <input
+                                        className="input input-bordered join-item w-full"
+                                        placeholder="Search"
+                                        value={searchInput}
+                                        onChange={(e) => handleSearchInput(e)}
+                                    />
+
+                                    {/* Search Results Dropdown with Image */}
+                                    {searchInput && searchedProducts.length > 0 && (
+                                        <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
+                                            {searchedProducts.map((product) => (
+                                                <div
+                                                    key={product.id}
+                                                    onClick={() => handleResultClick(product.id)}
+                                                    className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
+                                                >
+                                                    <img
+                                                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`} // make sure this is the correct path
+                                                        alt={product.name}
+                                                        className="w-12 h-12 object-cover rounded"
+                                                    />
+                                                    <span>{product.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
+
                                 <div className="indicator">
-                                    <button
-                                        className="btn join-item"
-                                        onClick={() => handleSearch()}
-                                    >
+                                    <button className="btn join-item" onClick={() => handleSearch()}>
                                         Search
                                     </button>
                                 </div>

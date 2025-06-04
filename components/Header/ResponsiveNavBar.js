@@ -2,20 +2,44 @@ import Link from 'next/link';
 import { AiOutlineHeart, AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
 import LeftDrawer from '../Drawers/LeftDrawer';
 import CustomerDrawer from '../Drawers/CustomerDrawer';
-import { useContext, useState } from 'react';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
+import useAxiosPublic from '/Hooks/useAxiosPublic';
 
 const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, genders, sideLinks }) => {
     const navEndBtnClass = "btn btn-square btn-sm btn-ghost text-xl"
     const [searchInput, setSearchInput] = useState('')
-
+    const [isLoading, setIsLoading] = useState(false)
+    const [searchedProducts, setSearchedProducts] = useState([])
+    const axiosPublic = useAxiosPublic()
     const router = useRouter()
 
     const handleSearch = () => {
-        router.push(`search-product?search=${searchInput}`)
+        fnc(!btn)
+        router.push(`/search-product?search=${searchInput}`)
     };
-    
+
+    const handleSearchInput = async (e) => {
+        const query = e.target.value;
+        setSearchInput(query);
+        setIsLoading(true);
+
+        try {
+            const response = await axiosPublic.get(`admin/search-products?q=${query}`);
+            setSearchedProducts(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResultClick = (id) => {
+        setSearchInput('')
+        fnc(!btn)
+        router.push(`/products/details/${id}`);
+    };
+
     return (
         <div>
             <div
@@ -80,23 +104,42 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, gend
                     </ul>
                 </div>
             </div>
+            {/* search  */}
             <div className={btn ? `w-full text-center` : `hidden`}>
                 <div className="join w-full px-10 py-5">
-                    <div className='w-full'>
-                        <div>
-                            <input
-                                className="input input-bordered join-item w-full"
-                                placeholder="Search"
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                            />
-                        </div>
+                    <div className='w-full relative'>
+                        <input
+                            className="input input-bordered join-item w-full"
+                            placeholder="Search"
+                            value={searchInput}
+                            onChange={(e) => handleSearchInput(e)}
+                        />
+                        {/* Search Results Dropdown with Image */}
+                        {searchInput && searchedProducts.length > 0 && (
+                            <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
+                                {searchedProducts.map((product) => (
+                                    <div
+                                        key={product.id}
+                                        onClick={() => handleResultClick(product.id)}
+                                        className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
+                                    >
+                                        <img
+                                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`} // make sure this is the correct path
+                                            alt={product.name}
+                                            className="w-12 h-12 object-cover rounded"
+                                        />
+                                        <span>{product.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
+
+                    {/* search  */}
                     <div className="indicator">
                         <button
                             className="btn join-item"
-                            onClick={() => handleSearch()}
-                        >
+                            onClick={() => handleSearch()}>
                             Search
                         </button>
                     </div>
