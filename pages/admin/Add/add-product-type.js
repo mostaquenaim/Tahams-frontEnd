@@ -15,6 +15,13 @@ const AddProductType = () => {
 
     const axiosPublic = useAxiosPublic()
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     //load categories
     const loadCategories = async () => {
         try {
@@ -51,12 +58,18 @@ const AddProductType = () => {
         }
 
         const formData = {
-            name : categoryName,
-            categoryId : selectedCat,
+            name: categoryName,
+            categoryId: selectedCat,
         };
 
         try {
-            const response = await axiosPublic.post('/admin/add-sub-subCategory', formData);
+            const response = await axiosPublic.post('/admin/add-sub-subCategory', formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             setCategoryName('');
             setSelectedCat('');
             reset();
@@ -70,9 +83,9 @@ const AddProductType = () => {
 
     return (
         <>
-        <Head>
-            <title>Add Product Type - Admin</title>
-        </Head>
+            <Head>
+                <title>Add Product Type - Admin</title>
+            </Head>
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

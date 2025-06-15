@@ -15,6 +15,13 @@ const UpdatePopUp = () => {
         return activePopup ? activePopup.id : null;
     });
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     // Update state if popUps data changes
     useEffect(() => {
         const activePopup = popUps.find(popup => popup.isActive);
@@ -26,12 +33,17 @@ const UpdatePopUp = () => {
     };
 
     const handleSubmit = async () => {
+        console.log('token');
+        // console.log(token);
         try {
-            const res = await axiosPublic.put(`/admin/update-active-pop-up/${selectedIndex}`)
-            // console.log(res.data);
+            const res = await axiosPublic.put(`/admin/update-active-pop-up/${selectedIndex}`,{},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
             // Here you would call your API to update which popup is active
-            // Example:
-            // await updateActivePopup(activePopupId);
             console.log(`Updated active popup to ID: ${activePopupId}`);
             alert('Active popup updated successfully!');
         } catch (error) {

@@ -40,6 +40,13 @@ export default function AddProduct() {
     const fabrics = useLoadFabrics();
     const sizes = useLoadSizes();
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const validateFile = (value) => {
         // console.log('value', value);
         if (value.length > 0) {
@@ -171,7 +178,8 @@ export default function AddProduct() {
             const response = await axiosPublic.post("/admin/add-product",
                 formData, {
                 headers: {
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`,
                 }
             });
 
@@ -225,9 +233,9 @@ export default function AddProduct() {
 
     return (
         <>
-        <Head>
-            <title>Add Product - Admin</title>
-        </Head>
+            <Head>
+                <title>Add Product - Admin</title>
+            </Head>
             {/* <AdminDrawer></AdminDrawer> */}
             <div className="container mx-auto p-4 flex justify-center items-center">
                 <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">

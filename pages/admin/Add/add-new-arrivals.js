@@ -24,6 +24,13 @@ const AddNewArrivals = ({ previousArrivals }) => {
     // State to track edit mode for subSubCategory selection
     const [isEditing, setIsEditing] = useState(Array(formData.length).fill(false));
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const handleChange = (index, e) => {
         const { name, value, files } = e.target;
         setFormData((prevState) => {
@@ -50,7 +57,10 @@ const AddNewArrivals = ({ previousArrivals }) => {
 
         try {
             const response = await axiosPublic.post(`admin/add-new-arrivals`, formDataToSend, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
+                }
             });
             if (response.status >= 200 && response.status <= 205) {
                 toast.success("New Arrival Uploaded");
@@ -62,9 +72,9 @@ const AddNewArrivals = ({ previousArrivals }) => {
 
     return (
         <div className="p-4 bg-gray-100 min-h-screen flex items-center justify-center">
-        <Head>
-            <title>Add New Arrival - Admin</title>
-        </Head>
+            <Head>
+                <title>Add New Arrival - Admin</title>
+            </Head>
             <div className="bg-white p-6 rounded-lg shadow-md max-w-3xl w-full">
                 <h2 className="text-xl font-semibold mb-4 text-center">Add New Arrivals</h2>
                 {formData.map((item, index) => (

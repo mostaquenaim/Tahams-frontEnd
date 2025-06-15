@@ -25,6 +25,13 @@ export default function ChangeCategoryImage({ item }) {
     const [email, setEmail] = useState('');
     const [file, setFile] = useState(null); // State to hold the selected file
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
@@ -36,7 +43,10 @@ export default function ChangeCategoryImage({ item }) {
             formData.append('filename', file); // Append the selected file to the FormData
 
             await axiosPublic.post(`/admin/changeCategoryImage/${item.id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }, // Set proper headers for file upload
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
+                }, // Set proper headers for file upload
             });
 
             setSuccess('Successfully uploaded file.');

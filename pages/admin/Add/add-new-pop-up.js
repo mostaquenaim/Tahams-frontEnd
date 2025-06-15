@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import useAxiosPublic from '/./Hooks/useAxiosPublic';
 
@@ -13,6 +13,13 @@ const AddNewPopUp = () => {
   });
 
   const axiosPublic = useAxiosPublic()
+
+  const [token, setToken] = useState('')
+
+  useEffect(() => {
+    const at = localStorage.getItem('access_token');
+    setToken(at)
+  }, [])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -29,6 +36,7 @@ const AddNewPopUp = () => {
   };
 
   const handleSubmit = async (e) => {
+    console.log('token in');
     e.preventDefault();
 
     // Validate title (no spaces allowed)
@@ -45,9 +53,13 @@ const AddNewPopUp = () => {
     data.append('endDate', formData.endDate || '');
     data.append('isActive', formData.isActive);
 
+    console.log('token is=',token);
     try {
       const res = await axiosPublic.post('/admin/add-new-pop-up', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       alert('Pop-up created successfully!');

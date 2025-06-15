@@ -22,6 +22,13 @@ const Index = () => {
 
     const [unpublishedProducts, refetch] = useLoadProducts();
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const openPublishModal = (product) => {
         setSelectedProduct(product);
         setIsPublishModalOpen(true);
@@ -45,7 +52,15 @@ const Index = () => {
     const handlePublish = async () => {
         if (selectedProduct) {
             try {
-                await axiosPublic.put(`/admin/publish-product/${selectedProduct.id}`, { publishable: true });
+                await axiosPublic.put(
+                    `/admin/publish-product/${selectedProduct.id}`,
+                    { publishable: true }, // <-- this is the request body
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 refetch();
                 closePublishModal();
             } catch (error) {
@@ -57,7 +72,13 @@ const Index = () => {
     const handleDelete = async () => {
         if (selectedProduct) {
             try {
-                await axiosPublic.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`);
+                await axiosPublic.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 refetch();
                 closeDeleteModal();
             } catch (error) {

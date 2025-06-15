@@ -82,6 +82,13 @@ const EditProduct = ({ product }) => {
 
     }, [product.pscs]); // Add product.pscs as a dependency to re-run the effect when it changes
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     // category change 
     const handleCategoryChange = (event, catID) => {
         const isChecked = event.target.checked
@@ -202,6 +209,7 @@ const EditProduct = ({ product }) => {
             const response = await axiosPublic.put(`/admin/update-product/${product.id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
                 },
             });
 

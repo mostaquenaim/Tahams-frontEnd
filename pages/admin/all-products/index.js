@@ -22,6 +22,13 @@ const ShowProducts = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const filteredProducts = useMemo(() => {
         return products.filter(product =>
             product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -54,7 +61,13 @@ const ShowProducts = () => {
     const handleDelete = async () => {
         if (selectedProduct) {
             try {
-                await axiosPublic.delete(`/admin/delete-product/${selectedProduct}?email=${user?.email}`);
+                await axiosPublic.delete(`/admin/delete-product/${selectedProduct}?email=${user?.email}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 refetch();
                 closeDeleteModal();
             } catch (error) {

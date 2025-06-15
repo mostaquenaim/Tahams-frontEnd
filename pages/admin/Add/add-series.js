@@ -7,6 +7,13 @@ const AddCategory = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
@@ -17,6 +24,7 @@ const AddCategory = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ name: categoryName }),
             });
@@ -41,9 +49,9 @@ const AddCategory = () => {
 
     return (
         <>
-        <Head>
-            <title>Add Series - Admin</title>
-        </Head>
+            <Head>
+                <title>Add Series - Admin</title>
+            </Head>
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

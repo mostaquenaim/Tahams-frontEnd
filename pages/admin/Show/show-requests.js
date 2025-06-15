@@ -15,6 +15,13 @@ const ShowRequests = () => {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const router = useRouter()
 
+    const [token, setToken] = useState('')
+
+    useEffect(() => {
+        const at = localStorage.getItem('access_token');
+        setToken(at)
+    }, [])
+
     const handleApproveClick = (request) => {
         setSelectedRequest(request);
         setIsModalOpen(true);
@@ -24,7 +31,13 @@ const ShowRequests = () => {
         try {
             const response = await axios.patch(`${process.env.NEXT_PUBLIC_API}/admin/approve-request`, {
                 id: parseInt(selectedRequest.id),
-            });
+            },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
             console.log(response.data, 'reqres');
 
