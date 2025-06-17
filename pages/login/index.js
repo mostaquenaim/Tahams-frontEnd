@@ -28,11 +28,19 @@ const Login = () => {
     const axiosPublic = useAxiosPublic();
 
     useEffect(() => {
-        user && (
-            console.log(user),
-            router.push('/')
-        )
-    }, [user])
+        if (user) {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const isAdmin = userInfo?.role === 'admin'; // Adjust this field name if needed
+            console.log('isAdmin',isAdmin);
+
+            if (isAdmin) {
+                router.push('/admin');
+            }
+            else {
+                router.push('/');
+            }
+        }
+    }, [user]);
 
     const onsubmit = async (data) => {
         // console.log(data);
@@ -54,7 +62,6 @@ const Login = () => {
                     localStorage.setItem('access_token', response.data.access_token)
                     localStorage.setItem('userInfo', JSON.stringify(response.data.data));
                     localStorage.setItem('email', response.data.data.email);
-
                 } catch (firebaseError) {
                     console.error('Firebase error:', firebaseError.message);
                     setError(firebaseError.message);
@@ -62,14 +69,12 @@ const Login = () => {
                 }
 
                 console.log("Registration successful");
-                // router.push('/');
             } else {
                 // console.log(response);
                 toast.error(response.data.error.message || "Invalid credentials");
             }
         } catch (error) {
             console.error("Error: " + error.message);
-
             // Differentiating between different error types
             if (error.response) {
                 // Server responded with a status other than 200 range
@@ -134,7 +139,7 @@ const Login = () => {
                         { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS }
                     );
                     // console.log(response.data, 'resp-dat');
-                    localStorage.setItem('access_token', response.data.access_token)         
+                    localStorage.setItem('access_token', response.data.access_token)
                     localStorage.setItem('userInfo', JSON.stringify(response.data.data));
                     localStorage.setItem('email', userEmail);
                     setSuccess("Logged in")
