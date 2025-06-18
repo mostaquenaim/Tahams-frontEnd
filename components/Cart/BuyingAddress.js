@@ -26,6 +26,10 @@ const BuyingAddress = ({ data }) => {
     const [selectedRegion, setSelectedRegion] = useState('')
     const [selectedCity, setSelectedCity] = useState('')
 
+    const isWednesday = () => {
+        return new Date().getDay() === 3; // Sunday = 0, Monday = 1, ..., Wednesday = 3
+    };
+
     const getUserByEmail = async () => {
         try {
             // Get email from AuthContext or guestCustomerInfo in localStorage
@@ -58,40 +62,45 @@ const BuyingAddress = ({ data }) => {
     }, []);
 
     const handleSelectRegion = async (e) => {
-        setSelectedRegion(e.target.value);
-        if (e.target.value === 'Dhaka') {
+        const selected = e.target.value;
+        setSelectedRegion(selected);
+
+        if (selected === 'Dhaka') {
             try {
                 const res = await axios.get(`/Dhaka-inside-delivery.json`);
                 setCities(res.data);
-                localStorage.setItem('deliveryFee', '80');  // Default fee for others
-                setDeliveryFee(80)
+
+                const fee = isWednesday() ? 0 : 80;
+                localStorage.setItem('deliveryFee', fee.toString());
+                setDeliveryFee(fee);
             } catch (error) {
                 console.error('Error fetching cities:', error);
             }
         } else {
             setCities([]);
-            // setOutSideCities([])
-            localStorage.setItem('deliveryFee', '150');  // Fee for regions outside Dhaka
-            setDeliveryFee(150)
+            const fee = isWednesday() ? 0 : 150;
+            localStorage.setItem('deliveryFee', fee.toString());
+            setDeliveryFee(fee);
         }
     };
 
     const handleSelectCity = async (event) => {
         setSelectedCity(event.target.value)
         if (event.target.value === 'others') {
-            setSelectedCity('')
+            setSelectedCity('');
             try {
                 if (!outSideCities) {
-                    setOutSideCities(true)
-                    localStorage.setItem('deliveryFee', '150')
-                    setDeliveryFee(150)
+                    setOutSideCities(true);
+                    const fee = isWednesday() ? 0 : 150;
+                    localStorage.setItem('deliveryFee', fee.toString());
+                    setDeliveryFee(fee);
                     const res = await axios.get(`/Dhaka-outside-delivery.json`);
                     setCities(res.data);
-                }
-                else {
-                    setOutSideCities(false)
-                    localStorage.setItem('deliveryFee', '80')
-                    setDeliveryFee(80)
+                } else {
+                    setOutSideCities(false);
+                    const fee = isWednesday() ? 0 : 80;
+                    localStorage.setItem('deliveryFee', fee.toString());
+                    setDeliveryFee(fee);
                     const res = await axios.get(`/Dhaka-inside-delivery.json`);
                     setCities(res.data);
                 }
@@ -99,14 +108,14 @@ const BuyingAddress = ({ data }) => {
                 console.error('Error fetching zones:', error);
             }
         } else {
-            // setOutSideCities([])
             if (event.target.value === 'Dhaka - South' || event.target.value === 'Dhaka - North') {
-                // console.log('in');
-                localStorage.setItem('deliveryFee', '80')
-                setDeliveryFee(80)
+                const fee = isWednesday() ? 0 : 80;
+                localStorage.setItem('deliveryFee', fee.toString());
+                setDeliveryFee(fee);
             } else if (event.target.value && !outSideCities) {
-                localStorage.setItem('deliveryFee', '120');
-                setDeliveryFee(120)
+                const fee = isWednesday() ? 0 : 120;
+                localStorage.setItem('deliveryFee', fee.toString());
+                setDeliveryFee(fee);
             }
         }
     };
@@ -180,7 +189,7 @@ const BuyingAddress = ({ data }) => {
                 return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
             }, 0);
 
-            const newTotalPrice = sum ;
+            const newTotalPrice = sum;
             // const newTotalPrice = sum + deliveryFee;
 
             const res = await axiosPublic.post(`/admin/add-to-buy`, formData);

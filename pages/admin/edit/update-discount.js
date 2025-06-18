@@ -10,6 +10,7 @@ export default function UpdateDiscount() {
     const axiosPublic = useAxiosPublic();
     const [selectedCats, setSelectedCats] = useState([]);
     const [subSubCategories] = useLoadSubSubCategories();
+    const [searchTerm, setSearchTerm] = useState("");
 
     const {
         register,
@@ -25,6 +26,18 @@ export default function UpdateDiscount() {
             setSelectedCats(prev => [...prev, catID]);
         } else {
             setSelectedCats(prev => prev.filter(id => id !== catID));
+        }
+    };
+
+    const handleSelectAll = (event) => {
+        const isChecked = event.target.checked;
+        const filteredIds = filteredCategories.map(cat => cat.id);
+        if (isChecked) {
+            const newSelection = [...new Set([...selectedCats, ...filteredIds])];
+            setSelectedCats(newSelection);
+        } else {
+            const remaining = selectedCats.filter(id => !filteredIds.includes(id));
+            setSelectedCats(remaining);
         }
     };
 
@@ -50,6 +63,14 @@ export default function UpdateDiscount() {
         }
     };
 
+    const filteredCategories = subSubCategories.filter(cat =>
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+        || cat.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+        || cat.category.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const allFilteredSelected = filteredCategories.every(cat => selectedCats.includes(cat.id));
+
     return (
         <>
             <Head>
@@ -70,9 +91,28 @@ export default function UpdateDiscount() {
 
                         {/* Categories */}
                         <div className="mt-4">
-                            <label className="text-sm font-semibold mb-2 block">Select Categories:</label>
+                            <label className="text-sm font-semibold mb-2 block">Search Categories:</label>
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full p-2 mb-2 border rounded"
+                            />
+
+                            <div className="flex items-center mb-2">
+                                <input
+                                    type="checkbox"
+                                    id="select_all"
+                                    onChange={handleSelectAll}
+                                    checked={filteredCategories.length > 0 && allFilteredSelected}
+                                    className="h-4 w-4 text-blue-500"
+                                />
+                                <label htmlFor="select_all" className="ml-2 text-sm font-medium">Select All</label>
+                            </div>
+
                             <div className="space-y-1 max-h-60 overflow-y-auto border rounded p-2">
-                                {subSubCategories.map((category) => (
+                                {filteredCategories.map((category) => (
                                     <div key={category.id} className="flex items-center">
                                         <input
                                             type="checkbox"
@@ -86,6 +126,9 @@ export default function UpdateDiscount() {
                                         </label>
                                     </div>
                                 ))}
+                                {filteredCategories.length === 0 && (
+                                    <div className="text-gray-500 text-sm italic">No categories found</div>
+                                )}
                             </div>
                         </div>
 
