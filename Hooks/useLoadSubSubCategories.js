@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import useAxiosPublic from '../Hooks/useAxiosPublic';
 import { useQuery } from '@tanstack/react-query';
 

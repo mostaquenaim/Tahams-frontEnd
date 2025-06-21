@@ -91,7 +91,7 @@ const CancelOrReturn = () => {
             <tr key={idx} className="border-b">
                 <td className="py-2 px-4">{item.product.name}</td>
                 <td className="py-2 px-4">
-                    {item.category.name}, {item.category.category.name}, {item.category.category.category.name}
+                    {item.category.name}, {item.category.category.name}, {item?.category?.category?.category?.name}
                 </td>
                 <td className="py-2 px-4">
                     <input

@@ -201,7 +201,7 @@ const MyCart = () => {
                     />
                     <div className="flex flex-col">
                       <span className="font-semibold">{item.ProductName}</span>
-                      <span className="text-gray-500 text-sm">{item.category.category.category.name}</span>
+                      <span className="text-gray-500 text-sm">{item?.category?.category?.category?.name}</span>
                       <span className="text-gray-500 text-sm">Size: {item.size}</span>
                     </div>
                   </div>

@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "categoryName": "Kids",
+    "filename": "category-wise-images/ek-kosai.jpg"
+  },
+  {
+    "id": 2,
+    "categoryName": "Toddler",
+    "filename": "category-wise-images/eid-customize-happy-goru-looking.jpg"
+  },
+  {
+    "id": 3,
+    "categoryName": "Adults",
+    "filename": "category-wise-images/eid-customize-goru-hello.jpg"
+  },
+  {
+    "id": 4,
+    "categoryName": "Customize",
+    "filename": "Customized-min.png"
+  },
+  {
+    "id": 5,
+    "categoryName": "Bigboss",
+    "filename": "category-wise-images/eid-customize-bhai-jitsen.jpg"
+  },
+  {
+    "id": 6,
+    "categoryName": "Couples",
+    "filename": "category-wise-images/eid-customize-pookie.jpg"
+  },
+  {
+    "id": 7,
+    "categoryName": "Gift",
+    "filename": "category-wise-images/eid-customize-goru-mubarak.jpg"
+  }
+]

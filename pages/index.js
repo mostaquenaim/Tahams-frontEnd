@@ -57,7 +57,7 @@ export default function Home() {
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           <Head>
-            <title>Homepage - Tahams </title>
+            <title>Tahams - THE UNIQUE WAY OF LIFE </title>
           </Head>
 
           {/* Modal */}

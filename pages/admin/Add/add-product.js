@@ -1,6 +1,5 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
-import { useRouter } from 'next/router'
 import { TagsInput } from "react-tag-input-component";
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import { useForm } from 'react-hook-form';
