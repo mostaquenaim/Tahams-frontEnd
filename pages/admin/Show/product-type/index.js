@@ -3,6 +3,8 @@ import useLoadSubSubCategories from "../../../../Hooks/useLoadSubSubCategories";
 import useAxiosPublic from "../../../../Hooks/useAxiosPublic";
 import Loading from "../../../../components/Loading";
 import Head from "next/head";
+import { FaTrash } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const ProductType = () => {
     const [subSubCategories, refetch, isPending] = useLoadSubSubCategories();
@@ -11,6 +13,8 @@ const ProductType = () => {
     const [editItem, setEditItem] = useState(-1);
     const [isShowImage, setIsShowImage] = useState(false);
     const [imageToShow, setImageToShow] = useState('');
+    const [editNameItemId, setEditNameItemId] = useState(-1);
+    const [nameEdits, setNameEdits] = useState({});
 
     const axiosPublic = useAxiosPublic();
 
@@ -56,6 +60,78 @@ const ProductType = () => {
         setImageToShow('');
     };
 
+    const handleDeleteCProductType = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const token = localStorage.getItem('access_token');
+
+                const response = await axiosPublic.delete(`/admin/delete-product-type/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                await Swal.fire(
+                    'Deleted!',
+                    'Product type has been deleted.',
+                    'success'
+                );
+
+                refetch(); // Refresh the data after deletion
+            } catch (error) {
+                console.error('Deleting failed:', error.message);
+                Swal.fire(
+                    'Failed!',
+                    'An error occurred while deleting.',
+                    'error'
+                );
+            }
+        }
+    };
+
+    const handleChangeProductName = (id) => {
+        setEditNameItemId(id);
+        const currentItem = subSubCategories.find((item) => item.id === id);
+        setNameEdits((prev) => ({ ...prev, [id]: currentItem.name }));
+    };
+
+    const handleSaveProductName = async (id) => {
+        try {
+            const newName = nameEdits[id];
+
+            if (!newName.trim()) {
+                return Swal.fire('Validation Error', 'Product name cannot be empty.', 'warning');
+            }
+
+            console.log('come here');
+            const res = await axiosPublic.put(`/admin/update-product-type-name/${id}`, {
+                name: newName,
+            });
+
+            await Swal.fire('Success!', 'Product name updated successfully.', 'success');
+
+            setEditNameItemId(-1);
+            refetch();
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'Failed to update name.', 'error');
+        }
+    };
+
+    const handleCancelNameEdit = () => {
+        setEditNameItemId(-1);
+    };
+
     return (
         <div className="container mx-auto pt-20 lg:pt-40">
             <Head>
@@ -70,6 +146,7 @@ const ProductType = () => {
                             <th className="py-2 px-4 border-b">Category Name</th>
                             <th className="py-2 px-4 border-b">Size Chart</th>
                             <th className="py-2 px-4 border-b">Parent Categories</th>
+                            <th className="py-2 px-4 border-b">Action</th>
                         </tr>
                     </thead>
                     {
@@ -80,7 +157,36 @@ const ProductType = () => {
                                 {subSubCategories.map((item) => (
                                     <tr key={item.id} className="hover:bg-gray-100">
                                         <td className="py-2 px-4 border-b text-center">{item.id}</td>
-                                        <td className="py-2 px-4 border-b text-center">{item.name}</td>
+                                        {/* item name update / edit  */}
+                                        <td className="py-2 px-4 border-b text-center">
+                                            {editNameItemId === item.id ? (
+                                                <div className="flex items-center gap-2 justify-center">
+                                                    <input
+                                                        type="text"
+                                                        value={nameEdits[item.id] || ''}
+                                                        onChange={(e) =>
+                                                            setNameEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
+                                                        }
+                                                        className="input input-sm input-bordered w-32"
+                                                    />
+                                                    <button onClick={() => handleSaveProductName(item.id)} className="btn btn-xs btn-success">Save</button>
+                                                    <button onClick={handleCancelNameEdit} className="btn btn-xs btn-warning">Cancel</button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 justify-center">
+                                                    <input
+                                                        type="text"
+                                                        value={item.name}
+                                                        disabled
+                                                        className="input input-sm input-bordered w-32"
+                                                    />
+                                                    <button onClick={() => handleChangeProductName(item.id)} className="btn btn-xs btn-primary">
+                                                        Change
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                        {/* size chart  */}
                                         <td className="py-2 px-4 border-b text-center">
                                             {item.filename ? (
                                                 <button onClick={() => handleShowImage(item.filename)}>
@@ -112,6 +218,11 @@ const ProductType = () => {
                                             )}
                                         </td>
                                         <td className="py-2 px-4 border-b text-center">{item.category.name}, {item.category.category.name}</td>
+                                        <td>
+                                            <button onClick={() => handleDeleteCProductType(item.id)} className="btn btn-sm btn-error">
+                                                Delete <FaTrash></FaTrash>
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -64,6 +64,12 @@ const AdminDrawer = () => {
             ]
         },
         {
+            Name: 'Deletion',
+            Tasks: [
+                { href: '/admin/delete/delete-product-type', label: 'Delete product type' },
+            ]
+        },
+        {
             Name: 'Color',
             Tasks: [
                 { href: '/admin/Add/add-color', label: 'Add Color' },
