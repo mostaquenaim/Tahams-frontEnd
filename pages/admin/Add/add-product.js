@@ -150,7 +150,7 @@ export default function AddProduct() {
         })
 
         // console.log('selectedCats',selectedCats)
-        console.log('selectedColor', selectedColor)
+        // console.log('selectedColor', selectedColor)
         // console.log('catsInfo', JSON.stringify(catsInfo))
         // console.log('selectedCatsInfo', JSON.stringify(selectedCatsInfo) );
 

@@ -12,7 +12,6 @@ const SelectionFormComp = ({
     extraItem = false,
     valueIsId = false,
 }) => {
-    console.log(values, 'item');
     const [isOpen, setIsOpen] = useState(false);
 
     const handleSelect = (item) => {

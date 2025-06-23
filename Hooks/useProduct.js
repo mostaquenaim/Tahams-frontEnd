@@ -4,7 +4,6 @@ import { useContext } from "react";
 import { AuthContext } from "/Contexts/Auth/AuthProvider";
 
 const useProduct = ( filter ) => {
-    console.log(filter,'filter');
     const axiosPublic = useAxiosPublic();
     const { user, loading } = useContext(AuthContext);
 

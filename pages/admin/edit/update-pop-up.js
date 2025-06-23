@@ -36,7 +36,7 @@ const UpdatePopUp = () => {
         console.log('token');
         // console.log(token);
         try {
-            const res = await axiosPublic.put(`/admin/update-active-pop-up/${selectedIndex}`,{},
+            const res = await axiosPublic.put(`/admin/update-active-pop-up/${selectedIndex}`, {},
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -89,6 +89,7 @@ const UpdatePopUp = () => {
                                 <span className="font-medium text-gray-900">
                                     {/* {popup.filename} */}
                                     <Image
+                                        alt={popup.title}
                                         width={50}
                                         height={50}
                                         src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${popup?.filename}`} />
