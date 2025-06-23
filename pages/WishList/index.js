@@ -1,14 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { useEffect, useState } from 'react';
 import useWish from '../../Hooks/useWish';
 import Link from 'next/link';
 import Head from 'next/head';
+import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 
 const WishList = () => {
-    const axiosPublic = useAxiosPublic();
-    // const [wishes, setWishes] = useState([])
-    const { user } = useContext(AuthContext)
     const [loading, wish, refetch] = useWish();
     // console.log(wish,'wish');
     const [isDeleting, setIsDeleting] = useState(false);
@@ -22,35 +18,20 @@ const WishList = () => {
     const handleDelete = async (item) => {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         const formData = new FormData();
-        console.log(item,'=item');
+        // console.log(item, '=item');
 
         formData.append('productId', item.product.id);
         formData.append('customerId', userInfo && userInfo.id);
 
         if (userInfo) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: "remove_from_wish",
-                ecommerce: {
-                    items: [
-                        {
-                            item_id: item.product.id,
-                            item_name: item.product.name,
-                            item_color: item.product.color?.name || "Unknown",
-                            item_series: item.product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-                            main_category: item.product.pscs?.[0]?.category?.category?.name || "N/A",
-                            sub_category: item.product.pscs?.[0]?.category?.name || "N/A",
-                            item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) || 0,
-                            total_views: item.product.totalViews || 0,
-                            discount_percent: item.product.discountPercentage || 0,
-                            currency: "BDT",
-                            user_email: customEmail
-                        }
-                    ]
-                }
-            });
+            const items = []
+            items.push(generateTempItems([item]))
+            pushToDataLayer('remove_from_wish',
+                items, 
+                userInfo.email
+            )
         }
-    };
+    }
 
     return (
         <>

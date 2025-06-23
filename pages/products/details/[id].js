@@ -11,6 +11,7 @@ import ImageZoom from '../../draft/image-zoom-inner';
 import { getGuestCustomerInfo } from '../../../utils/guestCustomer';
 import Head from 'next/head';
 import Loading from '/components/Loading';
+import { generateTempItems, pushToDataLayer } from '../../../utils/ga4';
 
 const Product = ({ product }) => {
     // console.log('product-test', product);
@@ -34,29 +35,15 @@ const Product = ({ product }) => {
         // console.log('line 32');
         const customerEmail = user?.email || getGuestCustomerInfo()?.email;
 
-        const item = {
-            item_id: product.id,
-            item_name: product.name,
-            item_color: product.color?.name || "Unknown",
-            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
-            sub_category: product.pscs?.[0]?.category?.name || "N/A",
-            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
-            total_views: product.totalViews || 0,
-            discount_percent: product.discountPercentage || 0,
-            currency: "BDT",
-            // quantity: 1,
-            user_email: customerEmail
-        };
+        const item = generateTempItems(product)
 
         // Pushing data to dataLayer
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            event: "view_item",
-            ecommerce: {
-                items: [item]
+        pushToDataLayer('view_item',
+            {
+                item,
+                user_email: customerEmail
             }
-        });
+        )
 
         try {
             await axiosPublic.post(`/admin/increase-product-view/${product.id}?email=${customerEmail}`);
@@ -158,28 +145,12 @@ const Product = ({ product }) => {
         }
 
         if (!isAddedToWishlist) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: "add_to_wish",
-                ecommerce: {
-                    items: [
-                        {
-                            item_id: product.id,
-                            item_name: product.name,
-                            item_color: product.color?.name || "Unknown",
-                            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-                            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
-                            sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
-                            total_views: product.totalViews || 0,
-                            discount_percent: product.discountPercentage || 0,
-                            currency: "BDT",
-                            // quantity: 1,
-                            user_email: customEmail
-                        }
-                    ]
+            pushToDataLayer('add_to_wish',
+                {
+                    item: product,
+                    user_email: customEmail
                 }
-            });
+            )
 
             try {
                 // Make a POST request to add the product to the wishlist
@@ -198,28 +169,12 @@ const Product = ({ product }) => {
             }
         }
         else {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: "remove_from_wish",
-                ecommerce: {
-                    items: [
-                        {
-                            item_id: product.id,
-                            item_name: product.name,
-                            item_color: product.color?.name || "Unknown",
-                            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-                            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
-                            sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
-                            total_views: product.totalViews || 0,
-                            discount_percent: product.discountPercentage || 0,
-                            currency: "BDT",
-                            // quantity: 1,
-                            user_email: customEmail
-                        }
-                    ]
+            pushToDataLayer('remove_from_wish',
+                {
+                    item: product,
+                    user_email: customEmail
                 }
-            });
+            )
 
             try {
                 const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${customEmail}`);
@@ -375,34 +330,12 @@ const Product = ({ product }) => {
             }
         }
 
-        // console.log('come here');
-        // console.log(parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity);
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            event: "add_to_cart",
-            ecommerce: {
-                items: [
-                    {
-                        item_id: product.id,
-                        item_name: product.name,
-                        item_color: product.color?.name || "Unknown",
-                        item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
-                        main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
-                        sub_category: product.pscs?.[0]?.category?.name || "N/A",
-                        item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
-                        total_views: product.totalViews || 0,
-                        selected_category: selectedCategory,
-                        selected_size: selectedSize,
-                        selected_maleSize: selectedMaleSize,
-                        selected_femaleSize: selectedFemaleSize,
-                        discount_percent: product.discountPercentage || 0,
-                        currency: "BDT",
-                        quantity: quantity,
-                        user_email: customEmail
-                    }
-                ]
+        pushToDataLayer('add_to_cart',
+            {
+                item: product,
+                user_email: customEmail
             }
-        });
+        )
     };
 
     const handleBuyNow = async () => {

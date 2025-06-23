@@ -1,15 +1,12 @@
 // Import necessary dependencies and components
 import { useForm, Controller } from 'react-hook-form';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
-import NavbarCompTwo from '/components/Header/NavbarComp';
-import Footer from '/components/Footer/Footer';
 import Link from 'next/link';
 import { FcGoogle } from "react-icons/fc";
 import { useContext, useEffect, useState } from 'react';
-import AuthProvider, { AuthContext } from '/Contexts/Auth/AuthProvider';
+import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '/firebase'
-import { useLocation } from 'react-router-dom';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';

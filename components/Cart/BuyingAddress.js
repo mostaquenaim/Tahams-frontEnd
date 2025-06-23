@@ -6,6 +6,7 @@ import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { DeliveryContext } from '../../Contexts/DeliveryFee';
+import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 
 const BuyingAddress = ({ data }) => {
     const { register, handleSubmit, formState: { errors }, reset, watch } = useForm();
@@ -162,27 +163,8 @@ const BuyingAddress = ({ data }) => {
                 deliveryFee,
             };
 
-            const tempItems = []
             const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
-
-            cartItems.forEach((item) => {
-                tempItems.push({
-                    item_id: item.product.id,
-                    item_name: item.product.name,
-                    item_color: item.ProductName.split(" ")[0] || "Unknown",
-                    item_series: item.category?.category?.category?.name || "N/A",
-                    main_category: item.category?.category?.name || "N/A",
-                    sub_category: item.category?.name || "N/A",
-                    item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
-                    total_views: item.product.totalViews || 0,
-                    // selected_category: selectedCategory,
-                    selected_size: item.size || null,
-                    selected_maleSize: item.maleSize || null,
-                    selected_femaleSize: item.femaleSize || null,
-                    discount_percent: item.product.discountPercentage || 0,
-                    quantity: item.Quantity,
-                })
-            })
+            const tempItems = generateTempItems(cartItems)
 
             const sum = cartItems.reduce((acc, item) => {
                 // Assuming item.product.sellingPrice and item.Quantity are numbers
@@ -195,11 +177,8 @@ const BuyingAddress = ({ data }) => {
             const res = await axiosPublic.post(`/admin/add-to-buy`, formData);
             // console.log(res.data,'buyy now');
 
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: "purchase", //begin_checkout
-                ecommerce: {
-                    // transaction_id: res.data.trackingToken,
+            pushToDataLayer('purchase',
+                {
                     order_id: res.data.id,
                     currency: "BDT",
                     totalPrice: newTotalPrice,
@@ -212,8 +191,7 @@ const BuyingAddress = ({ data }) => {
                     BuyingDate: new Date(),
                     items: tempItems
                 }
-            });
-
+            )
 
             // console.log(tempItems,'cartt');
             // console.log('total',newTotalPrice);

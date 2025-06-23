@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Link from 'next/link';
 import Head from 'next/head';
+import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils/ga4';
 
 const MyCart = () => {
   const [cart, refetch] = useCart();
@@ -40,37 +41,18 @@ const MyCart = () => {
     localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
 
     // Calculate total price
-    const totalPrice = selectedItems.reduce((acc, item) => {
-      return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
-    }, 0);
+    const totalPrice = discountedPrice(selectedItems)
 
     // Prepare items for dataLayer
-    const tempItems = selectedItems.map((item) => ({
-      item_id: item.product.id,
-      item_name: item.product.name,
-      item_color: item.ProductName?.split(" ")[0] || "Unknown",
-      item_series: item.category?.category?.category?.name || "N/A",
-      main_category: item.category?.category?.name || "N/A",
-      sub_category: item.category?.name || "N/A",
-      item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
-      total_views: item.product.totalViews || 0,
-      selected_size: item.size || null,
-      selected_maleSize: item.maleSize || null,
-      selected_femaleSize: item.femaleSize || null,
-      discount_percent: item.product.discountPercentage || 0,
-      quantity: item.Quantity,
-    }));
+    const tempItems = generateTempItems(selectedItems)
 
-    // Push checkout data to dataLayer
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "begin_checkout",
-      ecommerce: {
+    pushToDataLayer('begin_checkout',
+      {
         currency: "BDT",
         totalPrice: totalPrice,
         items: tempItems
       }
-    });
+    )
 
     // Navigate to the buy-now page
     router.push({
@@ -91,32 +73,10 @@ const MyCart = () => {
       confirmButtonText: 'Yes, delete it!',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: "remove_from_cart",
-          ecommerce: {
-            items: [
-              {
-                item_id: item.product.id,
-                item_name: item.product.name,
-                item_color: item.ProductName?.split(" ")[0] || "Unknown",
-                item_series: item.category?.category?.category?.name || "N/A",
-                main_category: item.category?.category?.name || "N/A",
-                sub_category: item.category?.name || "N/A",
-                item_price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
-                total_views: item.product.totalViews || 0,
-                // selected_category: selectedCategory,
-                selected_size: item.size,
-                selected_maleSize: item.maleSize || null,
-                selected_femaleSize: item.femaleSize || null,
-                discount_percent: item.product.discountPercentage || 0,
-                currency: "BDT",
-                quantity: item.Quantity,
-                // user_email: customEmail
-              }
-            ]
-          }
-        });
+        pushToDataLayer('remove_from_cart',
+          { item }
+        )
+
         const result = await axiosPublic.delete(`/admin/delete-cart/${item.uniqueId}`)
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
