@@ -32,6 +32,7 @@ const Dashboard = () => {
                 // Remove userInfo from localStorage
                 if (typeof window !== "undefined") {
                     localStorage.removeItem('userInfo');
+                    localStorage.removeItem('access_token');
                     console.log('User logged out and userInfo removed from localstorage');
                 }
             })

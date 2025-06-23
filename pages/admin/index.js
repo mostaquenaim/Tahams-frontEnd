@@ -1,10 +1,11 @@
 import Head from 'next/head';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, BellIcon } from '@heroicons/react/24/solid';
 import { Person, Settings, ExitToApp } from '@mui/icons-material';
 import useGroupOrders from '/Hooks/useGroupOrders';
+import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 
 const Admin = () => {
   const [sortedGroupedOrdersArray, isPending] = useGroupOrders();
@@ -50,6 +51,22 @@ const Admin = () => {
     { name: 'Inactive Users', value: 0 }, // Replace with actual inactive user count if available
   ];
 
+  const { logOut } = useContext(AuthContext)
+
+   const handleLogout = () => {
+        logOut()
+            .then(() => {
+                // Remove userInfo from localStorage
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem('access_token');
+                console.log('User logged out and userInfo removed from localStorage');
+            })
+            .catch((error) => {
+                console.error('Error during logout:', error.message);
+                toast.error('Error during logout. Please try again.');
+            });
+    };
+
   const COLORS = ['#6366F1', '#EF4444']; // Colors for the pie chart
 
   return (
@@ -93,14 +110,14 @@ const Admin = () => {
                     </Menu.Item>
                     <Menu.Item>
                       {({ active }) => (
-                        <a
-                          href="#"
+                        <button
+                          onClick={handleLogout}
                           className={`${active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                         >
                           <ExitToApp className="inline h-4 w-4 mr-2" />
                           Logout
-                        </a>
+                        </button>
                       )}
                     </Menu.Item>
                   </div>

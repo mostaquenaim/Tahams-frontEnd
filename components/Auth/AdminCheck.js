@@ -23,7 +23,7 @@ const AdminCheck = ({ children }) => {
           },
         });
 
-        // console.log(response.data);
+        console.log(response.data);
 
         // ✅ Use response.data
         setIsAdmin(response.data?.isAdmin === true);

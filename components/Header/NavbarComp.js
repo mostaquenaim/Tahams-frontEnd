@@ -41,6 +41,7 @@ const NavbarCompTwo = () => {
             .then(() => {
                 // Remove userInfo from localStorage
                 localStorage.removeItem('userInfo');
+                localStorage.removeItem('access_token');
                 console.log('User logged out and userInfo removed from localStorage');
             })
             .catch((error) => {
