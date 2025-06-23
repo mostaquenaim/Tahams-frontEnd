@@ -32,6 +32,7 @@ const AdminDrawer = () => {
             Name: 'Series',
             Tasks: [
                 { href: '/admin/Add/add-series', label: 'Add Series' },
+                { href: '/admin/Show/show-all-series', label: 'Show all series' },
             ]
         },
         {
@@ -53,6 +54,7 @@ const AdminDrawer = () => {
             Name: 'Category',
             Tasks: [
                 { href: '/admin/Add/add-category', label: 'Add Category of a series' },
+                { href: '/admin/Show/show-all-categories', label: 'Show all categories' },
             ]
         },
         {

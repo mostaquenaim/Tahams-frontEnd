@@ -157,6 +157,7 @@ const ProductType = () => {
                                 {subSubCategories.map((item) => (
                                     <tr key={item.id} className="hover:bg-gray-100">
                                         <td className="py-2 px-4 border-b text-center">{item.id}</td>
+                                        
                                         {/* item name update / edit  */}
                                         <td className="py-2 px-4 border-b text-center">
                                             {editNameItemId === item.id ? (
@@ -186,37 +187,50 @@ const ProductType = () => {
                                                 </div>
                                             )}
                                         </td>
+
                                         {/* size chart  */}
                                         <td className="py-2 px-4 border-b text-center">
-                                            {item.filename ? (
-                                                <button onClick={() => handleShowImage(item.filename)}>
-                                                    <img className="h-16 cursor-pointer" src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`} alt="Size Chart" />
-                                                </button>
-                                            ) : (
-                                                <div className="flex">
-                                                    {editItem === item.id && (
-                                                        <input
-                                                            type="file"
-                                                            onChange={(e) => setMyFile(e.target.files[0])}
+                                            <div className="flex justify-center items-center gap-2">
+                                                {/* Show image if exists */}
+                                                {item.filename && (
+                                                    <button onClick={() => handleShowImage(item.filename)}>
+                                                        <img
+                                                            className="h-16 cursor-pointer"
+                                                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
+                                                            alt="Size Chart"
                                                         />
-                                                    )}
-                                                    <div className="flex gap-1">
-                                                        {editItem === item.id && (
-                                                            <button
-                                                                onClick={handleCancelEdit}
-                                                                className="btn btn-warning btn-sm">
-                                                                Cancel
-                                                            </button>
-                                                        )}
+                                                    </button>
+                                                )}
+
+                                                {/* Show file input and buttons if editing */}
+                                                {editItem === item.id && (
+                                                    <input
+                                                        type="file"
+                                                        onChange={(e) => setMyFile(e.target.files[0])}
+                                                    />
+                                                )}
+
+                                                <div
+                                                    className="flex gap-2 mt-1">
+                                                    {editItem === item.id && (
                                                         <button
-                                                            onClick={() => handleEditSizeChart(item)}
-                                                            className={`btn btn-sm ${editable ? editItem === item.id ? 'btn-success' : 'btn-disabled' : 'btn-accent'}`}>
-                                                            {editItem === item.id ? 'Save' : 'Edit'}
+                                                            onClick={handleCancelEdit}
+                                                            className="btn btn-warning btn-xs"
+                                                        >
+                                                            Cancel
                                                         </button>
-                                                    </div>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleEditSizeChart(item)}
+                                                        className={`btn btn-xs ${editable ? editItem === item.id ? 'btn-success' : 'btn-accent' : 'btn-accent'}`}
+                                                    >
+                                                        {editItem === item.id ? 'Save' : 'Edit'}
+                                                    </button>
                                                 </div>
-                                            )}
+                                            </div>
                                         </td>
+
+                                        {/* parent categories  */}
                                         <td className="py-2 px-4 border-b text-center">{item.category.name}, {item.category.category.name}</td>
                                         <td>
                                             <button onClick={() => handleDeleteCProductType(item.id)} className="btn btn-sm btn-error">
