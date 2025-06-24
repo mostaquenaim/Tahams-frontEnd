@@ -1,36 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import useWish from '../../Hooks/useWish';
 import Link from 'next/link';
 import Head from 'next/head';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
+import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { getGuestCustomerInfo } from '../../utils/guestCustomer';
+import { DeleteFromWish } from '../../utils/WishFunctions';
 
 const WishList = () => {
-    const [loading, wish, refetch] = useWish();
+    const [isPending, wish, refetch] = useWish();
     // console.log(wish,'wish');
     const [isDeleting, setIsDeleting] = useState(false);
-    const [userInfo, setUserInfo] = useState(null)
+    const { user, loading } = useContext(AuthContext)
+    const [customEmail, setCustomEmail] = useState('')
 
+    // set custom email 
     useEffect(() => {
-        const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'))
-        setUserInfo(storedUserInfo)
-    }, [])
+        if (!loading) {
+            if (!user) {
+                // console.log('ekhane dhukse');
+                const guestCustomerInfo = getGuestCustomerInfo();
+                setCustomEmail(guestCustomerInfo.email)
+            }
+            else {
+                // console.log('acheee');
+                setCustomEmail(user?.email)
+            }
+        }
+    }, [loading, user])
 
     const handleDelete = async (item) => {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-        const formData = new FormData();
-        // console.log(item, '=item');
+        DeleteFromWish(item.product, customEmail, item.id, refetch)
 
-        formData.append('productId', item.product.id);
-        formData.append('customerId', userInfo && userInfo.id);
-
-        if (userInfo) {
-            const items = []
-            items.push(generateTempItems([item]))
-            pushToDataLayer('remove_from_wish',
-                items, 
-                userInfo.email
-            )
-        }
     }
 
     return (
@@ -42,7 +43,7 @@ const WishList = () => {
             <div className="container mx-auto p-4 min-h-screen md:p-6 lg:p-8 xl:p-10">
                 <h1 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold mb-4 lg:pt-40 pt-16 flex text-center items-center justify-center">Your Wishlist</h1>
                 {
-                    loading
+                    isPending
                         ?
                         <span className='loading loading-spinner loading-md'></span>
                         :

@@ -12,6 +12,8 @@ import { getGuestCustomerInfo } from '../../../utils/guestCustomer';
 import Head from 'next/head';
 import Loading from '/components/Loading';
 import { generateTempItems, pushToDataLayer } from '../../../utils/ga4';
+import { AddToWish } from '/utils/WishFunctions';
+import { DeleteFromWish } from '/utils/WishFunctions';
 
 const Product = ({ product }) => {
     // console.log('product-test', product);
@@ -24,9 +26,11 @@ const Product = ({ product }) => {
     const [selectedImage, setSelectedImage] = useState('')
     const [quantity, setQuantity] = useState(1);
     const [isAddedToCart, setIsAddedToCart] = useState(false)
-    const { user } = useContext(AuthContext)
+    const { user, loading } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const [pending, setPending] = useState(false)
+    const [wishId, setWishId] = useState(-1)
+    const [customEmail, setCustomEmail] = useState('')
 
     const router = useRouter()
     const axiosPublic = useAxiosPublic();
@@ -35,13 +39,25 @@ const Product = ({ product }) => {
         // console.log('line 32');
         const customerEmail = user?.email || getGuestCustomerInfo()?.email;
 
-        const item = generateTempItems(product)
+        const item = {
+            item_id: product.id,
+            item_name: product.name,
+            item_color: product.color?.name || "Unknown",
+            item_series: product.pscs?.[0]?.category?.category?.category?.name || "N/A",
+            main_category: product.pscs?.[0]?.category?.category?.name || "N/A",
+            sub_category: product.pscs?.[0]?.category?.name || "N/A",
+            item_price: parseInt(product.sellingPrice - (product.sellingPrice * product.discountPercentage / 100) + (product.sellingPrice * product.vatPercentage / 100)) * quantity || 0,
+            total_views: product.totalViews || 0,
+            discount_percent: product.discountPercentage || 0,
+            currency: "BDT",
+            // quantity: 1,
+            user_email: customerEmail
+        };
 
         // Pushing data to dataLayer
         pushToDataLayer('view_item',
             {
                 item,
-                user_email: customerEmail
             }
         )
 
@@ -52,16 +68,61 @@ const Product = ({ product }) => {
         }
     };
 
+    // set selected image 
     useEffect(() => {
         setSelectedImage(product && product.filename)
     }, [product])
 
+    // view count 
     useEffect(() => {
         viewCount()
     }, [])
 
+    // store user data from local storage 
+    useEffect(() => {
+        const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
+        setUserInfo(storedUserInfo);
+    }, [])
+
+    // check if wished 
+    useEffect(() => {
+        // Scroll to top of the page
+        window.scrollTo(0, 100);
+
+        checkIfWished(product.id, customEmail)
+
+        // Set default selected category and size
+        if (product.pscs.length > 0) {
+            setSelectedCategory(product.pscs[0].category.id);
+            setSelectedSize(product.pscs[0].size?.name);
+        }
+    }, [product, userInfo, customEmail]);
+
+    // default category id 
+    useEffect(() => {
+        const defaultCategoryId = parseInt(localStorage.getItem('defaultCategoryId'));
+        if (defaultCategoryId) {
+            handleCategoryChange(defaultCategoryId);
+        }
+    }, [loading]);
+
+    // set custom email 
+    useEffect(() => {
+        if (!loading) {
+            if (!user) {
+                // console.log('ekhane dhukse');
+                const guestCustomerInfo = getGuestCustomerInfo();
+                setCustomEmail(guestCustomerInfo.email)
+            }
+            else {
+                // console.log('acheee');
+                setCustomEmail(user?.email)
+            }
+        }
+    }, [loading, user])
+
     const checkIfWished = async (productId, customerEmail) => {
-        setLoading(true)
+        setPending(true)
         try {
             const result = await axiosPublic.get(`admin/check-wish-by-user-and-product`, {
                 params: {
@@ -70,46 +131,18 @@ const Product = ({ product }) => {
                 }
             });
 
-            console.log(result);
-
             // console.log(result.data);
-            setAddedToWishlist(result.data.wished)
+
+            setWishId(result.data?.wished?.id)
+            setAddedToWishlist(result.data.isWished)
         } catch (error) {
             console.error('Error checking wish:', error);
             // Handle the error accordingly
         }
         finally {
-            setLoading(false)
+            setPending(false)
         }
     }
-
-    useEffect(() => {
-        const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
-        setUserInfo(storedUserInfo);
-    }, [])
-
-    useEffect(() => {
-        // Scroll to top of the page
-        window.scrollTo(0, 100);
-
-        // Check if the user has added the product to the wishlist
-        if (product && userInfo) {
-            checkIfWished(product.id, userInfo.email);
-        }
-
-        // Set default selected category and size
-        if (product.pscs.length > 0) {
-            setSelectedCategory(product.pscs[0].category.id);
-            setSelectedSize(product.pscs[0].size?.name);
-        }
-    }, [product, userInfo]);
-
-    useEffect(() => {
-        const defaultCategoryId = parseInt(localStorage.getItem('defaultCategoryId'));
-        if (defaultCategoryId) {
-            handleCategoryChange(defaultCategoryId);
-        }
-    }, []);
 
     // console.log(product, 'product');
     const {
@@ -133,58 +166,13 @@ const Product = ({ product }) => {
             .map(p => p.size)
         : [];
 
+    // add to wish
     const addToWishlist = async () => {
-        let customEmail = ''
-        if (!user) {
-            const guestCustomerInfo = getGuestCustomerInfo();
-            customEmail = guestCustomerInfo.email;
+        if(isAddedToWishlist){
+            DeleteFromWish(product, customEmail, wishId, checkIfWished)
         }
-        else {
-            // console.log('acheee');
-            customEmail = user?.email
-        }
-
-        if (!isAddedToWishlist) {
-            pushToDataLayer('add_to_wish',
-                {
-                    item: product,
-                    user_email: customEmail
-                }
-            )
-
-            try {
-                // Make a POST request to add the product to the wishlist
-                // console.log(customEmail, 'csrmm');
-                const res = await axiosPublic.post(`/admin/add-Wish`, {
-                    productId: product?.id,
-                    customerEmail: customEmail
-                });
-                // Add the product to the wishlist
-                if (product && userInfo) {
-                    checkIfWished(product.id, userInfo.email);
-                }
-            } catch (error) {
-                console.error('Error adding product to wishlist:', error);
-                // Handle error if the request fails
-            }
-        }
-        else {
-            pushToDataLayer('remove_from_wish',
-                {
-                    item: product,
-                    user_email: customEmail
-                }
-            )
-
-            try {
-                const res = await axiosPublic.delete(`/admin/remove-wish/${product.id}?email=${customEmail}`);
-                if (product && userInfo) {
-                    checkIfWished(product.id, userInfo.email);
-                }
-
-            } catch (error) {
-                console.error('Error deleting wishlist:', error);
-            }
+        else{
+            AddToWish(product, customEmail, checkIfWished )
         }
     };
 
@@ -228,12 +216,16 @@ const Product = ({ product }) => {
         })
     };
 
+    // cart add handling 
     const handleAddToCart = async () => {
-        let customEmail = ''
-        if (!user) {
-            const guestCustomerInfo = getGuestCustomerInfo();
-            customEmail = guestCustomerInfo.email
 
+        if (product.pscs[0].category.category.category.name == 'Couples'
+            &&
+            (!selectedFemaleSize || !selectedSize)
+        ) {
+            toast.error('You have to select a size for each')
+        }
+        else {
             setIsAddedToCart(true)
             setShowGotoCart(true)
             // Use guest customer info for cart addition
@@ -276,59 +268,6 @@ const Product = ({ product }) => {
                 }, 3000);
             }
         }
-        else if (product.pscs[0].category.category.category.name == 'Couples'
-            &&
-            (!selectedFemaleSize || !selectedSize)
-        ) {
-            toast.error('You have to select a size for each')
-        }
-        else {
-            customEmail = user?.email
-
-            setIsAddedToCart(true)
-            setShowGotoCart(true)
-            // console.log(product,color);
-            try {
-                // Make a POST request to the backend endpoint for adding to the cart
-                const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: product?.id,
-                    category: selectedCategory,
-                    size: selectedSize,
-                    maleSize: selectedMaleSize,
-                    femaleSize: selectedFemaleSize,
-                    Quantity: quantity,
-                    colorId: color?.id,
-                    customerEmail: user?.email
-                });
-
-                if (response.status >= 200 && response.status <= 205) {
-                    // Show toast notification
-                    toast.success('Item added to the cart', {
-                        duration: 3000, // Toast will be shown for 3 seconds
-                    });
-                } else {
-                    // Handle error
-                    console.error('Failed to add item to the cart');
-
-                    // Show toast notification for the error
-                    toast.error('Failed to add item to the cart');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-
-                // Show toast notification for the error
-                toast.error('An error occurred while adding to the cart');
-            } finally {
-                // Set a timer to reset the state after 700 milliseconds
-                setTimeout(() => {
-                    setIsAddedToCart(false);
-                }, 700);
-
-                setTimeout(() => {
-                    setShowGotoCart(false);
-                }, 3000);
-            }
-        }
 
         pushToDataLayer('add_to_cart',
             {
@@ -338,47 +277,15 @@ const Product = ({ product }) => {
         )
     };
 
+    // buy now handling 
     const handleBuyNow = async () => {
-        let customEmail = ''
-        if (!user) {
-            const guestCustomerInfo = getGuestCustomerInfo();
-            customEmail = guestCustomerInfo.email
-
-            try {
-                // Add product to the cart for the guest customer
-                const response = await axiosPublic.post('/admin/add-to-cart', {
-                    productId: product?.id,
-                    category: selectedCategory,
-                    size: selectedSize,
-                    maleSize: selectedMaleSize,
-                    femaleSize: selectedFemaleSize,
-                    Quantity: quantity,
-                    colorId: color?.id,
-                    customerEmail: customEmail, // Use guest email
-                });
-
-                if (response.status >= 200 && response.status <= 205) {
-                    localStorage.setItem('selectedItems', JSON.stringify([response.data]));
-
-                    // Redirect to the buy-now page
-                    router.push({
-                        pathname: '/buy-now',
-                    });
-                } else {
-                    toast.error('Failed to buy item');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                toast.error('An error occurred while buying');
-            }
-        } else if (
+        if (
             product.pscs[0].category.category.category.name === 'Couples' &&
             (!selectedFemaleSize || !selectedSize)
         ) {
             // Ensure sizes are selected for couples' products
             toast.error('You have to select a size for each');
         } else {
-            customEmail = user?.email
             try {
                 // Add product to the cart for the logged-in user
                 const response = await axiosPublic.post('/admin/add-to-cart', {
@@ -389,7 +296,7 @@ const Product = ({ product }) => {
                     femaleSize: selectedFemaleSize,
                     Quantity: quantity,
                     colorId: color?.id,
-                    customerEmail: user?.email, // Use logged-in user's email
+                    customerEmail: customEmail,
                 });
 
                 if (response.status >= 200 && response.status <= 205) {

@@ -13,13 +13,13 @@ const useWish = () => {
         return res.data;
     };
 
-    const { refetch, data: wish = [] } = useQuery({
+    const { isPending ,refetch, data: wish = [] } = useQuery({
         queryKey: ['wish', user?.email], // Include user.email in the query key
         queryFn: fetchWishData,
         enabled: !loading && !!user, // Enable the query when the user is not loading and is authenticated
     });
 
-    return [loading, wish, refetch];
+    return [isPending, wish, refetch];
 };
 
 export default useWish;
