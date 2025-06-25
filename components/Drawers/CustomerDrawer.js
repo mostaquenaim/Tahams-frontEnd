@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { DrawerLinks } from '/utils/DrawerFunctions';
 
 const CustomerDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -9,24 +10,7 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
         setDrawerOpen(!drawerOpen);
     };
 
-    const links =
-        <>
-            <ListStyle goto='/' pageName='Home' />
-            {
-                genders &&
-                genders.map((gender, index) => (
-                    <ListComponent isSide={true} key={index} cat={gender} cats={categories} ListStyle={ListStyle}></ListComponent>
-                ))
-            }
-            {
-                categories &&
-                categories.map((cat, index) => (
-                    !cat.isGenderVaried ? <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
-                        :
-                        ''
-                ))
-            }
-        </>
+    const links = DrawerLinks(ListStyle, ListComponent, categories, genders)
 
     return (
         <div>
@@ -53,9 +37,7 @@ const CustomerDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
                 <div
                     className="overflow-y-auto fixed top-0 left-0 z-20 w-64 h-full transition-all duration-500 transform -translate-x-full bg-base-200 shadow-lg peer-checked:translate-x-0"
                 >
-                    <div className="
-                    
-                    py-4">
+                    <div className="py-4">
                         <ul className={`p-5 space-y-5 flex flex-col min-h-full bg-base-200 text-base-content`} >
                             {links}
                         </ul>

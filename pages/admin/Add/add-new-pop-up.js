@@ -63,7 +63,7 @@ const AddNewPopUp = () => {
       });
 
       alert('Pop-up created successfully!');
-      console.log(res.data);
+      // console.log(res.data);
     } catch (err) {
       console.error(err);
       alert('Error creating pop-up');

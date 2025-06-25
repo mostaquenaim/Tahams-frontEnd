@@ -45,7 +45,7 @@ const ShowOrderDetails = () => {
     const handleDelete = async () => {
         try {
             const res = await axiosPublic.put(`/admin/delete-history/${history?.trackingToken}?email=${user?.email}`);
-            console.log(res.data);
+            // console.log(res.data);
             closeConfirmationModal(); // Close modal on success
             router.push('/admin/Show/show-orders'); // Redirect to orders page or any other page
         } catch (error) {

@@ -1,3 +1,4 @@
+import { DrawerLinks } from '/utils/DrawerFunctions';
 import React, { useEffect } from 'react';
 import { AiOutlineMenu } from "react-icons/ai";
 
@@ -20,27 +21,7 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
         };
     }, []); // Empty dependency array ensures that the effect runs only once on mount
 
-    const links = (
-        <>
-            <ListStyle goto='/' pageName='Home' />
-
-            {
-                genders &&
-                genders.map((gender, index) => (
-                    <ListComponent isSide={true} key={index} cat={gender} cats={categories} ListStyle={ListStyle}></ListComponent>
-                ))
-            }
-            {
-                categories &&
-                categories.map((cat, index) => (
-                    !cat.isGenderVaried ?
-                        <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
-                        :
-                        ''
-                ))
-            }
-        </>
-    );
+    const links = DrawerLinks(ListStyle, ListComponent, categories, genders)
 
     return (
         <div className='z-40'>
@@ -53,7 +34,7 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
                 </div>
                 <div className="drawer-side">
                     <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-                    <ul className="relative menu p-4 w-96 min-h-full bg-base-200 text-base-content">
+                    <ul className="relative menu p-4 w-64 md:w-96 min-h-full bg-base-200 text-base-content">
                         {links}
                     </ul>
                 </div>

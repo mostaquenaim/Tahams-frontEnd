@@ -48,14 +48,14 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, gend
             >
                 <div className="navbar bg-base-100">
                     <div className="flex-none">
-                        <div className='hidden md:inline-block'>
+                        {/* <div className='hidden md:inline-block'> */}
                             <LeftDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></LeftDrawer>
-                        </div>
+                        {/* </div>
                         <div className='md:hidden'>
                             <CustomerDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></CustomerDrawer>
-                        </div>
+                        </div> */}
                     </div>
-                    <div className="flex-1 ml-14 md:ml-0">
+                    <div className="flex-1 md:ml-0">
                         <Link href='/' className=" btn-ghost normal-case text-xl">
                             <img src="/logo-removebg.png" className='h-14' alt="" />
                         </Link>
@@ -93,7 +93,9 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, gend
                                             strokeLinejoin="round"
                                             strokeWidth="2"
                                             d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                                        ></path></svg>
+                                        >
+                                        </path>
+                                    </svg>
 
                                 </summary>
                                 <ul className="p-2 bg-base-100 right-0">

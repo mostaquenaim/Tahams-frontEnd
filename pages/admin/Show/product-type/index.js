@@ -34,7 +34,7 @@ const ProductType = () => {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-                console.log(res.data);
+                // console.log(res.data);
                 refetch();
             } catch (error) {
                 console.error('Error uploading file:', error.response?.data || error.message);

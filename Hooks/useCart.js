@@ -29,13 +29,13 @@ const useCart = () => {
         return result;
     };
 
-    const { refetch, data: cart = [] } = useQuery({
+    const { isPending: isLoading ,refetch, data: cart = [] } = useQuery({
         queryKey: ['cart', user?.email || guestUser?.email], // Include user or guest email in the query key
         queryFn: fetchCartData,
         enabled: !loading && (!!user || !!guestUser), // Enable only if user or guestUser is available
     });
 
-    return [cart, refetch];
+    return [isLoading, cart, refetch];
 };
 
 export default useCart;

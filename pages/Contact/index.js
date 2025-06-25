@@ -8,7 +8,7 @@ const Contact = () => {
             <Head>
                 <title>Contact - Tahams</title>
             </Head>
-            <div className="bg-gray-100 py-16 px-4 sm:px-6 lg:px-8">
+            <div className="bg-gray-100 py-20 lg:pt-40 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     <header className="text-center">
                         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">Get in Touch</h1>

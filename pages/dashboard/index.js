@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaBox, FaHeart, FaUser } from 'react-icons/fa';
 import { AiOutlineShoppingCart } from 'react-icons/ai';
 import { FiLogOut } from 'react-icons/fi';
@@ -9,21 +9,30 @@ import Loading from '../../components/Loading';
 import Link from 'next/link';
 import useCart from '../../Hooks/useCart';
 import Head from 'next/head';
+import { getGuestCustomerInfo } from '../../utils/guestCustomer';
 
 const Dashboard = () => {
-    const { user, logOut } = useContext(AuthContext);
+    const { user, logOut, loading } = useContext(AuthContext);
+    const [userData, setUserData] = useState('')
     const [orders] = useOrder();
-    const [loading, wish] = useWish();
-    const [cart] = useCart()
+    const [isPending, wish] = useWish();
+    const [isLoading, cart] = useCart()
 
+    useEffect(() => {
+        !loading
+            &&
+            user ?
+            setUserData(user)
+            :
+            setUserData(getGuestCustomerInfo())
+    }, [loading, user])
 
-    // console.log(cart);
-    // console.log(orders);
-    console.log(user && user);
-    // console.log(wish && wish);
+    console.log(userData && userData);
 
     if (loading) {
-        return <Loading />;
+        return <div className='min-h-screen pt-20 lg:pt-40'>
+            <Loading />
+        </div>;
     }
 
     const handleLogout = () => {
@@ -52,8 +61,9 @@ const Dashboard = () => {
                 <header className="bg-white shadow p-4 sm:p-6 flex justify-between items-center rounded-lg mb-6 sm:mb-8">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Customer Dashboard</h1>
                     {
-                        user ?
-                            <button onClick={handleLogout} className="flex items-center text-gray-500 hover:text-red-500 text-sm sm:text-base">
+                        userData ?
+                            <button onClick={handleLogout}
+                                className="flex items-center text-gray-500 hover:text-red-500 text-sm sm:text-base">
                                 <FiLogOut className="mr-1 sm:mr-2" /> Logout
                             </button>
                             :
@@ -70,8 +80,8 @@ const Dashboard = () => {
                         <div className="flex items-center space-x-2 sm:space-x-4">
                             <FaUser className="text-3xl sm:text-4xl text-indigo-500" />
                             <div>
-                                <h2 className="text-md sm:text-lg font-semibold text-gray-800">{user?.displayName}</h2>
-                                <p className="text-sm text-gray-500">{user?.email}</p>
+                                <h2 className="text-md sm:text-lg font-semibold text-gray-800">{user ? userData.displayName : userData.username}</h2>
+                                <p className="text-sm text-gray-500">{userData?.email}</p>
                             </div>
                         </div>
                     </div>
@@ -103,17 +113,21 @@ const Dashboard = () => {
                             <h2 className="text-md sm:text-lg font-semibold text-gray-800">Wishlist</h2>
                             <FaHeart className="text-indigo-500 text-xl sm:text-2xl" />
                         </div>
-                        {wish?.length > 0 ? (
-                            <ul className="divide-y divide-gray-200">
-                                {wish.slice(0, 3).map((item) => (
-                                    <li key={item.id} className="py-1 sm:py-2">
-                                        <p className="text-gray-700 text-sm sm:text-base">{item.product.name}</p>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500 text-sm">No items in wishlist.</p>
-                        )}
+                        {
+                            isPending ?
+                                <Loading />
+                                :
+                                wish?.length > 0 ? (
+                                    <ul className="divide-y divide-gray-200">
+                                        {wish.slice(0, 3).map((item) => (
+                                            <li key={item.id} className="py-1 sm:py-2">
+                                                <p className="text-gray-700 text-sm sm:text-base">{item.product.name}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500 text-sm">No items in wishlist.</p>
+                                )}
                         <a href="/WishList" className="text-indigo-500 text-xs sm:text-sm mt-2 sm:mt-4 block">View Full Wishlist</a>
                     </div>
 
@@ -125,25 +139,28 @@ const Dashboard = () => {
                         </div>
 
                         {/* Display total items and total price */}
-                        {cart?.length > 0 ? (
-                            <div>
-                                <p className="text-gray-700 text-sm sm:text-base">Items: {cart.length}</p>
-                                <p className="text-gray-700 text-sm sm:text-base">
-                                    Total: ${cart.reduce((acc, item) => acc + item.product.sellingPrice * item.Quantity, 0)}
-                                </p>
-                                <ul className="divide-y divide-gray-200 mt-2">
-                                    {/* Slicing to show only the first 3 items */}
-                                    {cart.slice(0, 3).map(item => (
-                                        <li key={item.id} className="py-1 sm:py-2">
-                                            <p className="text-gray-700 text-sm sm:text-base">{item.product.name}</p>
-                                            <p className="text-xs text-gray-500">Quantity: {item.Quantity}</p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ) : (
-                            <p className="text-gray-500 text-sm">Your cart is empty.</p>
-                        )}
+                        {isLoading ?
+                            <Loading />
+                            :
+                            cart?.length > 0 ? (
+                                <div>
+                                    <p className="text-gray-700 text-sm sm:text-base">Items: {cart.length}</p>
+                                    <p className="text-gray-700 text-sm sm:text-base">
+                                        Total: ${cart.reduce((acc, item) => acc + item.product.sellingPrice * item.Quantity, 0)}
+                                    </p>
+                                    <ul className="divide-y divide-gray-200 mt-2">
+                                        {/* Slicing to show only the first 3 items */}
+                                        {cart.slice(0, 3).map(item => (
+                                            <li key={item.id} className="py-1 sm:py-2">
+                                                <p className="text-gray-700 text-sm sm:text-base">{item.product.name}</p>
+                                                <p className="text-xs text-gray-500">Quantity: {item.Quantity}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm">Your cart is empty.</p>
+                            )}
                         <a href="/MyCart" className="text-indigo-500 text-xs sm:text-sm mt-2 sm:mt-4 block">View Cart</a>
                     </div>
 
@@ -151,8 +168,8 @@ const Dashboard = () => {
                     <div className="bg-white p-4 sm:p-6 shadow rounded-lg">
                         <h2 className="text-md sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-4">Account Details</h2>
                         {
-                            user?.createdAt &&
-                            <p className="text-gray-700 text-sm sm:text-base">Member since: {new Date(user?.createdAt).toLocaleDateString()}</p>
+                            userData?.createdAt &&
+                            <p className="text-gray-700 text-sm sm:text-base">Member since: {new Date(userData?.createdAt).toLocaleDateString()}</p>
                         }
                         <p className="text-gray-700 text-sm sm:text-base">Total Orders: {orders?.length}</p>
                     </div>

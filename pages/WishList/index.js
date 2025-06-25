@@ -31,7 +31,6 @@ const WishList = () => {
 
     const handleDelete = async (item) => {
         DeleteFromWish(item.product, customEmail, item.id, refetch)
-
     }
 
     return (

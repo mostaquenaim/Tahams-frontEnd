@@ -16,7 +16,7 @@ const useOrder = () => {
         }
 
         const res = await axiosPublic.get(`/admin/get-all-buying-history?email=${tmpEmail}`);
-        console.log(res.data, 'res.data');
+        // console.log(res.data, 'res.data');
         return res.data;
     };
 
