@@ -10,7 +10,7 @@ import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { getGuestCustomerInfo } from "../../utils/guestCustomer";
 
 const ShowProduct = ({ item }) => {
-    // console.log(item);
+    console.log(item,'atimm');
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)

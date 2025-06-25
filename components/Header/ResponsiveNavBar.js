@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { AiOutlineHeart, AiOutlineSearch, AiOutlineShoppingCart } from "react-icons/ai";
 import LeftDrawer from '../Drawers/LeftDrawer';
-import CustomerDrawer from '../Drawers/CustomerDrawer';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
@@ -48,12 +47,7 @@ const ResponsiveNavBar = ({ btn, fnc, ListStyle, ListComponent, categories, gend
             >
                 <div className="navbar bg-base-100">
                     <div className="flex-none">
-                        {/* <div className='hidden md:inline-block'> */}
-                            <LeftDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></LeftDrawer>
-                        {/* </div>
-                        <div className='md:hidden'>
-                            <CustomerDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></CustomerDrawer>
-                        </div> */}
+                        <LeftDrawer ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders}></LeftDrawer>
                     </div>
                     <div className="flex-1 md:ml-0">
                         <Link href='/' className=" btn-ghost normal-case text-xl">

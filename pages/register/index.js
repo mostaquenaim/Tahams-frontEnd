@@ -129,7 +129,7 @@ const Register = () => {
             <div className='pt-48 pb-10'>
                 {!otpSent ? (
                     <form onSubmit={handleSubmit(onRegisterSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
-                        <Link href='/'>
+                        <Link className='' href='/'>
                             <img src='/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2' alt="logo" />
                         </Link>
 
@@ -259,7 +259,7 @@ const Register = () => {
                     </form>
                 ) : (
                     <form onSubmit={handleSubmit(onOtpSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
-                        <Link href='/'>
+                        <Link className='' href='/'>
                             <img src='/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2' alt="logo" />
                         </Link>
 

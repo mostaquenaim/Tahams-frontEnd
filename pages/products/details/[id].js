@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { FaEye, FaShoppingCart } from 'react-icons/fa';
 import { FaHeart, FaRegHeart } from 'react-icons/fa6';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
@@ -14,6 +14,7 @@ import Loading from '/components/Loading';
 import { generateTempItems, pushToDataLayer } from '../../../utils/ga4';
 import { AddToWish } from '/utils/WishFunctions';
 import { DeleteFromWish } from '/utils/WishFunctions';
+import PeopleAlsoLike from '/components/Product/PeopleAlsoLike';
 
 const Product = ({ product }) => {
     // console.log('product-test', product);
@@ -168,11 +169,11 @@ const Product = ({ product }) => {
 
     // add to wish
     const addToWishlist = async () => {
-        if(isAddedToWishlist){
+        if (isAddedToWishlist) {
             DeleteFromWish(product, customEmail, wishId, checkIfWished)
         }
-        else{
-            AddToWish(product, customEmail, checkIfWished )
+        else {
+            AddToWish(product, customEmail, checkIfWished)
         }
     };
 
@@ -585,17 +586,19 @@ const Product = ({ product }) => {
                     </div>
                 </div>
 
+                {/* people also like  */}
+                <PeopleAlsoLike category={product.pscs[0].category.id} currentProductId={product.id}/>
+
             </div>
             {
                 // showGotoCart &&
                 <Link
                     href={'/MyCart'}
                     className={` w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
-                >Go to cart
+                >
+                    Go to cart
                 </Link>
             }
-            {/* <Footer /> */}
-            <Toaster />
         </div>
     );
 };
