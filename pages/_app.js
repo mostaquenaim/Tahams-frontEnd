@@ -34,8 +34,7 @@ export default function App({ Component, pageProps }) {
           <meta property="og:description" content="Discover the unique lifestyle with Tahams." />
           <meta property="og:url" content="https://tahamsbd.com/" />
           <meta property="og:type" content="website" />
-
-          <meta property="og:image" content="/preview-image/5-years-tahams.jpg" />
+          <meta property="og:image" content="https://tahamsbd.com/og-image.jpg" />
           {
             isAdminAdd ?
               <title>Admin - Add</title>

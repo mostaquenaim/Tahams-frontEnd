@@ -61,7 +61,7 @@ const Dashboard = () => {
                 <header className="bg-white shadow p-4 sm:p-6 flex justify-between items-center rounded-lg mb-6 sm:mb-8">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Customer Dashboard</h1>
                     {
-                        userData ?
+                        user ?
                             <button onClick={handleLogout}
                                 className="flex items-center text-gray-500 hover:text-red-500 text-sm sm:text-base">
                                 <FiLogOut className="mr-1 sm:mr-2" /> Logout
