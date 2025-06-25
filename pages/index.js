@@ -47,7 +47,7 @@ export default function Home() {
     ) {
       setIsModalOpen(true);
     }
-    else{
+    else {
       setIsModalOpen(false);
     }
   }, [activePop]);
@@ -57,7 +57,13 @@ export default function Home() {
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           <Head>
-            <title>Tahams - THE UNIQUE WAY OF LIFE </title>
+            <title>Tahams - The Unique Way of Life</title>
+            <meta name="description" content="Discover the unique lifestyle with Tahams." />
+            <meta property="og:title" content="Tahams - The Unique Way of Life" />
+            <meta property="og:description" content="Discover the unique lifestyle with Tahams." />
+            <meta property="og:url" content="https://tahamsbd.com/" />
+            <meta property="og:type" content="website" />
+            <meta property="og:image" content="https://tahamsbd.com/og-image.jpg" />
           </Head>
 
           {/* Modal */}
@@ -92,8 +98,8 @@ export default function Home() {
           </Modal>
           {/* Main Content */}
           {/* {!isModalOpen && */}
-            <MySwiper images={images}></MySwiper>
-             {/* <TriangleLoader/> */}
+          <MySwiper images={images}></MySwiper>
+          {/* <TriangleLoader/> */}
           {/* } */}
           <NewArrival></NewArrival>
           <WhyUs></WhyUs>
