@@ -34,7 +34,7 @@ const PeopleAlsoLike = ({ category, currentProductId }) => {
             ) : products.length === 0 ? (
                 <p>No suggestions found.</p>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     {products.length > 0 &&
                         products.map((product) => (
                             <ShowProduct item={product} />
