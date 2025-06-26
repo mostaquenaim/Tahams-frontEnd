@@ -1,7 +1,12 @@
+import Image from 'next/image';
 import React from 'react';
 import { FaCreditCard, FaSmile, FaTruck, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
+import { DeliveryMethods, PaymentMethods } from '/utils/Methods';
 
 const Payment = () => {
+    const allPaymentMethods = PaymentMethods()
+    const deliveryMethods = DeliveryMethods()
+    // console.log(allPaymentMethods, 'ress');
     return (
         <>
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-10 pt-16 pb-10 px-10 text-center items-center shadow-md bg-black bg-opacity-20'>
@@ -19,18 +24,28 @@ const Payment = () => {
                         Payment Processes
                     </h1>
                     {/* payment process icons */}
-                    <div className='grid grid-cols-4 text-3xl items-center text-center mx-auto'>
-                        {/* <FaCcVisa className='hover:opacity-80'></FaCcVisa>
-                        <FaCcMastercard className='hover:opacity-80'></FaCcMastercard> */}
-                        <img className='h-16 hover:opacity-80 mx-auto text-center' src='/visa.png'></img>
-                        <img className='h-14 hover:opacity-80 mx-auto text-center' src='/mastercard.png'></img>
-                        <img className='h-12 hover:opacity-80 mx-auto text-center' src='/symbol.png'></img>
-                        <img className='h-16 hover:opacity-80 mx-auto text-center' src='/cod.png'></img>
-                        <img className='h-12 hover:opacity-80 mx-auto text-center' src='/bkash.png'></img>
-                        <img className='h-12 hover:opacity-80 mx-auto text-center' src='/nagad.png'></img>
-                        <img className='h-12 hover:opacity-80 mx-auto text-center' src='/rocket.png'></img>
-                        <img className='h-16 hover:opacity-80 mx-auto text-center' src='/cop.png'></img>
-                        
+                    <div className="flex gap-2 md:gap-3 flex-wrap justify-center">
+                        {
+                            allPaymentMethods.map((method) => (
+                                <div
+                                    key={method.id}
+                                    className="relative w-fit mx-auto group text-center"
+                                >
+                                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-md p-1 transition-transform duration-300 transform shadow-black shadow-lg scale-105 bg-white border-t-2 border-black">
+                                        {method.icon && (
+                                            <Image
+                                                src={method.icon}
+                                                width={50}
+                                                height={50}
+                                                alt={method.name || 'Payment Method'}
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition duration-300 text-xs bg-black text-white px-2 py-1 rounded whitespace-nowrap z-10">
+                                        {method.name}
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 </section>
                 {/* satisfaction  */}
@@ -62,11 +77,30 @@ const Payment = () => {
                     <h1 className="text-xl font-semibold text-gray-800 mb-4">
                         Country-Wide Delivery
                     </h1>
-
-                    <div className='flex gap-2 justify-center'>
-                        <img src="https://pathao.com/bn/wp-content/uploads/sites/6/2019/02/Pathao_Logo-.svg" alt="logo"></img>
-                        <img className='h-10' src="/sundarban.jpg" alt=""></img>
-                        <img className='h-10' src="/s-a-paribahan.jpg" alt=""></img>
+                    <div className='flex gap-2 justify-center md:gap-4 flex-wrap'>
+                        {
+                            deliveryMethods.length > 0 &&
+                            deliveryMethods.map((method) => (
+                                <div
+                                    key={method.id}
+                                    className="relative w-fit group text-center"
+                                >
+                                    <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-md p-1 transition-transform duration-300 transform shadow-black shadow-lg scale-105 bg-white border-t-2 border-black">
+                                        {method.icon && (
+                                            <Image
+                                                src={method.icon}
+                                                width={80}
+                                                height={80}
+                                                alt={method.name || 'Payment Method'}
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition duration-300 text-xs bg-black text-white px-2 py-1 rounded whitespace-nowrap z-10">
+                                        {method.name}
+                                    </div>
+                                </div>
+                            ))
+                        }
                     </div>
                 </section>
             </div>

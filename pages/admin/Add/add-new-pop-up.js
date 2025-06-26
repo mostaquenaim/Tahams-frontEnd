@@ -53,7 +53,7 @@ const AddNewPopUp = () => {
     data.append('endDate', formData.endDate || '');
     data.append('isActive', formData.isActive);
 
-    console.log('token is=',token);
+    // console.log('token is=',token, formData.startDate, formData.endDate);
     try {
       const res = await axiosPublic.post('/admin/add-new-pop-up', data, {
         headers: {
