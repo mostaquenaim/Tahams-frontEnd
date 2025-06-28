@@ -9,7 +9,7 @@ const useLoadPopularItems = () => {
         const loadPopular = async () => {
             try {
                 const result = await axiosPublic.get('/admin/view-popular-items');
-                console.log(result.data,'popularss');
+                // console.log(result.data,'popularss');
                 setPopular(result.data);
             } catch (error) {
                 console.error('Error loading popular items:', error);
