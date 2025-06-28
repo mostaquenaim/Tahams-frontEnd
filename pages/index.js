@@ -2,13 +2,14 @@ import { createContext, useEffect, useState } from 'react';
 import ThemeProvider from '/Contexts/ThemeProvider';
 import MySwiper from '/components/Swiper/MySwiper';
 import ShopByCategory from '/components/ShopByCategory/ShopByCategory';
-import NewArrival from '/components/NewArrival/NewArrival';
 import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
 import TagManager from "react-gtm-module";
 import Head from 'next/head';
 import useLoadActivePop from '/./Hooks/useLoadActivePop';
+import NewArrival from '/components/Home/NewArrival/NewArrival';
+import Popular from '/components/Home/Popular/Popular';
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
@@ -101,7 +102,8 @@ export default function Home() {
           <MySwiper images={images}></MySwiper>
           {/* <TriangleLoader/> */}
           {/* } */}
-          <NewArrival></NewArrival>
+          <NewArrival/>
+          <Popular/>
           <WhyUs></WhyUs>
           <ShopByCategory></ShopByCategory>
           <Payment></Payment>

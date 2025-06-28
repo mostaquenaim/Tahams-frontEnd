@@ -22,6 +22,7 @@ const AdminDrawer = () => {
             Name: 'Dashboard',
             Tasks: [
                 { href: '/admin/Show/show-views', label: 'Statistics / Views' },
+                { href: '/admin/sync/sync-sales-count', label: 'Sync Sales Count' },
             ],
         },
         {

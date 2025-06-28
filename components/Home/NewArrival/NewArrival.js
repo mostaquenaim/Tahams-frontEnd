@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ShowNewArrival from './ShowNewArrival';
-import Heading from '../Header/Heading';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import Heading from '../../Header/Heading';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 
 const NewArrival = () => {
     const [products, setProducts] = useState([])
