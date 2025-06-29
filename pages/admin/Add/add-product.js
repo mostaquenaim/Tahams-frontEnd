@@ -22,6 +22,7 @@ export default function AddProduct() {
     const [selectedTags, setSelectedTags] = useState(["cloth"]);
     const [success, setSuccess] = useState('')
     const [isSizeApplicable, setIsSizeApplicable] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const axiosPublic = useAxiosPublic();
 
@@ -47,12 +48,9 @@ export default function AddProduct() {
     }, [])
 
     const validateFile = (value) => {
-        // console.log('value', value);
         if (value.length > 0) {
             const file = value[0];
-            // console.log(value[0]);
             const allowedtypes = ["image/jpg", "image/png", "image/jpeg", "image/gif"];
-
             if (!allowedtypes.includes(file.type)) {
                 return false;
             }
@@ -63,17 +61,11 @@ export default function AddProduct() {
         const isChecked = event.target.checked
 
         if (isChecked) {
-            setSelectedCats([...selectedCats,
-                catID,
-            ])
-
-            setSelectedCatsInfo([...selectedCatsInfo,
-            {
+            setSelectedCats([...selectedCats, catID])
+            setSelectedCatsInfo([...selectedCatsInfo, {
                 category: catID,
                 sizes: []
-            }
-            ])
-
+            }])
             return
         }
 
@@ -85,21 +77,15 @@ export default function AddProduct() {
     }
 
     const handleSizeAndQuantityChange = (event, catID, sizeId) => {
-        // console.log("selectedCatsInfo", selectedCatsInfo, 'event',event.target.value, 'catID',catID, 'sizeId',sizeId);
-
         const categoryWiseItem = selectedCatsInfo.find(cat => cat.category == catID)
 
         if (!sizeId) {
-            categoryWiseItem.sizes = [
-                {
-                    quantity: event.target.value
-                }
-            ]
+            categoryWiseItem.sizes = [{
+                quantity: event.target.value
+            }]
         }
         else {
-            // initially size not available 
             let sizeNotAvailable = true
-
             categoryWiseItem.sizes.forEach(item => {
                 if (item.id == sizeId) {
                     sizeNotAvailable = false
@@ -113,32 +99,26 @@ export default function AddProduct() {
                     id: sizeId,
                     quantity: event.target.value
                 }
-
                 categoryWiseItem.sizes = [...categoryWiseItem.sizes, newSize]
             }
         }
 
-        // console.log("categoryWiseItem", categoryWiseItem);
-
         const result = selectedCatsInfo.filter(item => item.category != catID)
-
         setSelectedCatsInfo([...result, categoryWiseItem])
     }
 
     const handleSizeApplicableChange = (event, catID) => {
         const isChecked = event.target.checked
-
         if (isChecked) {
             setIsSizeApplicable([...isSizeApplicable, catID])
             return
         }
-
         const res = isSizeApplicable.filter(category => category !== catID)
         setIsSizeApplicable([...res])
     }
 
     const onSubmit = async (data) => {
-        // console.log(selectedCatsInfo);
+        setIsSubmitting(true);
         const formData = new FormData();
 
         let catsInfo = []
@@ -149,14 +129,8 @@ export default function AddProduct() {
             })
         })
 
-        // console.log('selectedCats',selectedCats)
-        // console.log('selectedColor', selectedColor)
-        // console.log('catsInfo', JSON.stringify(catsInfo))
-        // console.log('selectedCatsInfo', JSON.stringify(selectedCatsInfo) );
-
         formData.append('subCategories', selectedCats)
         formData.append('catsInfo', JSON.stringify(catsInfo))
-        // formData.append('selectedCatsInfo', JSON.stringify(selectedCatsInfo))
         formData.append('name', data.name);
         formData.append('serialNo', data.serialNo);
         formData.append('note', data.note);
@@ -170,9 +144,6 @@ export default function AddProduct() {
         formData.append('color', selectedColor);
         formData.append('longDescription', data.longDescription);
 
-        // formData.append('categories', JSON.stringify(data.categories));
-        // console.log(formData);
-
         try {
             const response = await axiosPublic.post("/admin/add-product",
                 formData, {
@@ -182,51 +153,35 @@ export default function AddProduct() {
                 }
             });
 
-            setSuccess('Product add successfully');
-            toast.success('Product add successfully');
-
-            data.myfiles.length > 0 &&
-                onSubmitPictures(data);
-            // reset();
-
-
+            toast.success('Product added successfully');
+            data.myfiles?.length > 0 && await onSubmitPictures(data);
+            reset();
         }
         catch (error) {
-            console.error(error.response.data.message);
-            setSuccess('product add unsuccessful ' + error.response.data.message);
-            toast.success('product add unsuccessful ' + error.response.data.message);
+            console.error(error.response?.data?.message);
+            toast.error(error.response?.data?.message || 'Failed to add product');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const onSubmitPictures = async (data) => {
-        // console.log(data); // Check if files contains the expected File objects
-        // console.log(data); // Check if files contains the expected File objects
-
         const formData = new FormData();
-
-        // console.log(data.myfiles, 'all files');
-
-        // Append each file to FormData
         Array.from(data.myfiles).forEach((file) => {
             formData.append('myfiles', file);
         });
 
-        // console.log(formData);
-
         try {
-            const response = await axiosPublic.post("/admin/add-product-pictures",
+            await axiosPublic.post("/admin/add-product-pictures",
                 formData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 }
             });
-
-            setSuccess('Product pictures uploaded successfully');
-            // reset();
-
+            toast.success('Product pictures uploaded successfully');
         } catch (error) {
             console.error(error.message);
-            setSuccess('Product pictures upload unsuccessful: ' + error.message);
+            toast.error('Failed to upload product pictures');
         }
     };
 
@@ -235,220 +190,353 @@ export default function AddProduct() {
             <Head>
                 <title>Add Product - Admin</title>
             </Head>
-            {/* <AdminDrawer></AdminDrawer> */}
-            <div className="container mx-auto p-4 flex justify-center items-center">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+            
+            <div className="p-8 bg-gray-50 min-h-screen">
+                <div className="max-w-5xl mx-auto">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-gray-800">Add New Product</h1>
+                        <p className="text-gray-600">Fill in the details below to add a new product to your inventory</p>
+                    </div>
 
-                    <p className="mt-2 text-xs text-green-600 dark:text-green-400">
-                        <span className="font-medium">{success}</span>
-                    </p>
-
-                    <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
-                        {/* Product Name */}
-                        <ProductFormComp type='text' name='name' label='Product Name' register={register} errors={errors} />
-
-                        {/* Serial No */}
-                        <ProductFormComp type='text' name='serialNo' label='Serial No' register={register} errors={errors} />
-
-                        {/* Note */}
-                        <ProductFormComp type='text' name='note' label='Note' register={register} errors={errors} />
-
-                        {/* Vat Percentage */}
-                        <ProductFormComp type='number' name='vatPercentage' label='Vat Percentage' register={register} errors={errors} />
-
-                        {/* Discount Percentage */}
-                        <ProductFormComp type='number' name='discountPercentage' label='Discount Percentage' register={register} errors={errors} />
-
-                        {/* Buying Price */}
-                        <ProductFormComp type='number' name='buyingPrice' label='Buying Price' register={register} errors={errors} />
-
-                        {/* Selling Price */}
-                        <ProductFormComp type='number' name='sellingPrice' label='Selling Price' register={register} errors={errors} />
-
-                        {/* Description */}
-                        <ProductFormComp isDesc={true} name='description' label='Short Description' placeholder={'Short description here [shown in right side]'} register={register} errors={errors} />
-
-                        {/* Long Description */}
-                        <ProductFormComp isDesc={true} name='longDescription' label='Full Description' placeholder={'Full description here [shown below the product]'} register={register} errors={errors} />
-
-                        {/* color selection  */}
-                        <SelectionFormComp label={'Select a color'} name={'color'} selectedValue={selectedColor} setFunction={setSelectedColor} defaultShown={'Choose a color'} values={colors} errors={errors} register={register} />
-
-                        {/* FABRIC SELECTION  */}
-                        <SelectionFormComp label={'Select a fabric'} name={'fabric'} selectedValue={selectedFabric} setFunction={setSelectedFabric} defaultShown={'Choose a fabric'} values={fabrics} errors={errors} register={register} />
-
-                        {/* tags  */}
-                        <div>
-                            <h1>Add Tags</h1>
-                            <pre>{JSON.stringify(selectedTags)}</pre>
-                            <TagsInput
-                                value={selectedTags}
-                                onChange={setSelectedTags}
-                                name="tags"
-                                placeHolder="enter tags"
-                            />
-                            <em>press enter add new tag</em>
+                    {/* Success Message */}
+                    {success && (
+                        <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg">
+                            {success}
                         </div>
+                    )}
 
-                        {/* file upload  */}
-                        <div>
-                            <label htmlFor="file_input" className="block mb-2 text-sm font-medium text-gray-900">
-                                Upload featured photo
-                            </label>
-                            <input
-                                type="file"
-                                id="myfile"
-                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
-                                {...register('myfile', { required: true, validate: validateFile })}
-                            />
-                            {errors.myfile && (
-                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-                                    <span className="font-medium">
-                                        {errors.myfile.type === 'required'
-                                            ? 'File is required'
-                                            : 'Invalid file'}
-                                    </span>
-                                </p>
-                            )}
-                        </div>
+                    {/* Main Form */}
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                        <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data" className="p-6">
+                            {/* Basic Information Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Basic Information
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <ProductFormComp 
+                                        type='text' 
+                                        name='name' 
+                                        label='Product Name' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                    <ProductFormComp 
+                                        type='text' 
+                                        name='serialNo' 
+                                        label='Serial No' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                    <ProductFormComp 
+                                        type='text' 
+                                        name='note' 
+                                        label='Note' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                </div>
+                            </div>
 
-                        {/* product pictures */}
-                        <div>
-                            <label htmlFor="file_input" className="block mb-2 text-sm font-medium text-gray-900">
-                                Upload product photos
-                            </label>
-                            <input
-                                type="file"
-                                id="file_input"
-                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
-                                {...register('myfiles', { validate: validateFile })}
-                                multiple // Allow multiple file selection
-                            />
-                            {errors.myfiles && (
-                                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-                                    <span className="font-medium">
-                                        {/* {errors.myfiles.type === 'required'
-                                            ? 'Files are required'
-                                            :  */}
-                                        Invalid file
-                                        {/* } */}
-                                    </span>
-                                </p>
-                            )}
-                        </div>
+                            {/* Pricing Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Pricing Information
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <ProductFormComp 
+                                        type='number' 
+                                        name='vatPercentage' 
+                                        label='VAT %' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                    <ProductFormComp 
+                                        type='number' 
+                                        name='discountPercentage' 
+                                        label='Discount %' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                    <ProductFormComp 
+                                        type='number' 
+                                        name='buyingPrice' 
+                                        label='Buying Price' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                    <ProductFormComp 
+                                        type='number' 
+                                        name='sellingPrice' 
+                                        label='Selling Price' 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                </div>
+                            </div>
 
-                        {/* Categories and Sizes */}
-                        <div className='flex justify-around'>
-                            <label className="text-sm font-semibold mb-1">Categories:</label>
-                            <div className="space-y-1">
-                                {/* categories fetch  */}
-                                {subSubCategories.map((category, index) => (
-                                    <div key={category.id} className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            name={`selectedCategories[${category.id}]`}
-                                            id={`selectedCategories_${category.id}`}
-                                            onChange={(e) => handleCategoryChange(e, category.id)}
-                                            checked={selectedCats.includes(
-                                                category.id
-                                            )}
-                                            className="h-4 w-4 text-blue-500 focus:ring focus:ring-blue-300 transition duration-300 ease-in-out"
-                                        />
-                                        <label htmlFor={`selectedCategories_${index}`} className="ml-2">
-                                            <span className='font-semibold text-xl'> {category.name} </span>
-                                            ({category.category.name}, <span className=''>{category.category.category.name}
-                                                {
-                                                    category.category.category.isGenderVaried &&
-                                                        category.category.category.isForMen ?
-                                                        ', Men' :
-                                                        ', Women'
-                                                }
-                                            </span>)
+                            {/* Descriptions Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Product Descriptions
+                                </h2>
+                                <div className="space-y-6">
+                                    <ProductFormComp 
+                                        isDesc={true} 
+                                        name='description' 
+                                        label='Short Description' 
+                                        placeholder={'Brief description shown on product cards'} 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                    <ProductFormComp 
+                                        isDesc={true} 
+                                        name='longDescription' 
+                                        label='Full Description' 
+                                        placeholder={'Detailed description shown on product page'} 
+                                        register={register} 
+                                        errors={errors} 
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Attributes Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Product Attributes
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <SelectionFormComp 
+                                        label={'Color'} 
+                                        name={'color'} 
+                                        selectedValue={selectedColor} 
+                                        setFunction={setSelectedColor} 
+                                        defaultShown={'Select color'} 
+                                        values={colors} 
+                                        errors={errors} 
+                                        register={register} 
+                                    />
+                                    <SelectionFormComp 
+                                        label={'Fabric'} 
+                                        name={'fabric'} 
+                                        selectedValue={selectedFabric} 
+                                        setFunction={setSelectedFabric} 
+                                        defaultShown={'Select fabric'} 
+                                        values={fabrics} 
+                                        errors={errors} 
+                                        register={register} 
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Tags Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Product Tags
+                                </h2>
+                                <div>
+                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                        Tags (Press enter to add)
+                                    </label>
+                                    <TagsInput
+                                        value={selectedTags}
+                                        onChange={setSelectedTags}
+                                        name="tags"
+                                        placeHolder="Add tags..."
+                                        classNames={{
+                                            input: 'p-2 border rounded-lg w-full',
+                                            tag: 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center',
+                                            remove: 'ml-2 text-blue-500 hover:text-blue-700'
+                                        }}
+                                    />
+                                    <p className="mt-2 text-xs text-gray-500">
+                                        Tags help customers find your product
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Images Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Product Images
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                                            Featured Image
                                         </label>
-                                        {/* is size applicable  */}
-                                        {selectedCats.includes(category.id) && (
-                                            <div className="ml-4 mt-4">
-                                                <label className="block mb-2 text-sm font-medium text-gray-900">
-                                                    Size Selection
-                                                </label>
-
-                                                <div className="flex items-center mb-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={`categories[${index}].sizeApplicable`}
-                                                        checked={isSizeApplicable.includes(category.id)}
-                                                        onChange={(e) => handleSizeApplicableChange(e, category.id)}
-                                                        className="mr-2"
-                                                    />
-                                                    <label htmlFor={`categories[${index}].sizeApplicable`} className="text-sm font-medium text-gray-900">
-                                                        Size applicable
-                                                    </label>
+                                        <div className="flex items-center justify-center w-full">
+                                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                                    </svg>
+                                                    <p className="mb-2 text-sm text-gray-500">
+                                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">PNG, JPG, GIF (MAX. 5MB)</p>
                                                 </div>
-                                                {/* size selection  */}
-                                                {isSizeApplicable.includes(category.id) ? (
-                                                    sizes.map((size) => (
-                                                        <div key={size.id} className="flex items-center mb-2">
-                                                            <label className="text-sm font-medium text-gray-900 mr-2">{size.name}</label>
-                                                            <input
-                                                                type="number"
-                                                                // defaultValue={0}
-                                                                min={0}
-                                                                className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
-                                                                placeholder={`Quantity for ${size.name}`}
-                                                                onInput={(e) => handleSizeAndQuantityChange(e, category.id, size.id)}
-                                                            // {...register(`categories[${index}].sizes.${size.name}`, { required: false })}
-                                                            />
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div>
-                                                        <label className="text-sm font-medium text-gray-900 mr-2">Quantity</label>
-                                                        <input
-                                                            type="number"
-                                                            min={0}
-                                                            className="border border-gray-300 p-2 rounded-lg focus:ring-primary-600 focus:border-primary-600"
-                                                            placeholder={`Quantity for ${category.name}`}
-                                                            onInput={(e) => handleSizeAndQuantityChange(e, category.id)}
-                                                            {...register(`categories[${index}].quantity`, { required: false })}
-                                                        // disabled={isSizeApplicable.includes(category.id)} 
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
+                                                <input 
+                                                    type="file" 
+                                                    id="myfile" 
+                                                    className="hidden" 
+                                                    {...register('myfile', { required: true, validate: validateFile })} 
+                                                />
+                                            </label>
+                                        </div>
+                                        {errors.myfile && (
+                                            <p className="mt-2 text-sm text-red-600">
+                                                {errors.myfile.type === 'required'
+                                                    ? 'Featured image is required'
+                                                    : 'Please upload a valid image file (PNG, JPG, GIF)'}
+                                            </p>
                                         )}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
 
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mt-4"
-                        >
-                            Submit
-                        </button>
-                    </form>
+                                    <div>
+                                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                                            Additional Images
+                                        </label>
+                                        <div className="flex items-center justify-center w-full">
+                                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                                    </svg>
+                                                    <p className="mb-2 text-sm text-gray-500">
+                                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">PNG, JPG, GIF (MAX. 5MB each)</p>
+                                                </div>
+                                                <input 
+                                                    type="file" 
+                                                    id="file_input" 
+                                                    className="hidden" 
+                                                    multiple 
+                                                    {...register('myfiles', { validate: validateFile })} 
+                                                />
+                                            </label>
+                                        </div>
+                                        {errors.myfiles && (
+                                            <p className="mt-2 text-sm text-red-600">
+                                                Please upload valid image files (PNG, JPG, GIF)
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Categories & Inventory Section */}
+                            <div className="mb-10">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                                    Categories & Inventory
+                                </h2>
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-700 mb-3">Select Categories</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {subSubCategories.map((category) => (
+                                                <div key={category.id} className="bg-gray-50 p-4 rounded-lg">
+                                                    <div className="flex items-start">
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`cat-${category.id}`}
+                                                            onChange={(e) => handleCategoryChange(e, category.id)}
+                                                            checked={selectedCats.includes(category.id)}
+                                                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                        />
+                                                        <label htmlFor={`cat-${category.id}`} className="ml-3 block">
+                                                            <span className="font-medium text-gray-700">{category.name}</span>
+                                                            <p className="text-sm text-gray-500">
+                                                                {category.category.name}, {category.category.category.name}
+                                                                {category.category.category.isGenderVaried && 
+                                                                    (category.category.category.isForMen ? ' (Men)' : ' (Women)')}
+                                                            </p>
+                                                        </label>
+                                                    </div>
+
+                                                    {selectedCats.includes(category.id) && (
+                                                        <div className="mt-3 ml-7 pl-2 border-l-2 border-gray-200">
+                                                            <div className="flex items-center mb-2">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id={`size-applicable-${category.id}`}
+                                                                    checked={isSizeApplicable.includes(category.id)}
+                                                                    onChange={(e) => handleSizeApplicableChange(e, category.id)}
+                                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                                />
+                                                                <label htmlFor={`size-applicable-${category.id}`} className="ml-2 text-sm text-gray-700">
+                                                                    This product has sizes
+                                                                </label>
+                                                            </div>
+
+                                                            {isSizeApplicable.includes(category.id) ? (
+                                                                <div className="space-y-2">
+                                                                    {sizes.map((size) => (
+                                                                        <div key={size.id} className="flex items-center">
+                                                                            <label className="w-20 text-sm text-gray-700">{size.name}</label>
+                                                                            <input
+                                                                                type="number"
+                                                                                min={0}
+                                                                                className="block w-24 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                                placeholder="Qty"
+                                                                                onInput={(e) => handleSizeAndQuantityChange(e, category.id, size.id)}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center">
+                                                                    <label className="w-20 text-sm text-gray-700">Quantity</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        min={0}
+                                                                        className="block w-24 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                        placeholder="Qty"
+                                                                        onInput={(e) => handleSizeAndQuantityChange(e, category.id)}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Form Actions */}
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={() => reset()}
+                                    className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                    Reset
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className={`px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                    {isSubmitting ? (
+                                        <span className="flex items-center">
+                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Processing...
+                                        </span>
+                                    ) : 'Save Product'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <div className="fixed bottom-5 right-5 flex flex-col space-y-3">
-                {/* Scroll to Top Button */}
-                <button
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
-                >
-                    ↑
-                </button>
-
-                {/* Scroll to Bottom Button */}
-                <button
-                    onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-                    className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
-                >
-                    ↓
-                </button>
-            </div>
-            <Toaster />
+            <Toaster position="top-right" />
         </>
     );
 }

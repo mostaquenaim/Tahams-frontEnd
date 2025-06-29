@@ -43,13 +43,13 @@ const AdminCheck = ({ children }) => {
   }
 
   if (isAdmin) {
-    return (
-      <div className="admin-container">
-        <AdminDrawer />
-        <div className="admin-content ml-20">{children}</div>
-      </div>
-    );
-  }
+   return (
+    <div className="flex bg-gray-100 min-h-screen font-inter text-gray-800">
+      <AdminDrawer />
+      <main className="flex-1 ml-64 p-6 transition-all">{children}</main>
+    </div>
+  );
+}
 
   return (
     <>

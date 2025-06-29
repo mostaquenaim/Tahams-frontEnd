@@ -217,7 +217,8 @@ const AdminDrawer = () => {
                                         )}
                                     </div>
                                     {isOpen && isExpanded && (
-                                        <ul className="pl-8 pt-1 space-y-1 mt-1">
+                                        // <ul className="pl-8 pt-1 space-y-1 mt-1">
+                                            <ul className="pl-8 pt-1 space-y-1 mt-1 transition-all duration-300 ease-in-out">
                                             {link.Tasks.map((task, taskIndex) => (
                                                 <li key={taskIndex}>
                                                     <Link href={task.href}>
