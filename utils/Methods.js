@@ -1,4 +1,3 @@
-
 export const PaymentMethods = () => {
     const paymentData = [
         { id: 1, name: 'Cash on Delivery', icon: '/cod.png', process: 'Payment upon delivery' },

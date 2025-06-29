@@ -5,7 +5,7 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { useRouter } from 'next/router';
 import { DeliveryContext } from '../../Contexts/DeliveryFee';
 import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils/ga4';
-import PaymentMethods from '../../utils/Methods';
+import { PaymentMethods } from '../../utils/Methods';
 
 const PaymentInfo = ({ history }) => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');

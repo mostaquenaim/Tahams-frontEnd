@@ -104,7 +104,9 @@ export default function Home() {
           {/* } */}
           <NewArrival/>
           <Popular/>
-          <WhyUs></WhyUs>
+          <section id='about'>
+            <WhyUs></WhyUs>
+          </section>
           <ShopByCategory></ShopByCategory>
           <Payment></Payment>
           {/* <Footer></Footer> */}

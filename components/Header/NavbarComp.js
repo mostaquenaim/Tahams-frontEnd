@@ -108,7 +108,7 @@ const NavbarCompTwo = () => {
                 </Link>
             </Li>
             <Li>
-                <Link href='/Contact'>
+                <Link href='/contact'>
                     Contact Us
                 </Link>
             </Li>
