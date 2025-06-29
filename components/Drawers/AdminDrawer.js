@@ -26,6 +26,53 @@ const AdminDrawer = () => {
             ],
         },
         {
+            Name: 'Inventory',
+            Tasks: [
+                { href: '/admin/inventory/stock-status', label: 'Stock Status' },
+                { href: '/admin/inventory/low-stock', label: 'Low Stock Alerts' },
+                { href: '/admin/inventory/warehouse', label: 'Warehouse Management' },
+            ],
+        },
+        {
+            Name: 'Coupons',
+            Tasks: [
+                { href: '/admin/promotions/create-coupon', label: 'Create Coupon' },
+                { href: '/admin/promotions/manage-coupons', label: 'Manage Coupons' },
+                { href: '/admin/promotions/usage-logs', label: 'Coupon Usage Logs' },
+            ],
+        },
+        {
+            Name: 'Reports',
+            Tasks: [
+                { href: '/admin/reports/sales', label: 'Sales Report' },
+                { href: '/admin/reports/inventory', label: 'Inventory Report' },
+                { href: '/admin/reports/customers', label: 'Customer Report' },
+                { href: '/admin/reports/tax', label: 'Tax Report' },
+            ],
+        },
+        {
+            Name: 'Payments',
+            Tasks: [
+                { href: '/admin/payments/transactions', label: 'All Transactions' },
+                { href: '/admin/payments/refunds', label: 'Refund Requests' },
+                { href: '/admin/payments/payouts', label: 'Vendor Payouts' },
+            ],
+        },
+        {
+            Name: 'Role Management',
+            Tasks: [
+                { href: '/admin/Manage/roles', label: 'Manage Roles' },
+            ],
+        },
+        {
+            Name: 'User Management',
+            Tasks: [
+                { href: '/admin/Show/show-users', label: 'All Users / Customers' },
+                { href: '/admin/Show/user-details', label: 'View User Details' },
+                { href: '/admin/Analytics/user-insights', label: 'User Analytics' },
+            ],
+        },
+        {
             Name: 'Products',
             Tasks: [
                 { href: '/admin/Add/add-product', label: 'Add Product' },

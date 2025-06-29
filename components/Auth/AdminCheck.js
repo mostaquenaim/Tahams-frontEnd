@@ -46,7 +46,7 @@ const AdminCheck = ({ children }) => {
     return (
       <div className="admin-container">
         <AdminDrawer />
-        <div className="admin-content">{children}</div>
+        <div className="admin-content ml-20">{children}</div>
       </div>
     );
   }

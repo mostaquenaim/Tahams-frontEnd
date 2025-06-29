@@ -2,7 +2,7 @@ import React from 'react';
 
 const Heading = ({first='', second=''}) => {
     return (
-        <div className="text-center font-semibold pb-5 bg-black text-white text-opacity-80">
+        <div className="text-center font-semibold pb-5 bg-black text-white text-opacity-80 shadow-lg shadow-neutral-600 rounded-lg">
             {/* SHOP BY */}
             <br></br>
             <span className="text-2xl md:text-4xl lg:text-6xl font-extrabold">
