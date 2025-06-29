@@ -35,6 +35,57 @@ const ShowUsers = () => {
         fetchUsers();
     }, [axiosPublic]);
 
+    // Custom pagination rendering logic
+    const renderPagination = () => {
+        const pages = [];
+        const maxPagesToShow = 3;
+
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            const startPages = [1, 2, 3];
+            const endPages = [totalPages - 2, totalPages - 1, totalPages];
+
+            if (currentPage <= 4) {
+                pages.push(...startPages, '...', ...endPages.slice(-3));
+            } else if (currentPage >= totalPages - 3) {
+                pages.push(...startPages.slice(0, 1), '...', ...endPages);
+            } else {
+                pages.push(
+                    1,
+                    '...',
+                    currentPage - 1,
+                    currentPage,
+                    currentPage + 1,
+                    '...',
+                    totalPages
+                );
+            }
+        }
+
+        return pages.map((page, index) => {
+            if (page === '...') {
+                return (
+                    <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
+                        ...
+                    </span>
+                );
+            }
+
+            return (
+                <button
+                    key={page}
+                    className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setCurrentPage(page)}
+                >
+                    {page}
+                </button>
+            );
+        });
+    };
+
     // Filter logic
     useEffect(() => {
         let filtered = [...users];
@@ -160,15 +211,7 @@ const ShowUsers = () => {
                 >
                     Prev
                 </button>
-                {[...Array(totalPages)].map((_, i) => (
-                    <button
-                        key={i}
-                        className={`btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setCurrentPage(i + 1)}
-                    >
-                        {i + 1}
-                    </button>
-                ))}
+                {renderPagination()}
                 <button
                     className="btn btn-sm btn-outline"
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
@@ -177,6 +220,7 @@ const ShowUsers = () => {
                     Next
                 </button>
             </div>
+
         </div>
     );
 };
