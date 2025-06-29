@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
-import { AiOutlineMenu } from "react-icons/ai";
+import { AiOutlineMenu, AiOutlineDashboard } from "react-icons/ai";
+import { FiPackage, FiTag, FiFileText, FiCreditCard, FiUsers, FiLayers } from "react-icons/fi";
+import { BsGraphUp, BsGift } from "react-icons/bs";
+import { RiShirtLine } from "react-icons/ri";
+import { MdInventory, MdLocalOffer } from "react-icons/md";
 import { CountContext } from '../../Contexts/CountProvider';
 import { Badge } from '@mui/material';
 import useGroupOrders from '../../Hooks/useGroupOrders';
@@ -9,13 +13,37 @@ import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const AdminDrawer = () => {
     const [isOpen, setIsOpen] = useState(true);
-    const [expandedSections, setExpandedSections] = useState({ Orders: true });
+    const [expandedSections, setExpandedSections] = useState({ 
+        Dashboard: true, 
+        Orders: true,
+        Products: true
+    });
     const router = useRouter();
     const [sortedGroupedOrdersArray] = useGroupOrders();
     const { setShowCount, showCount } = useContext(CountContext);
 
     const uncheckedCount = sortedGroupedOrdersArray.filter(group => !group.history.isChecked).length;
     setShowCount(uncheckedCount);
+
+    const getSectionIcon = (sectionName) => {
+        switch(sectionName) {
+            case 'Dashboard': return <AiOutlineDashboard className="mr-3" />;
+            case 'Inventory': return <MdInventory className="mr-3" />;
+            case 'Coupons': return <FiTag className="mr-3" />;
+            case 'Reports': return <BsGraphUp className="mr-3" />;
+            case 'Payments': return <FiCreditCard className="mr-3" />;
+            case 'Role Management': return <FiUsers className="mr-3" />;
+            case 'User Management': return <FiUsers className="mr-3" />;
+            case 'Products': return <FiPackage className="mr-3" />;
+            case 'Series': return <FiLayers className="mr-3" />;
+            case 'Categories': return <FiLayers className="mr-3" />;
+            case 'Product Types': return <RiShirtLine className="mr-3" />;
+            case 'Orders': return <FiFileText className="mr-3" />;
+            case 'Promotions': return <BsGift className="mr-3" />;
+            case 'Attributes': return <MdLocalOffer className="mr-3" />;
+            default: return <FiPackage className="mr-3" />;
+        }
+    };
 
     const navLinks = [
         {
@@ -145,58 +173,73 @@ const AdminDrawer = () => {
     };
 
     return (
-        <div className={`fixed flex z-40 ${isOpen ? 'w-64' : 'w-16'} transition-all duration-300`}>
-            <div className={`flex flex-col bg-white border-r border-gray-200 h-screen ${isOpen ? 'w-64' : 'w-16'} transition-all duration-300`}>
-                <div className="flex items-center justify-between p-4 border-b">
+        <div className={`fixed flex z-40 ${isOpen ? 'w-64' : 'w-20'} transition-all duration-300 ease-in-out h-screen`}>
+            <div className={`flex flex-col bg-gray-800 text-white h-full ${isOpen ? 'w-64' : 'w-20'} transition-all duration-300 ease-in-out shadow-xl`}>
+                <div className="flex items-center justify-between p-4 border-b border-gray-700">
                     {isOpen && (
                         <Link
                             href="/admin"
-                            className="text-lg font-semibold uppercase text-blue-500 hover:text-blue-700 transition duration-300"
+                            className="text-xl font-bold text-white hover:text-blue-300 transition duration-300 flex items-center"
                         >
+                            <AiOutlineDashboard className="mr-2" />
                             Admin Panel
                         </Link>
                     )}
-                    <div className="cursor-pointer" onClick={toggleDrawer}>
-                        <AiOutlineMenu className="text-3xl" />
-                    </div>
+                    <button 
+                        onClick={toggleDrawer}
+                        className="p-2 rounded-md hover:bg-gray-700 transition-colors duration-200"
+                        aria-label={isOpen ? "Collapse menu" : "Expand menu"}
+                    >
+                        <AiOutlineMenu className="text-xl" />
+                    </button>
                 </div>
 
-                {isOpen && (
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <ul className="space-y-2">
-                            {navLinks.map((link, index) => {
-                                const isExpanded = expandedSections[link.Name];
-                                return (
-                                    <li key={index}>
-                                        <div
-                                            className="flex items-center justify-between cursor-pointer text-xl font-semibold text-gray-800 hover:text-blue-600"
-                                            onClick={() => toggleSection(link.Name)}
-                                        >
-                                            <span>{link.Name}</span>
-                                            <span className="text-sm">{isExpanded ? <FaChevronDown /> : <FaChevronRight />}</span>
+                <div className="flex-1 overflow-y-auto py-4">
+                    <ul className="space-y-1">
+                        {navLinks.map((link, index) => {
+                            const isExpanded = expandedSections[link.Name];
+                            return (
+                                <li key={index} className="px-2">
+                                    <div
+                                        className={`flex items-center justify-between cursor-pointer py-2 px-3 rounded-md ${isExpanded ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
+                                        onClick={() => toggleSection(link.Name)}
+                                    >
+                                        <div className="flex items-center">
+                                            {getSectionIcon(link.Name)}
+                                            {isOpen && (
+                                                <span className="font-medium">{link.Name}</span>
+                                            )}
                                         </div>
-                                        {isExpanded && (
-                                            <ul className="pl-4 pt-1 space-y-1">
-                                                {link.Tasks.map((task, taskIndex) => (
-                                                    <li key={taskIndex}>
-                                                        <Link href={task.href}>
-                                                            <label
-                                                                className={`block text-sm cursor-pointer hover:text-blue-500 ${router.pathname === task.href ? 'text-blue-600 font-bold' : ''
-                                                                    }`}
-                                                            >
-                                                                {task.label}
-                                                            </label>
-                                                        </Link>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                        {isOpen && (
+                                            <span className="text-xs">
+                                                {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+                                            </span>
                                         )}
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-                )}
+                                    </div>
+                                    {isOpen && isExpanded && (
+                                        <ul className="pl-8 pt-1 space-y-1 mt-1">
+                                            {link.Tasks.map((task, taskIndex) => (
+                                                <li key={taskIndex}>
+                                                    <Link href={task.href}>
+                                                        <div
+                                                            className={`block py-2 px-3 rounded-md text-sm cursor-pointer transition-colors duration-200 ${
+                                                                router.pathname === task.href 
+                                                                    ? 'bg-blue-600 text-white font-medium' 
+                                                                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                                                            }`}
+                                                        >
+                                                            {task.label}
+                                                        </div>
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
             </div>
         </div>
     );
