@@ -260,7 +260,7 @@ const ShowAllCategories = () => {
                                     </td>
                                     <td className="py-2 px-4 border-b">{cat.category?.name || "—"}</td>
                                     <td className="py-2 px-4 border-b space-x-2">
-                                        {cat.isActive ? (
+                                        {cat.isDisabled == false ? (
                                             <button
                                                 onClick={() => handleDisableOrEnable([cat.id])}
                                                 className="btn btn-xs btn-warning"

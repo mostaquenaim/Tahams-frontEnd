@@ -4,7 +4,7 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import ListListComponent from './components/ListListComponent';
 
 const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
-    // console.log(cat, 78);
+    // console.log(cats, 78);
     const [subCategories, setSubCategories] = useState([])
 
     const axiosPublic = useAxiosPublic();
@@ -25,8 +25,8 @@ const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
                 <span className='flex gap-1 items-center'> {parentName} <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown> </span>
                 <ul
                     className="hidden gap-10 p-5 bg-base-100 absolute border-white border-2 rounded-lg">
-                        {/*  */}
-                        {/* */}
+                    {/*  */}
+                    {/* */}
                     {children}
                 </ul>
             </li>
@@ -55,12 +55,15 @@ const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
                             )
                         ))
                         :
-                        subCategories.map((catItem, index) => (
-                            <ul className={` ${isSide ? '' : index + 1 != subCategories.length && 'border-r-2 border-zinc-800 pr-4'}`}>
-                                <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span>
-                                <ListListComponent ListStyle={ListStyle} sub={catItem}></ListListComponent>
-                            </ul>
-                        ))
+                        subCategories.map((catItem, index) => 
+                            // {
+                                catItem.isDisabled == false &&
+                                    <ul className={` ${isSide ? '' : index + 1 != subCategories.length && 'border-r-2 border-zinc-800 pr-4'}`}>
+                                        <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span>
+                                        <ListListComponent ListStyle={ListStyle} sub={catItem}></ListListComponent>
+                                    </ul>
+                            // }
+                        )
                 }
             </List>
         </>
