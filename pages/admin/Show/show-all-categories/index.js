@@ -47,7 +47,7 @@ const ShowAllCategories = () => {
         }
     };
 
-    const handleDisable = async (ids) => {
+    const handleDisableOrEnable = async (ids) => {
         const confirm = await Swal.fire({
             title: `Disable ${ids.length > 1 ? 'these categories' : 'this category'}?`,
             icon: "warning",
@@ -63,7 +63,7 @@ const ShowAllCategories = () => {
 
             await Promise.all(
                 ids.map((id) =>
-                    axiosPublic.put(`/admin/disable-sub-category/${id}`, {}, {
+                    axiosPublic.put(`/admin/disable-or-enable-sub-category/${id}`, {}, {
                         headers: { Authorization: `Bearer ${token}` },
                     })
                 )
@@ -159,9 +159,9 @@ const ShowAllCategories = () => {
             {selectedIds.length > 0 && (
                 <div className="mb-4 flex gap-2">
                     <button
-                        onClick={() => handleDisable(selectedIds)}
+                        onClick={() => handleDisableOrEnable(selectedIds)}
                         className="btn btn-sm btn-warning"
-                        
+
                     >
                         Disable Selected ({selectedIds.length})
                     </button>
@@ -260,12 +260,22 @@ const ShowAllCategories = () => {
                                     </td>
                                     <td className="py-2 px-4 border-b">{cat.category?.name || "—"}</td>
                                     <td className="py-2 px-4 border-b space-x-2">
-                                        <button
-                                            onClick={() => handleDisable([cat.id])}
-                                            className="btn btn-xs btn-warning"
-                                        >
-                                            Disable
-                                        </button>
+                                        {cat.isActive ? (
+                                            <button
+                                                onClick={() => handleDisableOrEnable([cat.id])}
+                                                className="btn btn-xs btn-warning"
+                                            >
+                                                Disable
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleDisableOrEnable([cat.id])}
+                                                className="btn btn-xs btn-success"
+                                            >
+                                                Enable
+                                            </button>
+                                        )}
+
                                         <button
                                             onClick={() => handleDelete([cat.id])}
                                             className="btn btn-xs btn-error"
