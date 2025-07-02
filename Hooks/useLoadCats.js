@@ -10,6 +10,7 @@ const useLoadCats = () => {
 
             const sortedCategories = result.data.sort((a, b) => a.serial - b.serial); 
 
+            // console.log(sortedCategories,'srted');
             return sortedCategories;
         } catch (error) {
             console.error('Error loading categories:', error);

@@ -79,7 +79,16 @@ const RearrangeNavbar = () => {
                                                 className="bg-white p-3 mb-2 rounded shadow hover:shadow-md transition-shadow flex items-center"
                                             >
                                                 <span className="mr-2 text-gray-500">≡</span>
-                                                {fullCategory?.name || 'Unnamed'}
+                                                {
+                                                    fullCategory?.name || 'Unnamed'} {
+                                                    fullCategory.isGenderVaried
+                                                    &&
+                                                    (
+                                                        fullCategory.isForWomen ? '(Women)'
+                                                            :
+                                                            fullCategory.isForMen && '(Men)'
+                                                    )
+                                                }
                                             </li>
                                         )}
                                     </Draggable>
