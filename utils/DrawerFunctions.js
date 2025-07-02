@@ -10,7 +10,7 @@ export const DrawerLinks = (ListStyle, ListComponent, categories, genders, toggl
                 ))
             }
             {
-                categories &&
+                categories && categories.length > 0 &&
                 categories.map((cat, index) => (
                     !cat.isGenderVaried ?
                         <ListComponent isSide={true} key={index} cat={cat} ListStyle={ListStyle}></ListComponent>

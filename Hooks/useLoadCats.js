@@ -1,32 +1,28 @@
 import useAxiosPublic from './useAxiosPublic';
 import { useQuery } from '@tanstack/react-query';
 
-const useLoadSubCategories = () => {
+const useLoadCats = () => {
     const axiosPublic = useAxiosPublic();
 
-    const loadSubCategories = async () => {
+    const loadCategories = async () => {
         try {
-            const result = await axiosPublic.get('/admin/view-product-sub-categories');
+            const result = await axiosPublic.get('/admin/view-product-categories');
 
-            // console.log('result=',result);
-            const sortedCategories = result.data
+            const sortedCategories = result.data.sort((a, b) => a.serial - b.serial); 
 
             return sortedCategories;
         } catch (error) {
             console.error('Error loading categories:', error);
+            return []; 
         }
     };
 
     const { refetch, data: categories = [], isPending } = useQuery({
-        queryKey: ['categories'],
-        queryFn: loadSubCategories,
-        // enabled: !loading ,
+        queryKey: ['cats'], 
+        queryFn: loadCategories,
     });
 
     return [categories, refetch, isPending];
 };
 
-export default useLoadSubCategories;
-
-
-
+export default useLoadCats;

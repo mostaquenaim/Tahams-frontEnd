@@ -1,9 +1,7 @@
-import axios from "axios"
 import { useEffect, useState } from "react"
 import { TagsInput } from "react-tag-input-component";
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import { useForm } from 'react-hook-form';
-import AdminDrawer from "/components/Drawers/AdminDrawer";
 import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from "../../../components/Product/ProductFormComp";
 import useAxiosPublic from '../../../Hooks/useAxiosPublic'
@@ -31,7 +29,8 @@ export default function AddProduct() {
         handleSubmit,
         formState: { errors },
         reset,
-        control
+        control,
+        setValue
     } = useForm();
 
     // load hooks
@@ -45,7 +44,88 @@ export default function AddProduct() {
     useEffect(() => {
         const at = localStorage.getItem('access_token');
         setToken(at)
+
+        // Check for duplicate product data in localStorage
+        const duplicateProductData = localStorage.getItem('duplicate_product_data');
+        if (duplicateProductData) {
+            try {
+                const productData = JSON.parse(duplicateProductData);
+                populateFormWithDuplicateData(productData);
+                // Remove the data from localStorage after using it
+                localStorage.removeItem('duplicate_product_data');
+            } catch (error) {
+                console.error('Error parsing duplicate product data:', error);
+            }
+        }
     }, [])
+
+    const populateFormWithDuplicateData = (productData) => {
+        // Set basic fields
+        setValue('name', productData.name);
+        setValue('serialNo', productData.serialNo);
+        setValue('note', productData.note);
+        setValue('vatPercentage', productData.vatPercentage);
+        setValue('discountPercentage', productData.discountPercentage);
+        setValue('buyingPrice', productData.buyingPrice);
+        setValue('sellingPrice', productData.sellingPrice);
+        setValue('description', productData.description);
+        setValue('longDescription', productData.longDescription);
+
+        // Set color if available
+        if (productData.color) {
+            setSelectedColor(productData.color.id);
+        }
+
+        // Set tags if available
+        if (productData.tags) {
+            setSelectedTags(productData.tags.split(',').map(tag => tag.trim()));
+        }
+
+        // Process categories and sizes
+        if (productData.pscs && productData.pscs.length > 0) {
+            const uniqueCategories = new Set();
+            const categoriesInfo = [];
+            const sizeApplicableCategories = [];
+
+            productData.pscs.forEach(item => {
+                const categoryId = item.category.id;
+                uniqueCategories.add(categoryId);
+
+                // Check if this category is size applicable
+                if (item.size) {
+                    if (!sizeApplicableCategories.includes(categoryId)) {
+                        sizeApplicableCategories.push(categoryId);
+                    }
+
+                    // Find or create category info
+                    let categoryInfo = categoriesInfo.find(ci => ci.category === categoryId);
+                    if (!categoryInfo) {
+                        categoryInfo = { category: categoryId, sizes: [] };
+                        categoriesInfo.push(categoryInfo);
+                    }
+
+                    // Add size info
+                    categoryInfo.sizes.push({
+                        id: item.size.id,
+                        quantity: item.quantity
+                    });
+                } else {
+                    // For non-size categories
+                    let categoryInfo = categoriesInfo.find(ci => ci.category === categoryId);
+                    if (!categoryInfo) {
+                        categoriesInfo.push({
+                            category: categoryId,
+                            sizes: [{ quantity: item.quantity }]
+                        });
+                    }
+                }
+            });
+
+            setSelectedCats(Array.from(uniqueCategories));
+            setSelectedCatsInfo(categoriesInfo);
+            setIsSizeApplicable(sizeApplicableCategories);
+        }
+    };
 
     const validateFile = (value) => {
         if (value.length > 0) {
@@ -118,6 +198,7 @@ export default function AddProduct() {
     }
 
     const onSubmit = async (data) => {
+        // console.log('hereedd');
         setIsSubmitting(true);
         const formData = new FormData();
 
@@ -140,7 +221,7 @@ export default function AddProduct() {
         formData.append('sellingPrice', data.sellingPrice);
         formData.append('tags', selectedTags);
         formData.append('description', data.description);
-        formData.append('myfile', data.myfile[0]);
+        data.myfile && data.myfile[0] && formData.append('myfile', data.myfile[0]);
         formData.append('color', selectedColor);
         formData.append('longDescription', data.longDescription);
 
@@ -190,7 +271,7 @@ export default function AddProduct() {
             <Head>
                 <title>Add Product - Admin</title>
             </Head>
-            
+
             <div className="p-8 bg-gray-50 min-h-screen">
                 <div className="max-w-5xl mx-auto">
                     {/* Header */}
@@ -215,26 +296,26 @@ export default function AddProduct() {
                                     Basic Information
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <ProductFormComp 
-                                        type='text' 
-                                        name='name' 
-                                        label='Product Name' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='text'
+                                        name='name'
+                                        label='Product Name'
+                                        register={register}
+                                        errors={errors}
                                     />
-                                    <ProductFormComp 
-                                        type='text' 
-                                        name='serialNo' 
-                                        label='Serial No' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='text'
+                                        name='serialNo'
+                                        label='Serial No'
+                                        register={register}
+                                        errors={errors}
                                     />
-                                    <ProductFormComp 
-                                        type='text' 
-                                        name='note' 
-                                        label='Note' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='text'
+                                        name='note'
+                                        label='Note'
+                                        register={register}
+                                        errors={errors}
                                     />
                                 </div>
                             </div>
@@ -245,33 +326,33 @@ export default function AddProduct() {
                                     Pricing Information
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <ProductFormComp 
-                                        type='number' 
-                                        name='vatPercentage' 
-                                        label='VAT %' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='number'
+                                        name='vatPercentage'
+                                        label='VAT %'
+                                        register={register}
+                                        errors={errors}
                                     />
-                                    <ProductFormComp 
-                                        type='number' 
-                                        name='discountPercentage' 
-                                        label='Discount %' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='number'
+                                        name='discountPercentage'
+                                        label='Discount %'
+                                        register={register}
+                                        errors={errors}
                                     />
-                                    <ProductFormComp 
-                                        type='number' 
-                                        name='buyingPrice' 
-                                        label='Buying Price' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='number'
+                                        name='buyingPrice'
+                                        label='Buying Price'
+                                        register={register}
+                                        errors={errors}
                                     />
-                                    <ProductFormComp 
-                                        type='number' 
-                                        name='sellingPrice' 
-                                        label='Selling Price' 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        type='number'
+                                        name='sellingPrice'
+                                        label='Selling Price'
+                                        register={register}
+                                        errors={errors}
                                     />
                                 </div>
                             </div>
@@ -282,21 +363,21 @@ export default function AddProduct() {
                                     Product Descriptions
                                 </h2>
                                 <div className="space-y-6">
-                                    <ProductFormComp 
-                                        isDesc={true} 
-                                        name='description' 
-                                        label='Short Description' 
-                                        placeholder={'Brief description shown on product cards'} 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        isDesc={true}
+                                        name='description'
+                                        label='Short Description'
+                                        placeholder={'Brief description shown on product cards'}
+                                        register={register}
+                                        errors={errors}
                                     />
-                                    <ProductFormComp 
-                                        isDesc={true} 
-                                        name='longDescription' 
-                                        label='Full Description' 
-                                        placeholder={'Detailed description shown on product page'} 
-                                        register={register} 
-                                        errors={errors} 
+                                    <ProductFormComp
+                                        isDesc={true}
+                                        name='longDescription'
+                                        label='Full Description'
+                                        placeholder={'Detailed description shown on product page'}
+                                        register={register}
+                                        errors={errors}
                                     />
                                 </div>
                             </div>
@@ -307,25 +388,25 @@ export default function AddProduct() {
                                     Product Attributes
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <SelectionFormComp 
-                                        label={'Color'} 
-                                        name={'color'} 
-                                        selectedValue={selectedColor} 
-                                        setFunction={setSelectedColor} 
-                                        defaultShown={'Select color'} 
-                                        values={colors} 
-                                        errors={errors} 
-                                        register={register} 
+                                    <SelectionFormComp
+                                        label={'Color'}
+                                        name={'color'}
+                                        selectedValue={selectedColor}
+                                        setFunction={setSelectedColor}
+                                        defaultShown={'Select color'}
+                                        values={colors}
+                                        errors={errors}
+                                        register={register}
                                     />
-                                    <SelectionFormComp 
-                                        label={'Fabric'} 
-                                        name={'fabric'} 
-                                        selectedValue={selectedFabric} 
-                                        setFunction={setSelectedFabric} 
-                                        defaultShown={'Select fabric'} 
-                                        values={fabrics} 
-                                        errors={errors} 
-                                        register={register} 
+                                    <SelectionFormComp
+                                        label={'Fabric'}
+                                        name={'fabric'}
+                                        selectedValue={selectedFabric}
+                                        setFunction={setSelectedFabric}
+                                        defaultShown={'Select fabric'}
+                                        values={fabrics}
+                                        errors={errors}
+                                        register={register}
                                     />
                                 </div>
                             </div>
@@ -370,18 +451,18 @@ export default function AddProduct() {
                                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                     <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                                     </svg>
                                                     <p className="mb-2 text-sm text-gray-500">
                                                         <span className="font-semibold">Click to upload</span> or drag and drop
                                                     </p>
                                                     <p className="text-xs text-gray-500">PNG, JPG, GIF (MAX. 5MB)</p>
                                                 </div>
-                                                <input 
-                                                    type="file" 
-                                                    id="myfile" 
-                                                    className="hidden" 
-                                                    {...register('myfile', { required: true, validate: validateFile })} 
+                                                <input
+                                                    type="file"
+                                                    id="myfile"
+                                                    className="hidden"
+                                                    {...register('myfile', { required: true, validate: validateFile })}
                                                 />
                                             </label>
                                         </div>
@@ -402,19 +483,19 @@ export default function AddProduct() {
                                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                     <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                                     </svg>
                                                     <p className="mb-2 text-sm text-gray-500">
                                                         <span className="font-semibold">Click to upload</span> or drag and drop
                                                     </p>
                                                     <p className="text-xs text-gray-500">PNG, JPG, GIF (MAX. 5MB each)</p>
                                                 </div>
-                                                <input 
-                                                    type="file" 
-                                                    id="file_input" 
-                                                    className="hidden" 
-                                                    multiple 
-                                                    {...register('myfiles', { validate: validateFile })} 
+                                                <input
+                                                    type="file"
+                                                    id="file_input"
+                                                    className="hidden"
+                                                    multiple
+                                                    {...register('myfiles', { validate: validateFile })}
                                                 />
                                             </label>
                                         </div>
@@ -450,7 +531,7 @@ export default function AddProduct() {
                                                             <span className="font-medium text-gray-700">{category.name}</span>
                                                             <p className="text-sm text-gray-500">
                                                                 {category.category.name}, {category.category.category.name}
-                                                                {category.category.category.isGenderVaried && 
+                                                                {category.category.category.isGenderVaried &&
                                                                     (category.category.category.isForMen ? ' (Men)' : ' (Women)')}
                                                             </p>
                                                         </label>

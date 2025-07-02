@@ -6,6 +6,7 @@ import ListListComponent from './components/ListListComponent';
 const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
     // console.log(cats, 78);
     const [subCategories, setSubCategories] = useState([])
+    const [subCategoriesLength, setSubCategoriesLength] = useState(0)
 
     const axiosPublic = useAxiosPublic();
 
@@ -14,6 +15,9 @@ const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
         axiosPublic.get(`/admin/view-product-sub-category/${cat.id}`)
             .then(res => {
                 setSubCategories(res.data)
+                setSubCategoriesLength(
+                    res.data.filter(item => item.isDisabled === false).length
+                );
                 // console.log(res.data, "13");
             })
         // }
@@ -55,13 +59,13 @@ const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
                             )
                         ))
                         :
-                        subCategories.map((catItem, index) => 
+                        subCategories.map((catItem, index) =>
                             // {
-                                catItem.isDisabled == false &&
-                                    <ul className={` ${isSide ? '' : index + 1 != subCategories.length && 'border-r-2 border-zinc-800 pr-4'}`}>
-                                        <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span>
-                                        <ListListComponent ListStyle={ListStyle} sub={catItem}></ListListComponent>
-                                    </ul>
+                            catItem.isDisabled == false &&
+                            <ul className={` ${isSide ? '' : index + 1 != subCategories.length && 'border-r-2 border-zinc-800 pr-4'}`}>
+                                <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span>
+                                <ListListComponent ListStyle={ListStyle} sub={catItem}></ListListComponent>
+                            </ul>
                             // }
                         )
                 }

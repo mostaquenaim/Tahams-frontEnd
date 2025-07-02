@@ -7,26 +7,31 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic'
 
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
+import useLoadCats from '/Hooks/useLoadCats';
+import Loading from '../Loading';
 
 const NavbarCompTwo = () => {
     const axiosPublic = useAxiosPublic();
 
     const [searchBtn, setSearchBtn] = useState(false)
-    const [categories, setCategories] = useState([])
+    // const [categories, setCategories] = useState([])
     const [genders, setGenders] = useState([])
     const { user, logOut } = useContext(AuthContext)
     const [searchInput, setSearchInput] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
     const [searchedProducts, setSearchedProducts] = useState([])
+    const [categories,, isPending] = useLoadCats()
+    const router = useRouter()
+    // console.log(categories);
 
-    useEffect(() => {
-        axiosPublic.get('/admin/view-product-categories')
-            .then((res) => {
-                setCategories(res.data)
-                // console.log(res.data,"19");
-            })
-    }, [])
+    // useEffect(() => {
+    //     axiosPublic.get('/admin/view-product-categories')
+    //         .then((res) => {
+    //             setCategories(res.data)
+    //             // console.log(res.data,"19");
+    //         })
+    // }, [])
 
     useEffect(() => {
         axiosPublic.get('/admin/view-genders')
@@ -61,6 +66,10 @@ const NavbarCompTwo = () => {
             </li>
             // hidden hover:inline-block
         );
+    }
+
+    if (isPending) {
+        return <Loading />
     }
 
     // navlinks 
@@ -126,8 +135,6 @@ const NavbarCompTwo = () => {
             </Li>
         </>
     )
-
-    const router = useRouter()
 
     const handleSearch = () => {
         router.push(`/search-product?search=${searchInput}`)

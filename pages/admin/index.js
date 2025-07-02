@@ -136,7 +136,7 @@ const Admin = () => {
             {/* total sales  */}
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-lg font-semibold text-gray-700">Total Sales</h2>
-              <p className="text-3xl font-bold text-indigo-600">${totalSales.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-indigo-600">৳{totalSales.toLocaleString()}</p>
             </div>
             {/* total users  */}
             <div className="bg-white p-6 rounded-lg shadow">

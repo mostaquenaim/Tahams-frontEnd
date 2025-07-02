@@ -8,6 +8,7 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
 import { FaSync } from 'react-icons/fa';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 
 const ShowProducts = () => {
     const { user, loading } = useContext(AuthContext);
@@ -21,6 +22,7 @@ const ShowProducts = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const router = useRouter()
 
     const [token, setToken] = useState('')
 
@@ -46,6 +48,36 @@ const ShowProducts = () => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
         }
+    };
+
+    const handleDuplicate = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (!product) {
+            console.error('Product not found for duplication');
+            return;
+        }
+
+        const duplicatedProduct = {
+            buyingPrice: product.buyingPrice,
+            color: product.color,
+            description: product.description,
+            discountPercentage: product.discountPercentage,
+            fabric: product.fabric,
+            filename: product.filename,
+            ifStock: product.ifStock,
+            longDescription: product.longDescription,
+            name: product.name + ' Copy',
+            note: product.note,
+            pscs: product.pscs,
+            sellingPrice: product.sellingPrice,
+            serialNo: product.serialNo,
+            tags: product.tags,
+            vatPercentage: product.vatPercentage,
+        };
+
+        localStorage.removeItem('duplicate_product_data')
+        localStorage.setItem('duplicate_product_data', JSON.stringify(duplicatedProduct));
+        router.push('/admin/add/add-product');
     };
 
     const openDeleteModal = (id) => {
@@ -137,14 +169,14 @@ const ShowProducts = () => {
                 <title>All Products</title>
             </Head>
             <h1 className='text-3xl font-bold text-center mb-8'>Products</h1>
-            <p className="flex justify-end">
+            <div className="flex justify-end">
 
                 <div className='m-3'>
                     <label htmlFor="default-search" className="mb-2 text-sm font-medium sr-only">Search</label>
                     <div className="relative">
                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                             <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                             </svg>
                         </div>
                         <input
@@ -159,7 +191,7 @@ const ShowProducts = () => {
                     </div>
                 </div>
 
-            </p>
+            </div>
             <div className='container mx-auto'>
                 {loading ? (
                     <Loading />
@@ -174,7 +206,7 @@ const ShowProducts = () => {
                                     <th className='py-2 px-4 border-b'>Color</th>
                                     <th className='py-2 px-4 border-b'>Category</th>
                                     <th className='py-2 px-4 border-b'>Price</th>
-                                    <th className='py-2 px-4 border-b'>Sizes</th>
+                                    {/* <th className='py-2 px-4 border-b'>Sizes</th> */}
                                     <th className='py-2 px-4 border-b'>Total Stock</th>
                                     <th className='py-2 px-4 border-b'>Actions</th>
                                 </tr>
@@ -204,8 +236,8 @@ const ShowProducts = () => {
                                             <td className='py-2 px-4 border-b'>{product?.totalViews}</td>
                                             <td className='py-2 px-4 border-b'>{product.color?.name}</td>
                                             <td className='py-2 px-4 border-b'>{product.pscs[0]?.category?.name}, {product.pscs[0]?.size?.name} (Total {product.pscs.length} sizes)</td>
-                                            <td className='py-2 px-4 border-b'>${product.sellingPrice.toFixed(2)}</td>
-
+                                            <td className='py-2 px-4 border-b'>৳{product.sellingPrice.toFixed(2)}</td>
+                                            {/* 
                                             <td className=' py-2 px-4 border-b'>
                                                 {product.pscs.map((psc) => (
                                                     <div key={psc.id} className='grid grid-flow-col col-span-3 space-x-1 space-y-1'>
@@ -225,7 +257,7 @@ const ShowProducts = () => {
                                                         </button>
                                                     </div>
                                                 ))}
-                                            </td>
+                                            </td> */}
 
                                             <td className='py-2 px-4 border-b'>
                                                 {totalStock > 0 ? totalStock : <span className="text-red-500">Out of stock</span>}
@@ -239,15 +271,21 @@ const ShowProducts = () => {
                                                     <span className='text-red-500 hover:underline'>Delete</span>
                                                 </button>
                                                 <span>|</span>
-                                                <button onClick={() => handleSave(product.id)} className={`btn btn-sm ${editedProducts[product.id] ? 'btn-success' : 'btn-disabled'}`}>
-                                                    <span className=' hover:underline'>
-                                                        Save
-                                                    </span>
+                                                <button onClick={() => handleDuplicate(product.id)}>
+                                                    <span className='text-amber-600 hover:underline'>Duplicate</span>
                                                 </button>
-                                                <span>|</span>
-                                                <button onClick={() => handleCancel(product.id)} className={`btn btn-sm ${editedProducts[product.id] ? 'btn-warning' : 'btn-disabled'}`}>
-                                                    <span className='hover:underline'>Cancel</span>
-                                                </button>
+                                                <div className={editedProducts[product.id] ? 'block' : 'hidden'}>
+                                                    <span>|</span>
+                                                    <button onClick={() => handleSave(product.id)} className={`btn btn-sm ${editedProducts[product.id] ? 'btn-success' : 'btn-disabled'}`}>
+                                                        <span className=' hover:underline'>
+                                                            Save
+                                                        </span>
+                                                    </button>
+                                                    <span>|</span>
+                                                    <button onClick={() => handleCancel(product.id)} className={`btn btn-sm ${editedProducts[product.id] ? 'btn-warning' : 'btn-disabled'}`}>
+                                                        <span className='hover:underline'>Cancel</span>
+                                                    </button>
+                                                </div>
                                                 {/* )} */}
                                             </td>
                                         </motion.tr>

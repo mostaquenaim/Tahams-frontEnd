@@ -22,7 +22,7 @@ export default function App({ Component, pageProps }) {
 
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin');
-  const isAdminAdd = router.pathname.startsWith('/admin/Add');
+  const isAdminAdd = router.pathname.startsWith('/admin/add');
 
 
   return (
