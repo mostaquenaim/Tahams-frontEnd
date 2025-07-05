@@ -15,6 +15,8 @@ const ShowProductSmall = ({ item }) => {
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)
+    const [mainLoaded, setMainLoaded] = useState(false);
+    const [hoverLoaded, setHoverLoaded] = useState(false);
 
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     // const [showGotoCart, setShowGotoCart] = useState(false)
@@ -117,46 +119,44 @@ const ShowProductSmall = ({ item }) => {
                 {/* image  */}
                 <div
                     onClick={handleProductClick}
-                    className="relative cursor-pointer h-40 w-32 md:h-44 md:w-36 overflow-hidden rounded-t-md flex items-center"
+                    className="relative cursor-pointer h-40 w-32 md:h-44 md:w-36 overflow-hidden rounded-t-md flex items-center justify-center bg-white"
                 >
-                    {[
-                        {
-                            src: `${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.filename}`, //main image
-                            visible: !hovered,
-                        },
-                        {
-                            src: `${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.productPictures[0]?.filename}`, //sub image
-                            visible: hovered,
-                        },
-                    ].map((img, index) => (
+                    {/* Placeholder Loader (show if not loaded yet) */}
+                    {/* Placeholder Loader (shows until main or hover image is loaded) */}
+                    {(!hovered && !mainLoaded) || (hovered && !hoverLoaded) ? (
+                        <div className="absolute w-full h-full bg-gray-300 animate-pulse rounded-t-md z-0" />
+                    ) : null}
+
+                    {/* Main Image */}
+                    <img
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.filename}`}
+                        alt={item.name}
+                        className={`${imageStyle} ${hovered ? subShow : mainShow} ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
+                        onMouseEnter={handleMouseEnter}
+                        onLoad={() => setMainLoaded(true)}
+                        style={{ display: hovered ? "none" : "block" }}
+                    />
+
+                    {/* Hover Image */}
+                    {item.productPictures[0]?.filename && (
                         <img
-                            key={index}
-                            src={img.src}
+                            src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.productPictures[0].filename}`}
                             alt={item.name}
-                            className={`${imageStyle} ${img.visible ? mainShow : subShow}`}
-                            onMouseEnter={handleMouseEnter}
+                            className={`${imageStyle} ${hovered ? mainShow : subShow} ${hoverLoaded ? 'opacity-100' : 'opacity-0'}`}
                             onMouseLeave={handleMouseLeave}
+                            onLoad={() => setHoverLoaded(true)}
+                            style={{ display: hovered ? "block" : "none" }}
                         />
-                    ))}
+                    )}
 
-                    {/* Wishlist Icon */}
-                    {/* {hoveredWish && (
-                        <button
-                            className="absolute top-10 right-1 bg-white rounded-full p-1 shadow hover:scale-110 transition"
-                            onClick={(e) => {
-                                toast.success("Added to wishlist");
-                                // handleWishList(item); // ← if you have a handler
-                            }}
-                        >
-                            <FaHeart className="text-red-500 text-sm" />
-                        </button>
-                    )} */}
-
-                    {/* Out of Stock Badge */}
-                    {!ifStock && <img src="/out-of-stock.png" className="absolute top-0 left-0 w-24" />}
-
+                    {!ifStock && (
+                        <img
+                            src="/out-of-stock.png"
+                            className="absolute top-0 left-0 w-24 z-20"
+                            alt="Out of stock"
+                        />
+                    )}
                 </div>
-
 
                 {/* text and rest part  */}
                 <div className="flex flex-col items-center text-center justify-center gap-2 px-2 py-1">
@@ -168,19 +168,6 @@ const ShowProductSmall = ({ item }) => {
                         <p className="text-green-600 font-medium">{discountedPrice} BDT</p>
                     </div>
                     <div className="flex gap-1 justify-center items-center">
-                        {/* <button
-                            onClick={handleAddToCart}
-                            className={`btn btn-xs btn-primary ${isAddedToCart || (userInfo && userInfo.role === 'admin') ? 'btn-disabled' : ''}`}
-                        >
-                            <FaCartShopping />
-                        </button>
-                        <button
-                            onClick={handleProductClick}
-                            className="btn btn-xs btn-accent"
-                        >
-                            <FaEye />
-
-                        </button> */}
                         <button
                             className={`btn btn-xs btn-accent ${(userInfo && userInfo.role == 'admin') ? 'btn-disabled' : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'}`}
                             onClick={handleAddToCart}
