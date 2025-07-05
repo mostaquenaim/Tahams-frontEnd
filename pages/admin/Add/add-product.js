@@ -236,7 +236,7 @@ export default function AddProduct() {
 
             toast.success('Product added successfully');
             data.myfiles?.length > 0 && await onSubmitPictures(data);
-            reset();
+            // reset();
         }
         catch (error) {
             console.error(error.response?.data?.message);
@@ -616,8 +616,25 @@ export default function AddProduct() {
                         </form>
                     </div>
                 </div>
+                <div className="fixed bottom-5 right-5 flex flex-col space-y-3">
+                    {/* Scroll to Top Button */}
+                    <button
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+                        className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
+                    >
+                        ↑
+                    </button>
+
+                    {/* Scroll to Bottom Button */}
+                    <button
+                        onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })}
+                        className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
+                    >
+                        ↓
+                    </button>
+                </div>
             </div>
-            <Toaster position="top-right" />
+            {/* <Toaster position="top-right" /> */}
         </>
     );
 }

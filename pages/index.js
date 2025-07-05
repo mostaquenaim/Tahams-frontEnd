@@ -10,11 +10,12 @@ import Head from 'next/head';
 import useLoadActivePop from '/./Hooks/useLoadActivePop';
 import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
+import bannerImages from '../public/banner-images.json';
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
 export default function Home() {
-  const [images, setImages] = useState([]);
+  // const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const activePop = useLoadActivePop()
 
@@ -24,9 +25,9 @@ export default function Home() {
 
   useEffect(() => {
     TagManager.initialize(tagManagerArgs);
-    fetch('/banner-images.json')
-      .then((res) => res.json())
-      .then((data) => setImages(data));
+    // fetch('/banner-images.json')
+    //   .then((res) => res.json())
+    //   .then((data) => setImages(data));
   }, []);
 
   const handleCloseModal = () => {
@@ -65,6 +66,14 @@ export default function Home() {
             <meta property="og:url" content="https://tahamsbd.com/" />
             <meta property="og:type" content="website" />
             <meta property="og:image" content="https://tahamsbd.com/og-image.jpg" />
+
+            {/* 🔥 Preload LCP image */}
+            <link
+              rel="preload"
+              as="image"
+              href="/perfumes.jpg"
+              fetchpriority="high"
+            />
           </Head>
 
           {/* Modal */}
@@ -99,11 +108,11 @@ export default function Home() {
           </Modal>
           {/* Main Content */}
           {/* {!isModalOpen && */}
-          <MySwiper images={images}></MySwiper>
+          <MySwiper images={bannerImages}></MySwiper>
           {/* <TriangleLoader/> */}
           {/* } */}
-          <NewArrival/>
-          <Popular/>
+          <NewArrival />
+          <Popular />
           <section id='about'>
             <WhyUs></WhyUs>
           </section>

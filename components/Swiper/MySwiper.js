@@ -8,7 +8,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/effect-fade';
 
-const MySwiper = ({ images=[] }) => {
+const MySwiper = ({ images = [] }) => {
     return (
 
         <Swiper
@@ -29,13 +29,14 @@ const MySwiper = ({ images=[] }) => {
                 images.map((image, index) => (
                     <SwiperSlide key={index}>
                         <img
-                            className='w-full lg:aspect-[5/2] object-cover pt-16 lg:pt-32'
-                            src={image}
-                            alt=""
+                            className="w-full lg:aspect-[5/2] object-cover pt-16 lg:pt-32"
+                            src={`/${image}`} // assuming images are in /public
+                            alt={`Banner ${index + 1}`}
+                            loading={index === 0 ? 'eager' : 'lazy'}
+                            fetchpriority={index === 0 ? 'high' : 'auto'}
                         />
                     </SwiperSlide>
                 ))
-
             }
         </Swiper>
     );
