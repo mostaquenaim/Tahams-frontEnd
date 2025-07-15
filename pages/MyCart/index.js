@@ -9,7 +9,8 @@ import Head from 'next/head';
 import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils/ga4';
 
 const MyCart = () => {
-  const [cart, refetch] = useCart();
+  const [isLoading ,cart, refetch] = useCart();
+  console.log(cart,'cart');
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
 

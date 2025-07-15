@@ -25,7 +25,9 @@ const useCart = () => {
 
         // Fetch cart data for the current user
         const res = await axiosPublic.get(`/admin/get-all-carts?email=${currentUser.email}`);
+        // console.log(res.data);
         const result = res.data.filter((item) => !item.isBought);
+        // console.log(result);
         return result;
     };
 

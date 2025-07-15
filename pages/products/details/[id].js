@@ -243,6 +243,8 @@ const Product = ({ product }) => {
                     customerEmail: customEmail, // Use guest email
                 });
 
+                console.log(response.data,'rspdar');
+
                 // console.log(response.data,'cart data');
                 localStorage.setItem('defaultCartItem', response.data.id)
 
@@ -594,7 +596,7 @@ const Product = ({ product }) => {
                 // showGotoCart &&
                 <Link
                     href={'/MyCart'}
-                    className={` w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
+                    className={`w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${!showGotoCart && 'pointer-events-none opacity-0 transition duration-700'}`}
                 >
                     Go to cart
                 </Link>
