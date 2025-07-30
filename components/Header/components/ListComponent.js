@@ -34,7 +34,6 @@ const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
                     {children}
                 </ul>
             </li>
-            // hidden hover:inline-block
         );
     }
 

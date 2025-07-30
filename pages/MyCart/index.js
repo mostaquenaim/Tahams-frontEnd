@@ -10,7 +10,7 @@ import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils
 
 const MyCart = () => {
   const [isLoading ,cart, refetch] = useCart();
-  console.log(cart,'cart');
+  // console.log(cart,'cart');
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
 
