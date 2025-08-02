@@ -107,7 +107,7 @@ const ShowProduct = ({ item }) => {
                 >
                     {/* Main Image (Fades out on hover) */}
                     <img
-                        src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.filename}`}
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
                         alt={item.name}
                         className={`rounded-t-lg absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
                         onMouseEnter={handleMouseEnter}
@@ -116,7 +116,7 @@ const ShowProduct = ({ item }) => {
 
                     {/* Hover Image (Fades in on hover) */}
                     <img
-                        src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.productPictures[0]?.filename}`}
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.productPictures[0]?.filename}`}
                         alt={item.name}
                         className={`rounded-t-lg absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                         onMouseEnter={handleMouseEnter}

@@ -11,7 +11,8 @@ import { getGuestCustomerInfo } from "../../utils/guestCustomer";
 import { FaHeart } from "react-icons/fa";
 
 const ShowProductSmall = ({ item }) => {
-    // console.log(item,'atimm');
+    console.log(item.filename);
+    console.log(item,'atimm');
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)
@@ -129,7 +130,7 @@ const ShowProductSmall = ({ item }) => {
 
                     {/* Main Image */}
                     <img
-                        src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.filename}`}
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.thumbImage ? item.thumbImage : item.filename}`}
                         alt={item.name}
                         className={`${imageStyle} ${hovered ? subShow : mainShow} ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
                         onMouseEnter={handleMouseEnter}
@@ -140,7 +141,7 @@ const ShowProductSmall = ({ item }) => {
                     {/* Hover Image */}
                     {item.productPictures[0]?.filename && (
                         <img
-                            src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.productPictures[0].filename}`}
+                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.productPictures[0].thumb ? item.productPictures[0].thumb : item.productPictures[0].filename}`}
                             alt={item.name}
                             className={`${imageStyle} ${hovered ? mainShow : subShow} ${hoverLoaded ? 'opacity-100' : 'opacity-0'}`}
                             onMouseLeave={handleMouseLeave}

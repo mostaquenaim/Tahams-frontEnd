@@ -157,7 +157,7 @@ const MyCart = () => {
                   <div className="flex items-center space-x-4">
                     <img
                       className='w-16 h-16 rounded-full border-black border-2'
-                      src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.product.filename}`}
+                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.product.filename}`}
                       alt={item.ProductName}
                     />
                     <div className="flex flex-col">

@@ -53,7 +53,7 @@ const WishList = () => {
                                         <Link href={`products/details/${item.product.id}`} className="transition duration-300 hover:scale-105">
                                             <img
                                                 className="w-full h-40 object-cover rounded-t-md"
-                                                src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${item.product.filename}`}
+                                                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.product.filename}`}
                                                 alt={item.product.ProductName}
                                             />
                                         </Link>

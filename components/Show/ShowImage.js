@@ -5,7 +5,7 @@ const ShowImage = (props) => {
     return (
         <>
             <img
-                src={`${process.env.NEXT_PUBLIC_API}/admin/getImage/${image}`}
+                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${image}`}
                 alt={altImg}
                 onError={(e) => {
                     console.error("Error loading image:", e);

@@ -92,7 +92,7 @@ const UpdateCategory = ({ item }) => {
                     <div className="my-2">
                         {item.filename && (
                             <img
-                                src={`/admin/getImage/${item.filename}`}
+                                src={`/admin/getimage/${item.filename}`}
                                 alt="User Image"
                                 onError={(e) => {
                                     console.error("Error loading image:", e);
