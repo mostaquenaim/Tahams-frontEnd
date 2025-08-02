@@ -12,6 +12,33 @@ import useLoadSizes from '../../../../../Hooks/useLoadSizes';
 import Head from 'next/head';
 import imageCompression from 'browser-image-compression';
 
+export const compressImage = async (item) => {
+  const options = {
+    maxSizeMB: 0.6, // Increase from 0.5 to 0.8 for better quality
+    // maxWidthOrHeight: 1280, // Slightly larger resolution
+    useWebWorker: true,
+    fileType: 'image/webp', // Force JPEG for consistent results
+    initialQuality: 0.9, // Optional: try to start with higher quality
+  };
+
+  try {
+    const compressedFile = await imageCompression(item, options);
+
+    // Fix: give it a proper filename with extension
+    const newFileName = item.name || `image_${Date.now()}.jpg`;
+
+    const renamedFile = new File([compressedFile], newFileName, {
+      type: compressedFile.type,
+      lastModified: Date.now(),
+    });
+
+    return renamedFile;
+  } catch (error) {
+    console.error('Compression failed for:', item.name, error);
+    return item;
+  }
+};
+
 const EditProduct = ({ product }) => {
   // console.log('product', product);
   const colors = useLoadColors(); // Fetch colors from the hook
@@ -225,33 +252,6 @@ const EditProduct = ({ product }) => {
 
   const editPictures = async () => {
     const formData = new FormData();
-
-    const compressImage = async (item) => {
-      const options = {
-        maxSizeMB: 0.6, // Increase from 0.5 to 0.8 for better quality
-        // maxWidthOrHeight: 1280, // Slightly larger resolution
-        useWebWorker: true,
-        fileType: 'image/webp', // Force JPEG for consistent results
-        initialQuality: 0.9, // Optional: try to start with higher quality
-      };
-
-      try {
-        const compressedFile = await imageCompression(item, options);
-
-        // Fix: give it a proper filename with extension
-        const newFileName = item.name || `image_${Date.now()}.jpg`;
-
-        const renamedFile = new File([compressedFile], newFileName, {
-          type: compressedFile.type,
-          lastModified: Date.now(),
-        });
-
-        return renamedFile;
-      } catch (error) {
-        console.error('Compression failed for:', item.name, error);
-        return item;
-      }
-    };
 
     const filesToUpload = newImages.length > 0 ? newImages : existingImages;
 
