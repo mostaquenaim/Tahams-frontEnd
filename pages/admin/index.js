@@ -1,47 +1,94 @@
 import Head from 'next/head';
 import React, { useContext, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+} from 'recharts';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, BellIcon } from '@heroicons/react/24/solid';
 import { Person, Settings, ExitToApp } from '@mui/icons-material';
 import useGroupOrders from '/Hooks/useGroupOrders';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import useAxiosPublic from '/Hooks/useAxiosPublic';
+import Loading from '/components/Loading';
+import toast from 'react-hot-toast';
 
 const Admin = () => {
   const [sortedGroupedOrdersArray, isPending] = useGroupOrders();
   console.log(sortedGroupedOrdersArray);
 
   // Calculate total sales, total orders, and total users
-  const totalSales = sortedGroupedOrdersArray?.filter(order => order.history.deliveryStatus.id !== 7 && order.history.deliveryStatus.id !== 8).reduce((sum, order) => sum + order.totalPrice, 0) || 0;
+  const totalSales =
+    sortedGroupedOrdersArray
+      ?.filter(
+        (order) =>
+          order.history.deliveryStatus.id !== 7 &&
+          order.history.deliveryStatus.id !== 8,
+      )
+      .reduce((sum, order) => sum + order.totalPrice, 0) || 0;
   const totalOrders = sortedGroupedOrdersArray?.length || 0;
-  const totalUsers = sortedGroupedOrdersArray?.filter((order, index, self) =>
-    index === self.findIndex((o) => o.customer.email === order.customer.email)
-  ).length || 0;
+  const totalUsers =
+    sortedGroupedOrdersArray?.filter(
+      (order, index, self) =>
+        index ===
+        self.findIndex((o) => o.customer.email === order.customer.email),
+    ).length || 0;
 
   // Prepare sales data for the bar chart
-  const salesData = sortedGroupedOrdersArray?.filter(order => order.history.deliveryStatus.id !== 7 && order.history.deliveryStatus.id !== 8)
-    .map((order) => ({
-      name: new Date(order.history.BuyingDate).toLocaleString('default', { month: 'long', year: 'numeric' }),
-      sales: order.totalPrice,
-    }))
-    .reduce((acc, current) => {
-      const existingDate = acc.find(item => item.name === current.name);
-      if (existingDate) {
-        existingDate.sales += current.sales;
-      } else {
-        acc.push(current);
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => new Date(a.name) - new Date(b.name)) || [];
+  const salesData =
+    sortedGroupedOrdersArray
+      ?.filter(
+        (order) =>
+          order.history.deliveryStatus.id !== 7 &&
+          order.history.deliveryStatus.id !== 8,
+      )
+      .map((order) => ({
+        name: new Date(order.history.BuyingDate).toLocaleString('default', {
+          month: 'long',
+          year: 'numeric',
+        }),
+        sales: order.totalPrice,
+      }))
+      .reduce((acc, current) => {
+        const existingDate = acc.find((item) => item.name === current.name);
+        if (existingDate) {
+          existingDate.sales += current.sales;
+        } else {
+          acc.push(current);
+        }
+        return acc;
+      }, [])
+      .sort((a, b) => new Date(a.name) - new Date(b.name)) || [];
 
   // const [filter, setFilter] = useState(30);
 
   // const filteredSalesData = salesData.slice(-filter);
 
-  const repeatCustomerCount = [...new Set(sortedGroupedOrdersArray?.filter((order, index, self) =>
-    self.filter(o => o.customer.email === order.customer.email && o.history.deliveryStatus.id !== 7 && o.history.deliveryStatus.id !== 8).length > 1
-  ).map(order => order.customer.email))].length || 0;
+  const repeatCustomerCount =
+    [
+      ...new Set(
+        sortedGroupedOrdersArray
+          ?.filter(
+            (order, index, self) =>
+              self.filter(
+                (o) =>
+                  o.customer.email === order.customer.email &&
+                  o.history.deliveryStatus.id !== 7 &&
+                  o.history.deliveryStatus.id !== 8,
+              ).length > 1,
+          )
+          .map((order) => order.customer.email),
+      ),
+    ].length || 0;
 
   // console.log(repeatCustomerCount);
 
@@ -51,21 +98,42 @@ const Admin = () => {
     { name: 'Inactive Users', value: 0 }, // Replace with actual inactive user count if available
   ];
 
-  const { logOut } = useContext(AuthContext)
+  const { logOut } = useContext(AuthContext);
 
-   const handleLogout = () => {
-        logOut()
-            .then(() => {
-                // Remove userInfo from localStorage
-                localStorage.removeItem('userInfo');
-                localStorage.removeItem('access_token');
-                console.log('User logged out and userInfo removed from localStorage');
-            })
-            .catch((error) => {
-                console.error('Error during logout:', error.message);
-                toast.error('Error during logout. Please try again.');
-            });
-    };
+  const handleLogout = () => {
+    logOut()
+      .then(() => {
+        // Remove userInfo from localStorage
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('access_token');
+        console.log('User logged out and userInfo removed from localStorage');
+      })
+      .catch((error) => {
+        console.error('Error during logout:', error.message);
+        toast.error('Error during logout. Please try again.');
+      });
+  };
+
+  const axiosPublic = useAxiosPublic();
+  const [loading, setLoading] = useState(false);
+
+  const handleProductPictureCompress = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosPublic.get('/admin/get-all-images-compressed');
+
+      // if (res.data?.success) {
+      toast.success('Images compressed successfully!');
+      // } else {
+      // toast.error('Compression failed or no response.');
+      // }
+    } catch (error) {
+      console.error('Compression error:', error);
+      toast.error('An error occurred while compressing images.');
+    } finally {
+      setLoading(false); // Always stop loading
+    }
+  };
 
   const COLORS = ['#6366F1', '#EF4444']; // Colors for the pie chart
 
@@ -100,8 +168,9 @@ const Admin = () => {
                       {({ active }) => (
                         <a
                           href="#"
-                          className={`${active ? 'bg-gray-100' : ''
-                            } block px-4 py-2 text-sm text-gray-700`}
+                          className={`${
+                            active ? 'bg-gray-100' : ''
+                          } block px-4 py-2 text-sm text-gray-700`}
                         >
                           <Settings className="inline h-4 w-4 mr-2" />
                           Settings
@@ -112,8 +181,9 @@ const Admin = () => {
                       {({ active }) => (
                         <button
                           onClick={handleLogout}
-                          className={`${active ? 'bg-gray-100' : ''
-                            } block px-4 py-2 text-sm text-gray-700`}
+                          className={`${
+                            active ? 'bg-gray-100' : ''
+                          } block px-4 py-2 text-sm text-gray-700`}
                         >
                           <ExitToApp className="inline h-4 w-4 mr-2" />
                           Logout
@@ -131,27 +201,54 @@ const Admin = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* buttons  */}
+          <div className="m-5">
+            {loading ? (
+              <Loading />
+            ) : (
+              <button
+                onClick={handleProductPictureCompress}
+                className="btn btn-lg btn-primary"
+              >
+                create optimized photos for product pictures
+              </button>
+            )}
+          </div>
           {/* Statistic Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* total sales  */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Total Sales</h2>
-              <p className="text-3xl font-bold text-indigo-600">৳{totalSales.toLocaleString()}</p>
+              <h2 className="text-lg font-semibold text-gray-700">
+                Total Sales
+              </h2>
+              <p className="text-3xl font-bold text-indigo-600">
+                ৳{totalSales.toLocaleString()}
+              </p>
             </div>
             {/* total users  */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Total Users</h2>
+              <h2 className="text-lg font-semibold text-gray-700">
+                Total Users
+              </h2>
               <p className="text-3xl font-bold text-indigo-600">{totalUsers}</p>
             </div>
             {/* total orders  */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Total Orders</h2>
-              <p className="text-3xl font-bold text-indigo-600">{totalOrders}</p>
+              <h2 className="text-lg font-semibold text-gray-700">
+                Total Orders
+              </h2>
+              <p className="text-3xl font-bold text-indigo-600">
+                {totalOrders}
+              </p>
             </div>
             {/* repeated customers  */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700">Repeat Customers</h2>
-              <p className="text-3xl font-bold text-indigo-600">{repeatCustomerCount}</p>
+              <h2 className="text-lg font-semibold text-gray-700">
+                Repeat Customers
+              </h2>
+              <p className="text-3xl font-bold text-indigo-600">
+                {repeatCustomerCount}
+              </p>
             </div>
           </div>
 
@@ -159,13 +256,20 @@ const Admin = () => {
           <div className="mt-8">
             {/* Bar Chart */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">Sales Overview</h2>
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Sales Overview
+              </h2>
               <LineChart width={800} height={300} data={salesData}>
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="sales" stroke="#6366F1" strokeWidth={2} />
+                <Line
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="#6366F1"
+                  strokeWidth={2}
+                />
               </LineChart>
             </div>
 

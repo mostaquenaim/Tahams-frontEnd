@@ -469,7 +469,7 @@ const Product = ({ product }) => {
             </p>
 
             {/* Add the DiscountBadge component below your price display */}
-            <DiscountBadge />
+            {/* <DiscountBadge /> */}
 
             {/* Stock Status */}
             <p

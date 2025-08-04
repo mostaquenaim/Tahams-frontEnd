@@ -598,7 +598,7 @@ const EditProduct = ({ product }) => {
               IF YOU ADD NEW PHOTOS, PREVIOUS ONES WILL BE REMOVED
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {existingImages.map((pic, index) => (
+              {existingImages?.map((pic, index) => (
                 <div
                   key={pic.id}
                   className="relative flex flex-col items-center"

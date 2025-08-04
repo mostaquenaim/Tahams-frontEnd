@@ -11,8 +11,8 @@ import { getGuestCustomerInfo } from "../../utils/guestCustomer";
 import { FaHeart } from "react-icons/fa";
 
 const ShowProductSmall = ({ item }) => {
-    console.log(item.filename);
-    console.log(item,'atimm');
+    // console.log(item.filename);
+    // console.log(item,'atimm');
     const router = useRouter()
     const { user, setShowGotoCart } = useContext(AuthContext)
     const [userInfo, setUserInfo] = useState(null)
@@ -137,7 +137,7 @@ const ShowProductSmall = ({ item }) => {
                         onLoad={() => setMainLoaded(true)}
                         style={{ display: hovered ? "none" : "block" }}
                     />
-
+ 
                     {/* Hover Image */}
                     {item.productPictures[0]?.filename && (
                         <img
