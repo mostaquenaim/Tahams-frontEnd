@@ -6,6 +6,7 @@ import useLoadColors from '../../Hooks/useLoadColors';
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import Loading from '../Loading';
+import CustomizeYourTee from '../Customize/CustomizeYourTee';
 
 const FetchProducts = ({
   categories,
@@ -166,6 +167,8 @@ const FetchProducts = ({
           <div className="font-semibold text-3xl uppercase underline">
             {categories[0]?.pscs[0]?.category?.category?.category?.name}
           </div>
+
+          <Link href={'/customize-tee'} className='btn btn-md bg-black/80 text-white hover:bg-black'>customize your own tee</Link>
 
           {/* Premium Combo Builder Button */}
           {/* {categories[0]?.pscs[0]?.category?.category?.category?.name ===

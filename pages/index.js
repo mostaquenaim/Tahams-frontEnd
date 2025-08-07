@@ -11,6 +11,7 @@ import useLoadActivePop from '/./Hooks/useLoadActivePop';
 import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
+import HomeNav from '/components/Home/HomeNav';
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
@@ -111,6 +112,7 @@ export default function Home() {
           <MySwiper images={bannerImages}></MySwiper>
           {/* <TriangleLoader/> */}
           {/* } */}
+          <HomeNav></HomeNav>
           <NewArrival />
           <Popular />
           <section id='about'>

@@ -23,7 +23,7 @@ const ShowNewArrival = ({ prop }) => {
                     />
 
                     {/* Glassmorphism Overlay */}
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex flex-col justify-end p-6 rounded-xl">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex flex-col justify-end p-6 rounded-xl">
                         <motion.h3
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}

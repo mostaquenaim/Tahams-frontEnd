@@ -2,51 +2,49 @@ import React, { useState } from 'react';
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 
-const FilterComp = (
-    {
-        handleColorChange,
-        handlePriceChange,
-        handleAvailabilityChange,
-        handleOfferChange,
-        selectedColors,
-        priceRange,
-        selectedAvailability,
-        selectedOffer,
-        colors
-    }
-) => {
-    // console.log(colors);
-    const headingStyle = 'text-lg md:text-xl lg:text-2xl py-3 border-b-2 font-semibold';
+const FilterComp = ({
+    handleColorChange,
+    handlePriceChange,
+    handleAvailabilityChange,
+    handleOfferChange,
+    selectedColors,
+    priceRange,
+    selectedAvailability,
+    selectedOffer,
+    colors
+}) => {
+    const headingStyle = 'text-lg md:text-xl lg:text-2xl py-3 font-semibold text-gray-800';
 
     return (
-        <div className="filter-container">
+        <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
+
             {/* Colors */}
             <div className="filter-section">
-                <div className='py-5'>
+                <div className='py-3'>
                     <span className={headingStyle}>
-                        Color
+                        Colors
                     </span>
                 </div>
-                <div className='flex flex-col gap-1'>
-                    {
-                        colors.map((color) => (
-                            <label key={color.id}>
-                                <input
-                                    type="checkbox"
-                                    name="color"
-                                    value={color.name}
-                                    checked={selectedColors.includes(color.name)}
-                                    onChange={() => handleColorChange(color.name)}
-                                />
-                                {color.name}
-                            </label>
-                        ))}
+                <div className='space-y-2'>
+                    {colors.map((color) => (
+                        <label key={color.id} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name="color"
+                                value={color.name}
+                                checked={selectedColors.includes(color.name)}
+                                onChange={() => handleColorChange(color.name)}
+                                className="form-checkbox text-indigo-600"
+                            />
+                            <span className="text-gray-700">{color.name}</span>
+                        </label>
+                    ))}
                 </div>
             </div>
 
             {/* Price Range */}
-            <div className="filter-section xl:mr-20">
-                <div className='py-5'>
+            <div className="filter-section">
+                <div className='py-3'>
                     <span className={headingStyle}>
                         Price Range
                     </span>
@@ -56,59 +54,65 @@ const FilterComp = (
                     max={10000}
                     defaultValue={priceRange}
                     onInput={(value) => handlePriceChange(value)}
+                    className="w-full"
                 />
-                ৳{priceRange[0]} - ৳{priceRange[1]}
+                <div className="mt-2 text-gray-600">
+                    <span>৳{priceRange[0]} - ৳{priceRange[1]}</span>
+                </div>
             </div>
 
             {/* Availability */}
             <div className="filter-section">
-                <div className='py-5'>
+                <div className='py-3'>
                     <span className={headingStyle}>
                         Availability
                     </span>
                 </div>
-                <div>
+                <div className="space-y-2">
                     <div>
                         <input
                             type="radio"
                             name="availability"
-                            value=''
+                            value=""
                             checked={selectedAvailability === ''}
                             onChange={handleAvailabilityChange}
+                            className="form-radio text-indigo-600"
                         />
-                        All
+                        <label className="ml-2 text-gray-700">All</label>
                     </div>
                     <div>
                         <input
                             type="radio"
                             name="availability"
-                            value='true'
+                            value="true"
                             checked={selectedAvailability === 'true'}
                             onChange={handleAvailabilityChange}
+                            className="form-radio text-indigo-600"
                         />
-                        In Stock
+                        <label className="ml-2 text-gray-700">In Stock</label>
                     </div>
                     <div>
                         <input
                             type="radio"
                             name="availability"
-                            value='false'
+                            value="false"
                             checked={selectedAvailability === 'false'}
                             onChange={handleAvailabilityChange}
+                            className="form-radio text-indigo-600"
                         />
-                        Out of Stock
+                        <label className="ml-2 text-gray-700">Out of Stock</label>
                     </div>
                 </div>
             </div>
 
             {/* Offers */}
             <div className="filter-section">
-                <div className='py-5'>
+                <div className='py-3'>
                     <span className={headingStyle}>
                         Offer
                     </span>
                 </div>
-                <div>
+                <div className="space-y-2">
                     <div>
                         <input
                             type="radio"
@@ -116,8 +120,9 @@ const FilterComp = (
                             value="all"
                             checked={selectedOffer === 'all'}
                             onChange={handleOfferChange}
+                            className="form-radio text-indigo-600"
                         />
-                        All
+                        <label className="ml-2 text-gray-700">All</label>
                     </div>
                     <div>
                         <input
@@ -126,8 +131,9 @@ const FilterComp = (
                             value="discount"
                             checked={selectedOffer === 'discount'}
                             onChange={handleOfferChange}
+                            className="form-radio text-indigo-600"
                         />
-                        Discount
+                        <label className="ml-2 text-gray-700">Discount</label>
                     </div>
                 </div>
             </div>
