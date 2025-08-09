@@ -301,83 +301,92 @@ const ApparelDesigner = () => {
     setTextContent('');
   };
 
- const handleDownload = async () => {
-  if (!productColorImage?.previewImage || !designs[activeTab]) return;
+  const handleDownload = async () => {
+    if (!productColorImage?.previewImage || !designs[activeTab]) return;
 
-  setIsLoading(true);
-  try {
-    // Create final canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = 800; // Set the width for the final image
-    canvas.height = 1000; // Set the height for the final image
-    const ctx = canvas.getContext('2d');
+    setIsLoading(true);
+    try {
+      // Create final canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 600; // Set the width for the final image
+      canvas.height = 800; // Set the height for the final image
+      const ctx = canvas.getContext('2d');
 
-    // Define T-shirt base size and placement
-    const TSHIRT_WIDTH = 600;
-    const TSHIRT_HEIGHT = 800;
-    const TSHIRT_X = (canvas.width - TSHIRT_WIDTH) / 2;
-    const TSHIRT_Y = (canvas.height - TSHIRT_HEIGHT) / 2;
+      // Define T-shirt base size and placement
+      const TSHIRT_WIDTH = 600;
+      const TSHIRT_HEIGHT = 800;
+      const TSHIRT_X = (canvas.width - TSHIRT_WIDTH) / 2;
+      const TSHIRT_Y = (canvas.height - TSHIRT_HEIGHT) / 2;
 
-    // Load T-shirt base image
-    const tshirtImg = new Image();
-    tshirtImg.crossOrigin = 'anonymous'; // To avoid CORS issues with external images
-    tshirtImg.src = productColorImage.previewImage;
+      // Load T-shirt base image
+      const tshirtImg = new Image();
+      tshirtImg.crossOrigin = 'anonymous'; // To avoid CORS issues with external images
+      tshirtImg.src = productColorImage.previewImage;
 
-    await new Promise((resolve) => {
-      tshirtImg.onload = resolve;
-    });
+      await new Promise((resolve) => {
+        tshirtImg.onload = resolve;
+      });
 
-    // Draw T-shirt image onto canvas
-    ctx.drawImage(tshirtImg, TSHIRT_X, TSHIRT_Y, TSHIRT_WIDTH, TSHIRT_HEIGHT);
+      // Draw T-shirt image onto canvas
+      ctx.drawImage(tshirtImg, TSHIRT_X, TSHIRT_Y, TSHIRT_WIDTH, TSHIRT_HEIGHT);
 
-    // Draw designs (text or images) onto the T-shirt
-    const currentDesigns = designs[activeTab];
-    for (const design of currentDesigns) {
-      if (design.type === 'text') {
-        ctx.font = `${24 * design.scale}px ${design.font}`;
-        ctx.fillStyle = design.color;
-        ctx.textAlign = 'center';
-        ctx.fillText(
-          design.content,
-          TSHIRT_X + TSHIRT_WIDTH / 2 + design.position.x,
-          TSHIRT_Y + TSHIRT_HEIGHT / 2 + design.position.y,
-        );
-      } else if (design.type === 'image') {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = design.content;
-        await new Promise((resolve) => {
-          img.onload = resolve;
-        });
-        ctx.drawImage(
-          img,
-          TSHIRT_X +
-            TSHIRT_WIDTH / 2 - (img.width * design.scale) / 2 + design.position.x,
-          TSHIRT_Y +
-            TSHIRT_HEIGHT / 2 - (img.height * design.scale) / 2 + design.position.y,
-          img.width * design.scale,
-          img.height * design.scale,
-        );
+      // Draw designs (text or images) onto the T-shirt
+      const currentDesigns = designs[activeTab];
+      // console.log(designs[activeTab],'gibgib');
+      for (const design of currentDesigns) {
+        if (design.type === 'text') {
+          ctx.font = `${24 * design.scale}px ${design.font}`;
+          ctx.fillStyle = design.color;
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            design.content,
+            TSHIRT_X + TSHIRT_WIDTH / 2 + design.position.x,
+            TSHIRT_Y + TSHIRT_HEIGHT / 2 + design.position.y,
+          );
+        } 
+        else if (design.type === 'image') {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = design.content;
+
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+
+          // Use consistent base size like text (e.g., 100px base size for images)
+          const baseSize = 200;
+          const scaledWidth = baseSize * design.scale;
+          const scaledHeight =
+            ((baseSize * img.height) / img.width) * design.scale; // maintain aspect ratio
+
+          ctx.drawImage(
+            img,
+            TSHIRT_X + TSHIRT_WIDTH / 2 - scaledWidth / 2 + design.position.x,
+            TSHIRT_Y + TSHIRT_HEIGHT / 2 - scaledHeight / 2 + design.position.y,
+            scaledWidth,
+            scaledHeight,
+          );
+        }
       }
-    }
 
-    // Trigger download
-    const dataURL = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `custom-${selectedProduct.id}-design.png`;
-    link.href = dataURL;
-    link.click();
-  } catch (error) {
-    setSnackbar({
-      open: true,
-      message: 'Error generating download',
-      severity: 'error',
-    });
-    console.error('Download error:', error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+      // Trigger download
+      const dataURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `custom-${selectedProduct.id}-design.png`;
+      link.href = dataURL;
+      link.click();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'Error generating download',
+        severity: 'error',
+      });
+      console.error('Download error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Helper function to generate canvas for a specific side
   const generateDesignCanvas = async (side) => {
@@ -749,8 +758,8 @@ const ApparelDesigner = () => {
                 src={productColorImage.previewImage}
                 alt="T-shirt preview"
                 sx={{
-                  width: '100%',
-                  height: '100%', // Ensure the image takes up all the available space
+                  width: '600px',
+                  height: '800px', // Ensure the image takes up all the available space
                   objectFit: 'contain', // Make sure the image scales properly without distortion
                   filter: `hue-rotate(${getHueRotation(
                     productColor,
@@ -785,6 +794,7 @@ const ApparelDesigner = () => {
                       src={design.content}
                       alt="Design"
                       sx={{
+                        width: '100px',
                         maxWidth: '200px',
                         maxHeight: '200px',
                         objectFit: 'contain',
