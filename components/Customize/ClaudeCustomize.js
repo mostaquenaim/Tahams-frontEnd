@@ -202,7 +202,6 @@ const TShirtDesigner = () => {
           });
         }
       }
-      
     } catch (error) {
       console.error('Error creating design:', error);
       // Fallback rendering
