@@ -6,7 +6,6 @@ import useLoadColors from '../../Hooks/useLoadColors';
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import Loading from '../Loading';
-import CustomizeYourTee from '../Customize/CustomizeYourTee';
 
 const FetchProducts = ({
   categories,

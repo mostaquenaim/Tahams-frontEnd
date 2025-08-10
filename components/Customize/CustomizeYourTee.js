@@ -1,657 +1,895 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-  Box,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Button,
-  Paper,
-  Grid,
-  Divider,
-  Tabs,
-  Tab,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Avatar,
-  Chip,
-  CircularProgress,
-  Snackbar,
-  Alert,
-} from '@mui/material';
-import { ChromePicker } from 'react-color';
-import {
-  AddPhotoAlternate,
-  TextFields,
-  Delete,
+  Save,
+  FolderPlus,
+  Sliders,
+  Droplet,
+  Plus,
+  Upload,
   Download,
-  ShoppingCart,
-  Email,
-  Palette,
-  CheckCircle,
-  Close,
-} from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
-import CustomizeHeader from './CustomizeHeader';
-import SnackBar from './SnackBar';
-import PreviewColumn from './PreviewColumn';
-//, '#000000', '#2b2b2b', '#1a6dff', '#e91e63'
-// Product data
-const productTypes = [
-  {
-    id: 'tshirt',
-    name: 'T-Shirt',
-    baseColorImages: [
-      { color: '#000000', previewImage: '/preview-images/Black.png' }, // Black
-      { color: '#4CAF50', previewImage: '/preview-images/Green.png' }, // Green
-      { color: '#E6E6FA', previewImage: '/preview-images/Levender.png' }, // Lavender
-      { color: '#800000', previewImage: '/preview-images/Maroon.png' }, // Maroon
-      { color: '#000080', previewImage: '/preview-images/Navy Blue.png' }, // Navy Blue
-      { color: '#FF0000', previewImage: '/preview-images/Red.png' }, // Red
-      { color: '#87CEEB', previewImage: '/preview-images/Sky Blue.png' }, // Sky Blue
-      { color: '#FFFFFF', previewImage: '/preview-images/White.png' }, // White
-    ],
-  },
-];
+  Trash2,
+  Settings2,
+  Package,
+  HelpCircle,
+  Type,
+  Printer,
+  Layers,
+} from 'lucide-react';
+import useAxiosPublic from '/Hooks/useAxiosPublic';
+import toast from 'react-hot-toast';
 
-const placementOptions = {
-  tshirt: [
-    {
-      id: 1,
-      label: 'Front (Left Chest)',
-      position: { x: '25%', y: '20%', width: '15%' },
-    },
-    {
-      id: 2,
-      label: 'Front (Right Chest)',
-      position: { x: '75%', y: '20%', width: '15%' },
-    },
-    {
-      id: 3,
-      label: 'Front (Center Large)',
-      position: { x: '50%', y: '30%', width: '60%' },
-    },
-    {
-      id: 4,
-      label: 'Front (Bottom)',
-      position: { x: '50%', y: '80%', width: '50%' },
-    },
-    {
-      id: 5,
-      label: 'Back (Top)',
-      position: { x: '50%', y: '15%', width: '50%' },
-    },
-    {
-      id: 6,
-      label: 'Back (Center)',
-      position: { x: '50%', y: '50%', width: '60%' },
-    },
-    {
-      id: 7,
-      label: 'Back (Bottom)',
-      position: { x: '50%', y: '85%', width: '50%' },
-    },
-  ],
-  hoodie: [
-    {
-      id: 1,
-      label: 'Front (Left Chest)',
-      position: { x: '25%', y: '25%', width: '15%' },
-    },
-    {
-      id: 2,
-      label: 'Front (Right Chest)',
-      position: { x: '75%', y: '25%', width: '15%' },
-    },
-    {
-      id: 3,
-      label: 'Front (Center Large)',
-      position: { x: '50%', y: '35%', width: '55%' },
-    },
-    {
-      id: 4,
-      label: 'Front (Pocket)',
-      position: { x: '50%', y: '65%', width: '40%' },
-    },
-    {
-      id: 5,
-      label: 'Back (Top)',
-      position: { x: '50%', y: '20%', width: '50%' },
-    },
-    {
-      id: 6,
-      label: 'Back (Center Large)',
-      position: { x: '50%', y: '50%', width: '60%' },
-    },
-    {
-      id: 7,
-      label: 'Back (Bottom)',
-      position: { x: '50%', y: '80%', width: '50%' },
-    },
-  ],
-};
-
-const printSizes = [
-  { id: 'A3', size: '11.7 x 16.5 inches' },
-  { id: 'A4', size: '8.3 x 11.7 inches' },
-  { id: 'A5', size: '5.8 x 8.3 inches' },
-  { id: 'A6', size: '4.1 x 5.8 inches' },
-  { id: 'A7', size: '2.9 x 4.1 inches' },
-];
-
-const fonts = [
-  { name: 'Arial', value: 'Arial, sans-serif' },
-  { name: 'Poppins', value: "'Poppins', sans-serif" },
-  { name: 'Roboto', value: "'Roboto', sans-serif" },
-  { name: 'Courier New', value: "'Courier New', monospace" },
-  { name: 'Georgia', value: "'Georgia', serif" },
-];
-
-// Styled components
-export const ProductPreviewContainer = styled('div')({
-  position: 'relative',
-//   width: '100%',
-//   height: '500px',
-  backgroundColor: '#f9f9f9',
-  border: '1px solid #eee',
-  borderRadius: '8px',
-  overflow: 'hidden',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
-const DesignElement = styled('div')(({ position }) => ({
-  position: 'absolute',
-  left: position.x,
-  top: position.y,
-  width: position.width,
-  transform: 'translate(-50%, -50%)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  textAlign: 'center',
-  wordBreak: 'break-word',
-}));
-
-const ColorSwatch = styled(IconButton)(({ color }) => ({
-  width: 40,
-  height: 40,
-  backgroundColor: color,
-  border: '1px solid #ccc',
-  '&:hover': {
-    border: '2px solid #1976d2',
-  },
-}));
-
-const ApparelDesigner = () => {
-  // State management
-  const [selectedProduct, setSelectedProduct] = useState(productTypes[0]);
-  const [productColor, setProductColor] = useState(
-    productTypes[0].baseColorImages[0].color,
-  );
-  const [productColorImage, setProductColorImage] = useState(
-    productTypes[0].baseColorImages[0],
-  );
-  const [activeTab, setActiveTab] = useState('front');
-  const [designType, setDesignType] = useState('text');
-  const [textContent, setTextContent] = useState('');
-  const [selectedFont, setSelectedFont] = useState(fonts[1].value);
-  const [textColor, setTextColor] = useState('#000000');
-  const [selectedPlacement, setSelectedPlacement] = useState(3);
-  const [selectedSize, setSelectedSize] = useState('A4');
-  const [uploadedImage, setUploadedImage] = useState(null);
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
-  const [designs, setDesigns] = useState({
-    front: null,
-    back: null,
-  });
-
-  const fileInputRef = useRef(null);
+const CustomizeYourTee = () => {
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // Derived values
-  const currentPlacementOptions =
-    placementOptions[selectedProduct.id] || placementOptions.tshirt;
-  const currentDesign = designs[activeTab];
-  const hasDesign = designs.front || designs.back;
+  const tshirtColors = [
+    {
+      color: '#000000',
+      previewImage: '/preview-images/Black.png',
+      name: 'Black',
+    },
+    {
+      color: '#4CAF50',
+      previewImage: '/preview-images/Green.png',
+      name: 'Green',
+    },
+    {
+      color: '#E6E6FA',
+      previewImage: '/preview-images/Levender.png',
+      name: 'Lavender',
+    },
+    {
+      color: '#800000',
+      previewImage: '/preview-images/Maroon.png',
+      name: 'Maroon',
+    },
+    {
+      color: '#000080',
+      previewImage: '/preview-images/Navy Blue.png',
+      name: 'Navy Blue',
+    },
+    { color: '#FF0000', previewImage: '/preview-images/Red.png', name: 'Red' },
+    {
+      color: '#87CEEB',
+      previewImage: '/preview-images/Sky Blue.png',
+      name: 'Sky Blue',
+    },
+    {
+      color: '#FFFFFF',
+      previewImage: '/preview-images/White.png',
+      name: 'White',
+    },
+  ];
 
-  // Handlers
-  const handleProductChange = (product) => {
-    setSelectedProduct(product);
-    setProductColor(product.baseColorImages[0].color);
-    setProductColorImage(product.baseColorImages[0]);
-    // Reset designs when product changes
-    setDesigns({ front: null, back: null });
+  const [selectedColor, setSelectedColor] = useState(tshirtColors[0]);
+  const [elements, setElements] = useState([]);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [draggedElement, setDraggedElement] = useState(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [newText, setNewText] = useState('');
+  const [textStyle, setTextStyle] = useState({
+    fontSize: 24,
+    color: '#000000',
+    fontWeight: 'normal',
+    fontFamily: 'Arial',
+  });
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false); // New state for controlling the modal visibility
+  const [previewCanvas, setPreviewCanvas] = useState(null); // Store the preview canvas for download
+  const [previewImage, setPreviewImage] = useState(null); // Store the preview canvas for download
+
+  // Add text element
+  const addText = () => {
+    if (!newText.trim()) return;
+
+    const newElement = {
+      id: Date.now(),
+      type: 'text',
+      content: newText,
+      x: 150,
+      y: 200,
+      width: 200,
+      height: 40,
+      style: { ...textStyle },
+    };
+
+    setElements([...elements, newElement]);
+    setNewText('');
+    setSelectedElement(newElement.id);
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  // Add image element
+  const addImage = (event) => {
+    const file = event.target.files[0];
     if (!file) return;
 
-    if (!file.type.match('image.*')) {
-      setSnackbar({
-        open: true,
-        message: 'Please upload an image file',
-        severity: 'error',
-      });
-      return;
-    }
-
-    setIsLoading(true);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const newDesign = {
-        type: 'image',
-        content: reader.result,
-        size: selectedSize,
-        placement: selectedPlacement,
-        color: textColor,
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const newElement = {
+          id: Date.now(),
+          type: 'image',
+          content: e.target.result,
+          x: 150,
+          y: 200,
+          width: Math.min(img.width, 200),
+          height: Math.min(img.height, 200),
+          originalWidth: img.width,
+          originalHeight: img.height,
+        };
+
+        setElements([...elements, newElement]);
+        setSelectedElement(newElement.id);
       };
-      setDesigns((prev) => ({ ...prev, [activeTab]: newDesign }));
-      setUploadedImage(reader.result);
-      setIsLoading(false);
-    };
-    reader.onerror = () => {
-      setSnackbar({
-        open: true,
-        message: 'Error reading image file',
-        severity: 'error',
-      });
-      setIsLoading(false);
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   };
 
-  const handleRemoveDesign = () => {
-    setDesigns((prev) => ({ ...prev, [activeTab]: null }));
-    setUploadedImage(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+  // Mouse event handlers
+  const handleMouseDown = (e, element) => {
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setDraggedElement(element.id);
+    setSelectedElement(element.id);
+    setDragOffset({
+      x: x - element.x,
+      y: y - element.y,
+    });
   };
 
-  const handleTextSubmit = () => {
-    if (!textContent.trim()) {
-      setSnackbar({
-        open: true,
-        message: 'Please enter some text',
-        severity: 'warning',
-      });
-      return;
-    }
+  const handleMouseMove = (e) => {
+    if (!draggedElement) return;
 
-    const newDesign = {
-      type: 'text',
-      content: textContent,
-      font: selectedFont,
-      size: selectedSize,
-      placement: selectedPlacement,
-      color: textColor,
-    };
-    setDesigns((prev) => ({ ...prev, [activeTab]: newDesign }));
-    setTextContent('');
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setElements(
+      elements.map((el) =>
+        el.id === draggedElement
+          ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
+          : el,
+      ),
+    );
   };
 
-  const handleDownload = () => {
-    if (!canvasRef.current) return;
-
-    setIsLoading(true);
-    try {
-      const canvas = canvasRef.current;
-      const dataURL = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `custom-${selectedProduct.id}-design.png`;
-      link.href = dataURL;
-      link.click();
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Error generating download',
-        severity: 'error',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleMouseUp = () => {
+    setDraggedElement(null);
   };
 
-  const handleRequestQuote = async () => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setSnackbar({
-        open: true,
-        message: 'Design submitted successfully!',
-        severity: 'success',
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Submission failed. Please try again.',
-        severity: 'error',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  // Delete element
+  const deleteElement = (id) => {
+    setElements(elements.filter((el) => el.id !== id));
+    setSelectedElement(null);
   };
 
-  // Render preview to canvas
-  useEffect(() => {
-    if (!canvasRef.current) return;
+  // Update element properties
+  const updateElement = (id, updates) => {
+    setElements(
+      elements.map((el) => (el.id === id ? { ...el, ...updates } : el)),
+    );
+  };
 
-    const canvas = canvasRef.current;
+  // Generate preview and show modal
+  const generatePreview = async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 500;
     const ctx = canvas.getContext('2d');
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    try {
+      // Draw t-shirt background image
+      const bgImg = new Image();
+      bgImg.crossOrigin = 'anonymous';
 
-    // Draw product base
-    ctx.fillStyle = productColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw designs
-    Object.values(designs).forEach((design) => {
-      if (!design) return;
-
-      if (design.type === 'text') {
-        ctx.font = `24px ${design.font}`;
-        ctx.fillStyle = design.color;
-        ctx.textAlign = 'center';
-        ctx.fillText(design.content, canvas.width / 2, canvas.height / 2);
-      } else if (design.type === 'image') {
-        const img = new Image();
-        img.src = design.content;
-        img.onload = () => {
-          ctx.drawImage(img, 100, 100, canvas.width - 200, canvas.height - 200);
+      // Wait for background image to load
+      await new Promise((resolve, reject) => {
+        bgImg.onload = () => {
+          // Draw the t-shirt image as background
+          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+          resolve();
         };
+        bgImg.onerror = () => {
+          // Fallback to solid color if image fails to load
+          console.warn('T-shirt image failed to load, using solid color');
+          ctx.fillStyle = selectedColor.color;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Add t-shirt shape outline as fallback
+          ctx.strokeStyle =
+            selectedColor.color === '#FFFFFF'
+              ? '#E5E7EB'
+              : 'rgba(255,255,255,0.2)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+          resolve();
+        };
+
+        // Set a timeout for image loading
+        setTimeout(() => {
+          reject(new Error('Image loading timeout'));
+        }, 5000);
+
+        bgImg.src = selectedColor.previewImage;
+      });
+
+      // Draw all design elements on top of the t-shirt
+      for (const element of elements) {
+        if (element.type === 'text') {
+          ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
+          ctx.fillStyle = element.style.color;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+
+          // Add text shadow for better visibility
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+          ctx.shadowBlur = 2;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+
+          ctx.fillText(element.content, element.x, element.y);
+
+          // Reset shadow
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+        } else if (element.type === 'image') {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+
+          await new Promise((resolve) => {
+            img.onload = () => {
+              ctx.drawImage(
+                img,
+                element.x,
+                element.y,
+                element.width,
+                element.height,
+              );
+              resolve();
+            };
+            img.onerror = () => {
+              console.warn('Design image failed to load');
+              resolve();
+            };
+            img.src = element.content;
+          });
+        }
       }
-    });
-  }, [productColor, designs]);
+
+      const imageUrl = canvas.toDataURL('image/jpeg', 0.8); // quality between 0–1
+
+      setPreviewImage(imageUrl);
+      setPreviewCanvas(canvas); // Store the preview canvas
+      setIsPreviewOpen(true); // Open the preview modal
+    } catch (error) {
+      console.error('Error creating preview:', error);
+    }
+  };
+
+  // Download the previewed design
+  const downloadDesign = () => {
+    if (!previewCanvas) return;
+
+    previewCanvas.toBlob(
+      (blob) => {
+        const link = document.createElement('a');
+        link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${Date.now()}.png`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href); // cleanup memory
+      },
+      'image/png',
+      1.0,
+    );
+
+    setIsPreviewOpen(false);
+  };
+
+  const axiosPublic = useAxiosPublic();
+
+  const sendRequest = async () => {
+    const designData = {
+      color: selectedColor.name,
+      // elements: elements,
+      timestamp: new Date().toISOString(),
+      previewImage: previewImage,
+    };
+
+    console.log('Design request:', designData);
+
+    const res = await axiosPublic.post(
+      `/admin/send-customize-tee-request`,
+      designData,
+    );
+
+    // In a real app, you'd send this to your backend
+    toast.success(
+      'Your design request has been sent! We will contact you soon.',
+    );
+  };
+
+  const panelStyle = 'bg-white rounded-xl shadow-md p-6 border border-gray-100';
+  const headingTitle = 'text-xl font-semibold mb-4 text-gray-800 border-b pb-3';
+  const sectionTitle =
+    'text-md font-medium mb-3 text-gray-700 flex items-center gap-2';
+  const buttonStyle =
+    'w-full px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors duration-200';
 
   return (
-    <Box sx={{ maxWidth: 'xl', mx: 'auto', p: { xs: 2, md: 4 } }}>
-      <CustomizeHeader></CustomizeHeader>
-      <Grid container spacing={3}>
-        {/* Controls Column */}
-        <Grid item xs={12} md={5}>
-          <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-            {/* Product Selection */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Product Selection
-              </Typography>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              T-Shirt Design Studio
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Create custom apparel designs for your business
+            </p>
+          </div>
+          <div className="flex gap-3 mt-4 md:mt-0">
+            <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+              <Save size={16} />
+              Save Draft
+            </button>
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+              <FolderPlus size={16} />
+              New Design
+            </button>
+          </div>
+        </div>
 
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-                {productTypes.map((product) => (
-                  <Chip
-                    key={product.id}
-                    avatar={
-                      <Avatar
-                        alt={product.name}
-                        src={
-                          selectedProduct.id === product.id
-                            ? productColor.previewImage
-                            : product.baseColorImages[0]?.previewImage
-                        }
-                      />
-                    }
-                    label={product.name}
-                    onClick={() => handleProductChange(product)}
-                    color={
-                      selectedProduct.id === product.id ? 'primary' : 'default'
-                    }
-                    variant={
-                      selectedProduct.id === product.id ? 'filled' : 'outlined'
-                    }
-                    sx={{ height: 'auto', py: 1 }}
-                  />
-                ))}
-              </Box>
-            </Box>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Panel - Tools */}
+          <div className="lg:col-span-3">
+            <div className={panelStyle}>
+              <h2 className={headingTitle}>
+                <Sliders size={18} />
+                Design Tools
+              </h2>
 
-            {/* Color Selection */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Product Color
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                {selectedProduct.baseColorImages.map((item) => (
-                  <ColorSwatch
-                    key={item.color}
-                    color={item.color}
-                    onClick={() => {
-                      setProductColor(item.color);
-                      setProductColorImage(item);
-                    }}
-                    sx={{
-                      border:
-                        productColor === item.color
-                          ? '2px solid #1976d2'
-                          : '1px solid #ccc',
-                    }}
-                  >
-                    {productColor === item.color && (
-                      <CheckCircle sx={{ color: '#fff', fontSize: 16 }} />
-                    )}
-                  </ColorSwatch>
-                ))}
-                {/* <IconButton
-                  sx={{ width: 40, height: 40, border: '1px dashed #ccc' }}
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                >
-                  <Palette />
-                </IconButton> */}
-              </Box>
-            </Box>
+              {/* Color Selection */}
+              <div className="mb-6">
+                <h3 className={sectionTitle}>
+                  <Droplet size={16} />
+                  T-Shirt Color
+                </h3>
+                <div className="grid grid-cols-5 gap-3">
+                  {tshirtColors.map((colorOption) => (
+                    <button
+                      key={colorOption.color}
+                      onClick={() => setSelectedColor(colorOption)}
+                      className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                        selectedColor.color === colorOption.color
+                          ? 'border-blue-600 shadow-md scale-105'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      style={{ backgroundColor: colorOption.color }}
+                      title={colorOption.name}
+                    />
+                  ))}
+                </div>
+              </div>
 
-            <Divider sx={{ my: 3 }} />
-
-            {/* Design Tabs */}
-            <Tabs
-              value={activeTab}
-              onChange={(e, newValue) => setActiveTab(newValue)}
-              sx={{ mb: 3 }}
-            >
-              <Tab label="Front Design" value="front" />
-              <Tab label="Back Design" value="back" />
-            </Tabs>
-
-            {/* Design Type Selection */}
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Design Type</InputLabel>
-              <Select
-                value={designType}
-                onChange={(e) => setDesignType(e.target.value)}
-                label="Design Type"
-              >
-                <MenuItem value="text">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <TextFields sx={{ mr: 1 }} /> Text
-                  </Box>
-                </MenuItem>
-                <MenuItem value="image">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AddPhotoAlternate sx={{ mr: 1 }} /> Image
-                  </Box>
-                </MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* Design Content */}
-            {designType === 'text' ? (
-              <>
-                <TextField
-                  fullWidth
-                  label="Your Text"
-                  variant="outlined"
-                  value={textContent}
-                  onChange={(e) => setTextContent(e.target.value)}
-                  sx={{ mb: 2 }}
-                  multiline
-                  rows={3}
+              {/* Add Text */}
+              <div className="mb-6">
+                <h3 className={sectionTitle}>
+                  <Type size={16} />
+                  Add Text
+                </h3>
+                <input
+                  type="text"
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  placeholder="Enter your text here..."
+                  className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
 
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: 2,
-                    mb: 3,
-                    flexDirection: { xs: 'column', sm: 'row' },
-                  }}
-                >
-                  <FormControl fullWidth>
-                    <InputLabel>Font Style</InputLabel>
-                    <Select
-                      value={selectedFont}
-                      onChange={(e) => setSelectedFont(e.target.value)}
-                      label="Font Style"
-                    >
-                      {fonts.map((f) => (
-                        <MenuItem
-                          key={f.name}
-                          value={f.value}
-                          sx={{ fontFamily: f.value }}
-                        >
-                          {f.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <Box sx={{ position: 'relative' }}>
-                    <Button
-                      variant="outlined"
-                      onClick={() => setShowColorPicker(!showColorPicker)}
-                      sx={{ height: '56px', minWidth: '120px' }}
-                    >
-                      <Box
-                        sx={{
-                          width: 24,
-                          height: 24,
-                          bgcolor: textColor,
-                          border: '1px solid #ccc',
-                          mr: 1,
-                        }}
-                      />
-                      Text Color
-                    </Button>
-                  </Box>
-                </Box>
-
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={handleTextSubmit}
-                  disabled={!textContent.trim()}
-                  sx={{ mb: 2 }}
-                >
-                  Apply Text Design
-                </Button>
-              </>
-            ) : (
-              <Box sx={{ mb: 3 }}>
-                <Button
-                  variant="contained"
-                  component="label"
-                  startIcon={<AddPhotoAlternate />}
-                  fullWidth
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Uploading...' : 'Upload Image'}
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    ref={fileInputRef}
-                  />
-                </Button>
-
-                {currentDesign?.content && (
-                  <Box sx={{ mt: 2, position: 'relative' }}>
-                    <img
-                      src={currentDesign.content}
-                      alt="Uploaded Preview"
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '200px',
-                        display: 'block',
-                        borderRadius: '4px',
-                      }}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Size
+                    </label>
+                    <input
+                      type="number"
+                      value={textStyle.fontSize}
+                      onChange={(e) =>
+                        setTextStyle({
+                          ...textStyle,
+                          fontSize: parseInt(e.target.value),
+                        })
+                      }
+                      min="10"
+                      max="72"
+                      className="w-full p-2 border border-gray-300 rounded-lg"
                     />
-                    <IconButton
-                      onClick={handleRemoveDesign}
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'error.main',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: 'error.dark',
-                        },
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Color
+                    </label>
+                    <input
+                      type="color"
+                      value={textStyle.color}
+                      onChange={(e) =>
+                        setTextStyle({ ...textStyle, color: e.target.value })
+                      }
+                      className="w-full p-1 border border-gray-300 rounded-lg h-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Font Weight
+                  </label>
+                  <select
+                    value={textStyle.fontWeight}
+                    onChange={(e) =>
+                      setTextStyle({ ...textStyle, fontWeight: e.target.value })
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="600">Semibold</option>
+                    <option value="800">Extrabold</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={addText}
+                  disabled={!newText.trim()}
+                  className={`${buttonStyle} ${
+                    !newText.trim()
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  <Plus size={16} />
+                  Add Text Element
+                </button>
+              </div>
+
+              {/* Add Image */}
+              <div className="mb-6">
+                <h3 className={sectionTitle}>
+                  {/* <Image size={16} /> */}
+                  Add Image
+                </h3>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={addImage}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`${buttonStyle} bg-green-600 text-white hover:bg-green-700`}
+                >
+                  <Upload size={16} />
+                  Upload Image
+                </button>
+                <p className="text-xs text-gray-500 mt-2">
+                  Supports JPG, PNG, SVG (Max 5MB)
+                </p>
+              </div>
+
+              {/* Element List */}
+              {elements.length > 0 && (
+                <div className="mb-6">
+                  <h3 className={sectionTitle}>
+                    <Layers size={16} />
+                    Design Elements
+                  </h3>
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    {elements.map((element) => (
+                      <div
+                        key={element.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedElement === element.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedElement(element.id)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            {/* {element.type === 'text' ? (
+                              <Type size={14} className="text-gray-500" />
+                            ) : (
+                              <Image size={14} className="text-gray-500" />
+                            )} */}
+                            <span className="text-sm font-medium text-gray-700">
+                              {element.type === 'text'
+                                ? `Text: ${element.content.substring(0, 15)}${
+                                    element.content.length > 15 ? '...' : ''
+                                  }`
+                                : 'Image'}
+                            </span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteElement(element.id);
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Center Panel - Preview */}
+          <div className="lg:col-span-6">
+            <div className={panelStyle}>
+              <h2 className={`${headingTitle} text-center`}>Design Preview</h2>
+
+              <div className="flex justify-center">
+                <div
+                  ref={canvasRef}
+                  className="relative border-2 border-gray-300 rounded-lg overflow-hidden cursor-crosshair"
+                  style={{
+                    width: '400px',
+                    height: '500px',
+                    backgroundImage: `url(${selectedColor.previewImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundColor: selectedColor.color,
+                  }}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                >
+                  {/* T-shirt outline - now more subtle since we have the actual image */}
+                  <div
+                    className="absolute inset-4 border border-dashed rounded-lg opacity-30"
+                    style={{
+                      borderColor:
+                        selectedColor.color === '#FFFFFF'
+                          ? '#9CA3AF'
+                          : 'rgba(255,255,255,0.6)',
+                    }}
+                  />
+
+                  {/* Design Elements */}
+                  {elements.map((element) => (
+                    <div
+                      key={element.id}
+                      className={`absolute cursor-move ${
+                        selectedElement === element.id
+                          ? 'ring-2 ring-blue-400'
+                          : ''
+                      }`}
+                      style={{
+                        left: element.x,
+                        top: element.y,
+                        width: element.width,
+                        height: element.height,
                       }}
+                      onMouseDown={(e) => handleMouseDown(e, element)}
                     >
-                      <Close />
-                    </IconButton>
-                  </Box>
-                )}
-              </Box>
-            )}
+                      {element.type === 'text' ? (
+                        <div
+                          style={{
+                            fontSize: element.style.fontSize,
+                            color: element.style.color,
+                            fontWeight: element.style.fontWeight,
+                            fontFamily: element.style.fontFamily,
+                            whiteSpace: 'nowrap',
+                            userSelect: 'none',
+                          }}
+                        >
+                          {element.content}
+                        </div>
+                      ) : (
+                        <img
+                          src={element.content}
+                          alt="Design element"
+                          className="w-full h-full object-contain pointer-events-none"
+                          draggable={false}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-            <Divider sx={{ my: 3 }} />
-          </Paper>
-        </Grid>
+              <div className="mt-4 text-center text-sm text-gray-600">
+                <p>• Click and drag elements to move them</p>
+                <p>• Click on elements to select them</p>
+                <p>• Use the tools on the left to add text and images</p>
+              </div>
+            </div>
+          </div>
 
-        {/* Preview Column */}
-        <PreviewColumn
-        //   ProductPreviewContainer={ProductPreviewContainer}
-          selectedProduct={selectedProduct}
-          productColor={productColor}
-          productColorImage={productColorImage}
-          getHueRotation={getHueRotation}
-          getBrightness={getBrightness}
-          activeTab={activeTab}
-          designs={designs}
-          canvasRef={canvasRef}
-          isLoading={isLoading}
-          handleDownload={handleDownload}
-          hasDesign={hasDesign}
-          handleRequestQuote={handleRequestQuote}
-          DesignElement={DesignElement}
-          currentPlacementOptions={currentPlacementOptions}
-        ></PreviewColumn>
-      </Grid>
+          {/* Right Panel - Properties & Actions */}
+          <div className="lg:col-span-3 space-y-6">
+            <div className={panelStyle}>
+              <h2 className={headingTitle}>
+                <Settings2 size={18} />
+                Element Properties
+              </h2>
 
-      {/* Snackbar for notifications */}
-      <SnackBar snackbar={snackbar} setSnackbar={setSnackbar}></SnackBar>
-    </Box>
+              {selectedElement ? (
+                <div className="space-y-5">
+                  {(() => {
+                    const element = elements.find(
+                      (el) => el.id === selectedElement,
+                    );
+                    if (!element) return null;
+
+                    return (
+                      <>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-3">
+                            Position & Size
+                          </h4>
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                X Position
+                              </label>
+                              <input
+                                type="number"
+                                value={Math.round(element.x)}
+                                onChange={(e) =>
+                                  updateElement(element.id, {
+                                    x: parseInt(e.target.value),
+                                  })
+                                }
+                                className="w-full p-2 border border-gray-300 rounded-lg"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Y Position
+                              </label>
+                              <input
+                                type="number"
+                                value={Math.round(element.y)}
+                                onChange={(e) =>
+                                  updateElement(element.id, {
+                                    y: parseInt(e.target.value),
+                                  })
+                                }
+                                className="w-full p-2 border border-gray-300 rounded-lg"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Width
+                              </label>
+                              <input
+                                type="number"
+                                value={Math.round(element.width)}
+                                onChange={(e) =>
+                                  updateElement(element.id, {
+                                    width: parseInt(e.target.value),
+                                  })
+                                }
+                                className="w-full p-2 border border-gray-300 rounded-lg"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">
+                                Height
+                              </label>
+                              <input
+                                type="number"
+                                value={Math.round(element.height)}
+                                onChange={(e) =>
+                                  updateElement(element.id, {
+                                    height: parseInt(e.target.value),
+                                  })
+                                }
+                                className="w-full p-2 border border-gray-300 rounded-lg"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {element.type === 'text' && (
+                          <>
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                Text Content
+                              </h4>
+                              <textarea
+                                value={element.content}
+                                onChange={(e) =>
+                                  updateElement(element.id, {
+                                    content: e.target.value,
+                                  })
+                                }
+                                className="w-full p-3 border border-gray-300 rounded-lg h-20"
+                                placeholder="Enter your text here..."
+                              />
+                            </div>
+
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                Text Styling
+                              </h4>
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Font Size
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={element.style.fontSize}
+                                    onChange={(e) =>
+                                      updateElement(element.id, {
+                                        style: {
+                                          ...element.style,
+                                          fontSize: parseInt(e.target.value),
+                                        },
+                                      })
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                    min="8"
+                                    max="72"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Text Color
+                                  </label>
+                                  <input
+                                    type="color"
+                                    value={element.style.color}
+                                    onChange={(e) =>
+                                      updateElement(element.id, {
+                                        style: {
+                                          ...element.style,
+                                          color: e.target.value,
+                                        },
+                                      })
+                                    }
+                                    className="w-full p-1 border border-gray-300 rounded-lg h-10"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Font Weight
+                                  </label>
+                                  <select
+                                    value={element.style.fontWeight}
+                                    onChange={(e) =>
+                                      updateElement(element.id, {
+                                        style: {
+                                          ...element.style,
+                                          fontWeight: e.target.value,
+                                        },
+                                      })
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                  >
+                                    <option value="normal">Normal</option>
+                                    <option value="500">Medium</option>
+                                    <option value="bold">Bold</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        <div className="pt-3 border-t border-gray-200">
+                          <button
+                            onClick={() => deleteElement(element.id)}
+                            className={`${buttonStyle} bg-red-600 text-white hover:bg-red-700`}
+                          >
+                            <Trash2 size={16} />
+                            Delete Element
+                          </button>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  {/* <Select size={24} className="mx-auto text-gray-400 mb-3" /> */}
+                  <p className="text-gray-500 font-medium">
+                    No element selected
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Select an element to edit its properties
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className={panelStyle}>
+              <h2 className={headingTitle}>
+                <Package size={18} />
+                Order Actions
+              </h2>
+              <div className="space-y-3">
+                <button
+                  onClick={generatePreview}
+                  disabled={elements.length === 0}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                >
+                  <Download size={16} />
+                  Preview Design
+                </button>
+
+                <button
+                  onClick={sendRequest}
+                  disabled={elements.length === 0}
+                  className={`${buttonStyle} ${
+                    elements.length === 0
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-orange-600 text-white hover:bg-orange-700'
+                  }`}
+                >
+                  <Printer size={16} />
+                  Request Print Quote
+                </button>
+
+                <div className="pt-3 border-t border-gray-200 mt-4">
+                  <button
+                    className={`${buttonStyle} bg-gray-100 text-gray-800 hover:bg-gray-200`}
+                  >
+                    <HelpCircle size={16} />
+                    Design Help Center
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* is preview open  */}
+        {isPreviewOpen && (
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+              <h2 className="text-xl font-semibold mb-4">Design Preview</h2>
+              <div className="mb-4">
+                <img
+                  src={previewImage} // Use the base64 image URL generated from the canvas
+                  alt="T-shirt Design Preview"
+                  className="w-full h-auto rounded"
+                />
+              </div>
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={downloadDesign}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
-// Helper functions
-function getHueRotation(color) {
-  // Simple hue rotation based on color - this is a placeholder
-  // In a real app, you'd want more sophisticated color manipulation
-  if (color === '#000000') return '0deg';
-  if (color === '#ffffff') return '0deg';
-  return '30deg';
-}
-
-function getBrightness(color) {
-  // Adjust brightness for dark colors
-  if (color === '#000000') return '0.8';
-  return '1';
-}
-
-export default ApparelDesigner;
+export default CustomizeYourTee;
