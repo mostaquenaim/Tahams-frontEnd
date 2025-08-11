@@ -293,25 +293,56 @@ const CustomizeYourTee = () => {
 
   const axiosPublic = useAxiosPublic();
 
+  const dataURLToBlob = (dataURL) => {
+    // console.log(dataURL)
+    const byteString = atob(dataURL.split(',')[1]); // Decode the base64 part of the dataURL
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    for (let i = 0; i < byteString.length; i++) {
+      uint8Array[i] = byteString.charCodeAt(i);
+    }
+
+    const mimeType = dataURL.split(';')[0].split(':')[1]; // Get MIME type (e.g., image/jpeg)
+
+    return new Blob([uint8Array], { type: mimeType });
+  };
+
   const sendRequest = async () => {
-    const designData = {
-      color: selectedColor.name,
-      // elements: elements,
-      timestamp: new Date().toISOString(),
-      previewImage: previewImage,
-    };
+    const formData = new FormData();
 
-    console.log('Design request:', designData);
+    // Append design data to the form
+    formData.append('color', selectedColor.name);
+    formData.append('timestamp', new Date().toISOString());
 
-    const res = await axiosPublic.post(
-      `/admin/send-customize-tee-request`,
-      designData,
-    );
+    // console.log('previewImage',previewImage);
+    // Append the preview image as a Blob
+    const previewImageBlob = dataURLToBlob(previewImage);
+    formData.append('previewImage', previewImageBlob, 'design-image.png'); // Add filename if needed
 
-    // In a real app, you'd send this to your backend
-    toast.success(
-      'Your design request has been sent! We will contact you soon.',
-    );
+    // Optionally, add other elements like text, images, etc.
+    formData.append('elements', JSON.stringify(elements));
+
+    try {
+      // Send the request
+      const res = await axiosPublic.post(
+        '/admin/send-customize-tee-request',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', 
+          },
+        },
+      );
+
+      // Handle the response
+      toast.success(
+        'Your design request has been sent! We will contact you soon.',
+      );
+    } catch (error) {
+      console.error('Error while sending request:', error);
+      toast.error('Failed to send your design request.');
+    }
   };
 
   const panelStyle = 'bg-white rounded-xl shadow-md p-6 border border-gray-100';
@@ -833,19 +864,6 @@ const CustomizeYourTee = () => {
                   Preview Design
                 </button>
 
-                <button
-                  onClick={sendRequest}
-                  disabled={elements.length === 0}
-                  className={`${buttonStyle} ${
-                    elements.length === 0
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-orange-600 text-white hover:bg-orange-700'
-                  }`}
-                >
-                  <Printer size={16} />
-                  Request Print Quote
-                </button>
-
                 <div className="pt-3 border-t border-gray-200 mt-4">
                   <button
                     className={`${buttonStyle} bg-gray-100 text-gray-800 hover:bg-gray-200`}
@@ -877,6 +895,20 @@ const CustomizeYourTee = () => {
                 >
                   Close
                 </button>
+
+                <button
+                  onClick={sendRequest}
+                  disabled={elements.length === 0}
+                  className={`${buttonStyle} ${
+                    elements.length === 0
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-orange-600 text-white hover:bg-orange-700'
+                  }`}
+                >
+                  <Printer size={16} />
+                  Request Print Quote
+                </button>
+                
                 <button
                   onClick={downloadDesign}
                   className="bg-blue-500 text-white px-4 py-2 rounded"
