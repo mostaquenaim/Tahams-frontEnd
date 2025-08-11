@@ -319,9 +319,8 @@ const CustomizeYourTee = () => {
     // Append the preview image as a Blob
     const previewImageBlob = dataURLToBlob(previewImage);
     formData.append('previewImage', previewImageBlob, 'design-image.png'); // Add filename if needed
-
     // Optionally, add other elements like text, images, etc.
-    formData.append('elements', JSON.stringify(elements));
+    // formData.append('elements', JSON.stringify(elements));
 
     try {
       // Send the request
@@ -330,10 +329,52 @@ const CustomizeYourTee = () => {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data', 
+            'Content-Type': 'multipart/form-data',
           },
         },
       );
+
+      for (const element of elements) {
+        if (element.type === 'text') {
+          const result = await axiosPublic.post(
+            `/admin/customized-text-element/${res.data.id}`,
+            element,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            },
+          );
+        } else if (element.type === 'image') {
+          // Convert image to Blob
+          const previewElementBlob = dataURLToBlob(element.content);
+
+          // Create a new FormData for each image element
+          const imageFormData = new FormData();
+          imageFormData.append(
+            'image',
+            previewElementBlob,
+            'element-image.png',
+          ); // Add a filename for the image
+
+          imageFormData.append('height',element.height)
+          imageFormData.append('width',element.width)
+          imageFormData.append('originalHeight',element.originalHeight)
+          imageFormData.append('originalWidth',element.originalWidth)
+          imageFormData.append('x',element.x)
+          imageFormData.append('y',element.y)
+
+          const result = await axiosPublic.post(
+            `/admin/customized-image-element/${res.data.id}`,
+            imageFormData, // Send the FormData with image
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data', // For file uploads
+              },
+            },
+          );
+        }
+      }
 
       // Handle the response
       toast.success(
@@ -908,7 +949,7 @@ const CustomizeYourTee = () => {
                   <Printer size={16} />
                   Request Print Quote
                 </button>
-                
+
                 <button
                   onClick={downloadDesign}
                   className="bg-blue-500 text-white px-4 py-2 rounded"
