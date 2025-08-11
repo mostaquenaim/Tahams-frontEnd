@@ -1,69 +1,49 @@
-import React, { useState, useRef } from 'react';
-import {
-  Save,
-  FolderPlus,
-  Sliders,
-  Droplet,
-  Plus,
-  Upload,
-  Download,
-  Trash2,
-  Settings2,
-  Package,
-  HelpCircle,
-  Type,
-  Printer,
-  Layers,
-} from 'lucide-react';
+import { useState, useRef } from 'react';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
-import TopElements from './TopElements';
-import LeftPanelTools from './LeftPanelTools';
-import CentralPanelPreview from './CentralPanelPreview';
-import RightPanel from './RightPanel';
 
-const CustomizeYourTee = () => {
+export const tshirtColors = [
+  {
+    color: '#000000',
+    previewImage: '/preview-images/Black.png',
+    name: 'Black',
+  },
+  {
+    color: '#4CAF50',
+    previewImage: '/preview-images/Green.png',
+    name: 'Green',
+  },
+  {
+    color: '#E6E6FA',
+    previewImage: '/preview-images/Levender.png',
+    name: 'Lavender',
+  },
+  {
+    color: '#800000',
+    previewImage: '/preview-images/Maroon.png',
+    name: 'Maroon',
+  },
+  {
+    color: '#000080',
+    previewImage: '/preview-images/Navy Blue.png',
+    name: 'Navy Blue',
+  },
+  { color: '#FF0000', previewImage: '/preview-images/Red.png', name: 'Red' },
+  {
+    color: '#87CEEB',
+    previewImage: '/preview-images/Sky Blue.png',
+    name: 'Sky Blue',
+  },
+  {
+    color: '#FFFFFF',
+    previewImage: '/preview-images/White.png',
+    name: 'White',
+  },
+];
+
+const CustomizationFunction = () => {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-
-  const tshirtColors = [
-    {
-      color: '#000000',
-      previewImage: '/preview-images/Black.png',
-      name: 'Black',
-    },
-    {
-      color: '#4CAF50',
-      previewImage: '/preview-images/Green.png',
-      name: 'Green',
-    },
-    {
-      color: '#E6E6FA',
-      previewImage: '/preview-images/Levender.png',
-      name: 'Lavender',
-    },
-    {
-      color: '#800000',
-      previewImage: '/preview-images/Maroon.png',
-      name: 'Maroon',
-    },
-    {
-      color: '#000080',
-      previewImage: '/preview-images/Navy Blue.png',
-      name: 'Navy Blue',
-    },
-    { color: '#FF0000', previewImage: '/preview-images/Red.png', name: 'Red' },
-    {
-      color: '#87CEEB',
-      previewImage: '/preview-images/Sky Blue.png',
-      name: 'Sky Blue',
-    },
-    {
-      color: '#FFFFFF',
-      previewImage: '/preview-images/White.png',
-      name: 'White',
-    },
-  ];
 
   const [selectedColor, setSelectedColor] = useState(tshirtColors[0]);
   const [elements, setElements] = useState([]);
@@ -389,110 +369,6 @@ const CustomizeYourTee = () => {
       toast.error('Failed to send your design request.');
     }
   };
-
-  const panelStyle = 'bg-white rounded-xl shadow-md p-6 border border-gray-100';
-  const headingTitle = 'text-xl font-semibold mb-4 text-gray-800 border-b pb-3';
-  const sectionTitle =
-    'text-md font-medium mb-3 text-gray-700 flex items-center gap-2';
-  const buttonStyle =
-    'w-full px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors duration-200';
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <TopElements></TopElements>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Panel - Tools */}
-          <LeftPanelTools
-            tshirtColors={tshirtColors}
-            setSelectedColor={setSelectedColor}
-            selectedColor={selectedColor}
-            newText={newText}
-            setNewText={setNewText}
-            textStyle={textStyle}
-            setTextStyle={setTextStyle}
-            addText={addText}
-            fileInputRef={fileInputRef}
-            addImage={addImage}
-            elements={elements}
-            panelStyle={panelStyle}
-            headingTitle={headingTitle}
-            selectedElement={selectedElement}
-            deleteElement={deleteElement}
-            setSelectedElement={setSelectedElement}
-          />
-
-          {/* Center Panel - Preview */}
-          <CentralPanelPreview
-            panelStyle={panelStyle}
-            headingTitle={headingTitle}
-            canvasRef={canvasRef}
-            selectedColor={selectedColor}
-            handleMouseMove={handleMouseMove}
-            handleMouseUp={handleMouseUp}
-            elements={elements}
-            selectedElement={selectedElement}
-            handleMouseDown={handleMouseDown}
-          />
-
-          {/* Right Panel - Properties & Actions */}
-          <RightPanel
-            panelStyle={panelStyle}
-            headingTitle={headingTitle}
-            selectedElement={selectedElement}
-            elements={elements}
-            generatePreview={generatePreview}
-            buttonStyle={buttonStyle}
-            updateElement={updateElement}
-            deleteElement={deleteElement}
-          />
-        </div>
-        {/* is preview open  */}
-        {isPreviewOpen && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-xl font-semibold mb-4">Design Preview</h2>
-              <div className="mb-4">
-                <img
-                  src={previewImage} // Use the base64 image URL generated from the canvas
-                  alt="T-shirt Design Preview"
-                  className="w-full h-auto rounded"
-                />
-              </div>
-              <div className="flex justify-between">
-                <button
-                  onClick={() => setIsPreviewOpen(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
-                >
-                  Close
-                </button>
-
-                <button
-                  onClick={sendRequest}
-                  disabled={elements.length === 0}
-                  className={`${buttonStyle} ${
-                    elements.length === 0
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-orange-600 text-white hover:bg-orange-700'
-                  }`}
-                >
-                  <Printer size={16} />
-                  Request Print Quote
-                </button>
-
-                <button
-                  onClick={downloadDesign}
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
-                >
-                  Download
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 };
 
-export default CustomizeYourTee;
+export default CustomizationFunction;
