@@ -308,7 +308,7 @@ const CustomizeYourTee = () => {
           reject(new Error('Image loading timeout'));
         }, 5000);
 
-        bgImg.src = selectedColor.previewImages[viewSide];
+        bgImg.src = selectedColor.previewImages[side];
       });
 
       // Draw all design elements on top of the t-shirt
@@ -416,21 +416,26 @@ const CustomizeYourTee = () => {
   };
 
   const sendRequest = async () => {
-    const formData = new FormData();
+    const formDataFront = new FormData();
+    const formDataBack = new FormData();
 
-    // Append design data to the form
-    formData.append('color', selectedColor.name);
-    formData.append('timestamp', new Date().toISOString());
+    // Front side request
+    formDataFront.append('color', selectedColor.name);
+    formDataFront.append('timestamp', new Date().toISOString());
 
-    // Append the preview image as a Blob
+    // Front preview image as Blob
     const frontPreviewImageBlob = dataURLToBlob(previewImages.front);
-    formData.append('previewImage', frontPreviewImageBlob, 'design-image.png'); // Add filename if needed
+    formDataFront.append(
+      'previewImage',
+      frontPreviewImageBlob,
+      'design-image-front.png',
+    ); // Add filename for front image
 
     try {
-      // Send the request
-      const res = await axiosPublic.post(
+      // Send front side request
+      const frontRes = await axiosPublic.post(
         '/admin/send-customize-tee-request',
-        formData,
+        formDataFront,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -438,10 +443,11 @@ const CustomizeYourTee = () => {
         },
       );
 
+      // Handle front side elements (text and images)
       for (const element of elements.front) {
         if (element.type === 'text') {
-          const result = await axiosPublic.post(
-            `/admin/customized-text-element/${res.data.id}`,
+          await axiosPublic.post(
+            `/admin/customized-text-element/${frontRes.data.id}`,
             element,
             {
               headers: {
@@ -450,16 +456,13 @@ const CustomizeYourTee = () => {
             },
           );
         } else if (element.type === 'image') {
-          // Convert image to Blob
           const previewElementBlob = dataURLToBlob(element.content);
-
-          // Create a new FormData for each image element
           const imageFormData = new FormData();
           imageFormData.append(
             'image',
             previewElementBlob,
             'element-image.png',
-          ); // Add a filename for the image
+          );
 
           imageFormData.append('height', element.height);
           imageFormData.append('width', element.width);
@@ -468,25 +471,35 @@ const CustomizeYourTee = () => {
           imageFormData.append('x', element.x);
           imageFormData.append('y', element.y);
 
-          const result = await axiosPublic.post(
-            `/admin/customized-image-element/${res.data.id}`,
-            imageFormData, // Send the FormData with image
+          await axiosPublic.post(
+            `/admin/customized-image-element/${frontRes.data.id}`,
+            imageFormData,
             {
               headers: {
-                'Content-Type': 'multipart/form-data', // For file uploads
+                'Content-Type': 'multipart/form-data',
               },
             },
           );
         }
       }
 
-      // Append the preview image as a Blob
-      const backPreviewImageBlob = dataURLToBlob(previewImages.back);
-      formData.append('previewImage', backPreviewImageBlob, 'design-image.png'); // Add filename if needed
+      // Back side request
+      formDataBack.append('color', selectedColor.name);
+      formDataBack.append('timestamp', new Date().toISOString());
 
+      // Back preview image as Blob
+      const backPreviewImageBlob = dataURLToBlob(previewImages.back);
+      formDataBack.append(
+        'previewImage',
+        backPreviewImageBlob,
+        'design-image-back.png',
+      ); // Add filename for back image
+      formDataBack.append('side', 'back');
+
+      // Send back side request
       const backRes = await axiosPublic.post(
         '/admin/send-customize-tee-request',
-        formData,
+        formDataBack,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -494,9 +507,10 @@ const CustomizeYourTee = () => {
         },
       );
 
+      // Handle back side elements (text and images)
       for (const element of elements.back) {
         if (element.type === 'text') {
-          const result = await axiosPublic.post(
+          await axiosPublic.post(
             `/admin/customized-text-element/${backRes.data.id}`,
             element,
             {
@@ -506,16 +520,13 @@ const CustomizeYourTee = () => {
             },
           );
         } else if (element.type === 'image') {
-          // Convert image to Blob
           const previewElementBlob = dataURLToBlob(element.content);
-
-          // Create a new FormData for each image element
           const imageFormData = new FormData();
           imageFormData.append(
             'image',
             previewElementBlob,
             'element-image.png',
-          ); // Add a filename for the image
+          );
 
           imageFormData.append('height', element.height);
           imageFormData.append('width', element.width);
@@ -524,19 +535,19 @@ const CustomizeYourTee = () => {
           imageFormData.append('x', element.x);
           imageFormData.append('y', element.y);
 
-          const result = await axiosPublic.post(
+          await axiosPublic.post(
             `/admin/customized-image-element/${backRes.data.id}`,
-            imageFormData, // Send the FormData with image
+            imageFormData,
             {
               headers: {
-                'Content-Type': 'multipart/form-data', // For file uploads
+                'Content-Type': 'multipart/form-data',
               },
             },
           );
         }
       }
 
-      // Handle the response
+      // Handle the response for both sides
       toast.success(
         'Your design request has been sent! We will contact you soon.',
       );
