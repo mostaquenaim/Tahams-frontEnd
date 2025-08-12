@@ -273,14 +273,14 @@ const RightPanel = ({
             Preview Design
           </button>
 
-          <div className="pt-4 border-t border-gray-200">
+          {/* <div className="pt-4 border-t border-gray-200">
             <button
               className={`${buttonStyle} bg-gray-50 text-gray-700 hover:bg-gray-100`}
             >
               <HelpCircle size={16} />
               Design Help Center
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

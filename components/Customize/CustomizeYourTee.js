@@ -114,8 +114,14 @@ const CustomizeYourTee = () => {
     scale: 1,
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false); // New state for controlling the modal visibility
-  const [previewCanvas, setPreviewCanvas] = useState(null); // Store the preview canvas for download
-  const [previewImage, setPreviewImage] = useState(null); // Store the preview canvas for download
+  const [previewImages, setPreviewImages] = useState({
+    front: null,
+    back: null,
+  });
+  const [previewCanvases, setPreviewCanvases] = useState({
+    front: null,
+    back: null,
+  });
 
   // Add text element
   const addText = () => {
@@ -240,18 +246,36 @@ const CustomizeYourTee = () => {
     }));
   };
 
-  // Generate preview and show modal
-  const generatePreview = async () => {
+  const generatePreviews = async () => {
+    // Generate front side with background
+    const backCanvas = await generatePreview('back');
+    const backImageUrl = backCanvas.toDataURL('image/jpeg', 0.8); // quality between 0–1
+
+    // Generate front side with background
+    const frontCanvas = await generatePreview('front');
+    const frontImageUrl = frontCanvas.toDataURL('image/jpeg', 0.8); // quality between 0–1
+
+    setPreviewImages({
+      front: frontImageUrl,
+      back: backImageUrl,
+    });
+    setPreviewCanvases({
+      front: frontCanvas,
+      back: backCanvas,
+    }); // Store the preview canvas
+
+    setIsPreviewOpen(true);
+  };
+
+  // Generate front preview
+  const generatePreview = async (side) => {
+    console.log(side);
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 500;
     const ctx = canvas.getContext('2d');
 
     try {
-      // Set canvas background to white
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       // Draw t-shirt background image
       const bgImg = new Image();
       bgImg.crossOrigin = 'anonymous';
@@ -288,56 +312,33 @@ const CustomizeYourTee = () => {
       });
 
       // Draw all design elements on top of the t-shirt
-      for (const element of elements[viewSide]) {
+      for (const element of elements[`${side}`]) {
+        ctx.save(); // Save the current context
+        ctx.translate(
+          element.x + element.width / 2,
+          element.y + element.height / 2,
+        ); // Move to the center of the text
+        ctx.rotate((element.style.rotation * Math.PI) / 180); // Rotate by the element's rotation (in radians)
+        ctx.translate(
+          -element.x - element.width / 2,
+          -element.y - element.height / 2,
+        ); // Reset back to the original position
+
         if (element.type === 'text') {
           ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
           ctx.fillStyle = element.style.color;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
 
-          // Add text shadow for better visibility
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-          ctx.shadowBlur = 2;
-          ctx.shadowOffsetX = 1;
-          ctx.shadowOffsetY = 1;
-
-          ctx.save(); // Save the current context
-          ctx.translate(
-            element.x + element.width / 2,
-            element.y + element.height / 2,
-          ); // Move to the center of the text
-          ctx.rotate((element.style.rotation * Math.PI) / 180); // Rotate by the element's rotation (in radians)
-          ctx.translate(
-            -element.x - element.width / 2,
-            -element.y - element.height / 2,
-          ); // Reset back to the original position
-
           ctx.fillText(element.content, element.x, element.y);
 
-          // Reset shadow
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
-
-          ctx.restore(); // Restore the context to remove rotation effect
+          // Restore the context to remove rotation effect
         } else if (element.type === 'image') {
           const img = new Image();
           img.crossOrigin = 'anonymous';
 
           await new Promise((resolve) => {
             img.onload = () => {
-              ctx.save(); // Save the current context
-              ctx.translate(
-                element.x + element.width / 2,
-                element.y + element.height / 2,
-              ); // Move to the center of the image
-              ctx.rotate((element.style.rotation * Math.PI) / 180); // Rotate by the element's rotation (in radians)
-              ctx.translate(
-                -element.x - element.width / 2,
-                -element.y - element.height / 2,
-              ); // Reset back to the original position
-
               ctx.drawImage(
                 img,
                 element.x,
@@ -346,7 +347,7 @@ const CustomizeYourTee = () => {
                 element.height,
               );
 
-              ctx.restore(); // Restore the context to remove rotation effect
+              // Restore the context to remove rotation effect
               resolve();
             };
             img.onerror = () => {
@@ -356,13 +357,11 @@ const CustomizeYourTee = () => {
             img.src = element.content;
           });
         }
+        ctx.restore();
       }
 
-      const imageUrl = canvas.toDataURL('image/jpeg', 0.8); // quality between 0–1
-
-      setPreviewImage(imageUrl);
-      setPreviewCanvas(canvas); // Store the preview canvas
-      setIsPreviewOpen(true); // Open the preview modal
+      return canvas;
+      // generateBackPreview(); // Open the preview modal
     } catch (error) {
       console.error('Error creating preview:', error);
     }
@@ -370,9 +369,21 @@ const CustomizeYourTee = () => {
 
   // Download the previewed design
   const downloadDesign = () => {
-    if (!previewCanvas) return;
+    if (!previewCanvases.front && !previewCanvases.back) return;
 
-    previewCanvas.toBlob(
+    previewCanvases.front.toBlob(
+      (blob) => {
+        const link = document.createElement('a');
+        link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${Date.now()}.png`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href); // cleanup memory
+      },
+      'image/png',
+      1.0,
+    );
+
+    previewCanvases.back.toBlob(
       (blob) => {
         const link = document.createElement('a');
         link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${Date.now()}.png`;
@@ -412,10 +423,8 @@ const CustomizeYourTee = () => {
     formData.append('timestamp', new Date().toISOString());
 
     // Append the preview image as a Blob
-    const previewImageBlob = dataURLToBlob(previewImage);
-    formData.append('previewImage', previewImageBlob, 'design-image.png'); // Add filename if needed
-    // Optionally, add other elements like text, images, etc.
-    // formData.append('elements', JSON.stringify(elements));
+    const frontPreviewImageBlob = dataURLToBlob(previewImages.front);
+    formData.append('previewImage', frontPreviewImageBlob, 'design-image.png'); // Add filename if needed
 
     try {
       // Send the request
@@ -429,7 +438,7 @@ const CustomizeYourTee = () => {
         },
       );
 
-      for (const element of elements[viewSide]) {
+      for (const element of elements.front) {
         if (element.type === 'text') {
           const result = await axiosPublic.post(
             `/admin/customized-text-element/${res.data.id}`,
@@ -461,6 +470,62 @@ const CustomizeYourTee = () => {
 
           const result = await axiosPublic.post(
             `/admin/customized-image-element/${res.data.id}`,
+            imageFormData, // Send the FormData with image
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data', // For file uploads
+              },
+            },
+          );
+        }
+      }
+
+      // Append the preview image as a Blob
+      const backPreviewImageBlob = dataURLToBlob(previewImages.back);
+      formData.append('previewImage', backPreviewImageBlob, 'design-image.png'); // Add filename if needed
+
+      const backRes = await axiosPublic.post(
+        '/admin/send-customize-tee-request',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      for (const element of elements.back) {
+        if (element.type === 'text') {
+          const result = await axiosPublic.post(
+            `/admin/customized-text-element/${backRes.data.id}`,
+            element,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            },
+          );
+        } else if (element.type === 'image') {
+          // Convert image to Blob
+          const previewElementBlob = dataURLToBlob(element.content);
+
+          // Create a new FormData for each image element
+          const imageFormData = new FormData();
+          imageFormData.append(
+            'image',
+            previewElementBlob,
+            'element-image.png',
+          ); // Add a filename for the image
+
+          imageFormData.append('height', element.height);
+          imageFormData.append('width', element.width);
+          imageFormData.append('originalHeight', element.originalHeight);
+          imageFormData.append('originalWidth', element.originalWidth);
+          imageFormData.append('x', element.x);
+          imageFormData.append('y', element.y);
+
+          const result = await axiosPublic.post(
+            `/admin/customized-image-element/${backRes.data.id}`,
             imageFormData, // Send the FormData with image
             {
               headers: {
@@ -537,7 +602,7 @@ const CustomizeYourTee = () => {
             selectedElement={selectedElement}
             elements={elements}
             viewSide={viewSide}
-            generatePreview={generatePreview}
+            generatePreview={generatePreviews}
             buttonStyle={buttonStyle}
             updateElement={updateElement}
             deleteElement={deleteElement}
@@ -546,13 +611,18 @@ const CustomizeYourTee = () => {
         {/* is preview open  */}
         {isPreviewOpen && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
               <h2 className="text-xl font-semibold mb-4">Design Preview</h2>
-              <div className="mb-4">
+              <div className="mb-4 flex flex-col md:flex-row items-center gap-5 md:gap-0">
                 <img
-                  src={previewImage} // Use the base64 image URL generated from the canvas
+                  src={previewImages.front} // Use the base64 image URL generated from the canvas
                   alt="T-shirt Design Preview"
-                  className="w-full h-auto rounded"
+                  className="w-48 md:w-full h-auto rounded"
+                />
+                <img
+                  src={previewImages.back} // Use the base64 image URL generated from the canvas
+                  alt="T-shirt Design Preview"
+                  className="w-48 md:w-full h-auto rounded"
                 />
               </div>
               <div className="flex justify-between">
