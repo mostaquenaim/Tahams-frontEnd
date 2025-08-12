@@ -29,44 +29,76 @@ const CustomizeYourTee = () => {
   const tshirtColors = [
     {
       color: '#000000',
-      previewImage: '/preview-images/Black.png',
+      previewImages: {
+        front: '/preview-images/Black.png',
+        back: '/preview-images/black-back.png',
+      },
       name: 'Black',
     },
     {
       color: '#4CAF50',
-      previewImage: '/preview-images/Green.png',
+      previewImages: {
+        front: '/preview-images/Green.png',
+        back: '/preview-images/green-back.png', // Added back image
+      },
       name: 'Green',
     },
     {
       color: '#E6E6FA',
-      previewImage: '/preview-images/Levender.png',
+      previewImages: {
+        front: '/preview-images/Levender.png',
+        back: '/preview-images/levender-back.png', // Added back image
+      },
       name: 'Lavender',
     },
     {
       color: '#800000',
-      previewImage: '/preview-images/Maroon.png',
+      previewImages: {
+        front: '/preview-images/Maroon.png',
+        back: '/preview-images/maroon-back.png', // Added back image
+      },
       name: 'Maroon',
     },
     {
       color: '#000080',
-      previewImage: '/preview-images/Navy Blue.png',
+      previewImages: {
+        front: '/preview-images/Navy-Blue.png',
+        back: '/preview-images/navy-blue-back.png', // Added back image
+      },
       name: 'Navy Blue',
     },
-    { color: '#FF0000', previewImage: '/preview-images/Red.png', name: 'Red' },
+    {
+      color: '#FF0000',
+      previewImages: {
+        front: '/preview-images/Red.png',
+        back: '/preview-images/red-back.png', // Added back image
+      },
+      name: 'Red',
+    },
     {
       color: '#87CEEB',
-      previewImage: '/preview-images/Sky Blue.png',
+      previewImages: {
+        front: '/preview-images/Sky-Blue.png',
+        back: '/preview-images/sky-blue-back.png', // Added back image
+      },
       name: 'Sky Blue',
     },
     {
       color: '#FFFFFF',
-      previewImage: '/preview-images/White.png',
+      previewImages: {
+        front: '/preview-images/White.png',
+        back: '/preview-images/white-back.png', // Added back image
+      },
       name: 'White',
     },
   ];
 
+  const [viewSide, setViewSide] = useState('front');
   const [selectedColor, setSelectedColor] = useState(tshirtColors[0]);
-  const [elements, setElements] = useState([]);
+  const [elements, setElements] = useState({
+    front: [],
+    back: [],
+  });
   const [selectedElement, setSelectedElement] = useState(null);
   const [draggedElement, setDraggedElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -76,6 +108,10 @@ const CustomizeYourTee = () => {
     color: '#000000',
     fontWeight: 'normal',
     fontFamily: 'Arial',
+  });
+  const [imgStyle, setImgStyle] = useState({
+    rotation: 0,
+    scale: 1,
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false); // New state for controlling the modal visibility
   const [previewCanvas, setPreviewCanvas] = useState(null); // Store the preview canvas for download
@@ -96,7 +132,10 @@ const CustomizeYourTee = () => {
       style: { ...textStyle },
     };
 
-    setElements([...elements, newElement]);
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: [...prevState[viewSide], newElement], // Update elements for the current side
+    }));
     setNewText('');
     setSelectedElement(newElement.id);
   };
@@ -110,19 +149,35 @@ const CustomizeYourTee = () => {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
+        let newWidth = img.width;
+        let newHeight = img.height;
+
+        // Check which dimension is larger and scale down the other one to maintain the aspect ratio
+        if (img.width > img.height) {
+          newWidth = Math.min(img.width, 200);
+          newHeight = (newWidth / img.width) * img.height; // Scale height accordingly
+        } else {
+          newHeight = Math.min(img.height, 200);
+          newWidth = (newHeight / img.height) * img.width; // Scale width accordingly
+        }
+
         const newElement = {
           id: Date.now(),
           type: 'image',
           content: e.target.result,
           x: 150,
           y: 200,
-          width: Math.min(img.width, 200),
-          height: Math.min(img.height, 200),
+          width: newWidth,
+          height: newHeight,
           originalWidth: img.width,
           originalHeight: img.height,
+          style: { ...imgStyle },
         };
 
-        setElements([...elements, newElement]);
+        setElements((prevState) => ({
+          ...prevState,
+          [viewSide]: [...prevState[viewSide], newElement], // Update elements for the current side
+        }));
         setSelectedElement(newElement.id);
       };
       img.src = e.target.result;
@@ -152,13 +207,14 @@ const CustomizeYourTee = () => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    setElements(
-      elements.map((el) =>
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: elements[viewSide].map((el) =>
         el.id === draggedElement
           ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
           : el,
-      ),
-    );
+      ), // Update elements for the current side
+    }));
   };
 
   const handleMouseUp = () => {
@@ -167,15 +223,21 @@ const CustomizeYourTee = () => {
 
   // Delete element
   const deleteElement = (id) => {
-    setElements(elements.filter((el) => el.id !== id));
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: prevState[viewSide].filter((el) => el.id !== id), // Remove element from the current side
+    }));
     setSelectedElement(null);
   };
 
   // Update element properties
   const updateElement = (id, updates) => {
-    setElements(
-      elements.map((el) => (el.id === id ? { ...el, ...updates } : el)),
-    );
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: prevState[viewSide].map((el) =>
+        el.id === id ? { ...el, ...updates } : el,
+      ), // Update the element in the current side
+    }));
   };
 
   // Generate preview and show modal
@@ -186,6 +248,10 @@ const CustomizeYourTee = () => {
     const ctx = canvas.getContext('2d');
 
     try {
+      // Set canvas background to white
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       // Draw t-shirt background image
       const bgImg = new Image();
       bgImg.crossOrigin = 'anonymous';
@@ -218,11 +284,11 @@ const CustomizeYourTee = () => {
           reject(new Error('Image loading timeout'));
         }, 5000);
 
-        bgImg.src = selectedColor.previewImage;
+        bgImg.src = selectedColor.previewImages[viewSide];
       });
 
       // Draw all design elements on top of the t-shirt
-      for (const element of elements) {
+      for (const element of elements[viewSide]) {
         if (element.type === 'text') {
           ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
           ctx.fillStyle = element.style.color;
@@ -235,6 +301,17 @@ const CustomizeYourTee = () => {
           ctx.shadowOffsetX = 1;
           ctx.shadowOffsetY = 1;
 
+          ctx.save(); // Save the current context
+          ctx.translate(
+            element.x + element.width / 2,
+            element.y + element.height / 2,
+          ); // Move to the center of the text
+          ctx.rotate((element.style.rotation * Math.PI) / 180); // Rotate by the element's rotation (in radians)
+          ctx.translate(
+            -element.x - element.width / 2,
+            -element.y - element.height / 2,
+          ); // Reset back to the original position
+
           ctx.fillText(element.content, element.x, element.y);
 
           // Reset shadow
@@ -242,12 +319,25 @@ const CustomizeYourTee = () => {
           ctx.shadowBlur = 0;
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 0;
+
+          ctx.restore(); // Restore the context to remove rotation effect
         } else if (element.type === 'image') {
           const img = new Image();
           img.crossOrigin = 'anonymous';
 
           await new Promise((resolve) => {
             img.onload = () => {
+              ctx.save(); // Save the current context
+              ctx.translate(
+                element.x + element.width / 2,
+                element.y + element.height / 2,
+              ); // Move to the center of the image
+              ctx.rotate((element.style.rotation * Math.PI) / 180); // Rotate by the element's rotation (in radians)
+              ctx.translate(
+                -element.x - element.width / 2,
+                -element.y - element.height / 2,
+              ); // Reset back to the original position
+
               ctx.drawImage(
                 img,
                 element.x,
@@ -255,6 +345,8 @@ const CustomizeYourTee = () => {
                 element.width,
                 element.height,
               );
+
+              ctx.restore(); // Restore the context to remove rotation effect
               resolve();
             };
             img.onerror = () => {
@@ -319,7 +411,6 @@ const CustomizeYourTee = () => {
     formData.append('color', selectedColor.name);
     formData.append('timestamp', new Date().toISOString());
 
-    // console.log('previewImage',previewImage);
     // Append the preview image as a Blob
     const previewImageBlob = dataURLToBlob(previewImage);
     formData.append('previewImage', previewImageBlob, 'design-image.png'); // Add filename if needed
@@ -338,7 +429,7 @@ const CustomizeYourTee = () => {
         },
       );
 
-      for (const element of elements) {
+      for (const element of elements[viewSide]) {
         if (element.type === 'text') {
           const result = await axiosPublic.post(
             `/admin/customized-text-element/${res.data.id}`,
@@ -410,11 +501,13 @@ const CustomizeYourTee = () => {
             newText={newText}
             setNewText={setNewText}
             textStyle={textStyle}
+            imgStyle={imgStyle}
             setTextStyle={setTextStyle}
             addText={addText}
             fileInputRef={fileInputRef}
             addImage={addImage}
             elements={elements}
+            viewSide={viewSide}
             panelStyle={panelStyle}
             headingTitle={headingTitle}
             selectedElement={selectedElement}
@@ -433,6 +526,8 @@ const CustomizeYourTee = () => {
             elements={elements}
             selectedElement={selectedElement}
             handleMouseDown={handleMouseDown}
+            viewSide={viewSide}
+            setViewSide={setViewSide}
           />
 
           {/* Right Panel - Properties & Actions */}
@@ -441,6 +536,7 @@ const CustomizeYourTee = () => {
             headingTitle={headingTitle}
             selectedElement={selectedElement}
             elements={elements}
+            viewSide={viewSide}
             generatePreview={generatePreview}
             buttonStyle={buttonStyle}
             updateElement={updateElement}
@@ -469,9 +565,9 @@ const CustomizeYourTee = () => {
 
                 <button
                   onClick={sendRequest}
-                  disabled={elements.length === 0}
+                  disabled={elements[viewSide].length === 0}
                   className={`${buttonStyle} ${
-                    elements.length === 0
+                    elements[viewSide].length === 0
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       : 'bg-orange-600 text-white hover:bg-orange-700'
                   }`}

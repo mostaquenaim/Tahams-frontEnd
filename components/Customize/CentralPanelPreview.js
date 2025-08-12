@@ -1,4 +1,5 @@
-import React from 'react';
+import { FlipHorizontal, Shirt } from 'lucide-react';
+import React, { useState } from 'react';
 
 const CentralPanelPreview = ({
   panelStyle,
@@ -8,34 +9,67 @@ const CentralPanelPreview = ({
   handleMouseMove,
   handleMouseUp,
   elements,
+  viewSide,
   selectedElement,
   handleMouseDown,
+  setViewSide,
 }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleMouseDownEnhanced = (e, element) => {
+    setIsDragging(true);
+    handleMouseDown(e, element);
+  };
+
+  const handleMouseUpEnhanced = () => {
+    setIsDragging(false);
+    handleMouseUp();
+  };
+
   return (
     <div className="lg:col-span-6">
       <div className={panelStyle}>
-        <h2 className={`${headingTitle} text-center`}>Design Preview</h2>
+        {/* heading and switch sides  */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className={headingTitle}>Design Preview</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                setViewSide(viewSide === 'front' ? 'back' : 'front')
+              }
+              className="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+              aria-label={`Switch to ${
+                viewSide === 'front' ? 'back' : 'front'
+              } view`}
+            >
+              <FlipHorizontal size={16} />
+              {viewSide === 'front' ? 'Back View' : 'Front View'}
+            </button>
+          </div>
+        </div>
 
         <div className="flex justify-center">
           <div
             ref={canvasRef}
-            className="relative border-2 border-gray-300 rounded-lg overflow-hidden cursor-crosshair"
+            className={`relative border-2 border-gray-300 rounded-lg overflow-hidden ${
+              isDragging ? 'cursor-grabbing' : 'cursor-crosshair'
+            }`}
             style={{
               width: '400px',
               height: '500px',
-              backgroundImage: `url(${selectedColor.previewImage})`,
+              backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              backgroundColor: selectedColor.color,
+              backgroundColor: '#ffffff',
             }}
             onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseUp={handleMouseUpEnhanced}
+            onMouseLeave={handleMouseUpEnhanced}
           >
             {/* T-shirt outline - now more subtle since we have the actual image */}
             <div
-              className="absolute inset-4 border border-dashed rounded-lg opacity-30"
+              className="absolute inset-4 border border-dashed rounded-lg opacity-30 pointer-events-none"
               style={{
                 borderColor:
                   selectedColor.color === '#FFFFFF'
@@ -45,7 +79,7 @@ const CentralPanelPreview = ({
             />
 
             {/* Design Elements */}
-            {elements.map((element) => (
+            {elements[viewSide].map((element) => (
               <div
                 key={element.id}
                 className={`absolute cursor-move ${
@@ -56,6 +90,7 @@ const CentralPanelPreview = ({
                   top: element.y,
                   width: element.width,
                   height: element.height,
+                  transform: `rotate(${element.style.rotation || 0}deg)`,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, element)}
               >
@@ -66,7 +101,6 @@ const CentralPanelPreview = ({
                       color: element.style.color,
                       fontWeight: element.style.fontWeight,
                       fontFamily: element.style.fontFamily,
-                      transform: `rotate(${element.style.rotation || 0}deg)`, // Add rotation here
                       whiteSpace: 'nowrap',
                       userSelect: 'none',
                     }}
@@ -77,7 +111,7 @@ const CentralPanelPreview = ({
                   <img
                     src={element.content}
                     alt="Design element"
-                    className="w-full h-full object-contain pointer-events-none"
+                    className="w-full h-full pointer-events-none transition"
                     draggable={false}
                   />
                 )}
@@ -86,10 +120,50 @@ const CentralPanelPreview = ({
           </div>
         </div>
 
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <p>• Click and drag elements to move them</p>
-          <p>• Click on elements to select them</p>
-          <p>• Use the tools on the left to add text and images</p>
+        <div className="mt-6 text-center">
+          <div className="inline-flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewSide('front')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewSide === 'front'
+                  ? 'bg-white shadow-sm text-gray-900'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Shirt size={16} />
+                Front View
+              </div>
+            </button>
+            <button
+              onClick={() => setViewSide('back')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewSide === 'back'
+                  ? 'bg-white shadow-sm text-gray-900'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Shirt size={16} className="transform scale-x-[-1]" />
+                Back View
+              </div>
+            </button>
+          </div>
+
+          <div className="mt-4 text-sm text-gray-600 grid grid-cols-1 md:grid-cols-3 gap-2">
+            <p className="flex items-center justify-center gap-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              Click and drag to move
+            </p>
+            <p className="flex items-center justify-center gap-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              Click to select elements
+            </p>
+            <p className="flex items-center justify-center gap-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              Use side panels to edit
+            </p>
+          </div>
         </div>
       </div>
     </div>
