@@ -1,26 +1,13 @@
-import React, { useState, useRef } from 'react';
-import {
-  Save,
-  FolderPlus,
-  Sliders,
-  Droplet,
-  Plus,
-  Upload,
-  Download,
-  Trash2,
-  Settings2,
-  Package,
-  HelpCircle,
-  Type,
-  Printer,
-  Layers,
-} from 'lucide-react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
+import { Printer, Download, X } from 'lucide-react';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 import TopElements from './TopElements';
 import LeftPanelTools from './LeftPanelTools';
 import CentralPanelPreview from './CentralPanelPreview';
 import RightPanel from './RightPanel';
+import { getGuestCustomerInfo } from '/utils/guestCustomer';
+import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const CustomizeYourTee = () => {
   const canvasRef = useRef(null);
@@ -39,7 +26,7 @@ const CustomizeYourTee = () => {
       color: '#4CAF50',
       previewImages: {
         front: '/preview-images/Green.png',
-        back: '/preview-images/green-back.png', // Added back image
+        back: '/preview-images/green-back.png',
       },
       name: 'Green',
     },
@@ -47,7 +34,7 @@ const CustomizeYourTee = () => {
       color: '#E6E6FA',
       previewImages: {
         front: '/preview-images/Levender.png',
-        back: '/preview-images/levender-back.png', // Added back image
+        back: '/preview-images/levender-back.png',
       },
       name: 'Lavender',
     },
@@ -55,7 +42,7 @@ const CustomizeYourTee = () => {
       color: '#800000',
       previewImages: {
         front: '/preview-images/Maroon.png',
-        back: '/preview-images/maroon-back.png', // Added back image
+        back: '/preview-images/maroon-back.png',
       },
       name: 'Maroon',
     },
@@ -63,7 +50,7 @@ const CustomizeYourTee = () => {
       color: '#000080',
       previewImages: {
         front: '/preview-images/Navy-Blue.png',
-        back: '/preview-images/navy-blue-back.png', // Added back image
+        back: '/preview-images/navy-blue-back.png',
       },
       name: 'Navy Blue',
     },
@@ -71,7 +58,7 @@ const CustomizeYourTee = () => {
       color: '#FF0000',
       previewImages: {
         front: '/preview-images/Red.png',
-        back: '/preview-images/red-back.png', // Added back image
+        back: '/preview-images/red-back.png',
       },
       name: 'Red',
     },
@@ -79,7 +66,7 @@ const CustomizeYourTee = () => {
       color: '#87CEEB',
       previewImages: {
         front: '/preview-images/Sky-Blue.png',
-        back: '/preview-images/sky-blue-back.png', // Added back image
+        back: '/preview-images/sky-blue-back.png',
       },
       name: 'Sky Blue',
     },
@@ -87,7 +74,7 @@ const CustomizeYourTee = () => {
       color: '#FFFFFF',
       previewImages: {
         front: '/preview-images/White.png',
-        back: '/preview-images/white-back.png', // Added back image
+        back: '/preview-images/white-back.png',
       },
       name: 'White',
     },
@@ -113,7 +100,7 @@ const CustomizeYourTee = () => {
     rotation: 0,
     scale: 1,
   });
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false); // New state for controlling the modal visibility
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImages, setPreviewImages] = useState({
     front: null,
     back: null,
@@ -122,6 +109,116 @@ const CustomizeYourTee = () => {
     front: null,
     back: null,
   });
+  const [instructions, setInstructions] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false); // State for form visibility
+  const [name, setName] = useState(''); // State for name input
+  const [phone, setPhone] = useState(''); // State for phone number input
+  const [customerEmail, setCustomerEmail] = useState('');
+
+  const { user, loading } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!loading) {
+      const guestCustomerInfo = getGuestCustomerInfo();
+      setCustomerEmail(user?.email || guestCustomerInfo.email);
+    }
+  }, [loading, user]);
+
+  const handleFormSubmit = async () => {
+    if (!name?.trim() || !phone?.trim()) {
+      toast.error('Please fill out all fields.');
+      return;
+    }
+    if (!previewImages?.front || !previewImages?.back) {
+      toast.error('Front and back previews are required.');
+      return;
+    }
+
+    const groupId =
+      crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
+
+    setIsLoading(true);
+    try {
+      const submitSide = async (side) => {
+        const fd = new FormData();
+        fd.append('color', selectedColor.name);
+        fd.append('side', side);
+        fd.append('name', name);
+        fd.append('phone', phone);
+        if (customerEmail) fd.append('email', customerEmail); // make sure server supports this
+        if (instructions) fd.append('specialInstructions', instructions);
+        fd.append('groupId', groupId); // server should store this to link both sides
+
+        const dataUrl =
+          side === 'front' ? previewImages.front : previewImages.back;
+        const blob = dataURLToBlob(dataUrl);
+        fd.append('previewImage', blob, `design-image-${side}.png`);
+
+        // Do NOT set Content-Type manually for FormData in the browser.
+        const { data } = await axiosPublic.post(
+          '/admin/send-customize-tee-request',
+          fd,
+        );
+        const reqId = data?.id;
+        if (!reqId) throw new Error('Missing id in response for ' + side);
+
+        const sideElements = elements?.[side] ?? [];
+
+        const textCalls = sideElements
+          .filter((el) => el.type === 'text')
+          .map((el) =>
+            axiosPublic.post(`/admin/customized-text-element/${reqId}`, el),
+          );
+
+        const imageCalls = sideElements
+          .filter((el) => el.type === 'image')
+          .map((el) => {
+            const imgFd = new FormData();
+            imgFd.append(
+              'image',
+              dataURLToBlob(el.content),
+              'element-image.png',
+            );
+            // append numeric props as strings
+            [
+              'height',
+              'width',
+              'originalHeight',
+              'originalWidth',
+              'x',
+              'y',
+              'scale',
+              'rotation',
+              'zIndex',
+            ].forEach((k) => {
+              if (el[k] != null) imgFd.append(k, String(el[k]));
+            });
+            return axiosPublic.post(
+              `/admin/customized-image-element/${reqId}`,
+              imgFd,
+            );
+          });
+
+        await Promise.all([...textCalls, ...imageCalls]);
+        return reqId;
+      };
+
+      // Run both sides in parallel
+      await Promise.all([submitSide('front'), submitSide('back')]);
+
+      toast.success(
+        'Your design request has been sent! We will contact you soon.',
+      );
+      setIsPreviewOpen(false);
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error('Error while sending request:', error);
+      toast.error('Failed to send your design request.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Add text element
   const addText = () => {
@@ -140,7 +237,7 @@ const CustomizeYourTee = () => {
 
     setElements((prevState) => ({
       ...prevState,
-      [viewSide]: [...prevState[viewSide], newElement], // Update elements for the current side
+      [viewSide]: [...prevState[viewSide], newElement],
     }));
     setNewText('');
     setSelectedElement(newElement.id);
@@ -158,13 +255,12 @@ const CustomizeYourTee = () => {
         let newWidth = img.width;
         let newHeight = img.height;
 
-        // Check which dimension is larger and scale down the other one to maintain the aspect ratio
         if (img.width > img.height) {
           newWidth = Math.min(img.width, 200);
-          newHeight = (newWidth / img.width) * img.height; // Scale height accordingly
+          newHeight = (newWidth / img.width) * img.height;
         } else {
           newHeight = Math.min(img.height, 200);
-          newWidth = (newHeight / img.height) * img.width; // Scale width accordingly
+          newWidth = (newHeight / img.height) * img.width;
         }
 
         const newElement = {
@@ -182,7 +278,7 @@ const CustomizeYourTee = () => {
 
         setElements((prevState) => ({
           ...prevState,
-          [viewSide]: [...prevState[viewSide], newElement], // Update elements for the current side
+          [viewSide]: [...prevState[viewSide], newElement],
         }));
         setSelectedElement(newElement.id);
       };
@@ -215,11 +311,11 @@ const CustomizeYourTee = () => {
 
     setElements((prevState) => ({
       ...prevState,
-      [viewSide]: elements[viewSide].map((el) =>
+      [viewSide]: prevState[viewSide].map((el) =>
         el.id === draggedElement
           ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
           : el,
-      ), // Update elements for the current side
+      ),
     }));
   };
 
@@ -231,7 +327,7 @@ const CustomizeYourTee = () => {
   const deleteElement = (id) => {
     setElements((prevState) => ({
       ...prevState,
-      [viewSide]: prevState[viewSide].filter((el) => el.id !== id), // Remove element from the current side
+      [viewSide]: prevState[viewSide].filter((el) => el.id !== id),
     }));
     setSelectedElement(null);
   };
@@ -242,58 +338,54 @@ const CustomizeYourTee = () => {
       ...prevState,
       [viewSide]: prevState[viewSide].map((el) =>
         el.id === id ? { ...el, ...updates } : el,
-      ), // Update the element in the current side
+      ),
     }));
   };
 
   const generatePreviews = async () => {
-    // Generate front side with background
-    const backCanvas = await generatePreview('back');
-    const backImageUrl = backCanvas.toDataURL('image/jpeg', 0.8); // quality between 0–1
+    setIsLoading(true);
+    try {
+      const backCanvas = await generatePreview('back');
+      const backImageUrl = backCanvas.toDataURL('image/jpeg', 0.8);
 
-    // Generate front side with background
-    const frontCanvas = await generatePreview('front');
-    const frontImageUrl = frontCanvas.toDataURL('image/jpeg', 0.8); // quality between 0–1
+      const frontCanvas = await generatePreview('front');
+      const frontImageUrl = frontCanvas.toDataURL('image/jpeg', 0.8);
 
-    setPreviewImages({
-      front: frontImageUrl,
-      back: backImageUrl,
-    });
-    setPreviewCanvases({
-      front: frontCanvas,
-      back: backCanvas,
-    }); // Store the preview canvas
+      setPreviewImages({
+        front: frontImageUrl,
+        back: backImageUrl,
+      });
+      setPreviewCanvases({
+        front: frontCanvas,
+        back: backCanvas,
+      });
 
-    setIsPreviewOpen(true);
+      setIsPreviewOpen(true);
+    } catch (error) {
+      toast.error('Failed to generate preview');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Generate front preview
   const generatePreview = async (side) => {
-    console.log(side);
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 500;
     const ctx = canvas.getContext('2d');
 
     try {
-      // Draw t-shirt background image
       const bgImg = new Image();
       bgImg.crossOrigin = 'anonymous';
 
-      // Wait for background image to load
       await new Promise((resolve, reject) => {
         bgImg.onload = () => {
-          // Draw the t-shirt image as background
           ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
           resolve();
         };
         bgImg.onerror = () => {
-          // Fallback to solid color if image fails to load
-          console.warn('T-shirt image failed to load, using solid color');
           ctx.fillStyle = selectedColor.color;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Add t-shirt shape outline as fallback
           ctx.strokeStyle =
             selectedColor.color === '#FFFFFF'
               ? '#E5E7EB'
@@ -303,7 +395,6 @@ const CustomizeYourTee = () => {
           resolve();
         };
 
-        // Set a timeout for image loading
         setTimeout(() => {
           reject(new Error('Image loading timeout'));
         }, 5000);
@@ -311,28 +402,24 @@ const CustomizeYourTee = () => {
         bgImg.src = selectedColor.previewImages[side];
       });
 
-      // Draw all design elements on top of the t-shirt
       for (const element of elements[`${side}`]) {
-        ctx.save(); // Save the current context
+        ctx.save();
         ctx.translate(
           element.x + element.width / 2,
           element.y + element.height / 2,
-        ); // Move to the center of the text
-        ctx.rotate((element.style.rotation * Math.PI) / 180); // Rotate by the element's rotation (in radians)
+        );
+        ctx.rotate((element.style.rotation * Math.PI) / 180);
         ctx.translate(
           -element.x - element.width / 2,
           -element.y - element.height / 2,
-        ); // Reset back to the original position
+        );
 
         if (element.type === 'text') {
           ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
           ctx.fillStyle = element.style.color;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-
           ctx.fillText(element.content, element.x, element.y);
-
-          // Restore the context to remove rotation effect
         } else if (element.type === 'image') {
           const img = new Image();
           img.crossOrigin = 'anonymous';
@@ -346,8 +433,6 @@ const CustomizeYourTee = () => {
                 element.width,
                 element.height,
               );
-
-              // Restore the context to remove rotation effect
               resolve();
             };
             img.onerror = () => {
@@ -361,48 +446,39 @@ const CustomizeYourTee = () => {
       }
 
       return canvas;
-      // generateBackPreview(); // Open the preview modal
     } catch (error) {
       console.error('Error creating preview:', error);
+      throw error;
     }
   };
 
-  // Download the previewed design
   const downloadDesign = () => {
     if (!previewCanvases.front && !previewCanvases.back) return;
 
-    previewCanvases.front.toBlob(
-      (blob) => {
-        const link = document.createElement('a');
-        link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${Date.now()}.png`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        URL.revokeObjectURL(link.href); // cleanup memory
-      },
-      'image/png',
-      1.0,
-    );
+    const downloadCanvas = (canvas, side) => {
+      canvas.toBlob(
+        (blob) => {
+          const link = document.createElement('a');
+          link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${side}-${Date.now()}.png`;
+          link.href = URL.createObjectURL(blob);
+          link.click();
+          URL.revokeObjectURL(link.href);
+        },
+        'image/png',
+        1.0,
+      );
+    };
 
-    previewCanvases.back.toBlob(
-      (blob) => {
-        const link = document.createElement('a');
-        link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${Date.now()}.png`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        URL.revokeObjectURL(link.href); // cleanup memory
-      },
-      'image/png',
-      1.0,
-    );
-
+    downloadCanvas(previewCanvases.front, 'front');
+    downloadCanvas(previewCanvases.back, 'back');
     setIsPreviewOpen(false);
+    toast.success('Design downloaded successfully');
   };
 
   const axiosPublic = useAxiosPublic();
 
   const dataURLToBlob = (dataURL) => {
-    // console.log(dataURL)
-    const byteString = atob(dataURL.split(',')[1]); // Decode the base64 part of the dataURL
+    const byteString = atob(dataURL.split(',')[1]);
     const arrayBuffer = new ArrayBuffer(byteString.length);
     const uint8Array = new Uint8Array(arrayBuffer);
 
@@ -410,166 +486,25 @@ const CustomizeYourTee = () => {
       uint8Array[i] = byteString.charCodeAt(i);
     }
 
-    const mimeType = dataURL.split(';')[0].split(':')[1]; // Get MIME type (e.g., image/jpeg)
-
+    const mimeType = dataURL.split(';')[0].split(':')[1];
     return new Blob([uint8Array], { type: mimeType });
   };
 
   const sendRequest = async () => {
-    const formDataFront = new FormData();
-    const formDataBack = new FormData();
-
-    // Front side request
-    formDataFront.append('color', selectedColor.name);
-    formDataFront.append('timestamp', new Date().toISOString());
-
-    // Front preview image as Blob
-    const frontPreviewImageBlob = dataURLToBlob(previewImages.front);
-    formDataFront.append(
-      'previewImage',
-      frontPreviewImageBlob,
-      'design-image-front.png',
-    ); // Add filename for front image
-
-    try {
-      // Send front side request
-      const frontRes = await axiosPublic.post(
-        '/admin/send-customize-tee-request',
-        formDataFront,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
-      );
-
-      // Handle front side elements (text and images)
-      for (const element of elements.front) {
-        if (element.type === 'text') {
-          await axiosPublic.post(
-            `/admin/customized-text-element/${frontRes.data.id}`,
-            element,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            },
-          );
-        } else if (element.type === 'image') {
-          const previewElementBlob = dataURLToBlob(element.content);
-          const imageFormData = new FormData();
-          imageFormData.append(
-            'image',
-            previewElementBlob,
-            'element-image.png',
-          );
-
-          imageFormData.append('height', element.height);
-          imageFormData.append('width', element.width);
-          imageFormData.append('originalHeight', element.originalHeight);
-          imageFormData.append('originalWidth', element.originalWidth);
-          imageFormData.append('x', element.x);
-          imageFormData.append('y', element.y);
-
-          await axiosPublic.post(
-            `/admin/customized-image-element/${frontRes.data.id}`,
-            imageFormData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            },
-          );
-        }
-      }
-
-      // Back side request
-      formDataBack.append('color', selectedColor.name);
-      formDataBack.append('timestamp', new Date().toISOString());
-
-      // Back preview image as Blob
-      const backPreviewImageBlob = dataURLToBlob(previewImages.back);
-      formDataBack.append(
-        'previewImage',
-        backPreviewImageBlob,
-        'design-image-back.png',
-      ); // Add filename for back image
-      formDataBack.append('side', 'back');
-
-      // Send back side request
-      const backRes = await axiosPublic.post(
-        '/admin/send-customize-tee-request',
-        formDataBack,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
-      );
-
-      // Handle back side elements (text and images)
-      for (const element of elements.back) {
-        if (element.type === 'text') {
-          await axiosPublic.post(
-            `/admin/customized-text-element/${backRes.data.id}`,
-            element,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            },
-          );
-        } else if (element.type === 'image') {
-          const previewElementBlob = dataURLToBlob(element.content);
-          const imageFormData = new FormData();
-          imageFormData.append(
-            'image',
-            previewElementBlob,
-            'element-image.png',
-          );
-
-          imageFormData.append('height', element.height);
-          imageFormData.append('width', element.width);
-          imageFormData.append('originalHeight', element.originalHeight);
-          imageFormData.append('originalWidth', element.originalWidth);
-          imageFormData.append('x', element.x);
-          imageFormData.append('y', element.y);
-
-          await axiosPublic.post(
-            `/admin/customized-image-element/${backRes.data.id}`,
-            imageFormData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            },
-          );
-        }
-      }
-
-      // Handle the response for both sides
-      toast.success(
-        'Your design request has been sent! We will contact you soon.',
-      );
-    } catch (error) {
-      console.error('Error while sending request:', error);
-      toast.error('Failed to send your design request.');
-    }
+    setIsFormOpen(true);
   };
 
-  const panelStyle = 'bg-white rounded-xl shadow-md p-6 border border-gray-100';
-  const headingTitle = 'text-xl font-semibold mb-4 text-gray-800 border-b pb-3';
-  const sectionTitle =
-    'text-md font-medium mb-3 text-gray-700 flex items-center gap-2';
+  const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
+  const headingTitle =
+    'flex items-center gap-3 text-lg font-semibold text-black mb-6';
   const buttonStyle =
-    'w-full px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors duration-200';
+    'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black';
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <TopElements></TopElements>
+        <TopElements />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Panel - Tools */}
           <LeftPanelTools
             tshirtColors={tshirtColors}
             setSelectedColor={setSelectedColor}
@@ -591,7 +526,6 @@ const CustomizeYourTee = () => {
             setSelectedElement={setSelectedElement}
           />
 
-          {/* Center Panel - Preview */}
           <CentralPanelPreview
             panelStyle={panelStyle}
             headingTitle={headingTitle}
@@ -606,7 +540,6 @@ const CustomizeYourTee = () => {
             setViewSide={setViewSide}
           />
 
-          {/* Right Panel - Properties & Actions */}
           <RightPanel
             panelStyle={panelStyle}
             headingTitle={headingTitle}
@@ -617,51 +550,126 @@ const CustomizeYourTee = () => {
             buttonStyle={buttonStyle}
             updateElement={updateElement}
             deleteElement={deleteElement}
+            instructions={instructions}
+            setInstructions={setInstructions}
           />
         </div>
-        {/* is preview open  */}
+
         {isPreviewOpen && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-xl font-semibold mb-4">Design Preview</h2>
-              <div className="mb-4 flex flex-col md:flex-row items-center gap-5 md:gap-0">
-                <img
-                  src={previewImages.front} // Use the base64 image URL generated from the canvas
-                  alt="T-shirt Design Preview"
-                  className="w-48 md:w-full h-auto rounded"
-                />
-                <img
-                  src={previewImages.back} // Use the base64 image URL generated from the canvas
-                  alt="T-shirt Design Preview"
-                  className="w-48 md:w-full h-auto rounded"
-                />
-              </div>
-              <div className="flex justify-between">
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden transform transition-all duration-300">
+              <div className="flex justify-between items-center border-b border-gray-200 p-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Design Preview
+                </h2>
                 <button
                   onClick={() => setIsPreviewOpen(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full hover:bg-gray-100"
                 >
-                  Close
+                  <X size={24} />
                 </button>
+              </div>
 
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col items-center">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Front View
+                  </h3>
+                  <img
+                    src={previewImages.front}
+                    alt="Front Design Preview"
+                    className="w-48 md:w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+                <div className="flex flex-col items-center">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Back View
+                  </h3>
+                  <img
+                    src={previewImages.back}
+                    alt="Back Design Preview"
+                    className="w-48 md:w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 p-4 flex justify-end gap-3">
                 <button
-                  onClick={sendRequest}
-                  disabled={elements[viewSide].length === 0}
-                  className={`${buttonStyle} ${
-                    elements[viewSide].length === 0
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-orange-600 text-white hover:bg-orange-700'
-                  }`}
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <Printer size={16} />
-                  Request Print Quote
+                  Cancel
                 </button>
-
                 <button
                   onClick={downloadDesign}
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 flex items-center gap-2"
                 >
-                  Download
+                  <Download size={18} />
+                  Download Design
+                </button>
+                <button
+                  onClick={sendRequest}
+                  disabled={isLoading}
+                  className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
+                    isLoading
+                      ? 'bg-orange-400'
+                      : 'bg-orange-600 hover:bg-orange-700'
+                  }`}
+                >
+                  {isLoading ? (
+                    'Processing...'
+                  ) : (
+                    <>
+                      <Printer size={18} />
+                      Request Print Quote
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Show Form if the user clicks "Request Print Quote" */}
+        {isFormOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Enter Your Details
+              </h2>
+
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your Name"
+                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Your Phone Number"
+                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleFormSubmit}
+                  disabled={isLoading}
+                  className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
+                    isLoading
+                      ? 'bg-orange-400'
+                      : 'bg-orange-600 hover:bg-orange-700'
+                  }`}
+                >
+                  {isLoading ? 'Submitting...' : 'Submit'}
                 </button>
               </div>
             </div>

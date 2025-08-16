@@ -112,7 +112,7 @@ export default function Home() {
           <MySwiper images={bannerImages}></MySwiper>
           {/* <TriangleLoader/> */}
           {/* } */}
-          <HomeNav></HomeNav>
+          {/* <HomeNav></HomeNav> */}
           <NewArrival />
           <Popular />
           <section id='about'>
