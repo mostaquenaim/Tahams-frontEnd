@@ -7,7 +7,7 @@ import {
   Type,
   Upload,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 
 const LeftPanelTools = ({
   tshirtColors,
@@ -27,6 +27,10 @@ const LeftPanelTools = ({
   selectedElement,
   deleteElement,
   setSelectedElement,
+  selectedSize,
+  setSelectedSize,
+  quantity,
+  setQuantity
 }) => {
   const sectionTitle =
     'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
@@ -66,6 +70,48 @@ const LeftPanelTools = ({
                 />
               ))}
             </div>
+          </section>
+
+          {/* Size Selection */}
+          <section className="mb-6">
+            <h3 className={sectionTitle}>
+              <Layers size={18} className="text-black" />
+              Size
+            </h3>
+            <div className="grid grid-cols-5 gap-2.5">
+              {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all 
+          ${
+            selectedSize === size
+              ? 'border-black bg-gray-900 text-white shadow-md'
+              : 'border-gray-300 hover:border-gray-400 bg-white text-gray-700'
+          }`}
+                  aria-label={`Select ${size} size`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Quantity Selection */}
+          <section className="mb-6">
+            <h3 className={sectionTitle}>
+              <Layers size={18} className="text-black" />
+              Quantity
+            </h3>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              className={`${inputStyle} w-24`}
+              aria-label="Select quantity"
+            />
           </section>
 
           {/* Add Text Section */}

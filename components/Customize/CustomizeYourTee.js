@@ -115,6 +115,8 @@ const CustomizeYourTee = () => {
   const [name, setName] = useState(''); // State for name input
   const [phone, setPhone] = useState(''); // State for phone number input
   const [customerEmail, setCustomerEmail] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
+  const [quantity, setQuantity] = useState(0)
 
   const { user, loading } = useContext(AuthContext);
 
@@ -130,6 +132,16 @@ const CustomizeYourTee = () => {
       toast.error('Please fill out all fields.');
       return;
     }
+
+    // ✅ Phone validation
+    const phoneRegexNormal = /^\d{11}$/; // exactly 11 digits
+    const phoneRegexWith88 = /^\+88\d{11}$/; // +88 followed by 11 digits
+
+    if (!phoneRegexNormal.test(phone) && !phoneRegexWith88.test(phone)) {
+      toast.error('Phone must be 11 digits, or +88 followed by 11 digits.');
+      return;
+    }
+
     if (!previewImages?.front || !previewImages?.back) {
       toast.error('Front and back previews are required.');
       return;
@@ -524,6 +536,10 @@ const CustomizeYourTee = () => {
             selectedElement={selectedElement}
             deleteElement={deleteElement}
             setSelectedElement={setSelectedElement}
+            selectedSize={selectedSize}
+            setSelectedSize={setSelectedSize}
+            quantity={quantity}
+            setQuantity={setQuantity}
           />
 
           <CentralPanelPreview

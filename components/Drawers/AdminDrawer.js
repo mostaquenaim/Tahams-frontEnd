@@ -141,6 +141,7 @@ const AdminDrawer = () => {
                         </Badge>
                     ),
                 },
+                { href: '/admin/Show/show-customization-requests', label: 'Customization Requests' },
                 { href: '/admin/Show/show-requests', label: 'Cancel/Return Requests' },
                 { href: '/MyCart', label: 'View Carts' },
             ],
