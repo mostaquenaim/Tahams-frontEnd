@@ -57,7 +57,7 @@ const ShowRequests = () => {
 
     const handleDetails = (req) => {
         console.log(req);
-        router.push(`/admin/Show/show-order-details/${req.cart.history.id}`)
+        router.push(`/admin/show/show-order-details/${req.cart.history.id}`)
     }
 
     return (

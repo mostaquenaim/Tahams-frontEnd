@@ -47,7 +47,7 @@ const ShowOrderDetails = () => {
             const res = await axiosPublic.put(`/admin/delete-history/${history?.trackingToken}?email=${user?.email}`);
             // console.log(res.data);
             closeConfirmationModal(); // Close modal on success
-            router.push('/admin/Show/show-orders'); // Redirect to orders page or any other page
+            router.push('/admin/show/show-orders'); // Redirect to orders page or any other page
         } catch (error) {
             console.error("Failed to delete order history:", error);
         }

@@ -158,6 +158,8 @@ const CustomizeYourTee = () => {
         fd.append('side', side);
         fd.append('name', name);
         fd.append('phone', phone);
+        fd.append('size', selectedSize);
+        fd.append('quantity', quantity);
         if (customerEmail) fd.append('email', customerEmail); // make sure server supports this
         if (instructions) fd.append('specialInstructions', instructions);
         fd.append('groupId', groupId); // server should store this to link both sides

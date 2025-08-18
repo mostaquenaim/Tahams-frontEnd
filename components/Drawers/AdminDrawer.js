@@ -50,7 +50,7 @@ const AdminDrawer = () => {
         {
             Name: 'Dashboard',
             Tasks: [
-                { href: '/admin/Show/show-views', label: 'Statistics / Views' },
+                { href: '/admin/show/show-views', label: 'Statistics / Views' },
                 { href: '/admin/sync/sync-sales-count', label: 'Sync Sales Count' },
             ],
         },
@@ -96,8 +96,8 @@ const AdminDrawer = () => {
         {
             Name: 'User Management',
             Tasks: [
-                { href: '/admin/Show/show-users', label: 'All Users / Customers' },
-                { href: '/admin/Show/user-details', label: 'View User Details' },
+                { href: '/admin/show/show-users', label: 'All Users / Customers' },
+                { href: '/admin/show/user-details', label: 'View User Details' },
                 { href: '/admin/Analytics/user-insights', label: 'User Analytics' },
             ],
         },
@@ -113,36 +113,36 @@ const AdminDrawer = () => {
             Name: 'Series',
             Tasks: [
                 { href: '/admin/add/add-series', label: 'Add Series' },
-                { href: '/admin/Show/show-all-series', label: 'Show Series' },
+                { href: '/admin/show/show-all-series', label: 'Show Series' },
             ],
         },
         {
             Name: 'Categories',
             Tasks: [
                 { href: '/admin/add/add-category', label: 'Add Category (for Series)' },
-                { href: '/admin/Show/show-all-categories', label: 'Show Categories' },
+                { href: '/admin/show/show-all-categories', label: 'Show Categories' },
             ],
         },
         {
             Name: 'Product Types',
             Tasks: [
                 { href: '/admin/add/add-product-type', label: 'Add Product Type' },
-                { href: '/admin/Show/product-type', label: 'Show / Edit Product Types' },
+                { href: '/admin/show/product-type', label: 'Show / Edit Product Types' },
             ],
         },
         {
             Name: 'Orders',
             Tasks: [
                 {
-                    href: '/admin/Show/show-orders',
+                    href: '/admin/show/show-orders',
                     label: (
                         <Badge badgeContent={showCount} color="secondary" overlap="rectangular">
                             Show Orders
                         </Badge>
                     ),
                 },
-                { href: '/admin/Show/show-customization-requests', label: 'Customization Requests' },
-                { href: '/admin/Show/show-requests', label: 'Cancel/Return Requests' },
+                { href: '/admin/show/show-customization-requests', label: 'Customization Requests' },
+                { href: '/admin/show/show-requests', label: 'Cancel/Return Requests' },
                 { href: '/MyCart', label: 'View Carts' },
             ],
         },
