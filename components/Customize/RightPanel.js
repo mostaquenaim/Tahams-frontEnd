@@ -1,4 +1,4 @@
-import { Download, HelpCircle, Package, Settings2, Trash2 } from 'lucide-react';
+import { Download, Package, Repeat, Settings2, Trash2 } from 'lucide-react';
 import React from 'react';
 
 const RightPanel = ({
@@ -11,11 +11,14 @@ const RightPanel = ({
   buttonStyle = 'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black',
   updateElement,
   deleteElement,
+  handleReset,
   instructions,
   setInstructions,
+  fonts,
 }) => {
   const element = elements[viewSide]?.find((el) => el.id === selectedElement);
-  const inputStyle = 'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all hover:border-gray-400';
+  const inputStyle =
+    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all hover:border-gray-400';
 
   return (
     <div className="lg:col-span-3 space-y-6">
@@ -52,6 +55,7 @@ const RightPanel = ({
                     />
                   </div>
 
+                  {/* font size  */}
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
                       <label className="block text-sm font-medium text-gray-700">
@@ -102,6 +106,7 @@ const RightPanel = ({
                     </div>
                   </div>
 
+                  {/* Font Family */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Font Family
@@ -134,7 +139,7 @@ const RightPanel = ({
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
                       <label className="block text-sm font-medium text-gray-700">
-                        Width
+                        Resize
                       </label>
                       <span className="text-xs text-gray-600">
                         {element.width}px
@@ -145,37 +150,60 @@ const RightPanel = ({
                       min="50"
                       max="300"
                       value={element.width}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const newWidth = parseFloat(e.target.value);
+                        const aspectRatio =
+                          element.originalWidth / element.originalHeight;
+                        const newHeight = newWidth / aspectRatio;
+
                         updateElement(element.id, {
-                          width: parseFloat(e.target.value),
-                        })
-                      }
+                          width: newWidth,
+                          height: newHeight,
+                        });
+                      }}
                       className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                     />
                   </div>
 
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Height
-                      </label>
-                      <span className="text-xs text-gray-600">
-                        {element.height}px
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="50"
-                      max="300"
-                      value={element.height}
-                      onChange={(e) =>
-                        updateElement(element.id, {
-                          height: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
-                    />
-                  </div>
+                  {/* <div>
+      <div className="flex justify-between items-center mb-1.5">
+        <label className="block text-sm font-medium text-gray-700">
+          Height
+        </label>
+        <span className="text-xs text-gray-600">
+          {element.height}px
+        </span>
+      </div>
+      <input
+        type="range"
+        min="50"
+        max="300"
+        value={element.height}
+        onChange={(e) => {
+          const newHeight = parseFloat(e.target.value);
+          const aspectRatio = element.originalWidth / element.originalHeight;
+          const newWidth = newHeight * aspectRatio;
+          
+          updateElement(element.id, {
+            width: newWidth,
+            height: newHeight
+          });
+        }}
+        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+      />
+    </div> */}
+
+                  {/* <div className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        id="lockAspectRatio"
+        defaultChecked
+        className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
+      />
+      <label htmlFor="lockAspectRatio" className="text-sm text-gray-700">
+        Lock aspect ratio
+      </label>
+    </div> */}
                 </div>
               )}
             </div>
@@ -214,10 +242,28 @@ const RightPanel = ({
             </div>
 
             <button
+              onClick={() => handleReset(element.id)}
+              className={`${buttonStyle} bg-gray-100  hover:bg-gray-200  transition-all duration-300 hover:-translate-y-0.5`}
+            >
+              <Repeat
+                size={16}
+                className="transition-transform duration-300 group-hover:scale-110"
+              />
+              <span className="relative overflow-hidden">
+                <span className="block transition-transform duration-300 hover:translate-x-1">
+                  Reset
+                </span>
+              </span>
+            </button>
+
+            <button
               onClick={() => deleteElement(element.id)}
               className={`${buttonStyle} bg-gray-100 text-red-600 hover:bg-gray-200 hover:text-red-700 transition-all duration-300 hover:-translate-y-0.5`}
             >
-              <Trash2 size={16} className="transition-transform duration-300 group-hover:scale-110" />
+              <Trash2
+                size={16}
+                className="transition-transform duration-300 group-hover:scale-110"
+              />
               <span className="relative overflow-hidden">
                 <span className="block transition-transform duration-300 hover:translate-x-1">
                   Delete Element
@@ -266,9 +312,7 @@ const RightPanel = ({
           >
             <Download size={16} className="" />
             <span className="relative overflow-hidden">
-              <span className="block ">
-                Preview Design
-              </span>
+              <span className="block ">Preview Design</span>
             </span>
           </button>
         </div>

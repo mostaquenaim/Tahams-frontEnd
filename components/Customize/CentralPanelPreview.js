@@ -48,6 +48,7 @@ const CentralPanelPreview = ({
           </div>
         </div>
 
+        {/* t shirt and elements  */}
         <div className="flex justify-center">
           <div
             ref={canvasRef}
@@ -92,7 +93,7 @@ const CentralPanelPreview = ({
                   height: element.height,
                   transform: `rotate(${element.style.rotation || 0}deg)`,
                 }}
-                onMouseDown={(e) => handleMouseDown(e, element)}
+                onMouseDown={(e) => handleMouseDownEnhanced(e, element)}
               >
                 {element.type === 'text' ? (
                   <div
@@ -120,6 +121,7 @@ const CentralPanelPreview = ({
           </div>
         </div>
 
+        {/* front and back switch  */}
         <div className="mt-6 text-center">
           <div className="inline-flex bg-gray-100 rounded-lg p-1">
             <button

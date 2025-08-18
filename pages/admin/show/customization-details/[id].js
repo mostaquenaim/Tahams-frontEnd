@@ -8,12 +8,12 @@ const CustomizationDetails = () => {
   const id = pathParts[pathParts.length - 1];
   console.log(id); // gives you "asid" from "/kjndfj/asid"
 
-//   const { id } = useParams();
-  const [customizations, refetch, isPending] = useCustomizationReq( id );
+  //   const { id } = useParams();
+  const [customizations, refetch, isPending] = useCustomizationReq(id);
   console.log(customizations, 'gibg');
 
-//   const [customization, setCustomization] = useState(null);
-//   const [loading, setLoading] = useState(true);
+  //   const [customization, setCustomization] = useState(null);
+  //   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   if (isPending) {
@@ -95,8 +95,8 @@ const CustomizationDetails = () => {
               </p>
               {customizations.user && (
                 <p>
-                  <span className="font-medium">User ID:</span>{' '}
-                  {customizations.user}
+                  <span className="font-medium">User:</span>{' '}
+                  {customizations.user?.name || customizations.user?.email}
                 </p>
               )}
             </div>
@@ -147,7 +147,7 @@ const CustomizationDetails = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <p
-                          className="text-lg font-medium"
+                          className={`text-lg font-medium rounded-lg p-1 ${text.color === '#ffffff' ? 'bg-black' : 'bg-white'}`}
                           style={{
                             fontFamily: text.fontFamily,
                             fontSize: `${text.fontSize}px`,
@@ -195,7 +195,7 @@ const CustomizationDetails = () => {
                   >
                     <div className="p-2 bg-gray-50">
                       <img
-                        src={`${process.env.NEXTAUTH_URL}/admin/getimage/${image.filename}`}
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${image.filename}`}
                         alt="Custom design"
                         className="w-full h-48 object-contain"
                       />

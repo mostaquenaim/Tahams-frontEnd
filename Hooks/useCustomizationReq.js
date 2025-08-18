@@ -22,7 +22,7 @@ const useCustomizationReq = (id = 0) => {
         params: { email: customerEmail, id: id }, // Use params for GET requests
       });
 
-    //   console.log(result.data, 'sdvsdaaa');
+      console.log(result.data, 'sdvsdaaa');
 
       const sortedCustomizations = result.data;
       // If you need to sort by serial (optional)

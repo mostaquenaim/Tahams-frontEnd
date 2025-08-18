@@ -89,12 +89,13 @@ const CustomizeYourTee = () => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [draggedElement, setDraggedElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [newText, setNewText] = useState('');
+  const [newText, setNewText] = useState('Type your text');
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
     color: '#000000',
     fontWeight: 'normal',
     fontFamily: 'Arial',
+    rotation: 0,
   });
   const [imgStyle, setImgStyle] = useState({
     rotation: 0,
@@ -116,9 +117,30 @@ const CustomizeYourTee = () => {
   const [phone, setPhone] = useState(''); // State for phone number input
   const [customerEmail, setCustomerEmail] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
-  const [quantity, setQuantity] = useState(0)
+  const [quantity, setQuantity] = useState(0);
 
   const { user, loading } = useContext(AuthContext);
+
+  const [fonts, setFonts] = useState([]); // State to store fonts
+
+  useEffect(() => {
+    // Fetch fonts from Google Fonts API
+    const fetchFonts = async () => {
+      try {
+        const response = await fetch(
+          'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU'
+        );
+        const data = await response.json();
+        setFonts(data.items); // Set fonts to state
+      } catch (error) {
+        console.error('Error fetching fonts:', error);
+      } finally {
+        setIsLoading(false); // Stop loading once fonts are fetched
+      }
+    };
+
+    fetchFonts(); // Fetch fonts on component mount
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -179,6 +201,8 @@ const CustomizeYourTee = () => {
 
         const sideElements = elements?.[side] ?? [];
 
+        // console.log(elements[side],side);
+
         const textCalls = sideElements
           .filter((el) => el.type === 'text')
           .map((el) =>
@@ -207,6 +231,8 @@ const CustomizeYourTee = () => {
               'zIndex',
             ].forEach((k) => {
               if (el[k] != null) imgFd.append(k, String(el[k]));
+              else if (el.style[k] != null)
+                imgFd.append(k, String(el.style[k]));
             });
             return axiosPublic.post(
               `/admin/customized-image-element/${reqId}`,
@@ -253,7 +279,7 @@ const CustomizeYourTee = () => {
       ...prevState,
       [viewSide]: [...prevState[viewSide], newElement],
     }));
-    setNewText('');
+    // setNewText('');
     setSelectedElement(newElement.id);
   };
 
@@ -346,8 +372,61 @@ const CustomizeYourTee = () => {
     setSelectedElement(null);
   };
 
+  // reset element
+  const handleReset = (id) => {
+    // Find the element by id in the current view side (front or back)
+    const elementToReset = elements[viewSide].find((el) => el.id === id);
+
+    if (elementToReset) {
+      // Calculate new dimensions while maintaining aspect ratio
+      let newWidth, newHeight;
+
+      if (elementToReset.type === 'image') {
+        const maxDimension = 200; // Maximum size for the larger dimension
+        const aspectRatio =
+          elementToReset.originalWidth / elementToReset.originalHeight;
+
+        // Check which dimension is larger
+        if (elementToReset.originalWidth > elementToReset.originalHeight) {
+          // Width is larger - constrain by width
+          newWidth = Math.min(elementToReset.originalWidth, maxDimension);
+          newHeight = newWidth / aspectRatio;
+        } else {
+          // Height is larger - constrain by height
+          newHeight = Math.min(elementToReset.originalHeight, maxDimension);
+          newWidth = newHeight * aspectRatio;
+        }
+      }
+
+      // Reset element properties to initial values
+      const resetElement = {
+        ...elementToReset,
+        x: 150, // Reset position to initial coordinates
+        y: 200,
+        // Reset size while maintaining aspect ratio for images
+        width:
+          elementToReset.type === 'image' ? newWidth : elementToReset.width,
+        height:
+          elementToReset.type === 'image' ? newHeight : elementToReset.height,
+        style:
+          elementToReset.type === 'text'
+            ? { ...textStyle } // Reset to default text style
+            : { ...imgStyle }, // Reset to default image style
+      };
+
+      // Update state with the reset element
+      setElements((prevState) => ({
+        ...prevState,
+        [viewSide]: prevState[viewSide].map((el) =>
+          el.id === id ? resetElement : el,
+        ),
+      }));
+    }
+  };
+
   // Update element properties
   const updateElement = (id, updates) => {
+    console.log(updates);
     setElements((prevState) => ({
       ...prevState,
       [viewSide]: prevState[viewSide].map((el) =>
@@ -568,8 +647,10 @@ const CustomizeYourTee = () => {
             buttonStyle={buttonStyle}
             updateElement={updateElement}
             deleteElement={deleteElement}
+            handleReset={handleReset}
             instructions={instructions}
             setInstructions={setInstructions}
+            fonts={fonts}
           />
         </div>
 
@@ -639,7 +720,7 @@ const CustomizeYourTee = () => {
                   ) : (
                     <>
                       <Printer size={18} />
-                      Request Print Quote
+                      Request Design Print
                     </>
                   )}
                 </button>

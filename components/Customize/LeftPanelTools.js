@@ -30,7 +30,7 @@ const LeftPanelTools = ({
   selectedSize,
   setSelectedSize,
   quantity,
-  setQuantity
+  setQuantity,
 }) => {
   const sectionTitle =
     'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
@@ -114,9 +114,10 @@ const LeftPanelTools = ({
             />
           </section>
 
+          <h1 className="font-bold text-3xl">Designs</h1>
           {/* Add Text Section */}
           <section className="mb-6">
-            <h3 className={sectionTitle}>
+            {/* <h3 className={sectionTitle}>
               <Type size={18} className="text-black" />
               Add Text
             </h3>
@@ -187,7 +188,7 @@ const LeftPanelTools = ({
                 <option value="600">Semibold</option>
                 <option value="800">Extrabold</option>
               </select>
-            </div>
+            </div> */}
 
             <button
               onClick={addText}
