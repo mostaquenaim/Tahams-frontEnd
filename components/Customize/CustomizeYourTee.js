@@ -128,7 +128,7 @@ const CustomizeYourTee = () => {
     const fetchFonts = async () => {
       try {
         const response = await fetch(
-          'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU'
+          'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU',
         );
         const data = await response.json();
         setFonts(data.items); // Set fonts to state
@@ -260,6 +260,19 @@ const CustomizeYourTee = () => {
     }
   };
 
+  const handleTouchStart = (e, element) => {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousedown', {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+    });
+    handleMouseDownEnhanced(mouseEvent, element);
+  };
+
+  const handleTouchEnd = () => {
+    handleMouseUpEnhanced();
+  };
+
   // Add text element
   const addText = () => {
     if (!newText.trim()) return;
@@ -357,6 +370,15 @@ const CustomizeYourTee = () => {
           : el,
       ),
     }));
+  };
+
+  const handleTouchMove = (e) => {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousemove', {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+    });
+    handleMouseMove(mouseEvent);
   };
 
   const handleMouseUp = () => {
@@ -635,6 +657,9 @@ const CustomizeYourTee = () => {
             handleMouseDown={handleMouseDown}
             viewSide={viewSide}
             setViewSide={setViewSide}
+            handleTouchMove={handleTouchMove}
+            handleTouchEnd={handleTouchEnd}
+            handleTouchStart={handleTouchStart}
           />
 
           <RightPanel

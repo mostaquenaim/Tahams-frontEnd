@@ -13,6 +13,9 @@ const CentralPanelPreview = ({
   selectedElement,
   handleMouseDown,
   setViewSide,
+  handleTouchMove,
+  handleTouchEnd,
+  handleTouchStart,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -56,14 +59,17 @@ const CentralPanelPreview = ({
               isDragging ? 'cursor-grabbing' : 'cursor-crosshair'
             }`}
             style={{
-              width: '400px',
-              height: '500px',
+              width: '100%',
+              maxWidth: '400px',
+              height: 'calc(100vw * 1.25)', // 5:4 aspect ratio
+              maxHeight: '500px',
               backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundColor: '#ffffff',
+              touchAction: 'none', // Prevent scrolling/zooming
             }}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpEnhanced}
             onMouseLeave={handleMouseUpEnhanced}
@@ -83,7 +89,7 @@ const CentralPanelPreview = ({
             {elements[viewSide].map((element) => (
               <div
                 key={element.id}
-                className={`absolute cursor-move ${
+                className={`absolute cursor-move touch-none ${
                   selectedElement === element.id ? 'ring-2 ring-blue-400' : ''
                 }`}
                 style={{
@@ -91,9 +97,11 @@ const CentralPanelPreview = ({
                   top: element.y,
                   width: element.width,
                   height: element.height,
+                  padding: '8px', // Increased touch area
                   transform: `rotate(${element.style.rotation || 0}deg)`,
                 }}
                 onMouseDown={(e) => handleMouseDownEnhanced(e, element)}
+                onTouchStart={(e) => handleTouchStart(e, element)}
               >
                 {element.type === 'text' ? (
                   <div
