@@ -163,7 +163,7 @@ const CustomizeYourTee = () => {
 
   useEffect(() => {
     updateDevice();
-  }, [window.innerWidth]);
+  }, [selectedElement]);
 
 
   const handleFormSubmit = async () => {
