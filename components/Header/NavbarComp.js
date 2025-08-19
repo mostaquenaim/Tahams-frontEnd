@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ResponsiveNavBar from './ResponsiveNavBar';
 import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
 import ListComponent from './components/ListComponent';
-import useAxiosPublic from '../../Hooks/useAxiosPublic'
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
 
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
@@ -11,268 +11,288 @@ import useLoadCats from '/Hooks/useLoadCats';
 import Loading from '../Loading';
 
 const NavbarCompTwo = () => {
-    const axiosPublic = useAxiosPublic();
+  const axiosPublic = useAxiosPublic();
 
-    const [searchBtn, setSearchBtn] = useState(false)
-    // const [categories, setCategories] = useState([])
-    const [genders, setGenders] = useState([])
-    const { user, logOut } = useContext(AuthContext)
-    const [searchInput, setSearchInput] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [isLoading, setIsLoading] = useState(false)
-    const [searchedProducts, setSearchedProducts] = useState([])
-    const [categories,, isPending] = useLoadCats()
-    const router = useRouter()
-    // console.log(categories);
+  const [searchBtn, setSearchBtn] = useState(false);
+  // const [categories, setCategories] = useState([])
+  const [genders, setGenders] = useState([]);
+  const { user, logOut } = useContext(AuthContext);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchedProducts, setSearchedProducts] = useState([]);
+  const [categories, , isPending] = useLoadCats();
+  const router = useRouter();
+  // console.log(categories);
 
-    // useEffect(() => {
-    //     axiosPublic.get('/admin/view-product-categories')
-    //         .then((res) => {
-    //             setCategories(res.data)
-    //             // console.log(res.data,"19");
-    //         })
-    // }, [])
+  // useEffect(() => {
+  //     axiosPublic.get('/admin/view-product-categories')
+  //         .then((res) => {
+  //             setCategories(res.data)
+  //             // console.log(res.data,"19");
+  //         })
+  // }, [])
 
-    useEffect(() => {
-        axiosPublic.get('/admin/view-genders')
-            .then((res) => {
-                setGenders(res.data)
-                // console.log(res.data,"19");
-            })
-    }, [])
+  useEffect(() => {
+    axiosPublic.get('/admin/view-genders').then((res) => {
+      setGenders(res.data);
+      // console.log(res.data,"19");
+    });
+  }, []);
 
-    const handleLogout = () => {
-        logOut()
-            .then(() => {
-                // Remove userInfo from localStorage
-                localStorage.removeItem('userInfo');
-                localStorage.removeItem('access_token');
-                console.log('User logged out and userInfo removed from localStorage');
-            })
-            .catch((error) => {
-                console.error('Error during logout:', error.message);
-                toast.error('Error during logout. Please try again.');
-            });
-    };
+  const handleLogout = () => {
+    logOut()
+      .then(() => {
+        // Remove userInfo from localStorage
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('access_token');
+        console.log('User logged out and userInfo removed from localStorage');
+      })
+      .catch((error) => {
+        console.error('Error during logout:', error.message);
+        toast.error('Error during logout. Please try again.');
+      });
+  };
 
-    // styles 
-    const navEndBtnClass = "btn btn-square btn-ghost text-xl"
+  // styles
+  const navEndBtnClass = 'btn btn-square btn-ghost text-xl';
 
-    const ListStyle = ({ goto, pageName, extraClass }) => {
-        return (
-            <li className={`hover:text-zinc-400 md:border-b-2 border-transparent hover:border-zinc-600 text-opacity-70 ${extraClass}`}>
-                <Link href={goto}>{pageName}</Link>
-                <hr className="hidden hover:inline-block w-full border-black duration-300 transition-width"></hr>
-            </li>
-            // hidden hover:inline-block
-        );
-    }
-
-    if (isPending) {
-        return <Loading />
-    }
-
-    // navlinks 
-    const links = (
-        <>
-            <ListStyle goto='/' pageName='Home' />
-            {
-                genders &&
-                genders.map((gender, index) => (
-                    <ListComponent key={index} cat={gender} cats={categories} ListStyle={ListStyle}></ListComponent>
-                ))
-            }
-            {
-                categories &&
-                categories.map((cat, index) => (
-                    !cat.isGenderVaried ? <ListComponent key={index} cat={cat} ListStyle={ListStyle}></ListComponent>
-                        :
-                        ''
-                ))
-            }
-        </>
-    );
-
-    const collabs = <>
-        <ListStyle goto='/collabs/artist' pageName='Artist Collabs' />
-        <ListStyle goto='/collabs/influencer' pageName='Influencer Collabs' />
-    </>
-
-    const Li = ({ children }) => (
-        <li className="transition md:hover:scale-105">
-            {children}
-        </li>
-    );
-
-    const sideLinks = (
-        <>
-            <Li>
-                <Link href='/dashboard'>
-                    Dashboard
-                </Link>
-            </Li>
-            <Li>
-                <Link href='/my-orders'>
-                    My orders
-                </Link>
-            </Li>
-            <Li>
-                <Link href='/contact'>
-                    Contact Us
-                </Link>
-            </Li>
-            <Li>
-                {
-                    user ?
-                        <button onClick={handleLogout}>
-                            Logout
-                        </button>
-                        :
-                        <Link href='/login'>
-                            Login
-                        </Link>
-                }
-            </Li>
-        </>
-    )
-
-    const handleSearch = () => {
-        router.push(`/search-product?search=${searchInput}`)
-        setSearchInput('')
-    };
-
-    const handleSearchInput = async (e) => {
-        const query = e.target.value;
-        setSearchInput(query);
-        setIsLoading(true);
-
-        try {
-            const response = await axiosPublic.get(`admin/search-bar-products?q=${query}`);
-            setSearchedProducts(response.data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleResultClick = (id) => {
-        setSearchInput('')
-        router.push(`/products/details/${id}`);
-    };
-
+  const ListStyle = ({ goto, pageName, extraClass }) => {
     return (
-        <>
-            <div
-                data-theme='black'
-                className='relative'>
-                {/* first nav */}
-                <div className={searchBtn ? 'hidden' : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'}>
-                    <div className='flex items-center justify-between'>
-                        {/* search  */}
-                        <div className={`w-1/3 text-center z-40`}>
-                            <div className="join w-full px-20 py-5">
-                                <div className="w-full relative">
-                                    <input
-                                        className="input input-bordered join-item w-full"
-                                        placeholder="Search"
-                                        value={searchInput}
-                                        onChange={(e) => handleSearchInput(e)}
-                                    />
+      <li
+        className={`hover:text-zinc-400 md:border-b-2 border-transparent hover:border-zinc-600 text-opacity-70 ${extraClass}`}
+      >
+        <Link href={goto}>{pageName}</Link>
+        <hr className="hidden hover:inline-block w-full border-black duration-300 transition-width"></hr>
+      </li>
+      // hidden hover:inline-block
+    );
+  };
 
-                                    {/* Search Results Dropdown with Image */}
-                                    {searchInput && searchedProducts.length > 0 && (
-                                        <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
-                                            {searchedProducts.map((product) => (
-                                                <div
-                                                    key={product.id}
-                                                    onClick={() => handleResultClick(product.id)}
-                                                    className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
-                                                >
-                                                    <img
-                                                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`} // make sure this is the correct path
-                                                        alt={product.name}
-                                                        className="w-12 h-12 object-cover rounded"
-                                                    />
-                                                    <span>{product.name}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+  if (isPending) {
+    return <Loading />;
+  }
 
-                                <div className="indicator">
-                                    <button className="btn join-item" onClick={() => handleSearch()}>
-                                        Search
-                                    </button>
-                                </div>
-                            </div>
+  // navlinks
+  const links = (
+    <>
+      <ListStyle goto="/" pageName="Home" />
+      {genders &&
+        genders.map((gender, index) => (
+          <ListComponent
+            key={index}
+            cat={gender}
+            cats={categories}
+            ListStyle={ListStyle}
+          ></ListComponent>
+        ))}
+      {categories &&
+        categories.map((cat, index) =>
+          cat.name == 'Customize' ? (
+              <Link
+                href={'/customize-tee'}
+                className="btn shadow-md hover:shadow-lg shadow-rose-100 hover:shadow-rose-200 rounded-lg"
+              >
+                Customize
+              </Link>
+          ) : !cat.isGenderVaried ? (
+            <ListComponent
+              key={index}
+              cat={cat}
+              ListStyle={ListStyle}
+            ></ListComponent>
+          ) : (
+            ''
+          ),
+        )}
+    </>
+  );
+
+  const collabs = (
+    <>
+      <ListStyle goto="/collabs/artist" pageName="Artist Collabs" />
+      <ListStyle goto="/collabs/influencer" pageName="Influencer Collabs" />
+    </>
+  );
+
+  const Li = ({ children }) => (
+    <li className="transition md:hover:scale-105">{children}</li>
+  );
+
+  const sideLinks = (
+    <>
+      <Li>
+        <Link href="/dashboard">Dashboard</Link>
+      </Li>
+      <Li>
+        <Link href="/my-orders">My orders</Link>
+      </Li>
+      <Li>
+        <Link href="/contact">Contact Us</Link>
+      </Li>
+      <Li>
+        {user ? (
+          <button onClick={handleLogout}>Logout</button>
+        ) : (
+          <Link href="/login">Login</Link>
+        )}
+      </Li>
+    </>
+  );
+
+  const handleSearch = () => {
+    router.push(`/search-product?search=${searchInput}`);
+    setSearchInput('');
+  };
+
+  const handleSearchInput = async (e) => {
+    const query = e.target.value;
+    setSearchInput(query);
+    setIsLoading(true);
+
+    try {
+      const response = await axiosPublic.get(
+        `admin/search-bar-products?q=${query}`,
+      );
+      setSearchedProducts(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResultClick = (id) => {
+    setSearchInput('');
+    router.push(`/products/details/${id}`);
+  };
+
+  return (
+    <>
+      <div data-theme="black" className="relative">
+        {/* first nav */}
+        <div
+          className={
+            searchBtn
+              ? 'hidden'
+              : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'
+          }
+        >
+          <div className="flex items-center justify-between">
+            {/* search  */}
+            <div className={`w-1/3 text-center z-40`}>
+              <div className="join w-full px-20 py-5">
+                <div className="w-full relative">
+                  <input
+                    className="input input-bordered join-item w-full"
+                    placeholder="Search"
+                    value={searchInput}
+                    onChange={(e) => handleSearchInput(e)}
+                  />
+
+                  {/* Search Results Dropdown with Image */}
+                  {searchInput && searchedProducts.length > 0 && (
+                    <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
+                      {searchedProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => handleResultClick(product.id)}
+                          className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
+                        >
+                          <img
+                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`} // make sure this is the correct path
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <span>{product.name}</span>
                         </div>
-
-                        {/* image  */}
-                        <div className="absolute w-full">
-                            <Link href='/' className='w-20 mx-auto text-center'>
-                                <img src='/logo-removebg.png' alt="Company Logo" className="w-20 p-2 mx-auto" />
-                            </Link>
-                        </div>
-
-                        {/* menu  */}
-                        <ul className="menu menu-horizontal px-1">
-                            <li>
-                                <Link href={`/WishList`} className={navEndBtnClass}>
-                                    <AiOutlineHeart></AiOutlineHeart>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href='/MyCart' className={navEndBtnClass}>
-                                    <AiOutlineShoppingCart ></AiOutlineShoppingCart>
-                                </Link>
-                            </li>
-                            <li>
-                                <details>
-                                    <summary>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            className="inline-block w-5 h-5 stroke-current"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                                            >
-                                            </path>
-                                        </svg>
-
-                                    </summary>
-                                    <ul className="p-2 bg-base-100 right-0">
-                                        {sideLinks}
-                                    </ul>
-                                </details>
-                            </li>
-                        </ul>
+                      ))}
                     </div>
-
-                    <div>
-                        <ul className='hidden md:flex gap-5 justify-center items-center text-base px-5 font-semibold w-full'>
-                            {links}
-                        </ul>
-                        <ul className='hidden md:flex gap-5 text-center justify-center items-center text-base px-5 py-3 font-semibold w-full'>
-                            {collabs}
-                        </ul>
-                    </div>
+                  )}
                 </div>
 
-                {/* second nav */}
-                <section className='fixed top-0 w-full bg-black z-10'>
-                    <ResponsiveNavBar btn={searchBtn} fnc={setSearchBtn} ListStyle={ListStyle} ListComponent={ListComponent} categories={categories} genders={genders} sideLinks={sideLinks}></ResponsiveNavBar>
-                </section>
+                <div className="indicator">
+                  <button
+                    className="btn join-item"
+                    onClick={() => handleSearch()}
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
             </div>
-        </>
-    );
-};
 
+            {/* image  */}
+            <div className="absolute w-full">
+              <Link href="/" className="w-20 mx-auto text-center">
+                <img
+                  src="/logo-removebg.png"
+                  alt="Company Logo"
+                  className="w-20 p-2 mx-auto"
+                />
+              </Link>
+            </div>
+
+            {/* menu  */}
+            <ul className="menu menu-horizontal px-1">
+              <li>
+                <Link href={`/WishList`} className={navEndBtnClass}>
+                  <AiOutlineHeart></AiOutlineHeart>
+                </Link>
+              </li>
+              <li>
+                <Link href="/MyCart" className={navEndBtnClass}>
+                  <AiOutlineShoppingCart></AiOutlineShoppingCart>
+                </Link>
+              </li>
+              <li>
+                <details>
+                  <summary>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      className="inline-block w-5 h-5 stroke-current"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+                      ></path>
+                    </svg>
+                  </summary>
+                  <ul className="p-2 bg-base-100 right-0">{sideLinks}</ul>
+                </details>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <ul className="hidden md:flex gap-5 justify-center items-center text-base px-5 font-semibold w-full">
+              {links}
+            </ul>
+            <ul className="hidden md:flex gap-5 text-center justify-center items-center text-base px-5 py-3 font-semibold w-full">
+              {collabs}
+            </ul>
+          </div>
+        </div>
+
+        {/* second nav */}
+        <section className="fixed top-0 w-full bg-black z-10">
+          <ResponsiveNavBar
+            btn={searchBtn}
+            fnc={setSearchBtn}
+            ListStyle={ListStyle}
+            ListComponent={ListComponent}
+            categories={categories}
+            genders={genders}
+            sideLinks={sideLinks}
+          ></ResponsiveNavBar>
+        </section>
+      </div>
+    </>
+  );
+};
 
 export default NavbarCompTwo;

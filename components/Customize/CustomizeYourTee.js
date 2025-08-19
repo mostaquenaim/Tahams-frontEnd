@@ -165,6 +165,7 @@ const CustomizeYourTee = () => {
     updateDevice();
   }, [window.innerWidth]);
 
+
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
       toast.error('Please fill out all fields.');

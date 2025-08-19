@@ -12,7 +12,7 @@ const TopElements = () => {
           Create custom apparel designs for your business
         </p>
       </div>
-      <div className="flex gap-3 mt-4 md:mt-0">
+      {/* <div className="flex gap-3 mt-4 md:mt-0">
         <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
           <Save size={16} />
           Save Draft
@@ -21,7 +21,7 @@ const TopElements = () => {
           <FolderPlus size={16} />
           New Design
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
