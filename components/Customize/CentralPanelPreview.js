@@ -6,28 +6,16 @@ const CentralPanelPreview = ({
   headingTitle,
   canvasRef,
   selectedColor,
-  handleMouseMove,
-  handleMouseUp,
   elements,
   viewSide,
   selectedElement,
-  handleMouseDown,
   setViewSide,
-  handleTouchMove,
-  handleTouchEnd,
-  handleTouchStart,
+  handleElementStart,
+  handleEnd,
+  handleMove,
+  device
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-
-  const handleMouseDownEnhanced = (e, element) => {
-    setIsDragging(true);
-    handleMouseDown(e, element);
-  };
-
-  const handleMouseUpEnhanced = () => {
-    setIsDragging(false);
-    handleMouseUp();
-  };
 
   return (
     <div className="lg:col-span-6">
@@ -60,19 +48,21 @@ const CentralPanelPreview = ({
             }`}
             style={{
               width: '100%',
-              maxWidth: '400px',
-              height: 'calc(100vw * 1.25)', // 5:4 aspect ratio
-              maxHeight: '500px',
+              maxWidth: device === "mobile" ? "200px" : "400px",
+              height: "calc(100vw * 1.25)", // 5:4 aspect ratio
+              maxHeight: device === "mobile" ? "250px" : "500px",
               backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
               backgroundSize: 'cover',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
               touchAction: 'none', // Prevent scrolling/zooming
             }}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUpEnhanced}
-            onMouseLeave={handleMouseUpEnhanced}
+            onTouchMove={handleMove}
+            onTouchEnd={handleEnd}
+            onTouchCancel={handleEnd}
+            onMouseMove={handleMove}
+            onMouseUp={handleEnd}
+            onMouseLeave={handleEnd}
           >
             {/* T-shirt outline - now more subtle since we have the actual image */}
             <div
@@ -97,11 +87,11 @@ const CentralPanelPreview = ({
                   top: element.y,
                   width: element.width,
                   height: element.height,
-                  padding: '8px', // Increased touch area
+                  // padding: '8px', // Increased touch area
                   transform: `rotate(${element.style.rotation || 0}deg)`,
                 }}
-                onMouseDown={(e) => handleMouseDownEnhanced(e, element)}
-                onTouchStart={(e) => handleTouchStart(e, element)}
+                onMouseDown={(e) => handleElementStart(e, element)}
+                onTouchStart={(e) => handleElementStart(e, element)}
               >
                 {element.type === 'text' ? (
                   <div

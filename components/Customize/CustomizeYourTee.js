@@ -117,11 +117,12 @@ const CustomizeYourTee = () => {
   const [phone, setPhone] = useState(''); // State for phone number input
   const [customerEmail, setCustomerEmail] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   const { user, loading } = useContext(AuthContext);
 
   const [fonts, setFonts] = useState([]); // State to store fonts
+  const [device, setDevice] = useState('laptop')
 
   useEffect(() => {
     // Fetch fonts from Google Fonts API
@@ -148,6 +149,21 @@ const CustomizeYourTee = () => {
       setCustomerEmail(user?.email || guestCustomerInfo.email);
     }
   }, [loading, user]);
+
+  const updateDevice = () => {
+    const width = window.innerWidth;
+    if (width <= 600) {
+      setDevice("mobile");
+    } else if (width <= 1024) {
+      setDevice("tablet");
+    } else {
+      setDevice("laptop");
+    }
+  };
+
+  useEffect(() => {
+    updateDevice();
+  }, [window.innerWidth]);
 
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
@@ -485,8 +501,8 @@ const CustomizeYourTee = () => {
 
   const generatePreview = async (side) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 500;
+    canvas.width = device === 'mobile' ? 200 : 400;
+    canvas.height = device === 'mobile' ? 250 : 500;
     const ctx = canvas.getContext('2d');
 
     try {
@@ -609,6 +625,43 @@ const CustomizeYourTee = () => {
     setIsFormOpen(true);
   };
 
+  const handleElementStart = (e, element) => {
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
+    const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
+
+    setDraggedElement(element.id);
+    setSelectedElement(element.id);
+    setDragOffset({
+      x: x - element.x,
+      y: y - element.y,
+    });
+  };
+
+  const handleMove = (e) => {
+    if (!draggedElement) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    // Get current position based on input type
+    const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
+    const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
+
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: prevState[viewSide].map((el) =>
+        el.id === draggedElement
+          ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
+          : el,
+      ),
+    }));
+  };
+
+  const handleEnd = () => {
+    // Remove both mouse and touch listeners
+    setDraggedElement(null);
+  };
+
   const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
   const headingTitle =
     'flex items-center gap-3 text-lg font-semibold text-black mb-6';
@@ -660,6 +713,10 @@ const CustomizeYourTee = () => {
             handleTouchMove={handleTouchMove}
             handleTouchEnd={handleTouchEnd}
             handleTouchStart={handleTouchStart}
+            handleElementStart={handleElementStart}
+            handleEnd={handleEnd}
+            handleMove={handleMove}
+            device={device}
           />
 
           <RightPanel
