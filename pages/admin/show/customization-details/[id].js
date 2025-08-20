@@ -35,7 +35,7 @@ const CustomizationDetails = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/customizations" className="text-blue-600 hover:underline">
+        <Link href="/admin/show/show-customization-requests" className="text-blue-600 hover:underline">
           &larr; Back to all requests
         </Link>
         <h1 className="text-3xl font-bold mt-4">
@@ -92,6 +92,10 @@ const CustomizationDetails = () => {
               <p>
                 <span className="font-medium">Phone:</span>{' '}
                 {customizations.phone}
+              </p>
+              <p>
+                <span className="font-medium">Address:</span>{' '}
+                {customizations.address}
               </p>
               {customizations.user && (
                 <p>

@@ -15,13 +15,12 @@ const RightPanel = ({
   instructions,
   setInstructions,
   fonts,
+  inputStyle
 }) => {
   const element = elements[viewSide]?.find((el) => el.id === selectedElement);
-  const inputStyle =
-    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all hover:border-gray-400';
-
+  
   return (
-    <div className="lg:col-span-3 space-y-6">
+    <div className="lg:col-span-3 space-y-6" id='control'>
       {/* Element Properties Panel */}
       <div className={panelStyle}>
         <h2 className={headingTitle}>
@@ -157,8 +156,8 @@ const RightPanel = ({
                         const newHeight = newWidth / aspectRatio;
 
                         updateElement(element.id, {
-                          width: newWidth,
-                          height: newHeight,
+                          width: parseInt(newWidth),
+                          height: parseInt(newHeight),
                         });
                       }}
                       className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"

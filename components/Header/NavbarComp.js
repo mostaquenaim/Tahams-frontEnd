@@ -89,12 +89,12 @@ const NavbarCompTwo = () => {
       {categories &&
         categories.map((cat, index) =>
           cat.name == 'Customize' ? (
-              <Link
-                href={'/customize-tee'}
-                className="btn shadow-md hover:shadow-lg shadow-rose-100 hover:shadow-rose-200 rounded-lg"
-              >
-                Customize
-              </Link>
+            <Link
+              href={'/customize-tee'}
+              className="btn rounded-lg shadow-md hover:shadow-lg shadow-rose-100 hover:shadow-rose-200"
+            >
+              Customize
+            </Link>
           ) : !cat.isGenderVaried ? (
             <ListComponent
               key={index}
@@ -112,6 +112,12 @@ const NavbarCompTwo = () => {
     <>
       <ListStyle goto="/collabs/artist" pageName="Artist Collabs" />
       <ListStyle goto="/collabs/influencer" pageName="Influencer Collabs" />
+      {/* <Link
+        href="/customize-tee"
+        className="btn rounded-lg animate-shadowPulse"
+      >
+        Customize
+      </Link> */}
     </>
   );
 

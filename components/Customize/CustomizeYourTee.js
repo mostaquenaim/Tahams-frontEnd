@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
-import { Printer, Download, X } from 'lucide-react';
+import { Printer, Download, X, Layers } from 'lucide-react';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 import TopElements from './TopElements';
@@ -116,13 +116,55 @@ const CustomizeYourTee = () => {
   const [name, setName] = useState(''); // State for name input
   const [phone, setPhone] = useState(''); // State for phone number input
   const [customerEmail, setCustomerEmail] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
 
   const { user, loading } = useContext(AuthContext);
 
   const [fonts, setFonts] = useState([]); // State to store fonts
-  const [device, setDevice] = useState('laptop')
+  const [device, setDevice] = useState('laptop');
+
+  const [isResizing, setIsResizing] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
+  const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
+  const [initialFontSize, setInitialFontSize] = useState(20);
+  const [rotationCenter, setRotationCenter] = useState({ x: 0, y: 0 });
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [address, setAddress] = useState('');
+
+  // 3. ADD THESE NEW HANDLER FUNCTIONS (add after existing handler functions)
+  const getMousePos = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX) || 0;
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY) || 0;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  };
+
+  const handleResizeStart = (e, element) => {
+    console.log(element, 'lll');
+    e.stopPropagation();
+    setIsResizing(true);
+    setSelectedElement(element.id);
+    element.type === 'text' && setInitialFontSize(element.style.fontSize);
+    // :
+    setInitialSize({ width: element.width, height: element.height });
+    const pos = getMousePos(e);
+    setDragOffset(pos);
+  };
+
+  const handleRotateStart = (e, element) => {
+    e.stopPropagation();
+    setIsRotating(true);
+    setSelectedElement(element.id);
+    const elementCenter = {
+      x: element.x + element.width / 2,
+      y: element.y + element.height / 2,
+    };
+    setRotationCenter(elementCenter);
+  };
 
   useEffect(() => {
     // Fetch fonts from Google Fonts API
@@ -153,18 +195,17 @@ const CustomizeYourTee = () => {
   const updateDevice = () => {
     const width = window.innerWidth;
     if (width <= 600) {
-      setDevice("mobile");
+      setDevice('mobile');
     } else if (width <= 1024) {
-      setDevice("tablet");
+      setDevice('tablet');
     } else {
-      setDevice("laptop");
+      setDevice('laptop');
     }
   };
 
   useEffect(() => {
     updateDevice();
   }, [selectedElement]);
-
 
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
@@ -197,6 +238,7 @@ const CustomizeYourTee = () => {
         fd.append('side', side);
         fd.append('name', name);
         fd.append('phone', phone);
+        fd.append('address', address);
         fd.append('size', selectedSize);
         fd.append('quantity', quantity);
         if (customerEmail) fd.append('email', customerEmail); // make sure server supports this
@@ -300,7 +342,7 @@ const CustomizeYourTee = () => {
       content: newText,
       x: 150,
       y: 200,
-      width: 200,
+      width: 100,
       height: 40,
       style: { ...textStyle },
     };
@@ -376,8 +418,8 @@ const CustomizeYourTee = () => {
     if (!draggedElement) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = parseInt(e.clientX - rect.left);
+    const y = parseInt(e.clientY - rect.top);
 
     setElements((prevState) => ({
       ...prevState,
@@ -640,27 +682,108 @@ const CustomizeYourTee = () => {
     });
   };
 
+  // 4. UPDATE YOUR EXISTING handleMove FUNCTION
   const handleMove = (e) => {
-    if (!draggedElement) return;
+    if (!draggedElement && !isResizing && !isRotating) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    // Get current position based on input type
     const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
     const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
 
-    setElements((prevState) => ({
-      ...prevState,
-      [viewSide]: prevState[viewSide].map((el) =>
-        el.id === draggedElement
-          ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
-          : el,
-      ),
-    }));
+    const maxWidth = device === 'mobile' ? 200 : 400;
+    const maxHeight = device === 'mobile' ? 250 : 500;
+
+    if (draggedElement && !isResizing && !isRotating) {
+      // Existing drag logic
+      setElements((prevState) => ({
+        ...prevState,
+        [viewSide]: prevState[viewSide].map((el) =>
+          el.id === draggedElement
+            ? {
+                ...el,
+                x: Math.max(0, Math.min(maxWidth - el.width, x - dragOffset.x)),
+                y: Math.max(
+                  0,
+                  Math.min(maxHeight - el.height, y - dragOffset.y),
+                ),
+              }
+            : el,
+        ),
+      }));
+    } else if (isResizing) {
+      const deltaX = x - dragOffset.x;
+      const deltaY = y - dragOffset.y;
+      const delta = Math.max(deltaX, deltaY);
+
+      let newWidth = Math.max(20, initialSize.width + delta);
+      let newHeight = initialSize.height + delta;
+
+      const element = elements[viewSide].find(
+        (el) => el.id === selectedElement,
+      );
+
+      // Maintain aspect ratio for images
+      if (
+        element &&
+        element.type === 'image' &&
+        element.originalWidth &&
+        element.originalHeight
+      ) {
+        const aspectRatio = element.originalWidth / element.originalHeight;
+        newHeight = newWidth / aspectRatio;
+
+        updateElement(selectedElement, {
+          width: newWidth,
+          height: newHeight,
+        });
+      } else if (element && element.type === 'text') {
+        // Calculate font size based on width (or height)
+        const newFontSize = parseInt(
+          (newWidth / initialSize.width) * initialFontSize,
+        );
+
+        updateElement(selectedElement, {
+          width: newWidth,
+          height: newHeight,
+          style: {
+            ...element.style,
+            fontSize: newFontSize, // Adjust font size based on width
+          },
+        });
+      }
+    } else if (isRotating) {
+      const angle =
+        Math.atan2(y - rotationCenter.y, x - rotationCenter.x) *
+        (180 / Math.PI);
+
+      const element = elements[viewSide].find(
+        (el) => el.id === selectedElement,
+      );
+      updateElement(selectedElement, {
+        style: {
+          ...element.style,
+          rotation: Math.round(angle),
+        },
+      });
+    }
   };
 
+  // 5. UPDATE YOUR EXISTING handleEnd FUNCTION
   const handleEnd = () => {
-    // Remove both mouse and touch listeners
     setDraggedElement(null);
+    setIsResizing(false);
+    setIsRotating(false);
+  };
+
+  // 6. ADD THIS FUNCTION TO HANDLE ELEMENT CLICKS
+  const handleElementClick = (element, e) => {
+    e.stopPropagation();
+    setSelectedElement(element.id);
+  };
+
+  // 7. ADD THIS FUNCTION TO HANDLE CANVAS CLICKS
+  const handleCanvasClick = () => {
+    setSelectedElement(null);
   };
 
   const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
@@ -668,13 +791,17 @@ const CustomizeYourTee = () => {
     'flex items-center gap-3 text-lg font-semibold text-black mb-6';
   const buttonStyle =
     'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black';
+  const sectionTitle =
+    'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
+  const inputStyle =
+    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400';
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <TopElements />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <LeftPanelTools
+        <div className="grid grid-cols-1 lg:grid-cols-9 gap-6">
+          {/* <LeftPanelTools
             tshirtColors={tshirtColors}
             setSelectedColor={setSelectedColor}
             selectedColor={selectedColor}
@@ -697,7 +824,8 @@ const CustomizeYourTee = () => {
             setSelectedSize={setSelectedSize}
             quantity={quantity}
             setQuantity={setQuantity}
-          />
+            inputStyle={inputStyle}
+          /> */}
 
           <CentralPanelPreview
             panelStyle={panelStyle}
@@ -718,6 +846,28 @@ const CustomizeYourTee = () => {
             handleEnd={handleEnd}
             handleMove={handleMove}
             device={device}
+            tshirtColors={tshirtColors}
+            setSelectedColor={setSelectedColor}
+            addText={addText}
+            newText={newText}
+            buttonStyle={buttonStyle}
+            fileInputRef={fileInputRef}
+            addImage={addImage}
+            sectionTitle={sectionTitle}
+            ///new
+            updateElement={updateElement}
+            deleteElement={deleteElement}
+            handleResizeStart={handleResizeStart}
+            handleRotateStart={handleRotateStart}
+            handleElementClick={handleElementClick}
+            handleCanvasClick={handleCanvasClick}
+            isResizing={isResizing}
+            isRotating={isRotating}
+            draggedElement={draggedElement}
+            inputStyle={inputStyle}
+            isDrawerOpen={isDrawerOpen}
+            setIsDrawerOpen={setIsDrawerOpen}
+            setSelectedElement={setSelectedElement}
           />
 
           <RightPanel
@@ -734,6 +884,8 @@ const CustomizeYourTee = () => {
             instructions={instructions}
             setInstructions={setInstructions}
             fonts={fonts}
+            inputStyle={inputStyle}
+            isDrawerOpen={isDrawerOpen}
           />
         </div>
 
@@ -752,7 +904,7 @@ const CustomizeYourTee = () => {
                 </button>
               </div>
 
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-6 grid grid-cols-2  gap-6">
                 <div className="flex flex-col items-center">
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
                     Front View
@@ -775,24 +927,29 @@ const CustomizeYourTee = () => {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 p-4 flex justify-end gap-3">
+              <div className="border-t border-gray-200 p-4 flex flex-col sm:flex-row justify-end gap-3">
+                {/* Cancel button */}
                 <button
                   onClick={() => setIsPreviewOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto"
                 >
                   Cancel
                 </button>
+
+                {/* Download button */}
                 <button
                   onClick={downloadDesign}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 flex items-center gap-2"
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 flex items-center gap-2 w-full sm:w-auto"
                 >
                   <Download size={18} />
                   Download Design
                 </button>
+
+                {/* Request Print button */}
                 <button
                   onClick={sendRequest}
                   disabled={isLoading}
-                  className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 w-full sm:w-auto ${
                     isLoading
                       ? 'bg-orange-400'
                       : 'bg-orange-600 hover:bg-orange-700'
@@ -820,6 +977,7 @@ const CustomizeYourTee = () => {
                 Enter Your Details
               </h2>
 
+              {/* details  */}
               <input
                 type="text"
                 value={name}
@@ -834,6 +992,57 @@ const CustomizeYourTee = () => {
                 placeholder="Your Phone Number"
                 className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Your Address"
+                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              {/* size and quantity */}
+
+              {/* Size Selection */}
+              <section className="mb-6">
+                <h3 className={sectionTitle}>
+                  <Layers size={18} className="text-black" />
+                  Size
+                </h3>
+                <div className="grid grid-cols-5 gap-2.5">
+                  {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all 
+          ${
+            selectedSize === size
+              ? 'border-black bg-gray-900 text-white shadow-md'
+              : 'border-gray-300 hover:border-gray-400 bg-white text-gray-700'
+          }`}
+                      aria-label={`Select ${size} size`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              {/* Quantity Selection */}
+              <section className="mb-6">
+                <h3 className={sectionTitle}>
+                  <Layers size={18} className="text-black" />
+                  Quantity
+                </h3>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  className={`${inputStyle} w-24`}
+                  aria-label="Select quantity"
+                />
+              </section>
 
               <div className="flex justify-end gap-3">
                 <button

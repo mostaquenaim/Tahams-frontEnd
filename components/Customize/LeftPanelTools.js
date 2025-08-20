@@ -31,14 +31,12 @@ const LeftPanelTools = ({
   setSelectedSize,
   quantity,
   setQuantity,
+  inputStyle
 }) => {
   const sectionTitle =
     'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
   const buttonStyle =
     'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500';
-  const inputStyle =
-    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400';
-
   return (
     <div className="lg:col-span-3 h-full">
       <div className={panelStyle + ' h-full flex flex-col'}>

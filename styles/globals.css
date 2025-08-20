@@ -6,19 +6,34 @@
 
 /* In your global.css */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes shine {
-  0% { transform: translateX(-100%) rotate(45deg); }
-  100% { transform: translateX(200%) rotate(45deg); }
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(45deg);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .animate-gradient-shift {
@@ -34,46 +49,88 @@
 }
 
 @keyframes pulse-fast {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes float-particle {
-  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
-  50% { transform: translateY(-10px) translateX(5px); opacity: 0.8; }
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-10px) translateX(5px);
+    opacity: 0.8;
+  }
 }
 
 .animate-pulse-fast {
   animation: pulse-fast 1.5s ease infinite;
 }
 
- @keyframes borderLoop {
-    0% {
-      border-color: transparent;
-      transform: scale(1);
-    }
-    50% {
-      border-color: #00c0ff;
-      transform: scale(1.1);
-    }
-    100% {
-      border-color: transparent;
-      transform: scale(1);
-    }
+@keyframes borderLoop {
+  0% {
+    border-color: transparent;
+    transform: scale(1);
   }
-
-  .animate-borderLoop {
-    animation: borderLoop 3s linear infinite;
+  50% {
+    border-color: #00c0ff;
+    transform: scale(1.1);
   }
+  100% {
+    border-color: transparent;
+    transform: scale(1);
+  }
+}
 
-  .btn-container {
-            position: relative;
-            display: inline-block;
-            padding: 4px; /* Space for the border */
-            border-radius: 12px;
-            background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000);
-            background-size: 200% 200%;
-            animation: rotate-gradient 3s linear infinite;
-        }
-        
-       
+.animate-borderLoop {
+  animation: borderLoop 3s linear infinite;
+}
+
+.btn-container {
+  position: relative;
+  display: inline-block;
+  padding: 4px; /* Space for the border */
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff8000,
+    #ffff00,
+    #80ff00,
+    #00ff00,
+    #00ff80,
+    #00ffff,
+    #0080ff,
+    #0000ff,
+    #8000ff,
+    #ff00ff,
+    #ff0080,
+    #ff0000
+  );
+  background-size: 200% 200%;
+  animation: rotate-gradient 3s linear infinite;
+}
+
+@keyframes shadowPulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3), /* pink-500 */
+      0 2px 4px -2px rgba(236, 72, 153, 0.2);
+  }
+  50% {
+    box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.5), /* brighter pink */
+      0 4px 6px -4px rgba(236, 72, 153, 0.3);
+  }
+}
+
+.animate-shadowPulse {
+  animation: shadowPulse 2s infinite ease-in-out;
+}
+
