@@ -385,7 +385,7 @@ const CustomizeYourTee = () => {
       content: newText,
       x: device === 'mobile' ? 75 : 150,
       y: device === 'mobile' ? 100 : 200,
-      width: device === 'mobile' ? 100 : 100,
+      width: device === 'mobile' ? 100 : 150,
       height: 40,
       opacity: 'isInside',
       style: { ...textStyle, fontSize: device === 'mobile' ? 14 : 24 },
