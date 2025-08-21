@@ -144,7 +144,7 @@ const CustomizeYourTee = () => {
   };
 
   const handleResizeStart = (e, element) => {
-    console.log(element, 'lll');
+    // console.log(element, 'lll');
     e.stopPropagation();
     setIsResizing(true);
     setSelectedElement(element.id);
