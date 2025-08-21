@@ -10,6 +10,7 @@ import { getGuestCustomerInfo } from '/utils/guestCustomer';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const CustomizeYourTee = () => {
+  const { user, loading } = useContext(AuthContext);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -90,6 +91,23 @@ const CustomizeYourTee = () => {
   const [draggedElement, setDraggedElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [newText, setNewText] = useState('Type your text');
+  const [instructions, setInstructions] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false); // State for form visibility
+  const [name, setName] = useState(''); // State for name input
+  const [phone, setPhone] = useState(''); // State for phone number input
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [quantity, setQuantity] = useState(1);
+  const [fonts, setFonts] = useState([]); // State to store fonts
+  const [device, setDevice] = useState('laptop');
+  const [isResizing, setIsResizing] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
+  const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
+  const [initialFontSize, setInitialFontSize] = useState(20);
+  const [rotationCenter, setRotationCenter] = useState({ x: 0, y: 0 });
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [address, setAddress] = useState('');
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
     color: '#000000',
@@ -110,27 +128,6 @@ const CustomizeYourTee = () => {
     front: null,
     back: null,
   });
-  const [instructions, setInstructions] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false); // State for form visibility
-  const [name, setName] = useState(''); // State for name input
-  const [phone, setPhone] = useState(''); // State for phone number input
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [quantity, setQuantity] = useState(1);
-
-  const { user, loading } = useContext(AuthContext);
-
-  const [fonts, setFonts] = useState([]); // State to store fonts
-  const [device, setDevice] = useState('laptop');
-
-  const [isResizing, setIsResizing] = useState(false);
-  const [isRotating, setIsRotating] = useState(false);
-  const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
-  const [initialFontSize, setInitialFontSize] = useState(20);
-  const [rotationCenter, setRotationCenter] = useState({ x: 0, y: 0 });
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [address, setAddress] = useState('');
 
   // 3. ADD THESE NEW HANDLER FUNCTIONS (add after existing handler functions)
   const getMousePos = (e) => {
@@ -694,7 +691,6 @@ const CustomizeYourTee = () => {
     });
   };
 
-  // 4. UPDATE YOUR EXISTING handleMove FUNCTION
   const handleMove = (e) => {
     if (!draggedElement && !isResizing && !isRotating) return;
 
@@ -788,14 +784,12 @@ const CustomizeYourTee = () => {
     }
   };
 
-  // 5. UPDATE YOUR EXISTING handleEnd FUNCTION
   const handleEnd = () => {
     setDraggedElement(null);
     setIsResizing(false);
     setIsRotating(false);
   };
 
-  // 6. ADD THIS FUNCTION TO HANDLE ELEMENT CLICKS
   const handleElementClick = (element, e) => {
     e.stopPropagation();
     setSelectedElement(element.id);

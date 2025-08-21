@@ -58,7 +58,7 @@ const CentralPanelPreview = ({
       });
     }
     console.log(element.id);
-    setSelectedElement(element.id)
+    setSelectedElement(element.id);
   };
 
   // console.log(selectedElement);
@@ -248,6 +248,37 @@ const CentralPanelPreview = ({
                         className={`w-32 text-sm md:text-lg`}
                       />
                     </div>
+                  </div>
+                </div>
+              ))}
+          {selectedElement &&
+            elements[viewSide]
+              .filter(
+                (item) => item.id === selectedElement && item.type === 'image',
+              )
+              .map((item) => (
+                <div key={item.id}>
+                  <h1>Resize</h1>
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4 overflow-x-auto py-2">
+                    {/* resize image  */}
+                    <input
+                      type="range"
+                      min="50"
+                      max="300"
+                      value={item.width}
+                      onChange={(e) => {
+                        const newWidth = parseFloat(e.target.value);
+                        const aspectRatio =
+                          item.originalWidth / item.originalHeight;
+                        const newHeight = newWidth / aspectRatio;
+
+                        updateElement(item.id, {
+                          width: parseInt(newWidth),
+                          height: parseInt(newHeight),
+                        });
+                      }}
+                      className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                    />
                   </div>
                 </div>
               ))}
