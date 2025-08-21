@@ -150,7 +150,10 @@ const CustomizeYourTee = () => {
     setSelectedElement(element.id);
     element.type === 'text' && setInitialFontSize(element.style.fontSize);
     // :
-    setInitialSize({ width: element.width, height: element.height });
+    setInitialSize({
+      width: parseInt(element.width),
+      height: parseInt(element.height),
+    });
     const pos = getMousePos(e);
     setDragOffset(pos);
   };
@@ -192,20 +195,29 @@ const CustomizeYourTee = () => {
     }
   }, [loading, user]);
 
-  const updateDevice = () => {
-    const width = window.innerWidth;
-    if (width <= 600) {
-      setDevice('mobile');
-    } else if (width <= 1024) {
-      setDevice('tablet');
-    } else {
-      setDevice('laptop');
-    }
-  };
-
   useEffect(() => {
+    const updateDevice = () => {
+      const width = window.innerWidth;
+      if (width <= 600) {
+        setDevice('mobile');
+      } else if (width <= 1024) {
+        setDevice('tablet');
+      } else {
+        setDevice('laptop');
+      }
+    };
+
+    // Run once when component mounts
     updateDevice();
-  }, [selectedElement]);
+
+    // Add event listener
+    window.addEventListener('resize', updateDevice);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('resize', updateDevice);
+    };
+  }, []);
 
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
@@ -364,8 +376,8 @@ const CustomizeYourTee = () => {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        let newWidth = img.width;
-        let newHeight = img.height;
+        let newWidth = parseInt(img.width);
+        let newHeight = parseInt(img.height);
 
         if (img.width > img.height) {
           newWidth = Math.min(img.width, 200);
@@ -383,8 +395,8 @@ const CustomizeYourTee = () => {
           y: 200,
           width: newWidth,
           height: newHeight,
-          originalWidth: img.width,
-          originalHeight: img.height,
+          originalWidth: parseInt(img.width),
+          originalHeight: parseInt(img.height),
           style: { ...imgStyle },
         };
 
@@ -687,8 +699,12 @@ const CustomizeYourTee = () => {
     if (!draggedElement && !isResizing && !isRotating) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
-    const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
+    const x = parseInt(
+      e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left,
+    );
+    const y = parseInt(
+      e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top,
+    );
 
     const maxWidth = device === 'mobile' ? 200 : 400;
     const maxHeight = device === 'mobile' ? 250 : 500;
@@ -701,10 +717,14 @@ const CustomizeYourTee = () => {
           el.id === draggedElement
             ? {
                 ...el,
-                x: Math.max(0, Math.min(maxWidth - el.width, x - dragOffset.x)),
-                y: Math.max(
-                  0,
-                  Math.min(maxHeight - el.height, y - dragOffset.y),
+                x: parseInt(
+                  Math.max(0, Math.min(maxWidth - el.width, x - dragOffset.x)),
+                ),
+                y: parseInt(
+                  Math.max(
+                    0,
+                    Math.min(maxHeight - el.height, y - dragOffset.y),
+                  ),
                 ),
               }
             : el,
@@ -715,8 +735,8 @@ const CustomizeYourTee = () => {
       const deltaY = y - dragOffset.y;
       const delta = Math.max(deltaX, deltaY);
 
-      let newWidth = Math.max(20, initialSize.width + delta);
-      let newHeight = initialSize.height + delta;
+      let newWidth = parseInt(Math.max(20, initialSize.width + delta));
+      let newHeight = parseInt(initialSize.height + delta);
 
       const element = elements[viewSide].find(
         (el) => el.id === selectedElement,
