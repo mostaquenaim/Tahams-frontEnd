@@ -412,10 +412,10 @@ const CustomizeYourTee = () => {
         let newHeight = parseInt(img.height);
 
         if (img.width > img.height) {
-          newWidth = Math.min(img.width, 100);
+          newWidth = device === 'mobile' ? Math.min(img.width, 100) : Math.min(img.width, 200);
           newHeight = (newWidth / img.width) * img.height;
         } else {
-          newHeight = Math.min(img.height, 100);
+          newHeight = device === 'mobile' ? Math.min(img.height, 100) : Math.min(img.height, 200);
           newWidth = (newHeight / img.height) * img.width;
         }
 
@@ -423,8 +423,8 @@ const CustomizeYourTee = () => {
           id: Date.now(),
           type: 'image',
           content: e.target.result,
-          x: device === 'mobile' ? 75 : 150,
-          y: device === 'mobile' ? 100 : 200,
+           x: device === 'mobile' ? 75 : 150,
+      y: device === 'mobile' ? 100 : 200,
           width: newWidth,
           height: newHeight,
           opacity: 'isInside',
