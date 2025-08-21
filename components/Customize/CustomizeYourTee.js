@@ -108,6 +108,9 @@ const CustomizeYourTee = () => {
   const [rotationCenter, setRotationCenter] = useState({ x: 0, y: 0 });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [address, setAddress] = useState('');
+  const [elementOpacity, setElementOpacity] = useState([]);
+
+  const [printArea, setPrintArea] = useState();
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
     color: '#000000',
@@ -215,6 +218,37 @@ const CustomizeYourTee = () => {
       window.removeEventListener('resize', updateDevice);
     };
   }, []);
+
+  useEffect(() => {
+    const area = {
+      left:
+        canvasRef.current && viewSide === 'front'
+          ? canvasRef.current.offsetWidth * 0.27
+          : canvasRef.current && viewSide === 'back'
+          ? canvasRef.current.offsetWidth * 0.27
+          : 80,
+      top:
+        canvasRef.current && viewSide === 'front'
+          ? canvasRef.current.offsetHeight * 0.25
+          : canvasRef.current && viewSide === 'back'
+          ? canvasRef.current.offsetHeight * 0.2
+          : 125,
+      right:
+        canvasRef.current && viewSide === 'front'
+          ? canvasRef.current.offsetWidth * 0.71
+          : canvasRef.current && viewSide === 'back'
+          ? canvasRef.current.offsetWidth * 0.71
+          : 320,
+      bottom:
+        canvasRef.current && viewSide === 'front'
+          ? canvasRef.current.offsetHeight * 0.78
+          : canvasRef.current && viewSide === 'back'
+          ? canvasRef.current.offsetHeight * 0.74
+          : 375,
+    };
+
+    setPrintArea(area);
+  }, [canvasRef, viewSide]);
 
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
@@ -349,11 +383,12 @@ const CustomizeYourTee = () => {
       id: Date.now(),
       type: 'text',
       content: newText,
-      x: 150,
-      y: 200,
-      width: 100,
+      x: device === 'mobile' ? 75 : 150,
+      y: device === 'mobile' ? 100 : 200,
+      width: device === 'mobile' ? 100 : 100,
       height: 40,
-      style: { ...textStyle },
+      opacity: 'isInside',
+      style: { ...textStyle, fontSize: device === 'mobile' ? 14 : 24 },
     };
 
     setElements((prevState) => ({
@@ -392,6 +427,7 @@ const CustomizeYourTee = () => {
           y: 200,
           width: newWidth,
           height: newHeight,
+          opacity: 'isInside',
           originalWidth: parseInt(img.width),
           originalHeight: parseInt(img.height),
           style: { ...imgStyle },
@@ -586,46 +622,48 @@ const CustomizeYourTee = () => {
       });
 
       for (const element of elements[`${side}`]) {
-        ctx.save();
-        ctx.translate(
-          element.x + element.width / 2,
-          element.y + element.height / 2,
-        );
-        ctx.rotate((element.style.rotation * Math.PI) / 180);
-        ctx.translate(
-          -element.x - element.width / 2,
-          -element.y - element.height / 2,
-        );
+        if (element.opacity === 'isInside') {
+          ctx.save();
+          ctx.translate(
+            element.x + element.width / 2,
+            element.y + element.height / 2,
+          );
+          ctx.rotate((element.style.rotation * Math.PI) / 180);
+          ctx.translate(
+            -element.x - element.width / 2,
+            -element.y - element.height / 2,
+          );
 
-        if (element.type === 'text') {
-          ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
-          ctx.fillStyle = element.style.color;
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
-          ctx.fillText(element.content, element.x, element.y);
-        } else if (element.type === 'image') {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
+          if (element.type === 'text') {
+            ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
+            ctx.fillStyle = element.style.color;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(element.content, element.x, element.y);
+          } else if (element.type === 'image') {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
 
-          await new Promise((resolve) => {
-            img.onload = () => {
-              ctx.drawImage(
-                img,
-                element.x,
-                element.y,
-                element.width,
-                element.height,
-              );
-              resolve();
-            };
-            img.onerror = () => {
-              console.warn('Design image failed to load');
-              resolve();
-            };
-            img.src = element.content;
-          });
+            await new Promise((resolve) => {
+              img.onload = () => {
+                ctx.drawImage(
+                  img,
+                  element.x,
+                  element.y,
+                  element.width,
+                  element.height,
+                );
+                resolve();
+              };
+              img.onerror = () => {
+                console.warn('Design image failed to load');
+                resolve();
+              };
+              img.src = element.content;
+            });
+          }
+          ctx.restore();
         }
-        ctx.restore();
       }
 
       return canvas;
@@ -691,8 +729,25 @@ const CustomizeYourTee = () => {
     });
   };
 
-  const handleMove = (e) => {
+  const handleMove = (e, element) => {
+    // console.log(e, 'lll');
+    const elm = elements[viewSide]?.find((item) => item.id === element);
+    // console.log(elm);
     if (!draggedElement && !isResizing && !isRotating) return;
+
+    // Check if element is outside print area
+    const isOutsidePrintArea =
+      elm.x + elm.width < printArea.left ||
+      elm.x > printArea.right ||
+      elm.y + elm.height < printArea.top ||
+      elm.y > printArea.bottom;
+
+    // Check if element is partially outside print area
+    const isPartiallyOutside =
+      elm.x < printArea.left ||
+      elm.y < printArea.top ||
+      elm.x + elm.width > printArea.right ||
+      elm.y + elm.height > printArea.bottom;
 
     const rect = canvasRef.current.getBoundingClientRect();
     const x = parseInt(
@@ -722,6 +777,11 @@ const CustomizeYourTee = () => {
                     Math.min(maxHeight - el.height, y - dragOffset.y),
                   ),
                 ),
+                opacity: isOutsidePrintArea
+                  ? 'isOutsidePrintArea'
+                  : isPartiallyOutside
+                  ? 'isPartiallyOutside'
+                  : 'isInside',
               }
             : el,
         ),
@@ -751,6 +811,11 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: newWidth,
           height: newHeight,
+          opacity: isOutsidePrintArea
+            ? 'isOutsidePrintArea'
+            : isPartiallyOutside
+            ? 'isPartiallyOutside'
+            : 'isInside',
         });
       } else if (element && element.type === 'text') {
         // Calculate font size based on width (or height)
@@ -761,6 +826,11 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: newWidth,
           height: newHeight,
+          opacity: isOutsidePrintArea
+            ? 'isOutsidePrintArea'
+            : isPartiallyOutside
+            ? 'isPartiallyOutside'
+            : 'isInside',
           style: {
             ...element.style,
             fontSize: newFontSize, // Adjust font size based on width
@@ -882,6 +952,8 @@ const CustomizeYourTee = () => {
             isDrawerOpen={isDrawerOpen}
             setIsDrawerOpen={setIsDrawerOpen}
             setSelectedElement={setSelectedElement}
+            //print
+            printArea={printArea}
           />
 
           <RightPanel
