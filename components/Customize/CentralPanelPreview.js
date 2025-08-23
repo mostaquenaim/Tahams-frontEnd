@@ -180,7 +180,7 @@ const CentralPanelPreview = ({
         </div>
 
         {/* edit elements  */}
-        <div className="h-24">
+        <div className="">
           {/* text edit */}
           {selectedElement &&
             elements[viewSide]
@@ -190,62 +190,125 @@ const CentralPanelPreview = ({
               .map((item) => (
                 <div key={item.id}>
                   <h1>Text Settings</h1>
-                  <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4 overflow-x-auto py-2">
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-5 overflow-x-auto py-3 px-1">
                     {/* Text Color */}
-                    <div className="flex-shrink-0 flex items-center gap-1 md:gap-2">
-                      <label className="hidden xs:block text-sm font-medium text-gray-700 whitespace-nowrap">
+                    <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+                      <label className="text-xs font-medium text-gray-600 whitespace-nowrap hidden xs:block">
                         Text Color
                       </label>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="color"
-                          value={item.style.color}
-                          onChange={(e) =>
-                            updateElement(item.id, {
-                              style: {
-                                ...item.style,
-                                color: e.target.value,
-                              },
-                            })
-                          }
-                          className="w-8 h-8 md:w-10 md:h-10 border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-black transition-all duration-200 hover:scale-105"
-                        />
-                        <span className="text-xs font-mono text-gray-600 whitespace-nowrap hidden sm:block">
+                      <div className="flex items-center gap-2">
+                        <div className="relative group">
+                          <input
+                            type="color"
+                            value={item.style.color}
+                            onChange={(e) =>
+                              updateElement(item.id, {
+                                style: {
+                                  ...item.style,
+                                  color: e.target.value,
+                                },
+                              })
+                            }
+                            className="w-8 h-8 md:w-9 md:h-9 border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md"
+                            title="Select text color"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                            <svg
+                              className="w-4 h-4 text-white mix-blend-difference"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM15 5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4h-4"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                        <span className="text-xs font-mono text-gray-600 whitespace-nowrap hidden sm:block bg-gray-100 px-2 py-1 rounded-md">
                           {item.style.color.toUpperCase()}
                         </span>
                       </div>
                     </div>
 
                     {/* Font Family */}
-                    <div className="flex-shrink-0 flex items-center gap-1 md:gap-2">
-                      <label className="hidden xs:block text-sm font-medium text-gray-700 whitespace-nowrap">
-                        Font Family
+                    <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+                      <label className="text-xs font-medium text-gray-600 whitespace-nowrap hidden xs:block">
+                        Font
                       </label>
-                      <select
-                        value={item.style.fontFamily || 'Arial'}
-                        onChange={(e) =>
-                          updateElement(item.id, {
-                            style: {
-                              ...item.style,
-                              fontFamily: e.target.value,
-                            },
-                          })
-                        }
-                        className={`w-32 text-xs md:text-lg`}
-                      >
-                        <option value="Arial">Arial</option>
-                        <option value="Helvetica">Helvetica</option>
-                        <option value="Times New Roman">Times New Roman</option>
-                        <option value="Georgia">Georgia</option>
-                        <option value="Verdana">Verdana</option>
-                        <option value="Impact">Impact</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={item.style.fontFamily || 'Arial'}
+                          onChange={(e) =>
+                            updateElement(item.id, {
+                              style: {
+                                ...item.style,
+                                fontFamily: e.target.value,
+                              },
+                            })
+                          }
+                          className="w-32 text-sm bg-white border border-gray-300 rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          style={{
+                            fontFamily: item.style.fontFamily || 'Arial',
+                          }}
+                        >
+                          <option value="Arial" style={{ fontFamily: 'Arial' }}>
+                            Arial
+                          </option>
+                          <option
+                            value="Helvetica"
+                            style={{ fontFamily: 'Helvetica' }}
+                          >
+                            Helvetica
+                          </option>
+                          <option
+                            value="Times New Roman"
+                            style={{ fontFamily: 'Times New Roman' }}
+                          >
+                            Times New Roman
+                          </option>
+                          <option
+                            value="Georgia"
+                            style={{ fontFamily: 'Georgia' }}
+                          >
+                            Georgia
+                          </option>
+                          <option
+                            value="Verdana"
+                            style={{ fontFamily: 'Verdana' }}
+                          >
+                            Verdana
+                          </option>
+                          <option
+                            value="Impact"
+                            style={{ fontFamily: 'Impact' }}
+                          >
+                            Impact
+                          </option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                          <svg
+                            className="h-4 w-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Text Content */}
-                    <div className="flex-shrink-0 flex items-center gap-1 md:gap-2 min-w-[120px] flex-1 border-black border-2 px-1 rounded-lg">
-                      <label className="hidden xs:block text-sm font-medium text-gray-700 whitespace-nowrap">
-                        Text Content
+                    <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200 flex-1 min-w-[180px]">
+                      <label className="text-xs font-medium text-gray-600 whitespace-nowrap hidden xs:block">
+                        Content
                       </label>
                       <input
                         type="text"
@@ -255,7 +318,8 @@ const CentralPanelPreview = ({
                             content: e.target.value,
                           })
                         }
-                        className={`w-32 text-sm md:text-lg`}
+                        className="flex-1 min-w-0 text-sm bg-white border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Enter text content..."
                       />
                     </div>
                   </div>

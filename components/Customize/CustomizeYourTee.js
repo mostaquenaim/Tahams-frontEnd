@@ -434,7 +434,7 @@ const CustomizeYourTee = () => {
   // helper: compute width/height from text + font
   const computeTextBox = (text, style, device, canvasRef) => {
     const baseFontSize = device === 'mobile' ? 14 : 24;
-    const fontSize = style.fontSize ?? baseFontSize;
+    const fontSize = baseFontSize;
     const fontWeight = style.fontWeight || 'normal';
     const fontStyle = style.fontStyle || 'normal';
     const fontFamily = style.fontFamily || 'Arial, sans-serif';
@@ -1099,7 +1099,7 @@ const CustomizeYourTee = () => {
                   <img
                     src={previewImages.front}
                     alt="Front Design Preview"
-                    className="w-48 md:w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+                    className="w-48 md:w-64 h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
                   />
                 </div>
                 <div className="flex flex-col items-center">
@@ -1109,7 +1109,7 @@ const CustomizeYourTee = () => {
                   <img
                     src={previewImages.back}
                     alt="Back Design Preview"
-                    className="w-48 md:w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+                    className="w-48 md:w-64 h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
                   />
                 </div>
               </div>
