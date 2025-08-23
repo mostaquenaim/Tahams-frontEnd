@@ -16,6 +16,14 @@ const CustomizeYourTee = () => {
 
   const tshirtColors = [
     {
+      color: '#FF0000',
+      previewImages: {
+        front: '/preview-images/Red.png',
+        back: '/preview-images/red-back.png',
+      },
+      name: 'Red',
+    },
+    {
       color: '#000000',
       previewImages: {
         front: '/preview-images/Black.png',
@@ -54,14 +62,6 @@ const CustomizeYourTee = () => {
         back: '/preview-images/navy-blue-back.png',
       },
       name: 'Navy Blue',
-    },
-    {
-      color: '#FF0000',
-      previewImages: {
-        front: '/preview-images/Red.png',
-        back: '/preview-images/red-back.png',
-      },
-      name: 'Red',
     },
     {
       color: '#87CEEB',
@@ -108,8 +108,6 @@ const CustomizeYourTee = () => {
   const [rotationCenter, setRotationCenter] = useState({ x: 0, y: 0 });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [address, setAddress] = useState('');
-  const [elementOpacity, setElementOpacity] = useState([]);
-
   const [printArea, setPrintArea] = useState();
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
@@ -223,7 +221,10 @@ const CustomizeYourTee = () => {
     const area = {
       left:
         canvasRef.current && viewSide === 'front'
-          ? canvasRef.current.offsetWidth * 0.27
+          ? // ? device === 'mobile' ?
+            // canvasRef.current.offsetWidth * 0.27
+            // :
+            canvasRef.current.offsetWidth * 0.27
           : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetWidth * 0.27
           : 80,
@@ -248,7 +249,7 @@ const CustomizeYourTee = () => {
     };
 
     setPrintArea(area);
-  }, [canvasRef, viewSide]);
+  }, [canvasRef, viewSide, device]);
 
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
@@ -399,6 +400,68 @@ const CustomizeYourTee = () => {
     setSelectedElement(newElement.id);
   };
 
+  // Add text element font size width and height
+  const addTextFont = () => {
+    if (!newText.trim()) return;
+
+    // derive box size from font settings
+    const { width, height, fontSize } = computeTextBox(
+      newText,
+      textStyle,
+      device,
+      canvasRef, // pass your ref if you have it
+    );
+
+    const newElement = {
+      id: Date.now(),
+      type: 'text',
+      content: newText,
+      x: device === 'mobile' ? 75 : 150,
+      y: device === 'mobile' ? 100 : 200,
+      width, // <- follows font size & text length
+      height, // <- follows font size (line-height)
+      opacity: 'isInside',
+      style: { ...textStyle, fontSize }, // keep final fontSize used
+    };
+
+    setElements((prev) => ({
+      ...prev,
+      [viewSide]: [...prev[viewSide], newElement],
+    }));
+    setSelectedElement(newElement.id);
+  };
+
+  // helper: compute width/height from text + font
+  const computeTextBox = (text, style, device, canvasRef) => {
+    const baseFontSize = device === 'mobile' ? 14 : 24;
+    const fontSize = style.fontSize ?? baseFontSize;
+    const fontWeight = style.fontWeight || 'normal';
+    const fontStyle = style.fontStyle || 'normal';
+    const fontFamily = style.fontFamily || 'Arial, sans-serif';
+    const padding = 8; // inside padding around the text
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+
+    // measure text width safely
+    const textWidth = Math.ceil(ctx.measureText(text || ' ').width);
+
+    // Line height: use provided, else 1.2x font size
+    const lineHeight =
+      typeof style.lineHeight === 'number'
+        ? style.lineHeight * fontSize
+        : style.lineHeight
+        ? parseFloat(style.lineHeight) * fontSize
+        : Math.round(fontSize * 1.2);
+
+    const width = textWidth;
+    const height = lineHeight;
+
+    return { width, height, fontSize };
+  };
+
   // Add image element
   const addImage = (event) => {
     const file = event.target.files[0];
@@ -412,10 +475,16 @@ const CustomizeYourTee = () => {
         let newHeight = parseInt(img.height);
 
         if (img.width > img.height) {
-          newWidth = device === 'mobile' ? Math.min(img.width, 100) : Math.min(img.width, 200);
+          newWidth =
+            device === 'mobile'
+              ? Math.min(img.width, 100)
+              : Math.min(img.width, 200);
           newHeight = (newWidth / img.width) * img.height;
         } else {
-          newHeight = device === 'mobile' ? Math.min(img.height, 100) : Math.min(img.height, 200);
+          newHeight =
+            device === 'mobile'
+              ? Math.min(img.height, 100)
+              : Math.min(img.height, 200);
           newWidth = (newHeight / img.height) * img.width;
         }
 
@@ -423,8 +492,8 @@ const CustomizeYourTee = () => {
           id: Date.now(),
           type: 'image',
           content: e.target.result,
-           x: device === 'mobile' ? 75 : 150,
-      y: device === 'mobile' ? 100 : 200,
+          x: device === 'mobile' ? 75 : 150,
+          y: device === 'mobile' ? 100 : 200,
           width: newWidth,
           height: newHeight,
           opacity: 'isInside',
@@ -552,12 +621,24 @@ const CustomizeYourTee = () => {
 
   // Update element properties
   const updateElement = (id, updates) => {
-    console.log(updates);
     setElements((prevState) => ({
       ...prevState,
-      [viewSide]: prevState[viewSide].map((el) =>
-        el.id === id ? { ...el, ...updates } : el,
-      ),
+      [viewSide]: prevState[viewSide].map((el) => {
+        if (el.id !== id) return el;
+
+        // If updating text or font size → auto adjust width/height
+        if (
+          el.type === 'text' &&
+          (updates.content != null || updates.style?.fontSize != null)
+        ) {
+          const style = { ...el.style, ...(updates.style || {}) };
+          const text = updates.content ?? el.content;
+          const { width, height } = computeTextBox(text, style);
+          return { ...el, ...updates, width, height, style };
+        }
+
+        return { ...el, ...updates };
+      }),
     }));
   };
 
@@ -792,7 +873,7 @@ const CustomizeYourTee = () => {
       const delta = Math.max(deltaX, deltaY);
 
       let newWidth = parseInt(Math.max(20, initialSize.width + delta));
-      let newHeight = parseInt(initialSize.height + delta);
+      let newHeight = parseInt(Math.max(20, initialSize.height + delta));
 
       const element = elements[viewSide].find(
         (el) => el.id === selectedElement,
@@ -818,22 +899,42 @@ const CustomizeYourTee = () => {
             : 'isInside',
         });
       } else if (element && element.type === 'text') {
-        // Calculate font size based on width (or height)
-        const newFontSize = parseInt(
-          (newWidth / initialSize.width) * initialFontSize,
+        // Avoid parseInt on floats; use Math.round for pixel ints
+        const nextWidth = Math.max(20, Math.round(newWidth));
+        const nextHeight = Math.max(20, Math.round(newHeight));
+
+        // Use uniform scale to prevent distortion (use the larger axis)
+        const scaleX = nextWidth / Math.max(1, initialSize.width);
+        const scaleY = nextHeight / Math.max(1, initialSize.height);
+        const scale = Math.max(scaleX, scaleY);
+
+        const initialFS = Number(initialFontSize) || 14;
+        // Clamp font size to sane bounds
+        const newFontSize = Math.max(
+          8,
+          Math.min(400, Math.round(initialFS * scale)),
         );
 
+        const style = element.style || {};
+        console.log(element, 'textstyle');
+
+        // Simple calculation: font size + padding
+        const padding = 8;
+        const adjustedHeight = Math.max(20, Math.round(newFontSize));
+
+        console.log(adjustedHeight, 'adjustedHeight');
+
         updateElement(selectedElement, {
-          width: newWidth,
-          height: newHeight,
+          width: nextWidth,
+          height: adjustedHeight,
           opacity: isOutsidePrintArea
             ? 'isOutsidePrintArea'
             : isPartiallyOutside
             ? 'isPartiallyOutside'
             : 'isInside',
           style: {
-            ...element.style,
-            fontSize: newFontSize, // Adjust font size based on width
+            ...style,
+            fontSize: newFontSize,
           },
         });
       }
@@ -932,7 +1033,7 @@ const CustomizeYourTee = () => {
             device={device}
             tshirtColors={tshirtColors}
             setSelectedColor={setSelectedColor}
-            addText={addText}
+            addText={addTextFont}
             newText={newText}
             buttonStyle={buttonStyle}
             fileInputRef={fileInputRef}

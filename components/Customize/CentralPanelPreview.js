@@ -7,7 +7,7 @@ import {
   ShirtIcon,
   X,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const CentralPanelPreview = ({
   panelStyle,
@@ -47,7 +47,8 @@ const CentralPanelPreview = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  // console.log(elements,'dcdsd');
+  const [fillColor, setFillColor] = useState('fill-[#000000]');
+  // console.log(selectedColor.color, 'dcdsd');
 
   const handleControl = (element, e) => {
     console.log(selectedElement);
@@ -62,6 +63,12 @@ const CentralPanelPreview = ({
     console.log(element.id);
     setSelectedElement(element.id);
   };
+
+  useEffect(() => {
+    setFillColor(`fill-[${selectedColor.color}]`);
+  }, [selectedColor]);
+
+  // const fillColor = `fill-[${selectedColor.color}]`
 
   // console.log(selectedElement);
 
@@ -94,27 +101,26 @@ const CentralPanelPreview = ({
             {/* Selected color (acts as toggle) */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className={`w-full md:w-12 h-12 p-3 gap-2 rounded-lg border-2 transition-all items-center justify-center text-center flex ${
+              className={`w-full  h-12 p-3 gap-2 rounded-lg border-2 transition-all items-center justify-center text-center flex ${
                 expanded
                   ? 'border-gray-400'
                   : 'border-black shadow-md scale-110 ring-2 ring-gray-300'
               }`}
-              style={{ backgroundColor: selectedColor.color }}
+              // style={{ backgroundColor: selectedColor.color }}
               aria-label={`Selected ${selectedColor.name}`}
               title={selectedColor.name}
             >
-              <span
-                className={`md:hidden ${
-                  selectedColor.color != '#000000' ? 'text-black' : 'text-white'
-                }`}
-              >
-                Change Color
-              </span>
+              <span className={`text-black`}>Color</span>
               <ShirtIcon
                 className={`${
                   selectedColor.color != '#000000' ? 'text-black' : 'text-white'
-                } fill-[${selectedColor.color}]`}
+                }`}
+                style={{ fill: selectedColor.color.toLowerCase() }}
               />
+              {/* <div
+                className="h-5 w-5 rounded-full"
+                style={{ backgroundColor: selectedColor.color.toLowerCase() }}
+              ></div> */}
             </button>
 
             {/* Dropdown list of colors */}
@@ -173,8 +179,9 @@ const CentralPanelPreview = ({
           </button>
         </div>
 
-        {/* text edit */}
+        {/* edit elements  */}
         <div className="h-24">
+          {/* text edit */}
           {selectedElement &&
             elements[viewSide]
               .filter(
@@ -254,6 +261,7 @@ const CentralPanelPreview = ({
                   </div>
                 </div>
               ))}
+          {/* image edit */}
           {selectedElement &&
             elements[viewSide]
               .filter(
@@ -315,6 +323,7 @@ const CentralPanelPreview = ({
             onMouseUp={handleEnd}
             onMouseLeave={handleEnd}
           >
+            {/* <div className="absolute "></div> */}
             {/* T-shirt outline */}
             <div
               className="absolute inset-4 border border-dashed rounded-lg opacity-30 pointer-events-none"
@@ -339,59 +348,26 @@ const CentralPanelPreview = ({
                 backgroundColor: 'rgba(239, 68, 68, 0.05)',
                 boxShadow: 'inset 0 0 0 1px rgba(239, 68, 68, 0.2)',
               }}
-            >
-              {/* Print Area Label */}
-              {/* <div
-                className="hidden md:absolute -top-6 left-0 text-xs font-medium text-red-500 bg-white px-2 py-1 rounded shadow-sm border border-red-200"
-                style={{ fontSize: '10px' }}
-              >
-                Print Area
-              </div> */}
-            </div>
+            ></div>
 
             {/* Design Elements with Clipping */}
             {elements[viewSide].map((element) => {
-              // Calculate print area boundaries
-              // const printArea = {
-              //   left: canvasRef.current && viewSide === 'front'
-              //       ? canvasRef.current.offsetWidth * 0.27
-              //       : canvasRef.current && viewSide === 'back'
-              //       ? canvasRef.current.offsetWidth * 0.27
-              //     : 80,
-              //   top:
-              //     canvasRef.current && viewSide === 'front'
-              //       ? canvasRef.current.offsetHeight * 0.25
-              //       : canvasRef.current && viewSide === 'back'
-              //       ? canvasRef.current.offsetHeight * 0.20
-              //       : 125,
-              //   right: canvasRef.current && viewSide === 'front'
-              //       ? canvasRef.current.offsetWidth * 0.71
-              //       : canvasRef.current && viewSide === 'back'
-              //       ? canvasRef.current.offsetWidth * 0.71
-              //     : 320,
-              //   bottom: canvasRef.current && viewSide === 'front'
-              //       ? canvasRef.current.offsetHeight * 0.78
-              //       : canvasRef.current && viewSide === 'back'
-              //       ? canvasRef.current.offsetHeight * 0.74
-              //     : 375,
-              // };
-
-              // Check if element is outside print area
-              // const isOutsidePrintArea =
-              //   element.x + element.width < printArea.left ||
-              //   element.x > printArea.right ||
-              //   element.y + element.height < printArea.top ||
-              //   element.y > printArea.bottom;
-
-              // // Check if element is partially outside print area
-              // const isPartiallyOutside =
-              //   element.x < printArea.left ||
-              //   element.y < printArea.top ||
-              //   element.x + element.width > printArea.right ||
-              //   element.y + element.height > printArea.bottom;
-
               return (
                 <div key={element.id} className="relative">
+                  <div className="absolute right-0">
+                    {element.opacity !== 'isInside' && (
+                      <span
+                        className="
+        text-red-600 font-semibold text-sm 
+        animate-pulse transition-opacity duration-700 ease-in-out
+        px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm
+      "
+                      >
+                        ⚠ Out of print range
+                      </span>
+                    )}
+                  </div>
+
                   {/* Main Element */}
                   <div
                     className={`absolute cursor-move touch-none select-none transition-opacity ${
@@ -492,15 +468,6 @@ const CentralPanelPreview = ({
                         />
                       )}
                     </div>
-
-                    {/* Out of bounds indicator */}
-                    {/* {(isOutsidePrintArea || isPartiallyOutside) && (
-                      <div className="absolute -top-6 -left-2 bg-red-500 text-white text-xs px-2 py-1 rounded shadow-lg z-30">
-                        {isOutsidePrintArea
-                          ? 'Outside Print Area'
-                          : 'Partially Outside'}
-                      </div>
-                    )} */}
                   </div>
 
                   {/* Control Handles for Selected Element */}
@@ -574,46 +541,6 @@ const CentralPanelPreview = ({
                       >
                         <X size={12} className="text-white" />
                       </div>
-
-                      {/* Move Handle */}
-                      {/* <div
-                        className="absolute top-1/2 -left-7 transform -translate-y-1/2 w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-md cursor-move pointer-events-auto hover:bg-blue-600 transition-colors hover:scale-110 flex items-center justify-center"
-                        title="Move"
-                      >
-                        <Edit size={12} className="text-white" />
-                      </div> */}
-
-                      {/* Snap to Print Area Button - only show if outside */}
-                      {/* {(element.opacity === 'isOutsidePrintArea ' ||
-                        element.opacity === 'isPartiallyOutside') && (
-                        <div
-                          className="absolute top-1/2 -right-12 transform -translate-y-1/2 w-8 h-6 bg-orange-500 rounded border-2 border-white shadow-md cursor-pointer pointer-events-auto hover:bg-orange-600 transition-colors text-xs text-white flex items-center justify-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Snap element to fit within print area
-                            const newX = Math.max(
-                              printArea.left,
-                              Math.min(
-                                element.x,
-                                printArea.right - element.width,
-                              ),
-                            );
-                            const newY = Math.max(
-                              printArea.top,
-                              Math.min(
-                                element.y,
-                                printArea.bottom - element.height,
-                              ),
-                            );
-
-                            // Update element position (you'll need to implement this function)
-                            // updateElementPosition(element.id, newX, newY);
-                          }}
-                          title="Snap to Print Area"
-                        >
-                          ↩
-                        </div>
-                      )} */}
                     </div>
                   )}
                 </div>
@@ -621,7 +548,8 @@ const CentralPanelPreview = ({
             })}
           </div>
         </div>
-        {/* front and back switch  */}
+
+        {/* front and back toggle  */}
         <div className="mt-6 text-center">
           <div className="inline-flex bg-gray-100 rounded-lg p-1">
             <button
