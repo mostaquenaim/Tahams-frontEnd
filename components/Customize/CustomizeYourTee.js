@@ -100,7 +100,7 @@ const CustomizeYourTee = () => {
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [fonts, setFonts] = useState([]); // State to store fonts
-  const [device, setDevice] = useState('laptop');
+  const [device, setDevice] = useState('');
   const [isResizing, setIsResizing] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
   const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
@@ -167,6 +167,9 @@ const CustomizeYourTee = () => {
     setRotationCenter(elementCenter);
   };
 
+  // font size
+  // useEffect((),[])
+
   useEffect(() => {
     // Fetch fonts from Google Fonts API
     const fetchFonts = async () => {
@@ -193,11 +196,19 @@ const CustomizeYourTee = () => {
     }
   }, [loading, user]);
 
+  // device decision
   useEffect(() => {
     const updateDevice = () => {
       const width = window.innerWidth;
       if (width <= 600) {
         setDevice('mobile');
+        setTextStyle({
+          fontSize: 14,
+          color: '#000000',
+          fontWeight: 'normal',
+          fontFamily: 'Arial',
+          rotation: 0,
+        });
       } else if (width <= 1024) {
         setDevice('tablet');
       } else {
@@ -434,7 +445,7 @@ const CustomizeYourTee = () => {
   // helper: compute width/height from text + font
   const computeTextBox = (text, style, device, canvasRef) => {
     const baseFontSize = device === 'mobile' ? 14 : 24;
-    const fontSize = baseFontSize;
+    const fontSize = style.fontSize || baseFontSize;
     const fontWeight = style.fontWeight || 'normal';
     const fontStyle = style.fontStyle || 'normal';
     const fontFamily = style.fontFamily || 'Arial, sans-serif';
@@ -873,7 +884,7 @@ const CustomizeYourTee = () => {
       const delta = Math.max(deltaX, deltaY);
 
       let newWidth = parseInt(Math.max(20, initialSize.width + delta));
-      let newHeight = parseInt(Math.max(20, initialSize.height + delta));
+      let newHeight = parseInt(initialSize.height + delta);
 
       const element = elements[viewSide].find(
         (el) => el.id === selectedElement,
@@ -916,7 +927,7 @@ const CustomizeYourTee = () => {
         );
 
         const style = element.style || {};
-        console.log(element, 'textstyle');
+        // console.log(element, 'textstyle');
 
         // Simple calculation: font size + padding
         const padding = 8;

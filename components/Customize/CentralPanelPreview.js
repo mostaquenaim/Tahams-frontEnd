@@ -180,8 +180,14 @@ const CentralPanelPreview = ({
         </div>
 
         {/* edit elements  */}
-        <div className="">
+        <div className="h-40 md:h-24">
           {/* text edit */}
+          {!selectedElement && (
+            <div className="text-gray-600">
+              Element properties go here. You can adjust settings, styles, and
+              behaviors. 
+            </div>
+          )}{' '}
           {selectedElement &&
             elements[viewSide]
               .filter(
@@ -232,10 +238,10 @@ const CentralPanelPreview = ({
                           {item.style.color.toUpperCase()}
                         </span>
                       </div>
-                    </div>
+                      {/* </div> */}
 
-                    {/* Font Family */}
-                    <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200">
+                      {/* Font Family */}
+                      {/* <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200"> */}
                       <label className="text-xs font-medium text-gray-600 whitespace-nowrap hidden xs:block">
                         Font
                       </label>
