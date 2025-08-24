@@ -1,16 +1,13 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import { Printer, Download, X, Layers } from 'lucide-react';
-import useAxiosPublic from '/Hooks/useAxiosPublic';
 import toast from 'react-hot-toast';
 import TopElements from './TopElements';
 import LeftPanelTools from './LeftPanelTools';
 import CentralPanelPreview from './CentralPanelPreview';
 import RightPanel from './RightPanel';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const CustomizeYourTee = () => {
-  const { user, loading } = useContext(AuthContext);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -189,13 +186,6 @@ const CustomizeYourTee = () => {
     fetchFonts(); // Fetch fonts on component mount
   }, []);
 
-  useEffect(() => {
-    if (!loading) {
-      const guestCustomerInfo = getGuestCustomerInfo();
-      setCustomerEmail(user?.email || guestCustomerInfo.email);
-    }
-  }, [loading, user]);
-
   // device decision
   useEffect(() => {
     const updateDevice = () => {
@@ -263,115 +253,7 @@ const CustomizeYourTee = () => {
   }, [canvasRef, viewSide, device]);
 
   const handleFormSubmit = async () => {
-    if (!name?.trim() || !phone?.trim()) {
-      toast.error('Please fill out all fields.');
-      return;
-    }
-
-    // ✅ Phone validation
-    const phoneRegexNormal = /^\d{11}$/; // exactly 11 digits
-    const phoneRegexWith88 = /^\+88\d{11}$/; // +88 followed by 11 digits
-
-    if (!phoneRegexNormal.test(phone) && !phoneRegexWith88.test(phone)) {
-      toast.error('Phone must be 11 digits, or +88 followed by 11 digits.');
-      return;
-    }
-
-    if (!previewImages?.front || !previewImages?.back) {
-      toast.error('Front and back previews are required.');
-      return;
-    }
-
-    const groupId =
-      crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
-
-    setIsLoading(true);
-    try {
-      const submitSide = async (side) => {
-        const fd = new FormData();
-        fd.append('color', selectedColor.name);
-        fd.append('side', side);
-        fd.append('name', name);
-        fd.append('phone', phone);
-        fd.append('address', address);
-        fd.append('size', selectedSize);
-        fd.append('quantity', quantity);
-        if (customerEmail) fd.append('email', customerEmail); // make sure server supports this
-        if (instructions) fd.append('specialInstructions', instructions);
-        fd.append('groupId', groupId); // server should store this to link both sides
-
-        const dataUrl =
-          side === 'front' ? previewImages.front : previewImages.back;
-        const blob = dataURLToBlob(dataUrl);
-        fd.append('previewImage', blob, `design-image-${side}.png`);
-
-        // Do NOT set Content-Type manually for FormData in the browser.
-        const { data } = await axiosPublic.post(
-          '/admin/send-customize-tee-request',
-          fd,
-        );
-        const reqId = data?.id;
-        if (!reqId) throw new Error('Missing id in response for ' + side);
-
-        const sideElements = elements?.[side] ?? [];
-
-        // console.log(elements[side],side);
-
-        const textCalls = sideElements
-          .filter((el) => el.type === 'text')
-          .map((el) =>
-            axiosPublic.post(`/admin/customized-text-element/${reqId}`, el),
-          );
-
-        const imageCalls = sideElements
-          .filter((el) => el.type === 'image')
-          .map((el) => {
-            const imgFd = new FormData();
-            imgFd.append(
-              'image',
-              dataURLToBlob(el.content),
-              'element-image.png',
-            );
-            // append numeric props as strings
-            [
-              'height',
-              'width',
-              'originalHeight',
-              'originalWidth',
-              'x',
-              'y',
-              'scale',
-              'rotation',
-              'zIndex',
-            ].forEach((k) => {
-              if (el[k] != null) imgFd.append(k, String(el[k]));
-              else if (el.style[k] != null)
-                imgFd.append(k, String(el.style[k]));
-            });
-            return axiosPublic.post(
-              `/admin/customized-image-element/${reqId}`,
-              imgFd,
-            );
-          });
-
-        await Promise.all([...textCalls, ...imageCalls]);
-        return reqId;
-      };
-
-      // Run both sides in parallel
-      await Promise.all([submitSide('front'), submitSide('back')]);
-
-      toast.success(
-        'Your design request has been sent! We will contact you soon.',
-      );
-      setIsPreviewOpen(false);
-      setIsFormOpen(false);
-    } catch (error) {
-      console.error('Error while sending request:', error);
-      toast.error('Failed to send your design request.');
-    } finally {
-      setIsLoading(false);
-    }
+    
   };
 
   const handleTouchStart = (e, element) => {
@@ -788,9 +670,7 @@ const CustomizeYourTee = () => {
     toast.success('Design downloaded successfully');
   };
 
-  const axiosPublic = useAxiosPublic();
-
-  const dataURLToBlob = (dataURL) => {
+ const dataURLToBlob = (dataURL) => {
     const byteString = atob(dataURL.split(',')[1]);
     const arrayBuffer = new ArrayBuffer(byteString.length);
     const uint8Array = new Uint8Array(arrayBuffer);
