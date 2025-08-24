@@ -190,6 +190,14 @@ const CustomizeYourTee = () => {
     fetchFonts(); // Fetch fonts on component mount
   }, []);
 
+  // user fetch
+  useEffect(() => {
+    if (!loading) {
+      const guestCustomerInfo = getGuestCustomerInfo();
+      setCustomerEmail(user?.email || guestCustomerInfo.email);
+    }
+  }, [loading, user]);
+
   // device decision
   useEffect(() => {
     const updateDevice = () => {
