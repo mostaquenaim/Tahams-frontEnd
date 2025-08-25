@@ -6,8 +6,9 @@ import {
   Shirt,
   ShirtIcon,
   X,
-} from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { IoIosResize } from "react-icons/io";
 
 const CentralPanelPreview = ({
   panelStyle,
@@ -44,25 +45,14 @@ const CentralPanelPreview = ({
   setIsDrawerOpen,
   isDrawerOpen,
   printArea,
+  isElementOutOfBounds,
+  printHeight,
+  printWidth,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [fillColor, setFillColor] = useState('fill-[#000000]');
+  const [fillColor, setFillColor] = useState("fill-[#000000]");
   // console.log(selectedColor.color, 'dcdsd');
-
-  const handleControl = (element, e) => {
-    console.log(selectedElement);
-    console.log(element);
-    const controlSection = document.getElementById('control');
-    if (controlSection) {
-      controlSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start', // Aligns the section at the top of the viewport
-      });
-    }
-    console.log(element.id);
-    setSelectedElement(element.id);
-  };
 
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
@@ -81,15 +71,15 @@ const CentralPanelPreview = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() =>
-                setViewSide(viewSide === 'front' ? 'back' : 'front')
+                setViewSide(viewSide === "front" ? "back" : "front")
               }
               className="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
               aria-label={`Switch to ${
-                viewSide === 'front' ? 'back' : 'front'
+                viewSide === "front" ? "back" : "front"
               } view`}
             >
               <FlipHorizontal size={16} />
-              {viewSide === 'front' ? 'Back View' : 'Front View'}
+              {viewSide === "front" ? "Back View" : "Front View"}
             </button>
           </div>
         </div>
@@ -103,8 +93,8 @@ const CentralPanelPreview = ({
               onClick={() => setExpanded(!expanded)}
               className={`w-full  h-12 p-3 gap-2 rounded-lg border-2 transition-all items-center justify-center text-center flex ${
                 expanded
-                  ? 'border-gray-400'
-                  : 'border-black shadow-md scale-110 ring-2 ring-gray-300'
+                  ? "border-gray-400"
+                  : "border-black shadow-md scale-110 ring-2 ring-gray-300"
               }`}
               // style={{ backgroundColor: selectedColor.color }}
               aria-label={`Selected ${selectedColor.name}`}
@@ -113,7 +103,7 @@ const CentralPanelPreview = ({
               <span className={`text-black`}>Color</span>
               <ShirtIcon
                 className={`${
-                  selectedColor.color != '#000000' ? 'text-black' : 'text-white'
+                  selectedColor.color != "#000000" ? "text-black" : "text-white"
                 }`}
                 style={{ fill: selectedColor.color.toLowerCase() }}
               />
@@ -135,8 +125,8 @@ const CentralPanelPreview = ({
                     }}
                     className={`w-12 h-12 rounded-lg border-2 transition-all hover:scale-110 focus:outline-none ${
                       selectedColor.color === colorOption.color
-                        ? 'border-black shadow-md scale-110 ring-2 ring-gray-300'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? "border-black shadow-md scale-110 ring-2 ring-gray-300"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
                     style={{ backgroundColor: colorOption.color }}
                     aria-label={`Select ${colorOption.name}`}
@@ -153,8 +143,8 @@ const CentralPanelPreview = ({
             disabled={!newText.trim()}
             className={`${
               !newText.trim()
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'rounded-lg text-white px-4 py-2 bg-gradient-to-r from-black via-gray-900 to-black hover:from-black hover:to-black shadow-lg'
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "rounded-lg text-white px-4 py-2 bg-gradient-to-r from-black via-gray-900 to-black hover:from-black hover:to-black shadow-lg"
             } w-full md:w-auto`}
             aria-label="Add text element"
           >
@@ -185,13 +175,13 @@ const CentralPanelPreview = ({
           {!selectedElement && (
             <div className="text-gray-600">
               Element properties go here. You can adjust settings, styles, and
-              behaviors. 
+              behaviors.
             </div>
-          )}{' '}
+          )}{" "}
           {selectedElement &&
             elements[viewSide]
               .filter(
-                (item) => item.id === selectedElement && item.type === 'text',
+                (item) => item.id === selectedElement && item.type === "text"
               )
               .map((item) => (
                 <div key={item.id}>
@@ -247,7 +237,7 @@ const CentralPanelPreview = ({
                       </label>
                       <div className="relative">
                         <select
-                          value={item.style.fontFamily || 'Arial'}
+                          value={item.style.fontFamily || "Arial"}
                           onChange={(e) =>
                             updateElement(item.id, {
                               style: {
@@ -258,39 +248,39 @@ const CentralPanelPreview = ({
                           }
                           className="w-32 text-sm bg-white border border-gray-300 rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                           style={{
-                            fontFamily: item.style.fontFamily || 'Arial',
+                            fontFamily: item.style.fontFamily || "Arial",
                           }}
                         >
-                          <option value="Arial" style={{ fontFamily: 'Arial' }}>
+                          <option value="Arial" style={{ fontFamily: "Arial" }}>
                             Arial
                           </option>
                           <option
                             value="Helvetica"
-                            style={{ fontFamily: 'Helvetica' }}
+                            style={{ fontFamily: "Helvetica" }}
                           >
                             Helvetica
                           </option>
                           <option
                             value="Times New Roman"
-                            style={{ fontFamily: 'Times New Roman' }}
+                            style={{ fontFamily: "Times New Roman" }}
                           >
                             Times New Roman
                           </option>
                           <option
                             value="Georgia"
-                            style={{ fontFamily: 'Georgia' }}
+                            style={{ fontFamily: "Georgia" }}
                           >
                             Georgia
                           </option>
                           <option
                             value="Verdana"
-                            style={{ fontFamily: 'Verdana' }}
+                            style={{ fontFamily: "Verdana" }}
                           >
                             Verdana
                           </option>
                           <option
                             value="Impact"
-                            style={{ fontFamily: 'Impact' }}
+                            style={{ fontFamily: "Impact" }}
                           >
                             Impact
                           </option>
@@ -335,7 +325,7 @@ const CentralPanelPreview = ({
           {selectedElement &&
             elements[viewSide]
               .filter(
-                (item) => item.id === selectedElement && item.type === 'image',
+                (item) => item.id === selectedElement && item.type === "image"
               )
               .map((item) => (
                 <div key={item.id}>
@@ -371,19 +361,19 @@ const CentralPanelPreview = ({
             ref={canvasRef}
             className={`relative border-2 border-gray-300 rounded-lg overflow-hidden ${
               draggedElement || isResizing || isRotating
-                ? 'cursor-grabbing'
-                : 'cursor-crosshair'
+                ? "cursor-grabbing"
+                : "cursor-crosshair"
             }`}
             style={{
-              width: '100%',
-              maxWidth: device === 'mobile' ? '200px' : '400px',
-              height: 'calc(100vw * 1.25)', // 5:4 aspect ratio
-              maxHeight: device === 'mobile' ? '250px' : '500px',
+              width: "100%",
+              maxWidth: device === "mobile" ? "240px" : "400px",
+              height: "calc(100vw * 1.25)", // 5:4 aspect ratio
+              maxHeight: device === "mobile" ? "300px" : "500px",
               backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
-              backgroundSize: 'cover',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-              touchAction: 'none', // Prevent scrolling/zooming
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
+              touchAction: "none", // Prevent scrolling/zooming
             }}
             onClick={handleCanvasClick}
             onTouchMove={(e) => handleMove(e, selectedElement)}
@@ -399,9 +389,9 @@ const CentralPanelPreview = ({
               className="absolute inset-4 border border-dashed rounded-lg opacity-30 pointer-events-none"
               style={{
                 borderColor:
-                  selectedColor.color === '#FFFFFF'
-                    ? '#9CA3AF'
-                    : 'rgba(255,255,255,0.6)',
+                  selectedColor.color === "#FFFFFF"
+                    ? "#9CA3AF"
+                    : "rgba(255,255,255,0.6)",
               }}
             />
 
@@ -409,14 +399,14 @@ const CentralPanelPreview = ({
             <div
               className="absolute pointer-events-none z-5"
               style={{
-                left: '27%',
-                top: viewSide == 'back' ? '20%' : '25%',
-                width: device === 'mobile' ? `90px` : `180px`,
-                height: device === 'mobile' ? `135px` : `270px`,
-                border: '2px solid #ef4444',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                boxShadow: 'inset 0 0 0 1px rgba(239, 68, 68, 0.2)',
+                left: "27%",
+                top: viewSide == "back" ? "20%" : "25%",
+                width: `${printWidth}px`,
+                height: `${printHeight}px`,
+                border: "2px solid #ef4444",
+                borderRadius: "8px",
+                backgroundColor: "rgba(239, 68, 68, 0.05)",
+                boxShadow: "inset 0 0 0 1px rgba(239, 68, 68, 0.2)",
               }}
             ></div>
 
@@ -425,13 +415,11 @@ const CentralPanelPreview = ({
               return (
                 <div key={element.id} className="relative">
                   <div className="absolute right-0">
-                    {element.opacity !== 'isInside' && (
+                    {isElementOutOfBounds && (
                       <span
-                        className="
-        text-red-600 font-semibold text-sm 
-        animate-pulse transition-opacity duration-700 ease-in-out
-        px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm
-      "
+                        className="text-red-600 font-semibold text-sm 
+                      animate-pulse transition-opacity duration-700 ease-in-out
+                      px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm"
                       >
                         ⚠ Out of print range
                       </span>
@@ -440,14 +428,15 @@ const CentralPanelPreview = ({
 
                   {/* Main Element */}
                   <div
-                    className={`absolute cursor-move touch-none select-none transition-opacity ${
-                      element.opacity
-                    } ${selectedElement === element.id ? 'z-10' : 'z-0'} ${
-                      element.opacity === 'isOutsidePrintArea '
-                        ? 'opacity-30'
-                        : element.opacity === 'isPartiallyOutside'
-                        ? 'opacity-60'
-                        : 'opacity-100'
+                    className={`absolute cursor-move touch-none select-none transition-opacity 
+                    ${selectedElement === element.id ? "z-10" : "z-0"} ${
+                      isElementOutOfBounds &&
+                      //  "isOutsidePrintArea "
+                      // ?
+                      "opacity-30"
+                      // : element.opacity === "isPartiallyOutside"
+                      // ? "opacity-60"
+                      // : "opacity-100"
                     }`}
                     style={{
                       left: element.x,
@@ -455,12 +444,12 @@ const CentralPanelPreview = ({
                       width: element.width,
                       height: element.height,
                       transform: `rotate(${element.style?.rotation || 0}deg)`,
-                      transformOrigin: 'center center',
+                      transformOrigin: "center center",
                       // Add visual indicator for elements outside print area
-                      filter:
-                        element.opacity === 'isOutsidePrintArea '
-                          ? 'grayscale(50%)'
-                          : 'none',
+                      // filter:
+                      //   element.opacity === "isOutsidePrintArea "
+                      //     ? "grayscale(50%)"
+                      //     : "none",
                     }}
                     onClick={(e) => handleElementClick(element, e)}
                     onMouseDown={(e) => handleElementStart(e, element)}
@@ -469,62 +458,62 @@ const CentralPanelPreview = ({
                     {/* Print area clipping mask */}
                     <div
                       className="absolute inset-0 overflow-hidden"
-                      style={{
-                        clipPath:
-                          element.opacity === 'isPartiallyOutside'
-                            ? `polygon(
-                  ${Math.max(
-                    0,
-                    ((printArea.left - element.x) / element.width) * 100,
-                  )}% ${Math.max(
-                                0,
-                                ((printArea.top - element.y) / element.height) *
-                                  100,
-                              )}%,
-                  ${Math.min(
-                    100,
-                    ((printArea.right - element.x) / element.width) * 100,
-                  )}% ${Math.max(
-                                0,
-                                ((printArea.top - element.y) / element.height) *
-                                  100,
-                              )}%,
-                  ${Math.min(
-                    100,
-                    ((printArea.right - element.x) / element.width) * 100,
-                  )}% ${Math.min(
-                                100,
-                                ((printArea.bottom - element.y) /
-                                  element.height) *
-                                  100,
-                              )}%,
-                  ${Math.max(
-                    0,
-                    ((printArea.left - element.x) / element.width) * 100,
-                  )}% ${Math.min(
-                                100,
-                                ((printArea.bottom - element.y) /
-                                  element.height) *
-                                  100,
-                              )}%
-                )`
-                            : 'none',
-                      }}
+                      //       style={{
+                      //         clipPath:
+                      //           element.opacity === "isPartiallyOutside"
+                      //             ? `polygon(
+                      //   ${Math.max(
+                      //     0,
+                      //     ((printArea.left - element.x) / element.width) * 100
+                      //   )}% ${Math.max(
+                      //                 0,
+                      //                 ((printArea.top - element.y) / element.height) *
+                      //                   100
+                      //               )}%,
+                      //   ${Math.min(
+                      //     100,
+                      //     ((printArea.right - element.x) / element.width) * 100
+                      //   )}% ${Math.max(
+                      //                 0,
+                      //                 ((printArea.top - element.y) / element.height) *
+                      //                   100
+                      //               )}%,
+                      //   ${Math.min(
+                      //     100,
+                      //     ((printArea.right - element.x) / element.width) * 100
+                      //   )}% ${Math.min(
+                      //                 100,
+                      //                 ((printArea.bottom - element.y) /
+                      //                   element.height) *
+                      //                   100
+                      //               )}%,
+                      //   ${Math.max(
+                      //     0,
+                      //     ((printArea.left - element.x) / element.width) * 100
+                      //   )}% ${Math.min(
+                      //                 100,
+                      //                 ((printArea.bottom - element.y) /
+                      //                   element.height) *
+                      //                   100
+                      //               )}%
+                      // )`
+                      //             : "none",
+                      //       }}
                     >
-                      {element.type === 'text' ? (
+                      {element.type === "text" ? (
                         <div
                           style={{
                             fontSize: element.style.fontSize,
                             color: element.style.color,
                             fontWeight: element.style.fontWeight,
                             fontFamily: element.style.fontFamily,
-                            whiteSpace: 'nowrap',
-                            userSelect: 'none',
-                            lineHeight: '1',
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
+                            whiteSpace: "nowrap",
+                            userSelect: "none",
+                            lineHeight: "1",
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
                           }}
                         >
                           {element.content}
@@ -558,15 +547,14 @@ const CentralPanelPreview = ({
                       {/* Selection Border - Red if outside print area */}
                       <div
                         className={`absolute inset-0 border-2 border-dashed rounded opacity-80 ${
-                          element.opacity === 'isOutsidePrintArea ' ||
-                          element.opacity === 'isPartiallyOutside'
-                            ? 'border-red-500'
-                            : 'border-blue-400'
+                          isElementOutOfBounds
+                            ? "border-red-500"
+                            : "border-blue-400"
                         }`}
                       ></div>
 
                       {/* Corner Handles */}
-                      <div
+                      {/* <div
                         className="absolute -top-1 -left-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
@@ -580,15 +568,17 @@ const CentralPanelPreview = ({
                         className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm cursor-se-resize pointer-events-auto hover:bg-blue-600 transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div>
+                      ></div> */}
 
                       {/* Resize Handle */}
                       <div
-                        className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-md cursor-se-resize pointer-events-auto hover:bg-green-600 transition-colors hover:scale-110"
+                        className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
                         title="Resize"
-                      ></div>
+                      >
+                        <IoIosResize className="text-lg rotate-90 text-white font-semibold" />
+                      </div>
 
                       {/* Rotation Handle */}
                       <div
@@ -623,11 +613,11 @@ const CentralPanelPreview = ({
         <div className="mt-6 text-center">
           <div className="inline-flex bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setViewSide('front')}
+              onClick={() => setViewSide("front")}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewSide === 'front'
-                  ? 'bg-white shadow-sm text-gray-900'
-                  : 'text-gray-600 hover:text-gray-800'
+                viewSide === "front"
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -636,11 +626,11 @@ const CentralPanelPreview = ({
               </div>
             </button>
             <button
-              onClick={() => setViewSide('back')}
+              onClick={() => setViewSide("back")}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewSide === 'back'
-                  ? 'bg-white shadow-sm text-gray-900'
-                  : 'text-gray-600 hover:text-gray-800'
+                viewSide === "back"
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               <div className="flex items-center gap-2">
