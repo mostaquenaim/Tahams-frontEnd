@@ -1,61 +1,175 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import Link from 'next/link';
-import ResponsiveNavBar from './ResponsiveNavBar';
-import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
-import ListComponent from './components/ListComponent';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
-
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
-import useLoadCats from '/Hooks/useLoadCats';
+import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
+
+// Components
+import ResponsiveNavBar from './ResponsiveNavBar';
+import ListComponent from './components/ListComponent';
 import Loading from '../Loading';
 
+// Hooks
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import useLoadCats from '../../Hooks/useLoadCats';
+
+// Context
+import { AuthContext } from '/Contexts/Auth/AuthProvider';
+
+// Constants
+const NAV_END_BTN_CLASS = 'btn btn-square btn-ghost text-xl';
+const SEARCH_DEBOUNCE_DELAY = 300;
+
 const NavbarCompTwo = () => {
+  // Hooks
   const axiosPublic = useAxiosPublic();
-
-  const [searchBtn, setSearchBtn] = useState(false);
-  // const [categories, setCategories] = useState([])
-  const [genders, setGenders] = useState([]);
-  const { user, logOut } = useContext(AuthContext);
-  const [searchInput, setSearchInput] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchedProducts, setSearchedProducts] = useState([]);
-  const [categories, , isPending] = useLoadCats();
   const router = useRouter();
-  // console.log(categories);
+  const { user, logOut } = useContext(AuthContext);
+  const [categories, , isPending] = useLoadCats();
 
-  // useEffect(() => {
-  //     axiosPublic.get('/admin/view-product-categories')
-  //         .then((res) => {
-  //             setCategories(res.data)
-  //             // console.log(res.data,"19");
-  //         })
-  // }, [])
+  // State
+  const [searchBtn, setSearchBtn] = useState(false);
+  const [genders, setGenders] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchedProducts, setSearchedProducts] = useState([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
+  // Effects
   useEffect(() => {
-    axiosPublic.get('/admin/view-genders').then((res) => {
-      setGenders(res.data);
-      // console.log(res.data,"19");
-    });
-  }, []);
+    const fetchGenders = async () => {
+      try {
+        const response = await axiosPublic.get('/admin/view-genders');
+        setGenders(response.data);
+      } catch (error) {
+        console.error('Error fetching genders:', error);
+      }
+    };
 
-  const handleLogout = () => {
-    logOut()
-      .then(() => {
-        // Remove userInfo from localStorage
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('access_token');
-        console.log('User logged out and userInfo removed from localStorage');
-      })
-      .catch((error) => {
-        console.error('Error during logout:', error.message);
-        toast.error('Error during logout. Please try again.');
-      });
-  };
+    fetchGenders();
+  }, [axiosPublic]);
 
+  // Cleanup search timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
+
+  // Handlers
+  const handleLogout = useCallback(async () => {
+    try {
+      await logOut();
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('access_token');
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Error during logout:', error.message);
+      // You might want to show a toast notification here
+    }
+  }, [logOut]);
+
+  const handleSearch = useCallback(() => {
+    if (!searchInput.trim()) return;
+
+    router.push(`/search-product?search=${encodeURIComponent(searchInput)}`);
+    setSearchInput('');
+    setSearchedProducts([]);
+  }, [searchInput, router]);
+
+  const handleSearchInput = useCallback(
+    async (e) => {
+      const query = e.target.value;
+      setSearchInput(query);
+
+      // Clear previous timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      if (!query.trim()) {
+        setSearchedProducts([]);
+        setIsSearchLoading(false);
+        return;
+      }
+
+      setIsSearchLoading(true);
+
+      // Debounce search
+      const newTimeout = setTimeout(async () => {
+        try {
+          const response = await axiosPublic.get(
+            `admin/search-bar-products?q=${encodeURIComponent(query)}`,
+          );
+          setSearchedProducts(response.data || []);
+        } catch (error) {
+          console.error('Search error:', error);
+          setSearchedProducts([]);
+        } finally {
+          setIsSearchLoading(false);
+        }
+      }, SEARCH_DEBOUNCE_DELAY);
+
+      setSearchTimeout(newTimeout);
+    },
+    [axiosPublic, searchTimeout],
+  );
+
+  const handleResultClick = useCallback(
+    (id) => {
+      setSearchInput('');
+      setSearchedProducts([]);
+      router.push(`/products/details/${id}`);
+    },
+    [router],
+  );
+
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
+
+  if (isPending) {
+    return <Loading />;
+  }
   // styles
   const navEndBtnClass = 'btn btn-square btn-ghost text-xl';
+
+  const Li = ({ children }) => (
+    <li className="transition md:hover:scale-105">{children}</li>
+  );
+
+  const sideLinks = (
+    <>
+      <Li>
+        <Link href="/dashboard">Dashboard</Link>
+      </Li>
+      <Li>
+        <Link href="/my-orders">My orders</Link>
+      </Li>
+      <Li>
+        <Link href="/contact">Contact Us</Link>
+      </Li>
+      <Li>
+        {user ? (
+          <button onClick={handleLogout}>Logout</button>
+        ) : (
+          <Link href="/login">Login</Link>
+        )}
+      </Li>
+    </>
+  );
 
   const ListStyle = ({ goto, pageName, extraClass }) => {
     return (
@@ -68,11 +182,6 @@ const NavbarCompTwo = () => {
       // hidden hover:inline-block
     );
   };
-
-  if (isPending) {
-    return <Loading />;
-  }
-
   // navlinks
   const links = (
     <>
@@ -121,123 +230,84 @@ const NavbarCompTwo = () => {
     </>
   );
 
-  const Li = ({ children }) => (
-    <li className="transition md:hover:scale-105">{children}</li>
-  );
-
-  const sideLinks = (
-    <>
-      <Li>
-        <Link href="/dashboard">Dashboard</Link>
-      </Li>
-      <Li>
-        <Link href="/my-orders">My orders</Link>
-      </Li>
-      <Li>
-        <Link href="/contact">Contact Us</Link>
-      </Li>
-      <Li>
-        {user ? (
-          <button onClick={handleLogout}>Logout</button>
+  const SearchResults = () =>
+    searchInput && (
+      <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
+        {isSearchLoading ? (
+          <div className="px-4 py-3 text-gray-500 text-center">
+            Searching...
+          </div>
+        ) : searchedProducts.length > 0 ? (
+          searchedProducts.map((product) => (
+            <div
+              key={product.id}
+              onClick={() => handleResultClick(product.id)}
+              className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
+            >
+              <img
+                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`}
+                alt={product.name}
+                className="w-12 h-12 object-cover rounded"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              <span className="truncate">{product.name}</span>
+            </div>
+          ))
         ) : (
-          <Link href="/login">Login</Link>
+          <div className="px-4 py-3 text-gray-500 text-center">
+            No products found
+          </div>
         )}
-      </Li>
-    </>
-  );
+      </div>
+    );
 
-  const handleSearch = () => {
-    router.push(`/search-product?search=${searchInput}`);
-    setSearchInput('');
-  };
-
-  const handleSearchInput = async (e) => {
-    const query = e.target.value;
-    setSearchInput(query);
-    setIsLoading(true);
-
-    try {
-      const response = await axiosPublic.get(
-        `admin/search-bar-products?q=${query}`,
-      );
-      setSearchedProducts(response.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResultClick = (id) => {
-    setSearchInput('');
-    router.push(`/products/details/${id}`);
-  };
-
-  return (
-    <>
-      <div data-theme="black" className="relative">
-        {/* first nav */}
-        <div
-          className={
-            searchBtn
-              ? 'hidden'
-              : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'
-          }
-        >
-          <div className="flex items-center justify-between">
-            {/* search  */}
-            <div className={`w-1/3 text-center z-40`}>
-              <div className="join w-full px-20 py-5">
-                <div className="w-full relative">
-                  <input
-                    className="input input-bordered join-item w-full"
-                    placeholder="Search"
-                    value={searchInput}
-                    onChange={(e) => handleSearchInput(e)}
-                  />
-
-                  {/* Search Results Dropdown with Image */}
-                  {searchInput && searchedProducts.length > 0 && (
-                    <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
-                      {searchedProducts.map((product) => (
-                        <div
-                          key={product.id}
-                          onClick={() => handleResultClick(product.id)}
-                          className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
-                        >
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`} // make sure this is the correct path
-                            alt={product.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                          <span>{product.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="indicator">
-                  <button
-                    className="btn join-item"
-                    onClick={() => handleSearch()}
-                  >
-                    Search
-                  </button>
-                </div>
+ return (
+    <div data-theme="black" className="relative">
+      {/* Desktop Navigation */}
+      <div className={searchBtn ? 'hidden' : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'}>
+        <div className="flex items-center justify-between">
+          {/* Search Section */}
+          <div className="w-1/3 text-center z-40">
+            <div className="join w-full px-20 py-5">
+              <div className="w-full relative">
+                <input
+                  className="input input-bordered join-item w-full"
+                  placeholder="Search products..."
+                  value={searchInput}
+                  onChange={handleSearchInput}
+                  onKeyPress={handleKeyPress}
+                  aria-label="Search products"
+                />
+                <SearchResults />
+              </div>
+              <div className="indicator">
+                <button
+                  className="btn join-item"
+                  onClick={handleSearch}
+                  disabled={!searchInput.trim()}
+                  type="button"
+                  aria-label="Search"
+                >
+                  Search
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* image  */}
-            <div className="absolute w-full">
-              <Link href="/" className="w-20 mx-auto text-center">
-                <img
-                  src="/logo-removebg.png"
-                  alt="Company Logo"
-                  className="w-20 p-2 mx-auto"
-                />
-              </Link>
-            </div>
+          {/* Logo Section */}
+          <div className="absolute w-full">
+            <Link href="/" className="w-20 mx-auto text-center block">
+              <img
+                src="/logo-removebg.png"
+                alt="Company Logo"
+                className="w-20 p-2 mx-auto"
+                loading="eager"
+              />
+            </Link>
+          </div>
 
             {/* menu  */}
             <ul className="menu menu-horizontal px-1">
@@ -297,7 +367,6 @@ const NavbarCompTwo = () => {
           ></ResponsiveNavBar>
         </section>
       </div>
-    </>
   );
 };
 
