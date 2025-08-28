@@ -134,6 +134,8 @@ const CustomizeYourTee = () => {
 
     const { user, loading } = useContext(AuthContext);
 
+      const inputRefs = useRef({});
+
   // user fetch
   useEffect(() => {
     if (!loading) {
@@ -651,6 +653,17 @@ const CustomizeYourTee = () => {
     setSelectedElement(newElement.id);
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      const input = inputRefs.current[selectedElement];
+      if (input) {
+        // input.blink()
+        input.click(); // Simulate click
+        input.focus(); // Then focus the input
+      }
+    }, 300); // Delay in milliseconds
+  }, [selectedElement]);
+
   // element operations
   // element operations
   // element operations
@@ -1157,6 +1170,7 @@ const CustomizeYourTee = () => {
             isElementOutOfBounds={isElementOutOfBounds}
             printHeight={printHeight}
             printWidth={printWidth}
+            inputRefs={inputRefs}
           />
 
           <RightPanel
