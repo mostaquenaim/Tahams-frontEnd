@@ -6,11 +6,10 @@ import Link from 'next/link';
 const CustomizationDetails = () => {
   const pathParts = window.location.pathname.split('/');
   const id = pathParts[pathParts.length - 1];
-  console.log(id); // gives you "asid" from "/kjndfj/asid"
 
   //   const { id } = useParams();
   const [customizations, refetch, isPending] = useCustomizationReq(id);
-  console.log(customizations, 'gibg');
+  // console.log(customizations, 'gibg');
 
   //   const [customization, setCustomization] = useState(null);
   //   const [loading, setLoading] = useState(true);

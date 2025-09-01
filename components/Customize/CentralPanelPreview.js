@@ -1,3 +1,4 @@
+"use client";
 import {
   Edit,
   FlipHorizontal,
@@ -50,6 +51,7 @@ const CentralPanelPreview = ({
   printWidth,
   //refs
   inputRefs,
+  setIsDoubleClicked,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -60,20 +62,86 @@ const CentralPanelPreview = ({
   // const [isEditing, setIsEditing] = useState({
   //   id: 0,
   // });
+  const [rotationSnapLines, setRotationSnapLines] = useState([]);
 
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
 
-  // const handleDoubleClick = () => {
-  //   setIsEditing({
-  //     id: selectedElement,
-  //   });
-  // };
+  // Function to check if rotation is near snap angles and show lines
+  const updateRotationSnapLines = (
+    rotation,
+    elementX,
+    elementY,
+    elementWidth,
+    elementHeight
+  ) => {
+    const snapAngles = [0, 90, 180, -90, -180];
+    const snapTolerance = 5; // degrees
+    const lines = [];
 
-  // const fillColor = `fill-[${selectedColor.color}]`
+    snapAngles.forEach((angle) => {
+      const normalizedRotation = ((rotation % 360) + 360) % 360;
+      const distance = Math.min(
+        Math.abs(normalizedRotation - angle),
+        Math.abs(normalizedRotation - (angle + 360)),
+        Math.abs(normalizedRotation - (angle - 360))
+      );
 
-  // console.log(selectedElement);
+      if (distance <= snapTolerance) {
+        const centerX = elementX + elementWidth / 2;
+        const centerY = elementY + elementHeight / 2;
+
+        // Create snap lines based on the angle
+        if (angle === 0 || angle === 180 || angle === -180) {
+          // Horizontal line
+          lines.push({
+            type: "horizontal",
+            y: centerY,
+            angle: angle,
+          });
+        }
+        if (angle === 90 || angle === -90) {
+          // Vertical line
+          lines.push({
+            type: "vertical",
+            x: centerX,
+            angle: angle,
+          });
+        }
+      }
+    });
+
+    setRotationSnapLines(lines);
+  };
+
+  // Enhanced handleMove to update snap lines during rotation
+  const enhancedHandleMove = (e, elementId) => {
+    if (isRotating && selectedElement) {
+      const selectedEl = elements[viewSide].find(
+        (el) => el.id === selectedElement
+      );
+      if (selectedEl) {
+        updateRotationSnapLines(
+          selectedEl.style?.rotation || 0,
+          selectedEl.x,
+          selectedEl.y,
+          selectedEl.width,
+          selectedEl.height
+        );
+      }
+    }
+    handleMove(e, elementId);
+  };
+
+  const [showRotateInfo, setShowRotateInfo] = useState(false);
+
+  const handleRotateInfo = () => {
+    setShowRotateInfo(true);
+    setTimeout(() => {
+      setShowRotateInfo(false);
+    }, 2000);
+  };
 
   return (
     <div className="lg:col-span-6">
@@ -128,7 +196,7 @@ const CentralPanelPreview = ({
 
             {/* Dropdown list of colors */}
             {expanded && (
-              <div className="absolute mt-2 flex flex-col gap-2 z-10 bg-white rounded-lg shadow-lg border w-full max-w-[200px">
+              <div className="absolute mt-2 flex flex-col gap-2 z-10 bg-white rounded-lg shadow-lg border ">
                 {tshirtColors.map((colorOption) => (
                   <button
                     key={colorOption.color}
@@ -161,7 +229,7 @@ const CentralPanelPreview = ({
             } w-full md:w-auto`}
             aria-label="Add text element"
           >
-            <span>+ Text</span>
+            <span>+ Add Text</span>
           </button>
 
           {/* add image */}
@@ -178,7 +246,7 @@ const CentralPanelPreview = ({
               className="hidden"
               aria-label="Image upload"
             />
-            + Image
+            + Add Image
           </button>
         </div>
 
@@ -393,17 +461,16 @@ const CentralPanelPreview = ({
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              touchAction: "none", // Prevent scrolling/zooming
+              touchAction: selectedElement ? "none" : "auto",
             }}
             onClick={handleCanvasClick}
-            onTouchMove={(e) => handleMove(e, selectedElement)}
+            onTouchMove={(e) => enhancedHandleMove(e, selectedElement)}
             onTouchEnd={handleEnd}
             onTouchCancel={handleEnd}
-            onMouseMove={(e) => handleMove(e, selectedElement)}
+            onMouseMove={(e) => enhancedHandleMove(e, selectedElement)}
             onMouseUp={handleEnd}
             onMouseLeave={handleEnd}
           >
-            {/* <div className="absolute "></div> */}
             {/* T-shirt outline */}
             <div
               className="absolute inset-4 border border-dashed rounded-lg opacity-30 pointer-events-none"
@@ -430,10 +497,61 @@ const CentralPanelPreview = ({
               }}
             ></div>
 
+            {/* Rotation Snap Lines */}
+            {selectedElement &&
+              rotationSnapLines.map((line, index) => (
+                <div
+                  key={index}
+                  className="absolute pointer-events-none z-30"
+                  style={{
+                    ...(line.type === "horizontal"
+                      ? {
+                          left: "0",
+                          right: "0",
+                          top: `${line.y}px`,
+                          height: "2px",
+                          background:
+                            "linear-gradient(90deg, transparent 0%, #3b82f6 20%, #3b82f6 80%, transparent 100%)",
+                        }
+                      : {
+                          top: "0",
+                          bottom: "0",
+                          left: `${line.x}px`,
+                          width: "2px",
+                          background:
+                            "linear-gradient(180deg, transparent 0%, #3b82f6 20%, #3b82f6 80%, transparent 100%)",
+                        }),
+                    boxShadow: "0 0 4px rgba(59, 130, 246, 0.5)",
+                    animation: "pulse 1s ease-in-out infinite alternate",
+                  }}
+                >
+                  {/* Angle indicator */}
+                  <div
+                    className="absolute bg-blue-500 text-white text-xs px-2 py-1 rounded-md font-medium shadow-lg"
+                    style={{
+                      ...(line.type === "horizontal"
+                        ? {
+                            top: "-30px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                          }
+                        : {
+                            left: "-45px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                          }),
+                    }}
+                  >
+                    {line.angle}°
+                  </div>
+                </div>
+              ))}
+
             {/* Design Elements with Clipping */}
             {elements[viewSide].map((element) => {
               return (
                 <div key={element.id} className="relative">
+                  {/* out of print range warning  */}
                   <div className="absolute right-0">
                     {isElementOutOfBounds && (
                       <span
@@ -442,6 +560,19 @@ const CentralPanelPreview = ({
                       px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm"
                       >
                         ⚠ Out of print range
+                      </span>
+                    )}
+                  </div>
+
+                  {/* rotation info warning  */}
+                  <div className="absolute left-0">
+                    {showRotateInfo && (
+                      <span
+                        className="text-yellow-600 font-semibold text-sm 
+                      animate-pulse transition-opacity duration-500 ease-in-out
+                      px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm"
+                      >
+                        ⚠ Hold the rotate icon and rotate
                       </span>
                     )}
                   </div>
@@ -457,12 +588,27 @@ const CentralPanelPreview = ({
                       top: element.y,
                       width: element.width,
                       height: element.height,
-                      transform: `rotate(${element.style?.rotation || 0}deg)`,
+                      transform:
+                        parseInt((element?.style?.rotation + 365) / 90) >
+                        parseInt((element?.style?.rotation + 360) / 90)
+                          ? `rotate(${
+                              90 *
+                              parseInt((element.style?.rotation + 365) / 90)
+                            }deg)`
+                          : parseInt((element?.style?.rotation + 445) / 90) ===
+                            parseInt((element?.style?.rotation + 360) / 90)
+                          ? `rotate(${
+                              90 *
+                              parseInt((element.style?.rotation - 365) / 90)
+                            }deg)`
+                          : `rotate(${element.style?.rotation || 0}deg)`,
+
                       transformOrigin: "center center",
                     }}
                     onClick={(e) => handleElementClick(element, e)}
                     onMouseDown={(e) => handleElementStart(e, element)}
                     onTouchStart={(e) => handleElementStart(e, element)}
+                    onDoubleClick={() => setIsDoubleClicked(true)}
                   >
                     {/* Print area clipping mask */}
                     <div className="absolute inset-0 overflow-hidden">
@@ -496,7 +642,7 @@ const CentralPanelPreview = ({
                               placeholder="Enter text content..."
                             />
                           ) : ( */}
-                            {element.content}
+                          {element.content}
                           {/* )} */}
                         </div>
                       ) : (
@@ -519,7 +665,22 @@ const CentralPanelPreview = ({
                         top: element.y - 4,
                         width: element.width + 8,
                         height: element.height + 8,
-                        transform: `rotate(${element.style?.rotation || 0}deg)`,
+                        transform:
+                          parseInt((element?.style?.rotation + 365) / 90) >
+                          parseInt((element?.style?.rotation + 360) / 90)
+                            ? `rotate(${
+                                90 *
+                                parseInt((element.style?.rotation + 365) / 90)
+                              }deg)`
+                            : parseInt(
+                                (element?.style?.rotation + 445) / 90
+                              ) ===
+                              parseInt((element?.style?.rotation + 360) / 90)
+                            ? `rotate(${
+                                90 *
+                                parseInt((element.style?.rotation - 365) / 90)
+                              }deg)`
+                            : `rotate(${element.style?.rotation || 0}deg)`,
                         transformOrigin: `${(element.width + 8) / 2}px ${
                           (element.height + 8) / 2
                         }px`,
@@ -534,32 +695,14 @@ const CentralPanelPreview = ({
                         }`}
                       ></div>
 
-                      {/* Corner Handles */}
-                      {/* <div
-                        className="absolute -top-1 -left-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm"
-                        onMouseDown={(e) => handleResizeStart(e, element)}
-                        onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div>
-                      <div
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm"
-                        onMouseDown={(e) => handleResizeStart(e, element)}
-                        onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div>
-                      <div
-                        className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm cursor-se-resize pointer-events-auto hover:bg-blue-600 transition-colors hover:scale-110"
-                        onMouseDown={(e) => handleResizeStart(e, element)}
-                        onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div> */}
-
                       {/* Resize Handle */}
-                      <div
-                        className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
+
+                      <IoIosResize
+                        className="bg-black text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
                         title="Resize"
-                      >
-                        <IoIosResize className="text-lg rotate-90 text-white font-semibold" />
-                      </div>
+                      />
 
                       {/* Rotation Handle */}
                       <div
@@ -568,7 +711,11 @@ const CentralPanelPreview = ({
                         onTouchStart={(e) => handleRotateStart(e, element)}
                         title="Rotate"
                       >
-                        <RotateCw size={12} className="text-white" />
+                        <RotateCw
+                          onClick={handleRotateInfo}
+                          size={12}
+                          className="text-white"
+                        />
                       </div>
 
                       {/* Delete Handle */}

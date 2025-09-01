@@ -1,9 +1,9 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
-import { Printer, Download, X, Layers } from "lucide-react";
-import toast from "react-hot-toast";
-import TopElements from "./TopElements";
-import CentralPanelPreview from "./CentralPanelPreview";
-import RightPanel from "./RightPanel";
+import React, { useState, useRef, useContext, useEffect } from 'react';
+import { Printer, Download, X, Layers } from 'lucide-react';
+import toast from 'react-hot-toast';
+import TopElements from './TopElements';
+import CentralPanelPreview from './CentralPanelPreview';
+import RightPanel from './RightPanel';
 
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
@@ -15,72 +15,72 @@ const CustomizeYourTee = () => {
 
   const tshirtColors = [
     {
-      color: "#FF0000",
+      color: '#FF0000',
       previewImages: {
-        front: "/preview-images/Red.png",
-        back: "/preview-images/red-back.png",
+        front: '/preview-images/Red.png',
+        back: '/preview-images/red-back.png',
       },
-      name: "Red",
+      name: 'Red',
     },
     {
-      color: "#000000",
+      color: '#000000',
       previewImages: {
-        front: "/preview-images/Black.png",
-        back: "/preview-images/black-back.png",
+        front: '/preview-images/Black.png',
+        back: '/preview-images/black-back.png',
       },
-      name: "Black",
+      name: 'Black',
     },
     {
-      color: "#4CAF50",
+      color: '#4CAF50',
       previewImages: {
-        front: "/preview-images/Green.png",
-        back: "/preview-images/green-back.png",
+        front: '/preview-images/Green.png',
+        back: '/preview-images/green-back.png',
       },
-      name: "Green",
+      name: 'Green',
     },
     {
-      color: "#E6E6FA",
+      color: '#E6E6FA',
       previewImages: {
-        front: "/preview-images/Levender.png",
-        back: "/preview-images/levender-back.png",
+        front: '/preview-images/Levender.png',
+        back: '/preview-images/levender-back.png',
       },
-      name: "Lavender",
+      name: 'Lavender',
     },
     {
-      color: "#800000",
+      color: '#800000',
       previewImages: {
-        front: "/preview-images/Maroon.png",
-        back: "/preview-images/maroon-back.png",
+        front: '/preview-images/Maroon.png',
+        back: '/preview-images/maroon-back.png',
       },
-      name: "Maroon",
+      name: 'Maroon',
     },
     {
-      color: "#000080",
+      color: '#000080',
       previewImages: {
-        front: "/preview-images/Navy-Blue.png",
-        back: "/preview-images/navy-blue-back.png",
+        front: '/preview-images/Navy-Blue.png',
+        back: '/preview-images/navy-blue-back.png',
       },
-      name: "Navy Blue",
+      name: 'Navy Blue',
     },
     {
-      color: "#87CEEB",
+      color: '#87CEEB',
       previewImages: {
-        front: "/preview-images/Sky-Blue.png",
-        back: "/preview-images/sky-blue-back.png",
+        front: '/preview-images/Sky-Blue.png',
+        back: '/preview-images/sky-blue-back.png',
       },
-      name: "Sky Blue",
+      name: 'Sky Blue',
     },
     {
-      color: "#FFFFFF",
+      color: '#FFFFFF',
       previewImages: {
-        front: "/preview-images/White.png",
-        back: "/preview-images/white-back.png",
+        front: '/preview-images/White.png',
+        back: '/preview-images/white-back.png',
       },
-      name: "White",
+      name: 'White',
     },
   ];
 
-  const [viewSide, setViewSide] = useState("front");
+  const [viewSide, setViewSide] = useState('front');
   const [selectedColor, setSelectedColor] = useState(tshirtColors[0]);
   const [elements, setElements] = useState({
     front: [],
@@ -89,33 +89,34 @@ const CustomizeYourTee = () => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [draggedElement, setDraggedElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [newText, setNewText] = useState("Type your text");
-  const [instructions, setInstructions] = useState("");
+  const [newText, setNewText] = useState('Type your text');
+  const [instructions, setInstructions] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false); // State for form visibility
-  const [name, setName] = useState(""); // State for name input
-  const [phone, setPhone] = useState(""); // State for phone number input
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [selectedSize, setSelectedSize] = useState("M");
+  const [name, setName] = useState(''); // State for name input
+  const [phone, setPhone] = useState(''); // State for phone number input
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [fonts, setFonts] = useState([]); // State to store fonts
-  const [device, setDevice] = useState("");
+  const [device, setDevice] = useState('');
   const [isResizing, setIsResizing] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
   const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
   const [initialFontSize, setInitialFontSize] = useState(20);
   const [rotationCenter, setRotationCenter] = useState({ x: 0, y: 0 });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState('');
   const [printArea, setPrintArea] = useState();
   const [printWidth, setPrintWidth] = useState(180);
   const [printHeight, setPrintHeight] = useState(270);
+  const [isDoubleClicked, setIsDoubleClicked] = useState(false);
   const [isElementOutOfBounds, setIsElementOutOfBounds] = useState(false);
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
-    color: "#000000",
-    fontWeight: "normal",
-    fontFamily: "Arial",
+    color: '#000000',
+    fontWeight: 'normal',
+    fontFamily: 'Arial',
     rotation: 0,
   });
   const [imgStyle, setImgStyle] = useState({
@@ -132,9 +133,9 @@ const CustomizeYourTee = () => {
     back: null,
   });
 
-    const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
 
-      const inputRefs = useRef({});
+  const inputRefs = useRef({});
 
   // user fetch
   useEffect(() => {
@@ -146,7 +147,7 @@ const CustomizeYourTee = () => {
 
   // set print width and height
   useEffect(() => {
-    if (device === "mobile") {
+    if (device === 'mobile') {
       setPrintWidth(105);
       setPrintHeight(162);
     } else {
@@ -161,12 +162,12 @@ const CustomizeYourTee = () => {
     const fetchFonts = async () => {
       try {
         const response = await fetch(
-          "https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU"
+          'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU',
         );
         const data = await response.json();
         setFonts(data.items); // Set fonts to state
       } catch (error) {
-        console.error("Error fetching fonts:", error);
+        console.error('Error fetching fonts:', error);
       } finally {
         setIsLoading(false); // Stop loading once fonts are fetched
       }
@@ -180,18 +181,18 @@ const CustomizeYourTee = () => {
     const updateDevice = () => {
       const width = window.innerWidth;
       if (width <= 600) {
-        setDevice("mobile");
+        setDevice('mobile');
         setTextStyle({
           fontSize: 14,
-          color: "#000000",
-          fontWeight: "normal",
-          fontFamily: "Arial",
+          color: '#000000',
+          fontWeight: 'normal',
+          fontFamily: 'Arial',
           rotation: 0,
         });
       } else if (width <= 1024) {
-        setDevice("tablet");
+        setDevice('tablet');
       } else {
-        setDevice("laptop");
+        setDevice('laptop');
       }
     };
 
@@ -199,11 +200,11 @@ const CustomizeYourTee = () => {
     updateDevice();
 
     // Add event listener
-    window.addEventListener("resize", updateDevice);
+    window.addEventListener('resize', updateDevice);
 
     // Cleanup on unmount
     return () => {
-      window.removeEventListener("resize", updateDevice);
+      window.removeEventListener('resize', updateDevice);
     };
   }, []);
 
@@ -211,27 +212,27 @@ const CustomizeYourTee = () => {
   useEffect(() => {
     const area = {
       left:
-        canvasRef.current && viewSide === "front"
+        canvasRef.current && viewSide === 'front'
           ? canvasRef.current.offsetWidth * 0.27
-          : canvasRef.current && viewSide === "back"
+          : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetWidth * 0.27
           : 80,
       top:
-        canvasRef.current && viewSide === "front"
+        canvasRef.current && viewSide === 'front'
           ? canvasRef.current.offsetHeight * 0.25
-          : canvasRef.current && viewSide === "back"
+          : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetHeight * 0.2
           : 125,
       right:
-        canvasRef.current && viewSide === "front"
+        canvasRef.current && viewSide === 'front'
           ? canvasRef.current.offsetWidth * 0.71
-          : canvasRef.current && viewSide === "back"
+          : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetWidth * 0.71
           : 320,
       bottom:
-        canvasRef.current && viewSide === "front"
+        canvasRef.current && viewSide === 'front'
           ? canvasRef.current.offsetHeight * 0.78
-          : canvasRef.current && viewSide === "back"
+          : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetHeight * 0.74
           : 375,
     };
@@ -241,27 +242,27 @@ const CustomizeYourTee = () => {
 
   // compute width/height from text + font
   const computeTextBox = (text, style, device, canvasRef) => {
-    const baseFontSize = device === "mobile" ? 14 : 24;
+    const baseFontSize = device === 'mobile' ? 14 : 24;
     const fontSize = style.fontSize || baseFontSize;
-    const fontWeight = style.fontWeight || "normal";
-    const fontStyle = style.fontStyle || "normal";
-    const fontFamily = style.fontFamily || "Arial, sans-serif";
+    const fontWeight = style.fontWeight || 'normal';
+    const fontStyle = style.fontStyle || 'normal';
+    const fontFamily = style.fontFamily || 'Arial, sans-serif';
     const padding = 8; // inside padding around the text
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
     ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
 
     // measure text width safely
     const textWidth = Math.min(
       printHeight,
-      Math.ceil(ctx.measureText(text || " ").width)
-    )
+      Math.ceil(ctx.measureText(text || ' ').width),
+    );
 
     // Line height
     const lineHeight =
-      typeof style.lineHeight === "number"
+      typeof style.lineHeight === 'number'
         ? style.lineHeight * fontSize
         : style.lineHeight
         ? parseFloat(style.lineHeight) * fontSize
@@ -326,7 +327,7 @@ const CustomizeYourTee = () => {
         corner.x >= printArea.left &&
         corner.x <= printArea.right &&
         corner.y >= printArea.top &&
-        corner.y <= printArea.bottom
+        corner.y <= printArea.bottom,
     );
   };
 
@@ -353,15 +354,15 @@ const CustomizeYourTee = () => {
 
     const rect = canvasRef.current.getBoundingClientRect();
     const x = parseInt(
-      e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left
+      e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left,
     );
 
     const y = parseInt(
-      e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top
+      e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top,
     );
 
-    const maxWidth = device === "mobile" ? 240 : 400;
-    const maxHeight = device === "mobile" ? 300 : 500;
+    const maxWidth = device === 'mobile' ? 240 : 400;
+    const maxHeight = device === 'mobile' ? 300 : 500;
 
     if (draggedElement && !isResizing && !isRotating) {
       // Existing drag logic
@@ -372,10 +373,13 @@ const CustomizeYourTee = () => {
             ? {
                 ...el,
                 x: parseInt(
-                  Math.max(0, Math.min(maxWidth - el.width, x - dragOffset.x))
+                  Math.max(0, Math.min(maxWidth - el.width, x - dragOffset.x)),
                 ),
                 y: parseInt(
-                  Math.max(0, Math.min(maxHeight - el.height, y - dragOffset.y))
+                  Math.max(
+                    0,
+                    Math.min(maxHeight - el.height, y - dragOffset.y),
+                  ),
                 ),
                 // opacity: isOutsidePrintArea
                 //   ? "isOutsidePrintArea"
@@ -383,12 +387,12 @@ const CustomizeYourTee = () => {
                 //   ? "isPartiallyOutside"
                 //   : "isInside",
               }
-            : el
+            : el,
         ),
       }));
     } else if (isResizing) {
       const element = elements[viewSide].find(
-        (el) => el.id === selectedElement
+        (el) => el.id === selectedElement,
       );
 
       if (!element) return;
@@ -413,16 +417,16 @@ const CustomizeYourTee = () => {
       const delta = Math.max(deltaX, deltaY);
 
       let newWidth = parseInt(
-        Math.min(printWidth, Math.max(20, initialSize.width + delta))
+        Math.min(printWidth, Math.max(20, initialSize.width + delta)),
       );
       let newHeight = parseInt(
-        Math.min(printHeight, initialSize.height + delta)
+        Math.min(printHeight, initialSize.height + delta),
       );
 
       // Maintain aspect ratio for images
       if (
         element &&
-        element.type === "image" &&
+        element.type === 'image' &&
         element.originalWidth &&
         element.originalHeight
       ) {
@@ -432,18 +436,11 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: newWidth,
           height: newHeight,
-          // opacity: isOutsidePrintArea
-          //   ? "isOutsidePrintArea"
-          //   : isPartiallyOutside
-          //   ? "isPartiallyOutside"
-          //   : "isInside",
         });
-      } 
-      
-      else if (element && element.type === "text") {
+      } else if (element && element.type === 'text') {
         // Avoid parseInt on floats; use Math.round for pixel ints
-        const nextWidth = Math.max(20, Math.round(newWidth));
-        const nextHeight = Math.max(5, Math.round(newHeight));
+        const nextWidth = newWidth;
+        const nextHeight = newHeight;
 
         // console.log(initialSize);
         // Use uniform scale to prevent distortion (use the larger axis)
@@ -457,7 +454,7 @@ const CustomizeYourTee = () => {
         // Clamp font size to sane bounds
         const newFontSize = Math.max(
           8,
-          Math.min(400, Math.round(initialFS * scale))
+          Math.min(400, Math.round(initialFS * scale)),
         );
 
         const style = element.style || {};
@@ -469,11 +466,6 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: nextWidth,
           height: adjustedHeight,
-          // opacity: isOutsidePrintArea
-          //   ? "isOutsidePrintArea"
-          //   : isPartiallyOutside
-          //   ? "isPartiallyOutside"
-          //   : "isInside",
           style: {
             ...style,
             fontSize: newFontSize,
@@ -486,7 +478,7 @@ const CustomizeYourTee = () => {
         (180 / Math.PI);
 
       const element = elements[viewSide].find(
-        (el) => el.id === selectedElement
+        (el) => el.id === selectedElement,
       );
 
       updateElement(selectedElement, {
@@ -512,7 +504,7 @@ const CustomizeYourTee = () => {
   // touch end
   const handleTouchStart = (e, element) => {
     const touch = e.touches[0];
-    const mouseEvent = new MouseEvent("mousedown", {
+    const mouseEvent = new MouseEvent('mousedown', {
       clientX: touch.clientX,
       clientY: touch.clientY,
     });
@@ -521,7 +513,7 @@ const CustomizeYourTee = () => {
 
   const handleTouchMove = (e) => {
     const touch = e.touches[0];
-    const mouseEvent = new MouseEvent("mousemove", {
+    const mouseEvent = new MouseEvent('mousemove', {
       clientX: touch.clientX,
       clientY: touch.clientY,
     });
@@ -561,7 +553,7 @@ const CustomizeYourTee = () => {
       [viewSide]: prevState[viewSide].map((el) =>
         el.id === draggedElement
           ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
-          : el
+          : el,
       ),
     }));
   };
@@ -586,13 +578,13 @@ const CustomizeYourTee = () => {
 
         if (img.width > img.height) {
           newWidth =
-            device === "mobile"
+            device === 'mobile'
               ? Math.min(img.width, 100)
               : Math.min(img.width, 200);
           newHeight = (newWidth / img.width) * img.height;
         } else {
           newHeight =
-            device === "mobile"
+            device === 'mobile'
               ? Math.min(img.height, 100)
               : Math.min(img.height, 200);
           newWidth = (newHeight / img.height) * img.width;
@@ -600,10 +592,10 @@ const CustomizeYourTee = () => {
 
         const newElement = {
           id: Date.now(),
-          type: "image",
+          type: 'image',
           content: e.target.result,
-          x: device === "mobile" ? 90 : 150,
-          y: device === "mobile" ? 120 : 200,
+          x: device === 'mobile' ? 90 : 150,
+          y: device === 'mobile' ? 120 : 200,
           width: newWidth,
           height: newHeight,
           // opacity: "isInside",
@@ -631,15 +623,15 @@ const CustomizeYourTee = () => {
       newText,
       textStyle,
       device,
-      canvasRef // pass your ref if you have it
+      canvasRef, // pass your ref if you have it
     );
 
     const newElement = {
       id: Date.now(),
-      type: "text",
+      type: 'text',
       content: newText,
-      x: device === "mobile" ? 90 : 150,
-      y: device === "mobile" ? 120 : 200,
+      x: device === 'mobile' ? 90 : 150,
+      y: device === 'mobile' ? 120 : 200,
       width, // <- follows font size & text length
       height, // <- follows font size (line-height)
       // opacity: "isInside",
@@ -651,18 +643,30 @@ const CustomizeYourTee = () => {
       [viewSide]: [...prev[viewSide], newElement],
     }));
     setSelectedElement(newElement.id);
-  };
 
-  useEffect(() => {
     setTimeout(() => {
-      const input = inputRefs.current[selectedElement];
+      const input = inputRefs.current[newElement.id];
       if (input) {
-        // input.blink()
         input.click(); // Simulate click
         input.focus(); // Then focus the input
       }
-    }, 300); // Delay in milliseconds
-  }, [selectedElement]);
+    }, 200); // Delay in milliseconds
+  };
+
+  useEffect(() => {
+    if (isDoubleClicked) {
+      setTimeout(() => {
+        const input = inputRefs.current[selectedElement];
+        if (input) {
+          // input.blink()
+          input.click(); // Simulate click
+          input.focus(); // Then focus the input
+        }
+      }, 300); // Delay in milliseconds
+
+      setIsDoubleClicked(false);
+    }
+  }, [isDoubleClicked]);
 
   // element operations
   // element operations
@@ -683,7 +687,7 @@ const CustomizeYourTee = () => {
     e.stopPropagation();
     setIsResizing(true);
     setSelectedElement(element.id);
-    element.type === "text" && setInitialFontSize(element.style.fontSize);
+    element.type === 'text' && setInitialFontSize(element.style.fontSize);
     // :
     setInitialSize({
       width: parseInt(element.width),
@@ -722,7 +726,7 @@ const CustomizeYourTee = () => {
 
         // If updating text or font size → auto adjust width/height
         if (
-          el.type === "text" &&
+          el.type === 'text' &&
           (updates.content != null || updates.style?.fontSize != null)
         ) {
           const style = { ...el.style, ...(updates.style || {}) };
@@ -766,7 +770,7 @@ const CustomizeYourTee = () => {
       // Calculate new dimensions while maintaining aspect ratio
       let newWidth, newHeight;
 
-      if (elementToReset.type === "image") {
+      if (elementToReset.type === 'image') {
         const maxDimension = 200; // Maximum size for the larger dimension
         const aspectRatio =
           elementToReset.originalWidth / elementToReset.originalHeight;
@@ -790,11 +794,11 @@ const CustomizeYourTee = () => {
         y: 200,
         // Reset size while maintaining aspect ratio for images
         width:
-          elementToReset.type === "image" ? newWidth : elementToReset.width,
+          elementToReset.type === 'image' ? newWidth : elementToReset.width,
         height:
-          elementToReset.type === "image" ? newHeight : elementToReset.height,
+          elementToReset.type === 'image' ? newHeight : elementToReset.height,
         style:
-          elementToReset.type === "text"
+          elementToReset.type === 'text'
             ? { ...textStyle } // Reset to default text style
             : { ...imgStyle }, // Reset to default image style
       };
@@ -803,7 +807,7 @@ const CustomizeYourTee = () => {
       setElements((prevState) => ({
         ...prevState,
         [viewSide]: prevState[viewSide].map((el) =>
-          el.id === id ? resetElement : el
+          el.id === id ? resetElement : el,
         ),
       }));
     }
@@ -820,11 +824,11 @@ const CustomizeYourTee = () => {
   const generatePreviews = async () => {
     setIsLoading(true);
     try {
-      const backCanvas = await generatePreview("back");
-      const backImageUrl = backCanvas.toDataURL("image/jpeg", 0.8);
+      const backCanvas = await generatePreview('back');
+      const backImageUrl = backCanvas.toDataURL('image/jpeg', 0.8);
 
-      const frontCanvas = await generatePreview("front");
-      const frontImageUrl = frontCanvas.toDataURL("image/jpeg", 0.8);
+      const frontCanvas = await generatePreview('front');
+      const frontImageUrl = frontCanvas.toDataURL('image/jpeg', 0.8);
 
       setPreviewImages({
         front: frontImageUrl,
@@ -837,21 +841,21 @@ const CustomizeYourTee = () => {
 
       setIsPreviewOpen(true);
     } catch (error) {
-      toast.error("Failed to generate preview");
+      toast.error('Failed to generate preview');
     } finally {
       setIsLoading(false);
     }
   };
 
   const generatePreview = async (side) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = device === "mobile" ? 240 : 400;
-    canvas.height = device === "mobile" ? 300 : 500;
-    const ctx = canvas.getContext("2d");
+    const canvas = document.createElement('canvas');
+    canvas.width = device === 'mobile' ? 240 : 400;
+    canvas.height = device === 'mobile' ? 300 : 500;
+    const ctx = canvas.getContext('2d');
 
     try {
       const bgImg = new Image();
-      bgImg.crossOrigin = "anonymous";
+      bgImg.crossOrigin = 'anonymous';
 
       await new Promise((resolve, reject) => {
         bgImg.onload = () => {
@@ -862,16 +866,16 @@ const CustomizeYourTee = () => {
           ctx.fillStyle = selectedColor.color;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.strokeStyle =
-            selectedColor.color === "#FFFFFF"
-              ? "#E5E7EB"
-              : "rgba(255,255,255,0.2)";
+            selectedColor.color === '#FFFFFF'
+              ? '#E5E7EB'
+              : 'rgba(255,255,255,0.2)';
           ctx.lineWidth = 2;
           ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
           resolve();
         };
 
         setTimeout(() => {
-          reject(new Error("Image loading timeout"));
+          reject(new Error('Image loading timeout'));
         }, 5000);
 
         bgImg.src = selectedColor.previewImages[side];
@@ -882,23 +886,40 @@ const CustomizeYourTee = () => {
           ctx.save();
           ctx.translate(
             element.x + element.width / 2,
-            element.y + element.height / 2
+            element.y + element.height / 2,
           );
-          ctx.rotate((element.style.rotation * Math.PI) / 180);
-          ctx.translate(
-            -element.x - element.width / 2,
-            -element.y - element.height / 2
+          // ctx.rotate((element.style.rotation * Math.PI) / 180);
+
+          ctx.rotate(
+            parseInt((element?.style?.rotation + 365) / 90) >
+              parseInt((element?.style?.rotation + 360) / 90)
+              ? (90 *
+                  parseInt((element.style?.rotation + 365) / 90) *
+                  Math.PI) /
+                  180
+              : parseInt((element?.style?.rotation + 445) / 90) ===
+                parseInt((element?.style?.rotation + 360) / 90)
+              ? (90 *
+                  parseInt((element.style?.rotation - 365) / 90) *
+                  Math.PI) /
+                180
+              : ((element.style?.rotation || 0) * Math.PI) / 180,
           );
 
-          if (element.type === "text") {
+          ctx.translate(
+            -element.x - element.width / 2,
+            -element.y - element.height / 2,
+          );
+
+          if (element.type === 'text') {
             ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
             ctx.fillStyle = element.style.color;
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
             ctx.fillText(element.content, element.x, element.y);
-          } else if (element.type === "image") {
+          } else if (element.type === 'image') {
             const img = new Image();
-            img.crossOrigin = "anonymous";
+            img.crossOrigin = 'anonymous';
 
             await new Promise((resolve) => {
               img.onload = () => {
@@ -907,12 +928,12 @@ const CustomizeYourTee = () => {
                   element.x,
                   element.y,
                   element.width,
-                  element.height
+                  element.height,
                 );
                 resolve();
               };
               img.onerror = () => {
-                console.warn("Design image failed to load");
+                console.warn('Design image failed to load');
                 resolve();
               };
               img.src = element.content;
@@ -924,7 +945,7 @@ const CustomizeYourTee = () => {
 
       return canvas;
     } catch (error) {
-      console.error("Error creating preview:", error);
+      console.error('Error creating preview:', error);
       throw error;
     }
   };
@@ -935,21 +956,21 @@ const CustomizeYourTee = () => {
     const downloadCanvas = (canvas, side) => {
       canvas.toBlob(
         (blob) => {
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${side}-${Date.now()}.png`;
           link.href = URL.createObjectURL(blob);
           link.click();
           URL.revokeObjectURL(link.href);
         },
-        "image/png",
-        1.0
+        'image/png',
+        1.0,
       );
     };
 
-    downloadCanvas(previewCanvases.front, "front");
-    downloadCanvas(previewCanvases.back, "back");
+    downloadCanvas(previewCanvases.front, 'front');
+    downloadCanvas(previewCanvases.back, 'back');
     setIsPreviewOpen(false);
-    toast.success("Design downloaded successfully");
+    toast.success('Design downloaded successfully');
   };
 
   const sendRequest = async () => {
@@ -1083,15 +1104,15 @@ const CustomizeYourTee = () => {
     }
   };
 
-  const panelStyle = "bg-white rounded-xl shadow-lg border border-gray-200 p-6";
+  const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
   const headingTitle =
-    "flex items-center gap-3 text-lg font-semibold text-black mb-6";
+    'flex items-center gap-3 text-lg font-semibold text-black mb-6';
   const buttonStyle =
-    "w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black";
+    'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black';
   const sectionTitle =
-    "text-sm font-medium text-gray-800 mb-3 flex items-center gap-2";
+    'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
   const inputStyle =
-    "w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400";
+    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400';
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -1171,6 +1192,7 @@ const CustomizeYourTee = () => {
             printHeight={printHeight}
             printWidth={printWidth}
             inputRefs={inputRefs}
+            setIsDoubleClicked={setIsDoubleClicked}
           />
 
           <RightPanel
@@ -1254,12 +1276,12 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 w-full sm:w-auto ${
                     isLoading
-                      ? "bg-orange-400"
-                      : "bg-orange-600 hover:bg-orange-700"
+                      ? 'bg-orange-400'
+                      : 'bg-orange-600 hover:bg-orange-700'
                   }`}
                 >
                   {isLoading ? (
-                    "Processing..."
+                    'Processing...'
                   ) : (
                     <>
                       <Printer size={18} />
@@ -1312,15 +1334,15 @@ const CustomizeYourTee = () => {
                   Size
                 </h3>
                 <div className="grid grid-cols-5 gap-2.5">
-                  {["S", "M", "L", "XL", "2XL", "3XL"].map((size) => (
+                  {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all 
           ${
             selectedSize === size
-              ? "border-black bg-gray-900 text-white shadow-md"
-              : "border-gray-300 hover:border-gray-400 bg-white text-gray-700"
+              ? 'border-black bg-gray-900 text-white shadow-md'
+              : 'border-gray-300 hover:border-gray-400 bg-white text-gray-700'
           }`}
                       aria-label={`Select ${size} size`}
                     >
@@ -1359,11 +1381,11 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
                     isLoading
-                      ? "bg-orange-400"
-                      : "bg-orange-600 hover:bg-orange-700"
+                      ? 'bg-orange-400'
+                      : 'bg-orange-600 hover:bg-orange-700'
                   }`}
                 >
-                  {isLoading ? "Submitting..." : "Submit"}
+                  {isLoading ? 'Submitting...' : 'Submit'}
                 </button>
               </div>
             </div>

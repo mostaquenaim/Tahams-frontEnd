@@ -5,7 +5,7 @@ import { useContext, useState, useEffect } from 'react';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
 
 const useCustomizationReq = (id = 0) => {
-    // console.log(id,'iding');
+  // console.log(id,'iding');
   const { user, loading } = useContext(AuthContext);
   const [customerEmail, setCustomerEmail] = useState('');
 
@@ -18,15 +18,17 @@ const useCustomizationReq = (id = 0) => {
   const loadCustomizations = async () => {
     // console.log(customerEmail, id, 'gibgib');  // Correcting to use customerEmail
     try {
-      const result = await axiosPublic.get('/admin/get-all-customization-requests', {
-        params: { email: customerEmail, id: id }, // Use params for GET requests
-      });
+      const result = await axiosPublic.get(
+        '/admin/get-all-customization-requests',
+        {
+          params: { email: customerEmail, id: id }, // Use params for GET requests
+        },
+      );
 
-      console.log(result.data, 'sdvsdaaa');
+      let sortedCustomizations = result.data;
 
-      const sortedCustomizations = result.data;
-      // If you need to sort by serial (optional)
-      // const sortedCustomizations = result.data.sort((a, b) => a.serial - b.serial);
+      if (Array.isArray(result.data))
+        sortedCustomizations = result.data.sort((a, b) => b.id - a.id);
 
       return sortedCustomizations;
     } catch (error) {
@@ -36,7 +38,12 @@ const useCustomizationReq = (id = 0) => {
   };
 
   // Only run the query when `customerEmail` is set
-  const { refetch, data: customizations = [], isLoading, isFetching } = useQuery({
+  const {
+    refetch,
+    data: customizations = [],
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ['customizations', customerEmail, id], // Add dependencies to re-fetch when needed
     queryFn: loadCustomizations,
     enabled: !!customerEmail, // Don't run the query until the email is set
