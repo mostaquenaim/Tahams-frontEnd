@@ -64,6 +64,14 @@ const CentralPanelPreview = ({
   // });
   const [rotationSnapLines, setRotationSnapLines] = useState([]);
 
+  const handleAppearSnapLines = () => {
+
+  }
+
+  useEffect(()=>{
+    
+  },[])
+
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
@@ -502,13 +510,13 @@ const CentralPanelPreview = ({
               rotationSnapLines.map((line, index) => (
                 <div
                   key={index}
-                  className="absolute pointer-events-none z-30"
+                  className={`absolute pointer-events-none`}
                   style={{
                     ...(line.type === "horizontal"
                       ? {
                           left: "0",
                           right: "0",
-                          top: `${line.y}px`,
+                          top: device === "mobile" ? "150px" : "250px", // or `${line.y}px`
                           height: "2px",
                           background:
                             "linear-gradient(90deg, transparent 0%, #3b82f6 20%, #3b82f6 80%, transparent 100%)",
@@ -516,20 +524,22 @@ const CentralPanelPreview = ({
                       : {
                           top: "0",
                           bottom: "0",
-                          left: `${line.x}px`,
+                          left: device === "mobile" ? "120px" : "200px", // or `${line.x}px`
                           width: "2px",
                           background:
                             "linear-gradient(180deg, transparent 0%, #3b82f6 20%, #3b82f6 80%, transparent 100%)",
                         }),
                     boxShadow: "0 0 4px rgba(59, 130, 246, 0.5)",
-                    animation: "pulse 1s ease-in-out infinite alternate",
+                    // keep your pulse, and add fade-out so it disappears smoothly
+                    animation:
+                      "pulse 1s ease-in-out infinite alternate, guideFadeOut 0.8s linear forwards",
                   }}
                 >
                   {/* Angle indicator */}
                   <div
                     className="absolute bg-blue-500 text-white text-xs px-2 py-1 rounded-md font-medium shadow-lg"
-                    style={{
-                      ...(line.type === "horizontal"
+                    style={
+                      line.type === "horizontal"
                         ? {
                             top: "-30px",
                             left: "50%",
@@ -539,8 +549,8 @@ const CentralPanelPreview = ({
                             left: "-45px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                          }),
-                    }}
+                          }
+                    }
                   >
                     {line.angle}°
                   </div>
@@ -696,7 +706,6 @@ const CentralPanelPreview = ({
                       ></div>
 
                       {/* Resize Handle */}
-
                       <IoIosResize
                         className="bg-black text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
