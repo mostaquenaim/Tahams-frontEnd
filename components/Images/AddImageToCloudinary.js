@@ -1,7 +1,10 @@
-const handleUpload = async (file) => {
+import useAxiosPublic from "/Hooks/useAxiosPublic";
+
+export const handleUploadWithCloudinary = async (file) => {
+  const axiosPublic = useAxiosPublic()
   if (!file) return;
 
-  const sigRes = await axiosPublic.get('/admin/cloudinary-signature'); // replace with your NestJS API URL
+  const sigRes = await axiosPublic.get('/admin/cloudinary-signature'); 
   //   console.log(sigRes.data, 'dataa');
   const { cloudName, upload_preset } = await sigRes.data;
 

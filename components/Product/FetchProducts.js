@@ -167,63 +167,6 @@ const FetchProducts = ({
             {categories[0]?.pscs[0]?.category?.category?.category?.name}
           </div>
 
-          <Link href={'/customize-tee'} className='btn btn-md bg-black/80 text-white hover:bg-black'>customize your own tee</Link>
-
-          {/* Premium Combo Builder Button */}
-          {/* {categories[0]?.pscs[0]?.category?.category?.category?.name ===
-            'Combos' && (
-            <div className="relative flex items-center gap-4">
-              <Link
-                href="/combo-builder"
-                className=" flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden isolate"
-              >
-                <div className="absolute inset-0 bg-[length:400%_400%] bg-gradient-to-r from-purple-600 via-blue-500 to-purple-600 animate-gradient-shift opacity-100 group-hover:opacity-90 transition-opacity duration-500 -z-10"></div>
-
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 -z-10"></div>
-
-                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/50 rounded-full opacity-0 group-hover:opacity-40 group-hover:animate-shine transition-opacity duration-700 -z-10"></div>
-
-                <span className="relative z-10 flex items-center gap-2 transition-transform duration-300 group-hover:scale-105">
-                  <svg
-                    className="w-5 h-5 text-white animate-pulse-fast"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  <span>Build Your Own Combo</span>
-                </span>
-
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md animate-float border-2 border-white/30 group-hover:border-white/50 transition-all duration-300">
-                  PREMIUM
-                </span>
-
-                <div className="absolute inset-0 overflow-hidden rounded-lg">
-                  {[...Array(4)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute w-1 h-1 bg-white/30 rounded-full"
-                      style={{
-                        top: `${Math.random() * 100}%`,
-                        left: `${Math.random() * 100}%`,
-                        animation: `float-particle ${
-                          3 + Math.random() * 4
-                        }s ease-in-out infinite`,
-                        animationDelay: `${Math.random() * 2}s`,
-                      }}
-                    />
-                  ))}
-                </div>
-              </Link>
-            </div>
-          )} */}
-
           <select
             id="sortDropdown"
             value={sortOption}

@@ -20,12 +20,14 @@ import useLoadCats from '../../Hooks/useLoadCats';
 
 // Context
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
+import DrawerProvider from '/Contexts/DrawerProvider';
+import { DrawerContext } from '/Contexts/DrawerProvider';
 
 // Constants
 const NAV_END_BTN_CLASS = 'btn btn-square btn-ghost text-xl';
 const SEARCH_DEBOUNCE_DELAY = 300;
 
-const NavbarCompTwo = () => {
+const NavBarCompRe = () => {
   // Hooks
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
@@ -171,12 +173,19 @@ const NavbarCompTwo = () => {
     </>
   );
 
+  const { isOpen, setIsOpen } = useContext(DrawerContext);
+
   const ListStyle = ({ goto, pageName, extraClass }) => {
+    const onBtnClick = () => {
+      router.push(goto);
+      setIsOpen(!isOpen);
+    };
+
     return (
       <li
         className={`hover:text-zinc-400 md:border-b-2 border-transparent hover:border-zinc-600 text-opacity-70 ${extraClass}`}
       >
-        <Link href={goto}>{pageName}</Link>
+        <button onClick={onBtnClick}>{pageName}</button>
         <hr className="hidden hover:inline-block w-full border-black duration-300 transition-width"></hr>
       </li>
       // hidden hover:inline-block
@@ -225,12 +234,6 @@ const NavbarCompTwo = () => {
     <>
       <ListStyle goto="/collabs/artist" pageName="Artist Collabs" />
       <ListStyle goto="/collabs/influencer" pageName="Influencer Collabs" />
-      {/* <Link
-        href="/customize-tee"
-        className="btn rounded-lg animate-shadowPulse"
-      >
-        Customize
-      </Link> */}
     </>
   );
 
@@ -269,115 +272,115 @@ const NavbarCompTwo = () => {
     );
 
   return (
-    <div data-theme="black" className="relative">
-      {/* Desktop Navigation */}
-      <div
-        className={
-          searchBtn
-            ? 'hidden'
-            : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'
-        }
-      >
-        <div className="flex items-center justify-between">
-          {/* Search Section */}
-          <div className="w-1/3 text-center z-40">
-            <div className="join w-full px-20 py-5">
-              <div className="w-full relative">
-                <input
-                  className="input input-bordered join-item w-full"
-                  placeholder="Search products..."
-                  value={searchInput}
-                  onChange={handleSearchInput}
-                  onKeyPress={handleKeyPress}
-                  aria-label="Search products"
-                />
-                <SearchResults />
-              </div>
-              <div className="indicator">
-                <button
-                  className="btn join-item"
-                  onClick={handleSearch}
-                  disabled={!searchInput.trim()}
-                  type="button"
-                  aria-label="Search"
-                >
-                  Search
-                </button>
+      <div data-theme="black" className="relative">
+        {/* Desktop Navigation */}
+        <div
+          className={
+            searchBtn
+              ? 'hidden'
+              : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'
+          }
+        >
+          <div className="flex items-center justify-between">
+            {/* Search Section */}
+            <div className="w-1/3 text-center z-40">
+              <div className="join w-full px-20 py-5">
+                <div className="w-full relative">
+                  <input
+                    className="input input-bordered join-item w-full"
+                    placeholder="Search products..."
+                    value={searchInput}
+                    onChange={handleSearchInput}
+                    onKeyPress={handleKeyPress}
+                    aria-label="Search products"
+                  />
+                  <SearchResults />
+                </div>
+                <div className="indicator">
+                  <button
+                    className="btn join-item"
+                    onClick={handleSearch}
+                    disabled={!searchInput.trim()}
+                    type="button"
+                    aria-label="Search"
+                  >
+                    Search
+                  </button>
+                </div>
               </div>
             </div>
+
+            {/* Logo Section */}
+            <div className="absolute w-full">
+              <Link href="/" className="w-20 mx-auto text-center block">
+                <img
+                  src="/logo-removebg.png"
+                  alt="Company Logo"
+                  className="w-20 p-2 mx-auto"
+                  loading="eager"
+                />
+              </Link>
+            </div>
+
+            {/* menu  */}
+            <ul className="menu menu-horizontal px-1">
+              <li>
+                <Link href={`/WishList`} className={navEndBtnClass}>
+                  <AiOutlineHeart></AiOutlineHeart>
+                </Link>
+              </li>
+              <li>
+                <Link href="/MyCart" className={navEndBtnClass}>
+                  <AiOutlineShoppingCart></AiOutlineShoppingCart>
+                </Link>
+              </li>
+              <li>
+                <details>
+                  <summary>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      className="inline-block w-5 h-5 stroke-current"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+                      ></path>
+                    </svg>
+                  </summary>
+                  <ul className="p-2 bg-base-100 right-0">{sideLinks}</ul>
+                </details>
+              </li>
+            </ul>
           </div>
 
-          {/* Logo Section */}
-          <div className="absolute w-full">
-            <Link href="/" className="w-20 mx-auto text-center block">
-              <img
-                src="/logo-removebg.png"
-                alt="Company Logo"
-                className="w-20 p-2 mx-auto"
-                loading="eager"
-              />
-            </Link>
+          <div>
+            <ul className="hidden md:flex gap-5 justify-center items-center text-base px-5 font-semibold w-full">
+              {links}
+            </ul>
+            <ul className="hidden md:flex gap-5 text-center justify-center items-center text-base px-5 py-3 font-semibold w-full">
+              {collabs}
+            </ul>
           </div>
-
-          {/* menu  */}
-          <ul className="menu menu-horizontal px-1">
-            <li>
-              <Link href={`/WishList`} className={navEndBtnClass}>
-                <AiOutlineHeart></AiOutlineHeart>
-              </Link>
-            </li>
-            <li>
-              <Link href="/MyCart" className={navEndBtnClass}>
-                <AiOutlineShoppingCart></AiOutlineShoppingCart>
-              </Link>
-            </li>
-            <li>
-              <details>
-                <summary>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block w-5 h-5 stroke-current"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                    ></path>
-                  </svg>
-                </summary>
-                <ul className="p-2 bg-base-100 right-0">{sideLinks}</ul>
-              </details>
-            </li>
-          </ul>
         </div>
 
-        <div>
-          <ul className="hidden md:flex gap-5 justify-center items-center text-base px-5 font-semibold w-full">
-            {links}
-          </ul>
-          <ul className="hidden md:flex gap-5 text-center justify-center items-center text-base px-5 py-3 font-semibold w-full">
-            {collabs}
-          </ul>
-        </div>
+        {/* second nav */}
+        <section className="fixed top-0 w-full bg-black z-10">
+          <ResponsiveNavBar
+            btn={searchBtn}
+            fnc={setSearchBtn}
+            ListStyle={ListStyle}
+            ListComponent={ListComponent}
+            categories={categories}
+            genders={genders}
+            sideLinks={sideLinks}
+          ></ResponsiveNavBar>
+        </section>
       </div>
-
-      {/* second nav */}
-      <section className="fixed top-0 w-full bg-black z-10">
-        <ResponsiveNavBar
-          btn={searchBtn}
-          fnc={setSearchBtn}
-          ListStyle={ListStyle}
-          ListComponent={ListComponent}
-          categories={categories}
-          genders={genders}
-          sideLinks={sideLinks}
-        ></ResponsiveNavBar>
-      </section>
-    </div>
   );
 };
 
-export default NavbarCompTwo;
+export default NavBarCompRe;

@@ -7,6 +7,7 @@ export const DrawerLinks = (
   genders,
   toggleDrawer,
 ) => {
+  // console.log(categories,'categoriesss');
   const links = (
     <>
       <ListStyle goto="/" pageName="Home" />
@@ -24,14 +25,8 @@ export const DrawerLinks = (
       {categories &&
         categories.length > 0 &&
         categories.map((cat, index) =>
-          cat.name == 'Customize' ? (
-            <Link
-              href={'/customize-tee'}
-              className="btn shadow-md hover:shadow-lg shadow-rose-100 hover:shadow-rose-200 rounded-lg"
-            >
-              Customize
-            </Link>
-          ) : !cat.isGenderVaried ? (
+          cat.name != 'Customize' &&
+          !cat.isGenderVaried ? (
             <ListComponent
               isSide={true}
               key={index}

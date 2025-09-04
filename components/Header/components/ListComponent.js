@@ -1,76 +1,168 @@
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import React, { useEffect, useState } from 'react';
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import ListListComponent from './components/ListListComponent';
 
-const ListComponent = ({ cat, cats = [], ListStyle, isSide = false }) => {
-    // console.log(cats, 78);
-    const [subCategories, setSubCategories] = useState([])
-    const [subCategoriesLength, setSubCategoriesLength] = useState(0)
+const ListComponent = ({
+  cat,
+  cats = [],
+  ListStyle,
+  isSide = false,
+  toggleDrawer,
+}) => {
+  console.log(cat, 'catt');
+  // console.log(cats, 78);
+  const [subCategories, setSubCategories] = useState([]);
+  const [subCategoriesLength, setSubCategoriesLength] = useState(0);
 
-    const axiosPublic = useAxiosPublic();
+  const axiosPublic = useAxiosPublic();
 
-    useEffect(() => {
-        // if (cat.name != 'Men' && cat.name != 'Women') {
-        axiosPublic.get(`/admin/view-product-sub-category/${cat.id}`)
-            .then(res => {
-                setSubCategories(res.data)
-                setSubCategoriesLength(
-                    res.data.filter(item => item.isDisabled === false).length
-                );
-                // console.log(res.data, "13");
-            })
-        // }
-    }, [])
-
-    const List = ({ children, parentClass, parentName }) => {
-        return (
-            <li className={`${parentClass}`}>
-                <span className='flex gap-1 items-center'> {parentName} <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown> </span>
-                <ul
-                    className="hidden gap-10 p-5 bg-base-100 absolute border-white border-2 rounded-lg">
-                    {/*  */}
-                    {/* */}
-                    {children}
-                </ul>
-            </li>
+  useEffect(() => {
+    // if (cat.name != 'Men' && cat.name != 'Women') {
+    axiosPublic
+      .get(`/admin/view-product-sub-category/${cat.id}`)
+      .then((res) => {
+        setSubCategories(res.data);
+        setSubCategoriesLength(
+          res.data.filter((item) => item.isDisabled === false).length,
         );
-    }
+        // console.log(res.data, "13");
+      });
+    // }
+  }, []);
 
+  // const List = ({ children, parentClass, parentName, isSide }) => {
+  //   const [openUl, setOpenUl] = useState(null);
+
+  //   const handleOpenUl = () => {
+  //     setOpenUl(!openUl);
+  //   };
+
+  //   return (
+  //     <div className={!isSide && parentClass}>
+  //       <span onClick={handleOpenUl} className="flex gap-1 items-center">
+  //         {' '}
+  //         {
+  //           parentName
+  //         } <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>{' '}
+  //       </span>
+  //       <ul
+  //         className={`${
+  //           isSide
+  //             ? openUl
+  //               ? ' block relative transition-all duration-300 opacity-100'
+  //               : ' block opacity-0 absolute -z-40'
+  //             : 'hidden'
+  //         }
+  //          gap-10 p-5 bg-base-100 absolute border-white border-2 rounded-lg`}
+  //       >
+  //         {/*  */}
+  //         {/* */}
+  //         {children}
+  //       </ul>
+  //     </div>
+  //   );
+  // };
+
+  const List = ({ children, parentClass, parentName }) => {
+    const [openUl, setOpenUl] = useState(null);
+
+    const handleOpenUl = () => {
+      setOpenUl(!openUl);
+    };
     return (
-        <>
-            <List parentClass={isSide ? 'ulDrawerClass' : 'ulClass'} parentName={cat.name}>
-                {
-                    cat.name == 'Men' || cat.name == 'Women' ?
-                        cats.map((catItem, index) => (
-                            catItem.isGenderVaried &&
-                            (
-                                cat.name == 'Men' && catItem.isForMen ?
-                                    <ul className={` ${isSide ? '' : index + 5 != cats.length && 'border-r-2 border-zinc-800 pr-4'}`}>
-                                        {/* <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span> */}
-                                        <ListComponent isSide={isSide} key={index} cat={catItem} ListStyle={ListStyle}></ListComponent>
-                                    </ul>
-                                    :
-                                    cat.name == 'Women' && catItem.isForWomen &&
-                                    <ul className={` ${isSide ? '' : index + 1 != cats.length && 'border-r-2 border-zinc-800 pr-4'}`}>
-                                        <ListComponent isSide={isSide} key={index} cat={catItem} ListStyle={ListStyle}></ListComponent>
-                                    </ul>
-                            )
-                        ))
-                        :
-                        subCategories.map((catItem, index) =>
-                            // {
-                            catItem.isDisabled == false &&
-                            <ul className={` ${isSide ? '' : index + 1 != subCategories.length && 'border-r-2 border-zinc-800 pr-4'}`}>
-                                <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span>
-                                <ListListComponent ListStyle={ListStyle} sub={catItem}></ListListComponent>
-                            </ul>
-                            // }
-                        )
-                }
-            </List>
-        </>
+      <div className={`${!isSide && parentClass}`}>
+        <span onClick={handleOpenUl} className="flex gap-1 items-center">
+          {parentName}
+          <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
+        </span>
+
+        <ul
+          data-theme="light"
+          className={`${
+            isSide
+              ? openUl
+                ? ' block relative transition-all duration-300 opacity-100'
+                : ' block opacity-0 absolute -z-40'
+              : 'hidden w-full left-0 justify-around'
+          }
+           gap-10 p-5 bg-base-100 absolute border-white border-2 rounded-lg`}
+        >
+          {/*  */}
+          {/* */}
+          {children}
+        </ul>
+      </div>
     );
+  };
+
+  return (
+    <>
+      <List
+        parentClass={isSide ? 'ulDrawerClass' : 'ulClass'}
+        parentName={cat.name}
+        isSide={isSide}
+      >
+        {cat.name == 'Men' || cat.name == 'Women' ? (
+          cats.map(
+            (catItem, index) =>
+              catItem.isGenderVaried &&
+              (cat.name == 'Men' && catItem.isForMen ? (
+                <ul>
+                  {/* <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span> */}
+                  <ListComponent
+                    isSide={isSide}
+                    key={index}
+                    cat={catItem}
+                    ListStyle={ListStyle}
+                  ></ListComponent>
+                </ul>
+              ) : (
+                cat.name == 'Women' &&
+                catItem.isForWomen && (
+                  <ul>
+                    <ListComponent
+                      isSide={isSide}
+                      key={index}
+                      cat={catItem}
+                      ListStyle={ListStyle}
+                    ></ListComponent>
+                  </ul>
+                )
+              )),
+          )
+        ) : (
+          <>
+            {cat?.filename && !cat?.isGenderVaried && (
+              <ul>
+                <img
+                  className={`hidden w-64 ${isSide ? 'hidden' : 'lg:block'}`}
+                  src={`${cat?.filename}` || '/placeholder.jpg'}
+                />
+              </ul>
+            )}
+            {subCategories.map(
+              (catItem, index) =>
+                // {
+                catItem.isDisabled == false && (
+                  <ul>
+                    <span className="flex gap-1 items-center pb-3 text-lg font-bold">
+                      {' '}
+                      {catItem.name}{' '}
+                    </span>
+                    <ListListComponent
+                      ListStyle={ListStyle}
+                      sub={catItem}
+                    ></ListListComponent>
+                  </ul>
+                ),
+              // }
+            )}
+          </>
+        )}
+      </List>
+    </>
+  );
 };
 
 export default ListComponent;

@@ -12,6 +12,7 @@ import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
 import HomeNav from '/components/Home/HomeNav';
+import DrawerProvider from '/Contexts/DrawerProvider';
 
 export const CompanyContext = createContext(null); {/* unused */ }
 
@@ -59,7 +60,7 @@ export default function Home() {
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
-          <Head>
+            <Head>
             <title>Tahams - The Unique Way of Life</title>
             <meta name="description" content="Discover the unique lifestyle with Tahams." />
             <meta property="og:title" content="Tahams - The Unique Way of Life" />
