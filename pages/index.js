@@ -5,7 +5,7 @@ import ShopByCategory from '/components/ShopByCategory/ShopByCategory';
 import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
-import TagManager from "react-gtm-module";
+import TagManager from 'react-gtm-module';
 import Head from 'next/head';
 import useLoadActivePop from '/./Hooks/useLoadActivePop';
 import NewArrival from '/components/Home/NewArrival/NewArrival';
@@ -13,16 +13,21 @@ import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
 import HomeNav from '/components/Home/HomeNav';
 import DrawerProvider from '/Contexts/DrawerProvider';
+import ProfessionalSwiper from '/components/Swiper/SwiperDS';
+import SwiperGPT from '/components/Swiper/SwiperGPT';
 
-export const CompanyContext = createContext(null); {/* unused */ }
+export const CompanyContext = createContext(null);
+{
+  /* unused */
+}
 
 export default function Home() {
   // const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const activePop = useLoadActivePop()
+  const activePop = useLoadActivePop();
 
   const tagManagerArgs = {
-    gtmId: "GTM-K89SSG9W", // Replace with your GTM ID
+    gtmId: 'GTM-K89SSG9W', // Replace with your GTM ID
   };
 
   useEffect(() => {
@@ -45,13 +50,13 @@ export default function Home() {
     const isPopupSeen = localStorage.getItem(activePop.title) == 'true';
     const now = new Date();
 
-    if (!isPopupSeen &&
+    if (
+      !isPopupSeen &&
       new Date(activePop.startDate) <= now &&
       new Date(activePop.endDate) >= now
     ) {
       setIsModalOpen(true);
-    }
-    else {
+    } else {
       setIsModalOpen(false);
     }
   }, [activePop]);
@@ -60,14 +65,26 @@ export default function Home() {
     <div>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
-            <Head>
+          <Head>
             <title>Tahams - The Unique Way of Life</title>
-            <meta name="description" content="Discover the unique lifestyle with Tahams." />
-            <meta property="og:title" content="Tahams - The Unique Way of Life" />
-            <meta property="og:description" content="Discover the unique lifestyle with Tahams." />
+            <meta
+              name="description"
+              content="Discover the unique lifestyle with Tahams."
+            />
+            <meta
+              property="og:title"
+              content="Tahams - The Unique Way of Life"
+            />
+            <meta
+              property="og:description"
+              content="Discover the unique lifestyle with Tahams."
+            />
             <meta property="og:url" content="https://tahamsbd.com/" />
             <meta property="og:type" content="website" />
-            <meta property="og:image" content="https://tahamsbd.com/og-image.jpg" />
+            <meta
+              property="og:image"
+              content="https://tahamsbd.com/og-image.jpg"
+            />
 
             {/* 🔥 Preload LCP image */}
             <link
@@ -110,13 +127,15 @@ export default function Home() {
           </Modal>
           {/* Main Content */}
           {/* {!isModalOpen && */}
-          <MySwiper images={bannerImages}></MySwiper>
+          {/* <MySwiper images={bannerImages}></MySwiper> */}
+          <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
+          {/* <SwiperGPT images={bannerImages}></SwiperGPT> */}
           {/* <TriangleLoader/> */}
           {/* } */}
           {/* <HomeNav></HomeNav> */}
           <NewArrival />
           <Popular />
-          <section id='about'>
+          <section id="about">
             <WhyUs></WhyUs>
           </section>
           <ShopByCategory></ShopByCategory>

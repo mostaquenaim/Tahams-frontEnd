@@ -2,6 +2,7 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import React, { useEffect, useState } from 'react';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import ListListComponent from './components/ListListComponent';
+import Link from 'next/link';
 
 const ListComponent = ({
   cat,
@@ -31,39 +32,6 @@ const ListComponent = ({
     // }
   }, []);
 
-  // const List = ({ children, parentClass, parentName, isSide }) => {
-  //   const [openUl, setOpenUl] = useState(null);
-
-  //   const handleOpenUl = () => {
-  //     setOpenUl(!openUl);
-  //   };
-
-  //   return (
-  //     <div className={!isSide && parentClass}>
-  //       <span onClick={handleOpenUl} className="flex gap-1 items-center">
-  //         {' '}
-  //         {
-  //           parentName
-  //         } <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>{' '}
-  //       </span>
-  //       <ul
-  //         className={`${
-  //           isSide
-  //             ? openUl
-  //               ? ' block relative transition-all duration-300 opacity-100'
-  //               : ' block opacity-0 absolute -z-40'
-  //             : 'hidden'
-  //         }
-  //          gap-10 p-5 bg-base-100 absolute border-white border-2 rounded-lg`}
-  //       >
-  //         {/*  */}
-  //         {/* */}
-  //         {children}
-  //       </ul>
-  //     </div>
-  //   );
-  // };
-
   const List = ({ children, parentClass, parentName }) => {
     const [openUl, setOpenUl] = useState(null);
 
@@ -72,21 +40,35 @@ const ListComponent = ({
     };
     return (
       <div className={`${!isSide && parentClass}`}>
-        <span onClick={handleOpenUl} className="flex gap-1 items-center">
-          {parentName}
-          <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
-        </span>
+        {parentName != 'Men' && parentName != 'Women' && !isSide? (
+          <Link
+            href={`/categories/${parentName}`}
+            onClick={handleOpenUl}
+            className="hover:font-extrabold hover:scale-105 duration-300 transition-all  flex gap-1 items-center"
+          >
+            {parentName}
+            <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
+          </Link>
+        ) : (
+          <span
+            onClick={handleOpenUl}
+            className="hover:font-extrabold hover:scale-105 duration-300 transition-all  flex gap-1 items-center"
+          >
+            {parentName}
+            <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
+          </span>
+        )}
 
         <ul
           data-theme="light"
           className={`${
             isSide
               ? openUl
-                ? ' block relative transition-all duration-300 opacity-100'
+                ? ' block relative transition-all duration-300 opacity-100 rounded-lg'
                 : ' block opacity-0 absolute -z-40'
               : 'hidden w-full left-0 justify-around'
           }
-           gap-10 p-5 bg-base-100 absolute border-white border-2 rounded-lg`}
+           gap-10 p-5 bg-base-100 absolute border-white border-2 shadow shadow-black`}
         >
           {/*  */}
           {/* */}
@@ -97,7 +79,7 @@ const ListComponent = ({
   };
 
   return (
-    <>
+    <div className="">
       <List
         parentClass={isSide ? 'ulDrawerClass' : 'ulClass'}
         parentName={cat.name}
@@ -136,7 +118,7 @@ const ListComponent = ({
             {cat?.filename && !cat?.isGenderVaried && (
               <ul>
                 <img
-                  className={`hidden w-64 ${isSide ? 'hidden' : 'lg:block'}`}
+                  className={`hidden w-64 ${isSide ? 'hidden' : ' lg:flex'}`}
                   src={`${cat?.filename}` || '/placeholder.jpg'}
                 />
               </ul>
@@ -161,7 +143,7 @@ const ListComponent = ({
           </>
         )}
       </List>
-    </>
+    </div>
   );
 };
 
