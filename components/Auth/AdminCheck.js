@@ -7,7 +7,6 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Loading from '../Loading';
 import DrawerProvider from '/Contexts/DrawerProvider';
 import Head from 'next/head';
-import Notfound from '../Notfound';
 import Link from 'next/link';
 
 const AdminCheck = ({ children }) => {
