@@ -41,14 +41,14 @@ const ListComponent = ({
     return (
       <div className={`${!isSide && parentClass}`}>
         {parentName != 'Men' && parentName != 'Women' && !isSide? (
-          <Link
+          <a
             href={`/categories/${parentName}`}
             onClick={handleOpenUl}
             className="hover:font-extrabold hover:scale-105 duration-300 transition-all  flex gap-1 items-center"
           >
             {parentName}
             <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
-          </Link>
+          </a>
         ) : (
           <span
             onClick={handleOpenUl}

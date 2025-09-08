@@ -98,7 +98,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div className="relative w-full h-full pt-16 lg:pt-40">
+            <div className="relative pt-16 lg:pt-40">
               <div className="relative w-full overflow-hidden">
                 <picture>
                   <source
@@ -112,7 +112,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                   <img
                     src={slide.src.startsWith('/') ? slide.src : `/${slide.src}`}
                     alt={slide.alt}
-                    className="w-full object-cover 
+                    className="w-full object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh]  
                                scale-105 will-change-transform animate-[kenburns_12s_ease-in-out_infinite]"
                     loading={index === 0 ? 'eager' : 'lazy'}
                     fetchPriority={index === 0 ? 'high' : 'auto'}
@@ -126,7 +126,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
               <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
 
               {/* Content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center top-20">
                 <div
                   className={`max-w-4xl mx-auto space-y-4 sm:space-y-6 text-white transform transition-all duration-1000 ease-out ${
                     isVisible
@@ -142,21 +142,21 @@ const ProfessionalSwiper = ({ images = [] }) => {
                   </div>
 
                   {/* Headline */}
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                  <h1 className="text-2xl lg:text-6xl font-bold leading-tight">
                     Design Your{' '}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                      Identity
+                      Thought
                     </span>
                   </h1>
 
                   {/* Subheadline */}
-                  <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
+                  <p className="hidden lg:block text-base text-gray-200 max-w-2xl mx-auto leading-relaxed">
                     Customize premium tees with your unique style — bold,
                     distinctive, and crafted exclusively for you.
                   </p>
 
                   {/* Stats */}
-                  <div className="flex justify-center items-center gap-4 sm:gap-6 py-2 sm:py-4 flex-wrap">
+                  <div className="hidden md:flex justify-center items-center gap-4 sm:gap-6 py-2 sm:py-4 flex-wrap">
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl font-bold">1000+</div>
                       <div className="text-xs sm:text-sm text-gray-300">
@@ -178,7 +178,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8 ">
                     <Link
                       href="/customize-tee"
                       className="group relative inline-flex items-center justify-center 
@@ -247,7 +247,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                 </div>
 
                 {/* Trust row */}
-                <div className="hidden absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 lg:flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs text-white/70">
+                {/* <div className="hidden absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 lg:flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs text-white/70">
                   <span className="inline-flex items-center gap-1 sm:gap-2">
                     <span className="h-2 w-2 rounded-full bg-emerald-400"></span>{' '}
                     100% Cotton
@@ -260,7 +260,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                     <span className="h-2 w-2 rounded-full bg-violet-400"></span>{' '}
                     Made in BD
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           </SwiperSlide>
