@@ -181,6 +181,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8 ">
                     <Link
                       href="/customize-tee"
+                      scroll={false}
                       className="group relative inline-flex items-center justify-center 
                         text-sm font-semibold tracking-wide
                         px-6 py-2 sm:px-8 sm:py-3
@@ -214,7 +215,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                     </Link>
 
                     <Link
-                      href="/collections"
+                      href="#new-arrival"
                       className="group relative inline-flex items-center justify-center 
                         text-sm font-semibold tracking-wide
                         px-6 py-2 sm:px-8 sm:py-3

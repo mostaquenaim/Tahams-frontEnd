@@ -4,11 +4,11 @@ export const DrawerContext = createContext(null);
 
 const DrawerProvider = ({ children }) => {
     // Set initial fee: 0 if Wednesday, else 80
-    const [isOpen, setIsOpen] = useState(false);
+    const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(false);
 
     const info = {
-        isOpen,
-        setIsOpen
+        isLeftDrawerOpen,
+        setIsLeftDrawerOpen
     };
 
     return (

@@ -10,20 +10,20 @@ import React, {
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 
 const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
-  const { isOpen, setIsOpen } = useContext(DrawerContext);
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext);
   const drawerRef = useRef(null);
 
   // Close drawer on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isOpen) {
-        setIsOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (isLeftDrawerOpen) {
+  //       setIsLeftDrawerOpen(false);
+  //     }
+  //   };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isOpen]);
+  //   window.addEventListener('scroll', handleScroll, { passive: true });
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, [isLeftDrawerOpen]);
 
   // Close drawer when clicking outside
   useEffect(() => {
@@ -33,31 +33,31 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
         !drawerRef.current.contains(event.target) &&
         !event.target.closest('.drawer-button')
       ) {
-        setIsOpen(false);
+        setIsLeftDrawerOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   // Close drawer on escape key press
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        setIsLeftDrawerOpen(false);
       }
     };
 
-    if (isOpen) {
+    if (isLeftDrawerOpen) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [isOpen]);
+  }, [isLeftDrawerOpen]);
 
   // Prevent body scroll when drawer is open
   useEffect(() => {
-    if (isOpen) {
+    if (isLeftDrawerOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -66,10 +66,10 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [isLeftDrawerOpen]);
 
   const toggleDrawer = () => {
-    setIsOpen((prev) => !prev);
+    setIsLeftDrawerOpen((prev) => !prev);
   };
 
   const links = DrawerLinks(ListStyle, ListComponent, categories, genders);
@@ -79,9 +79,9 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
       {/* Drawer Toggle Button */}
       <button
         className="drawer-button p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        onClick={toggleDrawer}
+        onClick={() => setIsLeftDrawerOpen(true)}
         aria-label="Open navigation menu"
-        aria-expanded={isOpen}
+        aria-expanded={isLeftDrawerOpen}
       >
         <AiOutlineMenu className="text-2xl text-gray-700" />
       </button>
@@ -89,9 +89,9 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
       {/* Backdrop Overlay */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isLeftDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={() => setIsOpen(false)}
+        onClick={() => setIsLeftDrawerOpen(false)}
         aria-hidden="true"
       />
 
@@ -100,7 +100,7 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
         data-theme="light"
         ref={drawerRef}
         className={`fixed top-0 left-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isLeftDrawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="dialog"
         aria-modal="true"
@@ -110,7 +110,7 @@ const LeftDrawer = ({ ListStyle, ListComponent, categories, genders }) => {
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800">Menu</h2>
           <button
-            onClick={toggleDrawer}
+            onClick={() => setIsLeftDrawerOpen(false)}
             className="p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="Close navigation menu"
           >

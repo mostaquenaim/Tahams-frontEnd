@@ -133,7 +133,9 @@ export default function Home() {
           {/* <TriangleLoader/> */}
           {/* } */}
           {/* <HomeNav></HomeNav> */}
-          <NewArrival />
+          <section id='new-arrival'>
+            <NewArrival />
+          </section>
           <Popular />
           <section id="about">
             <WhyUs></WhyUs>

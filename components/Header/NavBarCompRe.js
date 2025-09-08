@@ -173,12 +173,12 @@ const NavBarCompRe = () => {
     </>
   );
 
-  const { isOpen, setIsOpen } = useContext(DrawerContext);
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext);
 
   const ListStyle = ({ goto, pageName, extraClass }) => {
     const onBtnClick = () => {
       router.push(goto);
-      setIsOpen(!isOpen);
+      setIsLeftDrawerOpen(false);
     };
 
     return (
