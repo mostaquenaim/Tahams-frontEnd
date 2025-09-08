@@ -849,38 +849,38 @@ const CustomizeYourTee = () => {
 
   const generatePreview = async (side, exportScale = 1) => {
     // CSS pixel size (your intented display size)
-    const cssWidth = device === 'mobile' ? 240 : 400;
-    const cssHeight = device === 'mobile' ? 300 : 500;
+    const cssWidth = device === "mobile" ? 240 : 400;
+    const cssHeight = device === "mobile" ? 300 : 500;
 
     // Account for Hi-DPI displays and optional exportScale
     const dpr =
       Math.max(1, window.devicePixelRatio || 1) * Math.max(1, exportScale);
 
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = Math.round(cssWidth * dpr);
     canvas.height = Math.round(cssHeight * dpr);
     // Keep the element sized as you expect in the page
     canvas.style.width = `${cssWidth}px`;
     canvas.style.height = `${cssHeight}px`;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     // Draw in CSS pixels by scaling the context once
     ctx.scale(dpr, dpr);
 
     // Better resampling quality (especially when scaling images)
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality = "high";
 
     try {
       // --- Background ---
       const bgImg = new Image();
-      bgImg.crossOrigin = 'anonymous';
+      bgImg.crossOrigin = "anonymous";
       const bgSrc = selectedColor?.previewImages?.[side];
 
       await new Promise((resolve, reject) => {
         let timeout = setTimeout(
-          () => reject(new Error('Image loading timeout')),
-          5000,
+          () => reject(new Error("Image loading timeout")),
+          5000
         );
         bgImg.onload = async () => {
           clearTimeout(timeout);
@@ -897,9 +897,9 @@ const CustomizeYourTee = () => {
           ctx.fillStyle = selectedColor.color;
           ctx.fillRect(0, 0, cssWidth, cssHeight);
           ctx.strokeStyle =
-            selectedColor.color === '#FFFFFF'
-              ? '#E5E7EB'
-              : 'rgba(255,255,255,0.2)';
+            selectedColor.color === "#FFFFFF"
+              ? "#E5E7EB"
+              : "rgba(255,255,255,0.2)";
           ctx.lineWidth = 2;
           ctx.strokeRect(10, 10, cssWidth - 20, cssHeight - 20);
           resolve();
@@ -923,19 +923,19 @@ const CustomizeYourTee = () => {
           ctx.rotate(rad);
           ctx.translate(-cx, -cy);
 
-          if (element.type === 'text') {
+          if (element.type === "text") {
             // Use full font shorthand
-            const weight = element.style.fontWeight || '400';
+            const weight = element.style.fontWeight || "400";
             const size = element.style.fontSize || 16;
-            const family = element.style.fontFamily || 'sans-serif';
+            const family = element.style.fontFamily || "sans-serif";
             ctx.font = `${weight} ${size}px ${family}`;
-            ctx.fillStyle = element.style.color || '#000';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.fillText(element.content || '', element.x, element.y);
-          } else if (element.type === 'image') {
+            ctx.fillStyle = element.style.color || "#000";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillText(element.content || "", element.x, element.y);
+          } else if (element.type === "image") {
             const img = new Image();
-            img.crossOrigin = 'anonymous';
+            img.crossOrigin = "anonymous";
             await new Promise((resolve) => {
               img.onload = async () => {
                 try {
@@ -946,12 +946,12 @@ const CustomizeYourTee = () => {
                   element.x,
                   element.y,
                   element.width,
-                  element.height,
+                  element.height
                 );
                 resolve();
               };
               img.onerror = () => {
-                console.warn('Design image failed to load:', element.content);
+                console.warn("Design image failed to load:", element.content);
                 resolve();
               };
               img.src = element.content;
@@ -964,7 +964,7 @@ const CustomizeYourTee = () => {
 
       return canvas;
     } catch (error) {
-      console.error('Error creating preview:', error);
+      console.error("Error creating preview:", error);
       throw error;
     }
   };
@@ -1123,15 +1123,15 @@ const CustomizeYourTee = () => {
     }
   };
 
-  const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
+  const panelStyle = "bg-white rounded-xl shadow-lg border border-gray-200 p-6";
   const headingTitle =
-    'flex items-center gap-3 text-lg font-semibold text-black mb-6';
+    "flex items-center gap-3 text-lg font-semibold text-black mb-6";
   const buttonStyle =
-    'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black';
+    "w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black";
   const sectionTitle =
-    'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
+    "text-sm font-medium text-gray-800 mb-3 flex items-center gap-2";
   const inputStyle =
-    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400';
+    "w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400";
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -1210,6 +1210,7 @@ const CustomizeYourTee = () => {
             isElementOutOfBounds={isElementOutOfBounds}
             printHeight={printHeight}
             printWidth={printWidth}
+            //ref
             inputRefs={inputRefs}
             setIsDoubleClicked={setIsDoubleClicked}
           />
@@ -1295,12 +1296,12 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 w-full sm:w-auto ${
                     isLoading
-                      ? 'bg-orange-400'
-                      : 'bg-orange-600 hover:bg-orange-700'
+                      ? "bg-orange-400"
+                      : "bg-orange-600 hover:bg-orange-700"
                   }`}
                 >
                   {isLoading ? (
-                    'Processing...'
+                    "Processing..."
                   ) : (
                     <>
                       <Printer size={18} />
@@ -1353,15 +1354,15 @@ const CustomizeYourTee = () => {
                   Size
                 </h3>
                 <div className="grid grid-cols-5 gap-2.5">
-                  {['S', 'M', 'L', 'XL', '2XL', '3XL'].map((size) => (
+                  {["S", "M", "L", "XL", "2XL", "3XL"].map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all 
           ${
             selectedSize === size
-              ? 'border-black bg-gray-900 text-white shadow-md'
-              : 'border-gray-300 hover:border-gray-400 bg-white text-gray-700'
+              ? "border-black bg-gray-900 text-white shadow-md"
+              : "border-gray-300 hover:border-gray-400 bg-white text-gray-700"
           }`}
                       aria-label={`Select ${size} size`}
                     >
@@ -1400,11 +1401,11 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
                     isLoading
-                      ? 'bg-orange-400'
-                      : 'bg-orange-600 hover:bg-orange-700'
+                      ? "bg-orange-400"
+                      : "bg-orange-600 hover:bg-orange-700"
                   }`}
                 >
-                  {isLoading ? 'Submitting...' : 'Submit'}
+                  {isLoading ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </div>
