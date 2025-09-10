@@ -1,5 +1,5 @@
 import React from 'react';
-import NavbarCompTwo from '../../../components/Header/NavbarComp';
+import NavbarCompTwo from '../../../components/Header/NavbarCompDraft';
 import Footer from '../../../components/Footer/Footer';
 import { FaPaintBrush, FaHandshake, FaCheckCircle } from 'react-icons/fa';
 import Head from 'next/head';

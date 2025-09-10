@@ -38,7 +38,13 @@ export const compressImage = async (item) => {
 
 const EditProduct = ({ product }) => {
   const colors = useLoadColors();
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
     defaultValues: {
       name: product.name,
       serialNo: product.serialNo,
@@ -55,7 +61,7 @@ const EditProduct = ({ product }) => {
 
   const [subSubCategories] = useLoadSubSubCategories();
   const sizes = useLoadSizes();
-  
+
   const [loading, setLoading] = useState(false);
   const [existingImages, setExistingImages] = useState(product.productPictures);
   const [filename, setFilename] = useState(product.filename);
@@ -282,9 +288,15 @@ const EditProduct = ({ product }) => {
   const validateFile = (files) => {
     if (files && files.length > 0) {
       const file = files[0];
-      const allowedTypes = ["image/jpg", "image/png", "image/jpeg", "image/gif", "image/webp"];
+      const allowedTypes = [
+        'image/jpg',
+        'image/png',
+        'image/jpeg',
+        'image/gif',
+        'image/webp',
+      ];
       if (!allowedTypes.includes(file.type)) {
-        return "Please upload a valid image file (PNG, JPG, GIF, WebP)";
+        return 'Please upload a valid image file (PNG, JPG, GIF, WebP)';
       }
     }
     return true;
@@ -295,14 +307,16 @@ const EditProduct = ({ product }) => {
       <Head>
         <title>Edit Product - {product.name} | Admin</title>
       </Head>
-      
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Edit Product</h1>
-          <p className="text-gray-600 mt-2">Update product information and inventory details</p>
+          <p className="text-gray-600 mt-2">
+            Update product information and inventory details
+          </p>
           <div className="mt-2 text-sm text-gray-500">
-            Product ID: <span className="font-medium">{product.id}</span> | 
+            Product ID: <span className="font-medium">{product.id}</span> |
             Current Name: <span className="font-medium">{product.name}</span>
           </div>
         </div>
@@ -310,22 +324,27 @@ const EditProduct = ({ product }) => {
         {/* Main Form */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-8">
-            
             {/* Basic Information Section */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Basic Information</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Basic Information
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Product Name *
                   </label>
                   <input
-                    {...register('name', { required: 'Product name is required' })}
+                    {...register('name', {
+                      required: 'Product name is required',
+                    })}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="Enter product name"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.name.message}
+                    </p>
                   )}
                 </div>
 
@@ -344,7 +363,9 @@ const EditProduct = ({ product }) => {
 
             {/* Product Descriptions */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Product Descriptions</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Product Descriptions
+              </h2>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -374,7 +395,9 @@ const EditProduct = ({ product }) => {
 
             {/* Pricing Information */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Pricing Information</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Pricing Information
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -383,12 +406,16 @@ const EditProduct = ({ product }) => {
                   <input
                     type="number"
                     step="0.01"
-                    {...register('buyingPrice', { required: 'Buying price is required' })}
+                    {...register('buyingPrice', {
+                      required: 'Buying price is required',
+                    })}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="0.00"
                   />
                   {errors.buyingPrice && (
-                    <p className="mt-1 text-sm text-red-600">{errors.buyingPrice.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.buyingPrice.message}
+                    </p>
                   )}
                 </div>
 
@@ -399,12 +426,16 @@ const EditProduct = ({ product }) => {
                   <input
                     type="number"
                     step="0.01"
-                    {...register('sellingPrice', { required: 'Selling price is required' })}
+                    {...register('sellingPrice', {
+                      required: 'Selling price is required',
+                    })}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="0.00"
                   />
                   {errors.sellingPrice && (
-                    <p className="mt-1 text-sm text-red-600">{errors.sellingPrice.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.sellingPrice.message}
+                    </p>
                   )}
                 </div>
 
@@ -442,7 +473,9 @@ const EditProduct = ({ product }) => {
 
             {/* Product Attributes */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Product Attributes</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Product Attributes
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -477,7 +510,7 @@ const EditProduct = ({ product }) => {
                       placeholder="Auto-filled"
                     />
                     {selectedColor?.colorCode && (
-                      <div 
+                      <div
                         className="w-10 h-10 rounded border border-gray-300"
                         style={{ backgroundColor: selectedColor.colorCode }}
                       />
@@ -507,11 +540,15 @@ const EditProduct = ({ product }) => {
 
             {/* Product Images */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Product Images</h2>
-              
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Product Images
+              </h2>
+
               {/* Thumbnail Image */}
               <div className="mb-8">
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Thumbnail Image</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Thumbnail Image
+                </h3>
                 <div className="flex items-start space-x-6">
                   <div className="flex-shrink-0">
                     <img
@@ -529,7 +566,10 @@ const EditProduct = ({ product }) => {
                         <div className="flex flex-col items-center justify-center pt-2 pb-3">
                           <FiUpload className="w-6 h-6 mb-2 text-gray-400" />
                           <p className="text-xs text-gray-500 text-center">
-                            <span className="font-semibold">Click to upload</span> or drag
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{' '}
+                            or drag
                           </p>
                         </div>
                         <input
@@ -550,20 +590,33 @@ const EditProduct = ({ product }) => {
 
               {/* Product Gallery */}
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Product Gallery</h3>
-                
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Product Gallery
+                </h3>
+
                 {/* Warning Message */}
                 <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-amber-400 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      <svg
+                        className="h-5 w-5 text-amber-400 mt-0.5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <h4 className="text-sm font-medium text-amber-800">Important Notice</h4>
+                      <h4 className="text-sm font-medium text-amber-800">
+                        Important Notice
+                      </h4>
                       <p className="mt-1 text-sm text-amber-700">
-                        Adding new photos will replace all existing gallery images. Current images will be permanently removed.
+                        Adding new photos will replace all existing gallery
+                        images. Current images will be permanently removed.
                       </p>
                     </div>
                   </div>
@@ -572,7 +625,9 @@ const EditProduct = ({ product }) => {
                 {/* Existing Images */}
                 {existingImages && existingImages.length > 0 && (
                   <div className="mb-6">
-                    <h4 className="text-md font-medium text-gray-700 mb-3">Current Images</h4>
+                    <h4 className="text-md font-medium text-gray-700 mb-3">
+                      Current Images
+                    </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                       {existingImages.map((pic, index) => (
                         <div key={pic.id} className="relative group">
@@ -597,15 +652,20 @@ const EditProduct = ({ product }) => {
 
                 {/* Add New Images */}
                 <div className="mb-6">
-                  <h4 className="text-md font-medium text-gray-700 mb-3">Add New Images</h4>
+                  <h4 className="text-md font-medium text-gray-700 mb-3">
+                    Add New Images
+                  </h4>
                   <div className="flex items-center justify-center w-full">
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <FiImage className="w-8 h-8 mb-3 text-gray-400" />
                         <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
+                          <span className="font-semibold">Click to upload</span>{' '}
+                          or drag and drop
                         </p>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF, WebP (MAX. 5MB each)</p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF, WebP (MAX. 5MB each)
+                        </p>
                       </div>
                       <input
                         type="file"
@@ -621,7 +681,9 @@ const EditProduct = ({ product }) => {
                 {/* Preview New Images */}
                 {newImages.length > 0 && (
                   <div>
-                    <h4 className="text-md font-medium text-gray-700 mb-3">New Images to Upload</h4>
+                    <h4 className="text-md font-medium text-gray-700 mb-3">
+                      New Images to Upload
+                    </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                       {newImages.map((file, index) => (
                         <div key={index} className="relative group">
@@ -643,48 +705,70 @@ const EditProduct = ({ product }) => {
 
             {/* Categories & Inventory */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Categories & Inventory</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Categories & Inventory
+              </h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-4">Select Categories</h3>
-                  <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-700 mb-4">
+                    Select Categories
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {subSubCategories.map((category, index) => (
-                      <div key={category.id} className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                      <div
+                        key={category.id}
+                        className="bg-gray-50 p-6 rounded-lg border border-gray-200"
+                      >
                         <div className="flex items-start">
                           <input
                             type="checkbox"
                             id={`selectedCategories_${category.id}`}
-                            onChange={(e) => handleCategoryChange(e, category.id)}
+                            onChange={(e) =>
+                              handleCategoryChange(e, category.id)
+                            }
                             checked={selectedCats.includes(category.id)}
                             className="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
-                          <label htmlFor={`selectedCategories_${category.id}`} className="ml-4 block">
-                            <span className="font-semibold text-lg text-gray-800">{category.name}</span>
+                          <label
+                            htmlFor={`selectedCategories_${category.id}`}
+                            className="ml-4 block"
+                          >
+                            <span className="font-semibold text-lg text-gray-800">
+                              {category.name}
+                            </span>
                             <p className="text-sm text-gray-600 mt-1">
-                              {category.category.name} → {category.category.category.name}
+                              {category.category.name} →{' '}
+                              {category.category.category.name}
                               {category.category.category.isGenderVaried &&
-                                (category.category.category.isForMen ? ' (Men)' : ' (Women)')}
+                                (category.category.category.isForMen
+                                  ? ' (Men)'
+                                  : ' (Women)')}
                             </p>
                           </label>
                         </div>
 
                         {selectedCats.includes(category.id) && (
-                          <div className="mt-6 ml-9 pl-4 border-l-2 border-blue-200">
+                          <div className="mt-6 border-l-2 border-blue-200">
                             <div className="flex items-center mb-4">
                               <input
                                 type="checkbox"
                                 id={`size-applicable-${category.id}`}
                                 checked={isSizeApplicable.includes(category.id)}
-                                onChange={(e) => handleSizeApplicableChange(e, category.id)}
+                                onChange={(e) =>
+                                  handleSizeApplicableChange(e, category.id)
+                                }
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                               />
-                              <label htmlFor={`size-applicable-${category.id}`} className="ml-3 text-sm font-medium text-gray-700">
+                              <label
+                                htmlFor={`size-applicable-${category.id}`}
+                                className="ml-3 text-sm font-medium text-gray-700"
+                              >
                                 This product has size variations
                               </label>
                             </div>
 
                             {isSizeApplicable.includes(category.id) ? (
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-">
                                 {sizes.map((size) => {
                                   const categoryInfo = selectedCatsInfo.find(
                                     (cat) => cat.category === category.id,
@@ -693,7 +777,10 @@ const EditProduct = ({ product }) => {
                                     (s) => s.id === size.id,
                                   );
                                   return (
-                                    <div key={size.id} className="bg-white p-3 rounded border border-gray-200">
+                                    <div
+                                      key={size.id}
+                                      className="bg-white p-3 rounded border border-gray-200"
+                                    >
                                       <label className="block text-sm font-medium text-gray-700 mb-2">
                                         {size.name}
                                       </label>
@@ -702,7 +789,9 @@ const EditProduct = ({ product }) => {
                                         min="0"
                                         className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         placeholder="Qty"
-                                        defaultValue={sizeInfo ? sizeInfo.quantity : 0}
+                                        defaultValue={
+                                          sizeInfo ? sizeInfo.quantity : 0
+                                        }
                                         onInput={(e) =>
                                           handleSizeAndQuantityChange(
                                             e,
@@ -728,9 +817,12 @@ const EditProduct = ({ product }) => {
                                   onInput={(e) =>
                                     handleSizeAndQuantityChange(e, category.id)
                                   }
-                                  {...register(`categories[${index}].quantity`, {
-                                    required: false,
-                                  })}
+                                  {...register(
+                                    `categories[${index}].quantity`,
+                                    {
+                                      required: false,
+                                    },
+                                  )}
                                 />
                               </div>
                             )}
@@ -752,12 +844,14 @@ const EditProduct = ({ product }) => {
               >
                 Cancel
               </button>
-              
+
               <div className="flex space-x-4">
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirm('Are you sure you want to reset all changes?')) {
+                    if (
+                      confirm('Are you sure you want to reset all changes?')
+                    ) {
                       window.location.reload();
                     }
                   }}
@@ -765,7 +859,7 @@ const EditProduct = ({ product }) => {
                 >
                   Reset Changes
                 </button>
-                
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -775,9 +869,25 @@ const EditProduct = ({ product }) => {
                 >
                   {loading ? (
                     <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Updating...
                     </span>
@@ -794,12 +904,22 @@ const EditProduct = ({ product }) => {
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 flex flex-col space-y-3">
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
           className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           title="Scroll to top"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 15l7-7 7 7"
+            />
           </svg>
         </button>
 
@@ -807,14 +927,24 @@ const EditProduct = ({ product }) => {
           onClick={() =>
             window.scrollTo({
               top: document.body.scrollHeight,
-              behavior: 'smooth',
+              behavior: 'instant',
             })
           }
           className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           title="Scroll to bottom"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
       </div>

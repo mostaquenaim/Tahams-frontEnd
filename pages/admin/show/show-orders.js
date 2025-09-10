@@ -251,7 +251,7 @@ const ShowOrders = () => {
                             {group.orders.map((order, idx) => (
                               <Link
                                 key={idx}
-                                href={`/products/details/${order.product.id}`}
+                                href={`/products/details/${order.product.productId}`}
                                 className="text-blue-600 hover:text-blue-800 hover:underline"
                               >
                                 {order.product.name}

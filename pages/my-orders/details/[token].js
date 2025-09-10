@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import NavbarCompTwo from '../../../components/Header/NavbarComp';
+import NavbarCompTwo from '../../../components/Header/NavbarCompDraft';
 import Footer from '../../../components/Footer/Footer';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';

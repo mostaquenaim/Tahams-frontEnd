@@ -1,6 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
 import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiPhone } from 'react-icons/fi';
-import NavbarCompTwo from '/components/Header/NavbarComp';
 import Footer from '/components/Footer/Footer';
 import Link from 'next/link';
 import { useContext, useState } from 'react';

@@ -29,7 +29,7 @@ const ShowOrderComp = ({ group, idx, cardBtnStyle }) => {
                             key={idx}
                             className="relative bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 ease-in-out"
                         >
-                            <Link href={`/products/details/${order.product.id}`} className="block group">
+                            <Link href={`/products/details/${order.product.productId}`} className="block group">
                                 <img
                                     src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
                                     alt={order.product.name}

@@ -131,7 +131,7 @@ const Index = () => {
                 const product = info.row.original;
                 return (
                     <div className='flex gap-5'>
-                        <Link href={`/products/details/${product.id}`} className="text-blue-500 hover:underline">Details</Link>
+                        <Link href={`/products/details/${product.productId}`} className="text-blue-500 hover:underline">Details</Link>
                         <button className="text-blue-500 hover:underline" onClick={() => openPublishModal(product)}>Publish</button>
                         <button className="text-red-500 hover:underline" onClick={() => openDeleteModal(product)}>Delete</button>
                     </div>

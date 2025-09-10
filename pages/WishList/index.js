@@ -50,7 +50,7 @@ const WishList = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {wish.map((item) => (
                                     <div key={item.id} className="bg-white rounded shadow-md p-4">
-                                        <Link href={`products/details/${item.product.id}`} className="transition duration-300 hover:scale-105">
+                                        <Link href={`products/details/${item.product.productId}`} className="transition duration-300 hover:scale-105">
                                             <img
                                                 className="w-full h-40 object-cover rounded-t-md"
                                                 src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.product.filename}`}
@@ -58,7 +58,7 @@ const WishList = () => {
                                             />
                                         </Link>
                                         <div className="p-4">
-                                            <Link href={`products/details/${item.product.id}`} className="transition duration-300 hover:scale-105">
+                                            <Link href={`products/details/${item.product.productId}`} className="transition duration-300 hover:scale-105">
                                                 <h2 className="text-sm md:text-base lg:text-lg xl:text-xl font-semibold">{item.product.name}</h2>
                                                 <p className="text-xs md:text-sm lg:text-base xl:text-lg">{item.product.sellingPrice - parseInt(item.product.sellingPrice * item.product.discountPercentage / 100) + parseInt(item.product.sellingPrice * item.product.vatPercentage)} BDT</p>
                                             </Link>

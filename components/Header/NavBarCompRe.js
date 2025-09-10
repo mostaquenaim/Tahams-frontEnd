@@ -248,7 +248,7 @@ const NavBarCompRe = () => {
           searchedProducts.map((product) => (
             <div
               key={product.id}
-              onClick={() => handleResultClick(product.id)}
+              onClick={() => handleResultClick(product.productId)}
               className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
             >
               <img

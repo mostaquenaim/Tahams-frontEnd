@@ -416,7 +416,7 @@ const ShowProducts = () => {
                               </div>
                               <div className="ml-4">
                                 <Link
-                                  href={`/products/details/${product.id}`}
+                                  href={`/products/details/${product.productId}`}
                                   className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                                 >
                                   {product.name}

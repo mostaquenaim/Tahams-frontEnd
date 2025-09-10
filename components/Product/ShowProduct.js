@@ -21,7 +21,7 @@ const ShowProduct = ({ item }) => {
     const [hoveredImage, setHoveredImage] = useState('')
     const [ftImage, setFtImage] = useState('https://static-01.daraz.com.bd/p/13e6157acd98dfb45b8f2c9de90fe6bd.jpg')
 
-    const { sellingPrice, discountPercentage, id, filename, ifStock } = item
+    const { sellingPrice, discountPercentage, id, filename, ifStock, productId } = item
     const discountedPrice = parseInt(sellingPrice * (100 - discountPercentage) / 100)
 
     const image = `/admin/get-ft-photo-by-product-id/${id}`
@@ -93,7 +93,7 @@ const ShowProduct = ({ item }) => {
         const CatId = url.pathname.split('/').pop();
         console.log(CatId);
         localStorage.setItem('defaultCategoryId', CatId);
-        router.push(`/products/details/${id}`)
+        router.push(`/products/details/${productId}`)
     }
 
     const cardBtnStyle = 'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1'

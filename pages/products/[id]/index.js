@@ -13,6 +13,8 @@ const Product = () => {
     const [productsByCat, isPending] = useLoadProductsByCat(getidfromurl);
     const [productNameByCat] = useLoadProductName(getidfromurl);
 
+    // console.log(productNameByCat,'gibgib',productsByCat);
+
     return (
         <>
             <Head>

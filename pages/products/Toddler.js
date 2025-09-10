@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import Footer from '../../components/Footer/Footer';
-import NavbarCompTwo from '/components/Header/NavbarComp';
 
 const Toddler = () => {
     return (

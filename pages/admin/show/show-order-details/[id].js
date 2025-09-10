@@ -157,7 +157,7 @@ const ShowOrderDetails = () => {
                             <div className='grid lg:grid-cols-2 gap-6'>
                                 {group.map(order => (
                                     <div key={order.id} className='bg-gray-50 p-4 rounded-lg flex'>
-                                        <Link href={`/products/details/${order.product.id}`} className='w-32 h-32 relative mr-4'>
+                                        <Link href={`/products/details/${order.product.productId}`} className='w-32 h-32 relative mr-4'>
                                             <Image
                                                 src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product?.filename}`}
                                                 alt={order.product?.name || 'Product Image'}

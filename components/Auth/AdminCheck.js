@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import AdminDrawer from '../Drawers/AdminDrawer';
-import NavbarCompTwo from '../Header/NavbarComp';
+import NavbarCompTwo from '../Header/NavbarCompDraft';
 import Footer from '../Footer/Footer';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Loading from '../Loading';

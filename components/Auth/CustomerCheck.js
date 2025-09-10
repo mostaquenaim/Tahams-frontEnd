@@ -1,4 +1,4 @@
-import NavbarCompTwo from '../Header/NavbarComp';
+import NavbarCompTwo from '../Header/NavbarCompDraft';
 import Footer from '../Footer/Footer';
 import NavBarCompRe from '../Header/NavBarCompRe';
 import DrawerProvider from '/Contexts/DrawerProvider';

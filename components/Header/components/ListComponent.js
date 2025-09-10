@@ -11,7 +11,7 @@ const ListComponent = ({
   isSide = false,
   toggleDrawer,
 }) => {
-  console.log(cat, 'catt');
+  // console.log(cat, 'catt');
   // console.log(cats, 78);
   const [subCategories, setSubCategories] = useState([]);
   const [subCategoriesLength, setSubCategoriesLength] = useState(0);
