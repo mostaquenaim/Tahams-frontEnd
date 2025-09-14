@@ -16,6 +16,7 @@ import { AddToWish } from '/utils/WishFunctions';
 import { DeleteFromWish } from '/utils/WishFunctions';
 import PeopleAlsoLike from '/components/Product/PeopleAlsoLike';
 import { AnimatePresence, motion } from 'framer-motion';
+import ProductSize from '/components/Product/ProductSize';
 
 const Product = ({ product }) => {
   // console.log('product-test', product);
@@ -245,16 +246,16 @@ const Product = ({ product }) => {
       setShowGotoCart(true);
 
       if (quantity >= 3) {
-            setDiscountEligible(true);
-            setShowDiscountSuccess(true);
-            setTimeout(() => setShowDiscountSuccess(false), 3000);
-        }
+        setDiscountEligible(true);
+        setShowDiscountSuccess(true);
+        setTimeout(() => setShowDiscountSuccess(false), 3000);
+      }
 
       // Use guest customer info for cart addition
       try {
         // Make a POST request to the backend endpoint for adding to the cart
         const response = await axiosPublic.post('/admin/add-to-cart', {
-          productId: product?.id,
+          productId: product?.productId,
           category: selectedCategory,
           size: selectedSize,
           maleSize: selectedMaleSize,
@@ -311,7 +312,7 @@ const Product = ({ product }) => {
       try {
         // Add product to the cart for the logged-in user
         const response = await axiosPublic.post('/admin/add-to-cart', {
-          productId: product?.id,
+          productId: product?.productId,
           category: selectedCategory,
           size: selectedSize,
           maleSize: selectedMaleSize,
@@ -533,7 +534,7 @@ const Product = ({ product }) => {
             </div>
 
             {/* Size Selection */}
-            {filteredSizes && filteredSizes.length > 0 && (
+            {/* {filteredSizes && filteredSizes.length > 0 && (
               <div className="mb-4">
                 <label className="text-gray-600 font-semibold">
                   Select Size:
@@ -584,7 +585,15 @@ const Product = ({ product }) => {
                   </div>
                 )}
               </div>
-            )}
+            )} */}
+            <ProductSize
+              selectedCategory={selectedCategory}
+              product={product}
+              selectedSize={selectedSize}
+              handleSizeChange={handleSizeChange}
+              selectedFemaleSize={selectedFemaleSize}
+              handleFemaleSizeChange={handleFemaleSizeChange}
+            />
 
             {/* Quantity Selector */}
             {product.pscs[0].category.category.category.name == 'Couples' ? (

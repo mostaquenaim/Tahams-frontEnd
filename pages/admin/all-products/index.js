@@ -458,7 +458,7 @@ const ShowProducts = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center gap-3">
                               <Link
-                                href={`/admin/edit/product/${product.id}`}
+                                href={`/admin/edit/product/${product.productId}`}
                                 className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1"
                               >
                                 <FiEdit2 size={14} />

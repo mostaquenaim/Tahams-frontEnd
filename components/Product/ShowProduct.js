@@ -53,7 +53,7 @@ const ShowProduct = ({ item }) => {
         try {
             // Make a POST request to the backend for adding to the cart
             const response = await axiosPublic.post('/admin/add-to-cart', {
-                productId: item.id,
+                productId: item.productId,
                 size: item.pscs[0].size.name,
                 category: item.pscs[0].category.id,
                 Quantity: item.pscs[0].quantity > 0 ? 1 : 0,

@@ -15,7 +15,7 @@ export const AddToWish = async (product, customEmail, checkIfWished) => {
     try {
         // Make a POST request to add the product to the wishlist
         const res = await axiosPublic.post(`/admin/add-Wish`, {
-            productId: product?.id,
+            productId: product?.productId,
             customerEmail: customEmail
         });
         // Add the product to the wishlist

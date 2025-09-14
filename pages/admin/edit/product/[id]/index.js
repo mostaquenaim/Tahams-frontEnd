@@ -79,7 +79,7 @@ const EditProduct = ({ product }) => {
     const tempCatsInfo = new Map();
     const tempSizeApp = new Set();
 
-    product.pscs.forEach((cat) => {
+    product?.pscs?.forEach((cat) => {
       tempCats.add(cat.category.id);
 
       if (!tempCatsInfo.has(cat.category.id)) {
