@@ -36,7 +36,7 @@ const AddNewPopUp = () => {
   };
 
   const handleSubmit = async (e) => {
-    console.log('token in');
+  // console.log('token in');
     e.preventDefault();
 
     // Validate title (no spaces allowed)

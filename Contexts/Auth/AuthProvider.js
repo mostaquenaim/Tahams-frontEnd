@@ -33,7 +33,7 @@ const AuthProvider = ({ children }) => {
                 setUser(result.user);
                 
             }).catch((error) => {
-                console.log(error.message)
+              // console.log(error.message)
                 // ...
             });
 

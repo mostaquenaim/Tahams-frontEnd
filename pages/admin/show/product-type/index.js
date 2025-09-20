@@ -113,7 +113,7 @@ const ProductType = () => {
                 return Swal.fire('Validation Error', 'Product name cannot be empty.', 'warning');
             }
 
-            console.log('come here');
+          // console.log('come here');
             const res = await axiosPublic.put(`/admin/update-product-type-name/${id}`, {
                 name: newName,
             });

@@ -26,7 +26,7 @@ const FinalCart = ({ cartItems }) => {
         setTotalPrice(newTotalPrice);
 
 
-        console.log(cartItems);
+      // console.log(cartItems);
         const tempItems = []
 
         cartItems.forEach((item) => {

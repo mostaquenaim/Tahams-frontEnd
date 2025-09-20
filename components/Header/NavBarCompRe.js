@@ -71,7 +71,7 @@ const NavBarCompRe = () => {
       await logOut();
       localStorage.removeItem('userInfo');
       localStorage.removeItem('access_token');
-      console.log('User logged out successfully');
+    // console.log('User logged out successfully');
     } catch (error) {
       console.error('Error during logout:', error.message);
       // You might want to show a toast notification here

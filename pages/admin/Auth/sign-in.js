@@ -27,8 +27,8 @@ export default function AdminSignIn() {
             router.push('dashboard');
 
         } catch (error) {
-            console.log("error")
-            console.log("error22: " + error.message)
+          // console.log("error")
+          // console.log("error22: " + error.message)
             setError("Invalid")
         }
     };

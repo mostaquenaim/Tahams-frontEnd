@@ -30,7 +30,7 @@ const ShowOrdersDraft = () => {
 
     const groupedOrdersArray = Object.values(groupedOrders);
 
-    console.log(groupedOrdersArray,'groupedOrdersArray');
+  // console.log(groupedOrdersArray,'groupedOrdersArray');
 
     return (
         <div className='min-h-screen bg-gray-100 p-8'>

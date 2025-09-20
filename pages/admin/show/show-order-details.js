@@ -11,7 +11,7 @@ const ShowOrderDetails = () => {
     const { id } = router.query;
     const [orders] = useOrder();
     const { loading } = useContext(AuthContext)
-    console.log('orders', orders);
+  // console.log('orders', orders);
 
     const group = orders.find(order => order.history?.id === id);
 

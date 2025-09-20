@@ -78,7 +78,7 @@ const ShowProduct = ({ item }) => {
     const handleMouseEnter = () => {
         // Set the source of the first image in productPictures as the hoveredImage
         if (item.productPictures.length > 0) {
-            console.log(item.productPictures[0].filename);
+          // console.log(item.productPictures[0].filename);
             setHovered(true);
             setHoveredImage(item.productPictures[0].filename);
         }
@@ -91,7 +91,7 @@ const ShowProduct = ({ item }) => {
     const handleProductClick = () => {
         const url = new URL(window.location.href);
         const CatId = url.pathname.split('/').pop();
-        console.log(CatId);
+      // console.log(CatId);
         localStorage.setItem('defaultCategoryId', CatId);
         router.push(`/products/details/${productId}`)
     }

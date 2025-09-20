@@ -205,7 +205,7 @@ const Product = ({ product }) => {
   };
 
   const handleCategoryChange = (categoryId) => {
-    console.log(categoryId, 'catid');
+  // console.log(categoryId, 'catid');
     setSelectedCategory(categoryId);
     const firstSize = product.pscs.find((p) => p.category.id == categoryId)
       ?.size?.name;
@@ -265,7 +265,7 @@ const Product = ({ product }) => {
           customerEmail: customEmail, // Use guest email
         });
 
-        console.log(response.data, 'rspdar');
+      // console.log(response.data, 'rspdar');
 
         // console.log(response.data,'cart data');
         localStorage.setItem('defaultCartItem', response.data.id);

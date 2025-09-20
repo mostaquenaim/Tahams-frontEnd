@@ -20,7 +20,6 @@ const ProductSize = ({
       )
     : [];
 
-
   return (
     <div>
       {filteredSizes && filteredSizes.length > 0 && (

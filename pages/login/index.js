@@ -28,7 +28,7 @@ const Login = () => {
         if (user) {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
             const isAdmin = userInfo?.role === 'admin'; // Adjust this field name if needed
-            console.log('isAdmin',isAdmin);
+          // console.log('isAdmin',isAdmin);
 
             if (isAdmin) {
                 router.push('/admin');
@@ -53,7 +53,7 @@ const Login = () => {
             if (response.data.status >= 200 && response.data.status <= 205) {
                 try {
                     const userCredential = await signIn(data.email, data.password);
-                    console.log('Firebase user logged in:', userCredential.user);
+                  // console.log('Firebase user logged in:', userCredential.user);
                     toast.success('Logged in');
                     // console.log(JSON.stringify(response.data.data));
                     localStorage.setItem('access_token', response.data.access_token)
@@ -65,7 +65,7 @@ const Login = () => {
                     toast.error(firebaseError.message);
                 }
 
-                console.log("Registration successful");
+              // console.log("Registration successful");
             } else {
                 // console.log(response);
                 toast.error(response.data.error.message || "Invalid credentials");
@@ -127,10 +127,10 @@ const Login = () => {
             try {
                 // Check if the email is already registered
                 const emailCheckResponse = await axiosPublic.get(`/admin/check-email?email=${userEmail}`);
-                console.log(emailCheckResponse);
+              // console.log(emailCheckResponse);
 
                 if (emailCheckResponse.data.status !== 404) {
-                    console.log("Email already registered");
+                  // console.log("Email already registered");
                     // You may want to sign out the user here
                     const response = await axiosPublic.post('/admin/signin',
                         { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS }

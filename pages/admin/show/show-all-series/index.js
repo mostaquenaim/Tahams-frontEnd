@@ -12,7 +12,7 @@ import { handleUploadWithCloudinary } from '/components/Images/AddImageToCloudin
 const ShowAllSeries = () => {
   const axiosPublic = useAxiosPublic();
   const [series, refetch, isPending] = useLoadSeries();
-  console.log(series, 'seriesss');
+// console.log(series, 'seriesss');
 
   const [editId, setEditId] = useState(null);
   const [nameEdits, setNameEdits] = useState({});
@@ -116,7 +116,7 @@ const ShowAllSeries = () => {
       //     formData.append('image', imageEdits[id]);
       //   }
 
-      console.log(imageLink);
+    // console.log(imageLink);
 
       formData.append('filename', imageLink);
 

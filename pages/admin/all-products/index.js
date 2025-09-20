@@ -218,7 +218,7 @@ const ShowProducts = () => {
     try {
       setSyncing(true);
       const response = await axiosPublic.get('/admin/sync-view-count');
-      console.log('Sync view count response:', response.data);
+    // console.log('Sync view count response:', response.data);
     } catch (error) {
       console.error('Error fetching sync view count:', error);
     } finally {

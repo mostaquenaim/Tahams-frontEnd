@@ -169,7 +169,6 @@ const AdminDrawer = () => {
                 { href: '/admin/settings/rearrange-navbar', label: 'Rearrange Navbar Items' },
             ],
         },
-
     ];
 
     const toggleDrawer = () => setIsOpen(!isOpen);

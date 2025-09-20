@@ -7,7 +7,7 @@ const SyncSalesCount = () => {
 
     const handleSyncSales = async () => {
         const result = await axiosPublic.put(`admin/sync-sales-count`)
-        console.log(result.data,'ss');
+      // console.log(result.data,'ss');
         toast.success('synced sales count')
     }
     return (

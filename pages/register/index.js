@@ -35,7 +35,7 @@ const Register = () => {
     const password = watch("password");
 
     const onRegisterSubmit = async (data) => {
-        console.log(data);
+      // console.log(data);
         data.loggedInWith = 'Email-Pass'
         try {
             // Send OTP to the user's phone number or email
@@ -82,7 +82,7 @@ const Register = () => {
                     // Create user in Firebase
                     try {
                         const userCredential = await createUser(userData.email, userData.password);
-                        console.log('Firebase user created:', userCredential.user);
+                      // console.log('Firebase user created:', userCredential.user);
                         toast.success('Thank you for registering');
                         await axiosPublic.post('/admin/signin', {
                             email: userData.email,
@@ -102,7 +102,7 @@ const Register = () => {
                     }
                     finally {
                         localStorage.removeItem('userData')
-                        console.log("Registration successful");
+                      // console.log("Registration successful");
                     }
 
                 }

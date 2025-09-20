@@ -18,7 +18,7 @@ export const pushToDataLayer = (eventName, ecommerceData, user_email) => {
         }
     }
 
-    console.log(ecommercePayload);
+  // console.log(ecommercePayload);
 
     window.dataLayer.push({
         event: eventName,

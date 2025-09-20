@@ -40,7 +40,7 @@ const RearrangeNavbar = () => {
 
         try {
             const res = await axiosPublic.post('/admin/shuffle-category', updated);
-            console.log('Server response:', res.data);
+          // console.log('Server response:', res.data);
             toast.success('Category order saved successfully!');
         } catch (err) {
             console.error('Failed to save category order:', err);

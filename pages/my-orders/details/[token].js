@@ -35,7 +35,7 @@ const OrderDetails = () => {
                     }
 
                     const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${tmpEmail}`);
-                    console.log(response.data, 26);
+                  // console.log(response.data, 26);
                     setOrderDetails(response.data);
                 } catch (err) {
                     setError('Failed to fetch order details. Please try again later.');

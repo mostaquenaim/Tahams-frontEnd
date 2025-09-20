@@ -3,7 +3,7 @@ import React from 'react';
 import { FaEye } from 'react-icons/fa';
 
 const ShowOrderComp = ({ group, idx, cardBtnStyle }) => {
-    console.log('group', group);
+  // console.log('group', group);
     return (
         <div
             key={idx}

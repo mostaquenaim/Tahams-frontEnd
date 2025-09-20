@@ -14,7 +14,7 @@ const PeopleAlsoLike = ({ category, currentProductId }) => {
             try {
                 const res = await axiosPublic.get(`admin/related-products?category=${category}&exclude=${currentProductId}`);
                 setProducts(res.data || []);
-                console.log('res', res.data);
+              // console.log('res', res.data);
             } catch (error) {
                 console.error('Error fetching related products:', error);
             } finally {

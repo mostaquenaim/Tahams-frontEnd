@@ -32,7 +32,7 @@ const ShowOrderDetails = () => {
 
     const customer = group[0]?.customer;
     const history = group[0]?.history;
-    console.log(history);
+  // console.log(history);
 
     // Modal handlers
     const openMessageBox = () => setIsConfirmationMessageBoxOpen(true);

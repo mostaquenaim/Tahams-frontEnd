@@ -9,7 +9,7 @@ const HandleLogout = () => {
             .then(() => {
                 // Remove userInfo from localStorage
                 localStorage.removeItem('userInfo');
-                console.log('User logged out and userInfo removed from localStorage');
+              // console.log('User logged out and userInfo removed from localStorage');
             })
             .catch((error) => {
                 console.error('Error during logout:', error.message);

@@ -27,7 +27,7 @@ const Dashboard = () => {
             setUserData(getGuestCustomerInfo())
     }, [loading, user])
 
-    console.log(userData && userData);
+  // console.log(userData && userData);
 
     if (loading) {
         return <div className='min-h-screen pt-20 lg:pt-40'>
@@ -42,7 +42,7 @@ const Dashboard = () => {
                 if (typeof window !== "undefined") {
                     localStorage.removeItem('userInfo');
                     localStorage.removeItem('access_token');
-                    console.log('User logged out and userInfo removed from localstorage');
+                  // console.log('User logged out and userInfo removed from localstorage');
                 }
             })
             .catch((error) => {

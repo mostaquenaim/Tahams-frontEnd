@@ -5,7 +5,7 @@ export const handleUploadWithCloudinary = async (file) => {
   if (!file) return;
 
   const sigRes = await axiosPublic.get('/admin/cloudinary-signature'); 
-  //   console.log(sigRes.data, 'dataa');
+  // // console.log(sigRes.data, 'dataa');
   const { cloudName, upload_preset } = await sigRes.data;
 
   const imageData = new FormData();
@@ -18,7 +18,7 @@ export const handleUploadWithCloudinary = async (file) => {
   );
 
   const data = await uploadRes.json();
-  console.log(data, 'uploaded data');
+// console.log(data, 'uploaded data');
 
   return data.secure_url;
 };

@@ -102,7 +102,7 @@ const ShowProductSmall = ({ item }) => {
     const handleProductClick = () => {
         const url = new URL(window.location.href);
         const CatId = url.pathname.split('/').pop();
-        console.log(CatId);
+      // console.log(CatId);
         localStorage.setItem('defaultCategoryId', CatId);
         router.push(`/products/details/${productId}`)
     }

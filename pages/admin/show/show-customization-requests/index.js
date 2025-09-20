@@ -1,17 +1,22 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import useCustomizationReq from '/Hooks/useCustomizationReq';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FiSearch, FiDownload, FiChevronDown, FiFilter } from 'react-icons/fi';
 import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import useCustomizationReq from '/Hooks/useCustomizationReq';
 import Loading from '/components/Loading';
-import Link from 'next/link';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
+import useAxiosPublic from '/Hooks/useAxiosPublic';
+import Swal from 'sweetalert2';
+import _ from 'lodash'; // install lodash if not already: npm i lodash
 
 const ShowCustomizationRequests = () => {
   const [customizations, refetch, isPending] = useCustomizationReq();
+  console.log(customizations, 'customizationscustomizations');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
@@ -32,6 +37,40 @@ const ShowCustomizationRequests = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  // console.log(filteredCustomizations,'filteredCustomizationsfilteredCustomizations');
+
+  // Filter first
+  const filtered = customizations.filter((customization) => {
+    const matchesSearch =
+      customization.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customization.phone?.includes(searchTerm);
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      customization.status.toLowerCase() === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Group by groupId
+  const groupedCustomizations = _(filtered)
+    .groupBy('groupId')
+    .map((items) => {
+      const base = items[0]; // take common info
+      return {
+        ...base,
+        sides: items.reduce((acc, item) => {
+          acc[item.side] = {
+            previewImage: item.previewImage,
+            customTexts: item.customTexts,
+            customImages: item.customImages,
+          };
+          return acc;
+        }, {}),
+      };
+    })
+    .value();
 
   // Handle export functionality for CSV and Excel
   const handleExport = (type) => {
@@ -93,6 +132,75 @@ const ShowCustomizationRequests = () => {
     { value: 'approved', label: 'Approved' },
     { value: 'rejected', label: 'Rejected' },
   ];
+
+  const axiosPublic = useAxiosPublic();
+
+  const handleDeleteCustomReq = async (id) => {
+    const token = localStorage.getItem('access_token');
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action will permanently delete the customization request.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axiosPublic.delete(
+            `/admin/delete-customization-request/${id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          Swal.fire(
+            'Deleted!',
+            res.data?.message || 'Request deleted successfully.',
+            'success',
+          );
+          refetch();
+        } catch (error) {
+          Swal.fire(
+            'Error!',
+            error.response?.data?.message || 'Something went wrong.',
+            'error',
+          );
+        }
+      }
+    });
+  };
+
+  const handleCheckRequest = async (id) => {
+    const token = localStorage.getItem('access_token');
+    try {
+      const res = await axiosPublic.put(
+        `/admin/update-customization-request/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      // Swal.fire(
+      //   'Deleted!',
+      //   res.data?.message || 'Request deleted successfully.',
+      //   'success',
+      // );
+
+      refetch();
+    } catch (error) {
+      Swal.fire(
+        'Error!',
+        error.response?.data?.message || 'Something went wrong.',
+        'error',
+      );
+    }
+  };
 
   return (
     <>
@@ -193,13 +301,8 @@ const ShowCustomizationRequests = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredCustomizations.map((customization, index) => (
-                      <motion.tr
-                        key={customization.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
+                    {groupedCustomizations.map((customization) => (
+                      <motion.tr key={customization.groupId}>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           #{customization.id}
                         </td>
@@ -210,12 +313,23 @@ const ShowCustomizationRequests = () => {
                           {customization.color}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
-                          {customization.side}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {customization.customTexts.map((text, idx) => (
-                            <div key={idx}>{text.content}</div>
-                          ))}
+                          {/* Show both sides */}
+                          {customization.sides.front && (
+                            <div>
+                              Front:{' '}
+                              {customization.sides.front.customTexts
+                                .map((t) => t.content)
+                                .join(', ')}
+                            </div>
+                          )}
+                          {customization.sides.back && (
+                            <div>
+                              Back:{' '}
+                              {customization.sides.back.customTexts
+                                .map((t) => t.content)
+                                .join(', ')}
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           <span
@@ -230,15 +344,21 @@ const ShowCustomizationRequests = () => {
                             {customization.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm font-medium">
-                          <div className="flex items-center gap-3">
-                            <Link
-                              href={`customization-details/${customization.id}`}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              View
-                            </Link>
-                          </div>
+                        <td className="px-6 py-4 text-sm font-medium flex gap-2 items-center text-center">
+                          <Link
+                            href={`customization-details/${customization.groupId}`}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            View
+                          </Link>
+                          <button
+                            onClick={() =>
+                              handleCheckRequest(customization.groupId)
+                            }
+                            className="text-yellow-600 hover:text-yellow-800"
+                          >
+                            Check
+                          </button>
                         </td>
                       </motion.tr>
                     ))}

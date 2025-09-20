@@ -19,13 +19,13 @@ const MyCart = () => {
 
   useEffect(() => {
     const cartItem = parseInt(localStorage.getItem('defaultCartItem'))
-    console.log('cartItem', cartItem);
+  // console.log('cartItem', cartItem);
     setCheckedItems([cartItem])
   }, [])
 
   // Toggle the selection of an item
   const toggleItemSelection = (itemId) => {
-    console.log('cartItem', itemId);
+  // console.log('cartItem', itemId);
     if (checkedItems.includes(itemId)) {
       setCheckedItems(checkedItems.filter((id) => id !== itemId));
     } else {

@@ -33,7 +33,7 @@ const UpdatePopUp = () => {
     };
 
     const handleSubmit = async () => {
-        console.log('token');
+      // console.log('token');
         // console.log(token);
         try {
             const res = await axiosPublic.put(`/admin/update-active-pop-up/${selectedIndex}`, {},
@@ -44,7 +44,7 @@ const UpdatePopUp = () => {
                 }
             )
             // Here you would call your API to update which popup is active
-            console.log(`Updated active popup to ID: ${activePopupId}`);
+          // console.log(`Updated active popup to ID: ${activePopupId}`);
             alert('Active popup updated successfully!');
         } catch (error) {
             console.error('Error updating active popup:', error);
