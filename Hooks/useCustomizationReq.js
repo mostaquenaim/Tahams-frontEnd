@@ -5,8 +5,7 @@ import { useContext, useState, useEffect } from 'react';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
 
 const useCustomizationReq = (id = 0) => {
-  // console.log(id,'iding');
-  const { user, loading } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [customerEmail, setCustomerEmail] = useState('');
 
   useEffect(() => {
@@ -16,37 +15,43 @@ const useCustomizationReq = (id = 0) => {
   const axiosPublic = useAxiosPublic();
 
   const loadCustomizations = async () => {
-    // console.log(customerEmail, id, 'gibgib');  // Correcting to use customerEmail
     try {
       const result = await axiosPublic.get(
         '/admin/get-all-customization-requests',
         {
-          params: { email: customerEmail, id: id }, // Use params for GET requests
-        },
+          params: { email: customerEmail, id: id },
+        }
       );
 
-      let sortedCustomizations = result.data;
+      let allCustomizations = result.data;
 
-      if (Array.isArray(result.data))
-        sortedCustomizations = result.data.sort((a, b) => b.id - a.id);
+      if (Array.isArray(allCustomizations)) {
+        allCustomizations = allCustomizations.sort((a, b) => {
+          // First sort by isChecked (unchecked = first)
+          if (a.isChecked !== b.isChecked) {
+            return a.isChecked ? 1 : -1;
+          }
+          // Then sort by id (desc)
+          return b.id - a.id;
+        });
+      }
 
-      return sortedCustomizations;
+      return allCustomizations;
     } catch (error) {
       console.error('Error loading customization requests:', error);
       return [];
     }
   };
 
-  // Only run the query when `customerEmail` is set
   const {
     refetch,
     data: customizations = [],
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ['customizations', customerEmail, id], // Add dependencies to re-fetch when needed
+    queryKey: ['customizations', customerEmail, id],
     queryFn: loadCustomizations,
-    enabled: !!customerEmail, // Don't run the query until the email is set
+    enabled: !!customerEmail,
   });
 
   return [customizations, refetch, isLoading || isFetching];

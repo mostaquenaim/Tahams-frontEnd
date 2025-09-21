@@ -12,15 +12,17 @@ import { getGuestCustomerInfo } from '/utils/guestCustomer';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import Swal from 'sweetalert2';
 import _ from 'lodash'; // install lodash if not already: npm i lodash
+import { FaCheck } from 'react-icons/fa';
 
 const ShowCustomizationRequests = () => {
   const [customizations, refetch, isPending] = useCustomizationReq();
-  console.log(customizations, 'customizationscustomizations');
+  // console.log(customizations, 'customizationscustomizations');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const exportRef = useRef(null);
+  const [hoveredId, setHoveredId] = useState(0);
 
   // Handle click outside export dropdown to close it
   useOnClickOutside(exportRef, () => setExportDropdownOpen(false));
@@ -173,12 +175,14 @@ const ShowCustomizationRequests = () => {
     });
   };
 
-  const handleCheckRequest = async (id) => {
+  const handleCheckRequest = async (customization) => {
     const token = localStorage.getItem('access_token');
     try {
       const res = await axiosPublic.put(
-        `/admin/update-customization-request/${id}`,
-        {},
+        `/admin/update-customization-request/${customization.groupId}`,
+        {
+          isChecked: !customization.isChecked,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -302,7 +306,10 @@ const ShowCustomizationRequests = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {groupedCustomizations.map((customization) => (
-                      <motion.tr key={customization.groupId}>
+                      <motion.tr
+                        key={customization.groupId}
+                        className={customization.isChecked && 'bg-green-300'}
+                      >
                         <td className="px-6 py-4 text-sm text-gray-500">
                           #{customization.id}
                         </td>
@@ -352,12 +359,27 @@ const ShowCustomizationRequests = () => {
                             View
                           </Link>
                           <button
-                            onClick={() =>
-                              handleCheckRequest(customization.groupId)
-                            }
-                            className="text-yellow-600 hover:text-yellow-800"
+                            onClick={() => handleCheckRequest(customization)}
                           >
-                            Check
+                            {customization.isChecked ? (
+                              <span
+                                className="flex items-center justify-center text-center w-16 text-green-600 hover:text-red-800 cursor-pointer"
+                                onMouseEnter={() =>
+                                  setHoveredId(customization.groupId)
+                                }
+                                onMouseLeave={() => setHoveredId(0)}
+                              >
+                                {hoveredId === customization.groupId ? (
+                                  'Uncheck'
+                                ) : (
+                                  <FaCheck />
+                                )}
+                              </span>
+                            ) : (
+                              <span className="text-yellow-600 hover:text-yellow-800">
+                                Check
+                              </span>
+                            )}
                           </button>
                         </td>
                       </motion.tr>
