@@ -234,7 +234,13 @@ const ShowOrders = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
                         className={
-                          group.history.isChecked ? 'bg-green-50' : 'bg-white'
+                          group.history.deliveryStatus.id > 6
+                            ? 'bg-red-200 '
+                            : group.history.deliveryStatus.id == 6
+                            ? 'bg-green-200 '
+                            : group.history.isChecked
+                            ? 'bg-green-50'
+                            : 'bg-yellow-200'
                         }
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

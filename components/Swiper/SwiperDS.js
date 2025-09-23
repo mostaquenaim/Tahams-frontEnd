@@ -35,7 +35,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
 
   useEffect(() => {
     setIsVisible(true);
-    
+
     // Initialize progress bar animation
     if (progressBarRef.current) {
       progressBarRef.current.style.width = '0%';
@@ -101,16 +101,40 @@ const ProfessionalSwiper = ({ images = [] }) => {
             <div className="relative pt-16 lg:pt-40">
               <div className="relative w-full overflow-hidden">
                 <picture>
+                  <Link className='hidden lg:block' href={'search-product?search=Executive%20Polo'}>
+                    <img
+                      src="/bg-removed-pics/cover-marshmallow-rmv-bg-2.png"
+                      className="object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh]  
+                               absolute scale-125 left-[82px] z-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                    />
+                  </Link>
+                  <Link className='hidden lg:block' href={'search-product?search=Marshmallow'}>
+                    <img
+                      src="/bg-removed-pics/cover-marshmallow-rmv-bg-1.png"
+                      className="object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh]  
+                               absolute scale-125 right-0 z-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                    />
+                  </Link>
                   <source
                     media="(max-width: 640px)"
-                    srcSet={slide.mobileSrc || slide.src.startsWith('/') ? slide.src : `/${slide.src}`}
+                    srcSet={
+                      slide.mobileSrc || slide.src.startsWith('/')
+                        ? slide.src
+                        : `/${slide.src}`
+                    }
                   />
                   <source
                     media="(min-width: 641px) and (max-width: 1024px)"
-                    srcSet={slide.tabletSrc || slide.src.startsWith('/') ? slide.src : `/${slide.src}`}
+                    srcSet={
+                      slide.tabletSrc || slide.src.startsWith('/')
+                        ? slide.src
+                        : `/${slide.src}`
+                    }
                   />
                   <img
-                    src={slide.src.startsWith('/') ? slide.src : `/${slide.src}`}
+                    src={
+                      slide.src.startsWith('/') ? slide.src : `/${slide.src}`
+                    }
                     alt={slide.alt}
                     className="w-full object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh]  
                                scale-105 will-change-transform animate-[kenburns_12s_ease-in-out_infinite]"
@@ -173,7 +197,9 @@ const ProfessionalSwiper = ({ images = [] }) => {
                     <div className="w-1 h-4 sm:h-6 bg-white/30 rounded-full hidden sm:block"></div>
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl font-bold">24h</div>
-                      <div className="text-xs sm:text-sm text-gray-300">Fast Delivery</div>
+                      <div className="text-xs sm:text-sm text-gray-300">
+                        Fast Delivery
+                      </div>
                     </div>
                   </div>
 
@@ -277,7 +303,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
 
       {/* Progress Bar */}
       <div className="absolute top-0 left-0 h-1 bg-white/30 w-full z-10">
-        <div 
+        <div
           ref={progressBarRef}
           className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-5000 ease-linear swiper-progress-bar"
           style={{ transition: 'width 5s linear' }}
