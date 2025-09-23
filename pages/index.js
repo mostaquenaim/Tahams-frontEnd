@@ -11,10 +11,7 @@ import useLoadActivePop from '/./Hooks/useLoadActivePop';
 import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
-import HomeNav from '/components/Home/HomeNav';
-import DrawerProvider from '/Contexts/DrawerProvider';
 import ProfessionalSwiper from '/components/Swiper/SwiperDS';
-import SwiperGPT from '/components/Swiper/SwiperGPT';
 
 export const CompanyContext = createContext(null);
 {
@@ -90,7 +87,7 @@ export default function Home() {
             <link
               rel="preload"
               as="image"
-              href="/perfumes.jpg"
+              href="/cover-marshmallow.jpg"
               fetchpriority="high"
             />
           </Head>
