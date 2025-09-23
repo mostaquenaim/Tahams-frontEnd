@@ -1,11 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
 import ShowProduct from '/components/Product/ShowProduct';
 import FilterComp from '/components/Filter/Filter';
-import { FaCrown, FaFilter } from 'react-icons/fa';
+import {
+  FaCrown,
+  FaFacebook,
+  FaFacebookMessenger,
+  FaFilter,
+  FaInstagram,
+} from 'react-icons/fa';
 import useLoadColors from '../../Hooks/useLoadColors';
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import Loading from '../Loading';
+import { Facebook, Instagram, MessageCircle, Phone } from 'lucide-react';
 
 const FetchProducts = ({
   categories,
@@ -238,7 +245,108 @@ const FetchProducts = ({
                 <ShowProduct key={index} item={category}></ShowProduct>
               ))
             ) : (
-              <div className="text-3xl text-center">No product to show! 😢</div>
+              <div className="xl:col-span-3 w-full flex flex-col items-center justify-center py-8 sm:py-12 lg:py-16 px-4 text-center">
+  <div className="mb-6">
+    <svg
+      className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gray-300 mx-auto mb-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 8l3 3 3-3"
+      />
+    </svg>
+  </div>
+
+  <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-800 mb-2">
+    No Products Available Right Now
+  </h3>
+
+  <p className="text-sm sm:text-base text-gray-500 mb-6 max-w-xs sm:max-w-md px-2">
+    We're currently updating our inventory. Check back soon or get
+    in touch for the latest product availability!
+  </p>
+
+  <div className="bg-gray-50 rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-sm lg:max-w-md">
+    <h4 className="font-medium text-gray-800 mb-4 text-sm sm:text-base">
+      Stay Updated
+    </h4>
+
+    <div className="space-y-3">
+      <a
+        href="tel:+8801602054102"
+        className="flex items-center justify-center gap-2 bg-black text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm sm:text-base w-full"
+      >
+        <Phone className="w-4 h-4" />
+        <span className="hidden xs:inline">Call Us: </span>
+        <span>+88 01602-054102</span>
+      </a>
+
+      {/* Desktop/Tablet Layout */}
+      <div className="hidden sm:flex gap-2">
+        <a
+          href="https://www.facebook.com/tahamsbd/"
+          className="flex-1 bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-1"
+        >
+          <Facebook className="w-4 h-4" />
+          Facebook
+        </a>
+
+        <a
+          href="https://www.instagram.com/tahams_bd/"
+          className="flex-1 bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-1"
+        >
+          <Instagram className="w-4 h-4" />
+          Instagram
+        </a>
+
+        <a
+          href="https://m.me/111664024670524"
+          className="flex-1 bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-1"
+        >
+          <MessageCircle className="w-4 h-4" />
+          Messenger
+        </a>
+      </div>
+
+      {/* Mobile Layout - Stacked */}
+      <div className="sm:hidden space-y-2">
+        <a
+          href="https://www.facebook.com/tahamsbd/"
+          className="w-full bg-black text-white px-4 py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2"
+        >
+          <Facebook className="w-4 h-4" />
+          Facebook
+        </a>
+
+        <a
+          href="https://www.instagram.com/tahams_bd/"
+          className="w-full bg-black text-white px-4 py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2"
+        >
+          <Instagram className="w-4 h-4" />
+          Instagram
+        </a>
+
+        <a
+          href="https://m.me/111664024670524"
+          className="w-full bg-black text-white px-4 py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2"
+        >
+          <MessageCircle className="w-4 h-4" />
+          Messenger
+        </a>
+      </div>
+
+      <p className="text-xs text-gray-500 mt-3 px-2">
+        Follow us for real-time inventory updates and new arrivals!
+      </p>
+    </div>
+  </div>
+</div>
+
             )
           ) : (
             <div className="text-3xl text-center">Loading...</div>
