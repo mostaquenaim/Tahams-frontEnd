@@ -101,8 +101,8 @@ const ProfessionalSwiper = ({ images = [] }) => {
             <div className="relative pt-16 lg:pt-40">
               <div className="relative w-full overflow-hidden">
                 <picture>
-                  <Link
-                    className="hidden lg:block"
+                  {/* <Link
+                    className="hidden xl:block"
                     href={'search-product?search=Executive%20Polo'}
                   >
                     <img
@@ -120,7 +120,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                       className="object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh]  
                                absolute scale-125 right-0 z-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
                     />
-                  </Link>
+                  </Link> */}
                   <source
                     media="(max-width: 640px)"
                     srcSet={

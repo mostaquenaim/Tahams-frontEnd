@@ -239,8 +239,10 @@ const ShowOrders = () => {
                             : group.history.deliveryStatus.id == 6
                             ? 'bg-green-200 '
                             : group.history.isChecked
-                            ? 'bg-green-50'
-                            : 'bg-yellow-200'
+                            ? group.history.deliveryStatus.id != 1
+                              ? 'bg-yellow-100'
+                              : 'bg-yellow-50'
+                            : 'bg-white'
                         }
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
