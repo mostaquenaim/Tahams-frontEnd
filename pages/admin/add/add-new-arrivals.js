@@ -23,6 +23,22 @@ const AddNewArrivals = ({ previousArrivals }) => {
     }),
   ]);
 
+  const handleAddNewArrival = () => {
+    setFormData((prev) => [
+      ...prev,
+      {
+        name: '',
+        description: '',
+        category: '',
+        subSubCategory: '',
+        filename: null,
+        preview: null,
+      },
+    ]);
+
+    setIsEditing((prev) => [...prev, false]);
+  };
+
   // State to track edit mode for subSubCategory selection
   const [isEditing, setIsEditing] = useState(
     Array(formData.length).fill(false),
@@ -93,110 +109,128 @@ const AddNewArrivals = ({ previousArrivals }) => {
           Add New Arrivals
         </h2>
         {formData.map((item, index) => (
-          <div
-            key={index}
-            className="flex flex-col md:flex-row space-x-4 mb-4 items-center border p-4 rounded-lg"
-          >
-            <p className="font-semibold">Serial: {index + 1}</p>
-            <input
-              type="text"
-              name="name"
-              value={item.name}
-              onChange={(e) => handleChange(index, e)}
-              className="w-full md:w-1/4 p-2 border rounded"
-              placeholder="Name"
-              required
-            />
-            <textarea
-              name="description"
-              value={item.description}
-              onChange={(e) => handleChange(index, e)}
-              className="w-full md:w-1/4 p-2 border rounded"
-              placeholder="Description"
-              required
-            ></textarea>
-
-            {/* Sub-Subcategory Selection with Edit Mode */}
-            <div className="w-full md:w-1/4 relative">
-              {!isEditing[index] ? (
-                <div className="flex items-center justify-between border p-2 rounded">
-                  <span>{item.subsub.name || 'Select Sub-Subcategory'}</span>
-                  <button
-                    onClick={() => {
-                      const editState = [...isEditing];
-                      editState[index] = true;
-                      setIsEditing(editState);
-                    }}
-                    className="text-blue-500 underline ml-2"
-                  >
-                    Edit
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  <select
-                    name="subSubCategory"
-                    value={item.subSubCategory}
-                    onChange={(e) => handleChange(index, e)}
-                    className="p-2 border rounded"
-                    required
-                  >
-                    <option value="" disabled>
-                      Select Sub-Subcategory
-                    </option>
-                    {subSubCategories.map((subSubCategory) => (
-                      <option key={subSubCategory.id} value={subSubCategory.id}>
-                        {subSubCategory.name}, {subSubCategory.category.name},{' '}
-                        {subSubCategory.category.category.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() => {
-                      const editState = [...isEditing];
-                      editState[index] = false;
-                      setIsEditing(editState);
-                    }}
-                    className="text-red-500 underline mt-1"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <input
-              type="file"
-              name="filename"
-              onChange={(e) => handleChange(index, e)}
-              className="w-full md:w-1/4 p-2 border rounded"
-            />
-
-            {/* Image Preview */}
-            {item.preview ? (
-              <img
-                src={item.preview}
-                alt="New Preview"
-                className="w-20 h-20 object-cover mt-2"
-              />
-            ) : (
-              item.filename && (
-                <img
-                  src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
-                  alt="Existing Preview"
-                  className="w-20 h-20 object-cover mt-2"
+          <>
+            {item.serial != 'discontinued' && (
+              <div
+                key={index}
+                className="flex flex-col md:flex-row space-x-4 mb-4 items-center border p-4 rounded-lg"
+              >
+                <p className="font-semibold">Serial: {item.serial}</p>
+                <input
+                  type="text"
+                  name="name"
+                  value={item.name}
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full md:w-1/4 p-2 border rounded"
+                  placeholder="Name"
+                  required
                 />
-              )
-            )}
+                <textarea
+                  name="description"
+                  value={item.description}
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full md:w-1/4 p-2 border rounded"
+                  placeholder="Description"
+                  required
+                ></textarea>
 
-            <button
-              onClick={() => handleUpload(index)}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-2 md:mt-0"
-            >
-              Upload
-            </button>
-          </div>
+                {/* Sub-Subcategory Selection with Edit Mode */}
+                <div className="w-full md:w-1/4 relative">
+                  {!isEditing[index] ? (
+                    <div className="flex items-center justify-between border p-2 rounded">
+                      <span>
+                        {item?.subsub?.name || 'Select category'}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const editState = [...isEditing];
+                          editState[index] = true;
+                          setIsEditing(editState);
+                        }}
+                        className="text-blue-500 underline ml-2"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <select
+                        name="subSubCategory"
+                        value={item.subSubCategory}
+                        onChange={(e) => handleChange(index, e)}
+                        className="p-2 border rounded"
+                        required
+                      >
+                        <option value="" disabled>
+                          Select Sub-Subcategory
+                        </option>
+                        {subSubCategories.map((subSubCategory) => (
+                          <option
+                            key={subSubCategory.id}
+                            value={subSubCategory.id}
+                          >
+                            {subSubCategory.name},{' '}
+                            {subSubCategory.category.name},{' '}
+                            {subSubCategory.category.category.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const editState = [...isEditing];
+                          editState[index] = false;
+                          setIsEditing(editState);
+                        }}
+                        className="text-red-500 underline mt-1"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  name="filename"
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full md:w-1/4 p-2 border rounded"
+                />
+
+                {/* Image Preview */}
+                {item.preview ? (
+                  <img
+                    src={item.preview}
+                    alt="New Preview"
+                    className="w-20 h-20 object-cover mt-2"
+                  />
+                ) : (
+                  item.filename && (
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
+                      alt="Existing Preview"
+                      className="w-20 h-20 object-cover mt-2"
+                    />
+                  )
+                )}
+
+                <button
+                  onClick={() => handleUpload(index)}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-2 md:mt-0"
+                >
+                  Upload
+                </button>
+              </div>
+            )}
+          </>
         ))}
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={handleAddNewArrival}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            + Add More
+          </button>
+        </div>
       </div>
     </div>
   );

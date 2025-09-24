@@ -11,9 +11,9 @@ const ShowNewArrival = ({ ind, prop }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
       className={`relative w-11/12 h-full mx-auto group cursor-pointer 
-        ${ind === 0 && 'col-span-2'}
-      `}
-    >
+        `}
+      // ${(ind === 0 || ind === 2) && 'col-span-2'}
+        >
       <Link
         href={`/search-product?search=${prop.name}`}
         className="block overflow-hidden rounded-xl shadow-lg"
