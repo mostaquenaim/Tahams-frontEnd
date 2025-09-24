@@ -4,7 +4,7 @@ export const DeliveryContext = createContext(null);
 
 // Utility to check if today is Wednesday
 const isWednesday = () => {
-    return new Date().getDay() === 3;
+    return false;
 };
 
 const DeliveryFeeProvider = ({ children }) => {

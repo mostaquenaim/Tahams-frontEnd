@@ -180,6 +180,20 @@ const EditProduct = ({ product }) => {
     setSelectedCatsInfo([...result, categoryWiseItem]);
   };
 
+  const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
+
+  const handleFeaturedImageChange = (e) => {
+    const file = e.target.files[0];
+    setFilename(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFeaturedImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const colorName = watch('colorName');
   const selectedColor = colors.find((color) => color.name === colorName);
   setValue('colorCode', selectedColor?.colorCode || '');
@@ -544,51 +558,82 @@ const EditProduct = ({ product }) => {
                 Product Images
               </h2>
 
-              {/* Thumbnail Image */}
-              <div className="mb-8">
-                <h3 className="text-lg font-medium text-gray-700 mb-4">
-                  Thumbnail Image
-                </h3>
-                <div className="flex items-start space-x-6">
-                  <div className="flex-shrink-0">
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
-                      alt="Product Thumbnail"
-                      className="h-32 w-32 object-cover rounded-lg border border-gray-300 shadow-sm"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Update Thumbnail
-                    </label>
-                    <div className="flex items-center justify-center w-full max-w-xs">
-                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                        <div className="flex flex-col items-center justify-center pt-2 pb-3">
-                          <FiUpload className="w-6 h-6 mb-2 text-gray-400" />
-                          <p className="text-xs text-gray-500 text-center">
-                            <span className="font-semibold">
-                              Click to upload
-                            </span>{' '}
-                            or drag
-                          </p>
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            if (e.target.files[0]) {
-                              setFilename(e.target.files[0]);
-                            }
-                          }}
-                        />
-                      </label>
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Featured Image
+                </label>
+                <div className="flex items-center justify-center">
+                  <label className="flex flex-col items-center justify-center h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 overflow-hidden relative">
+                    {/* If new image uploaded, show preview */}
+                    {featuredImagePreview ? (
+                      <img
+                        src={featuredImagePreview}
+                        alt="Featured preview"
+                        className="w-auto h-full object-cover"
+                      />
+                    ) : filename ? (
+                      // Otherwise show the existing image if available
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
+                        alt="Current Featured"
+                        className="w-auto h-full object-cover"
+                      />
+                    ) : (
+                      // If no existing image and no preview, show upload icon + text
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          className="w-8 h-8 mb-4 text-gray-500"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 20 16"
+                        >
+                          <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span>{' '}
+                          or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF (MAX. 5MB)
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="absolute bottom-2 bg-white/80 px-3 py-1 rounded text-xs text-gray-700">
+                      {featuredImagePreview || filename
+                        ? 'Update Image'
+                        : 'Add Image'}
                     </div>
-                  </div>
+
+                    <input
+                      type="file"
+                      id="myfile"
+                      className="hidden"
+                      {...register('myfile', {
+                        required: false, // not always required if old image exists
+                        validate: validateFile,
+                        onChange: handleFeaturedImageChange,
+                      })}
+                    />
+                  </label>
                 </div>
+
+                {errors.myfile && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.myfile.type === 'required'
+                      ? 'Featured image is required'
+                      : 'Please upload a valid image file (PNG, JPG, GIF)'}
+                  </p>
+                )}
               </div>
 
-              {/* Product Gallery */}
               <div>
                 <h3 className="text-lg font-medium text-gray-700 mb-4">
                   Product Gallery

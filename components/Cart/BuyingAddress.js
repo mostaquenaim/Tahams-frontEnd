@@ -28,7 +28,7 @@ const BuyingAddress = ({ data }) => {
     const [selectedCity, setSelectedCity] = useState('')
 
     const isWednesday = () => {
-        return new Date().getDay() === 3; // Sunday = 0, Monday = 1, ..., Wednesday = 3
+        return false; // Sunday = 0, Monday = 1, ..., Wednesday = 3
     };
 
     const getUserByEmail = async () => {
