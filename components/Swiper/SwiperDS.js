@@ -156,13 +156,16 @@ const ProfessionalSwiper = ({ images = [] }) => {
               <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
 
               {/* Content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center top-20">
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center top-20 ">
                 <div
-                  className={`max-w-4xl mx-auto space-y-4 sm:space-y-6 text-white transform transition-all duration-1000 ease-out ${
-                    isVisible
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}
+                  className={`relative max-w-4xl mx-auto space-y-4 sm:space-y-6 
+    text-white transform transition-all duration-1000 ease-out 
+    rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl
+     lg:bg-transparent lg:backdrop-blur-0 lg:border-transparent lg:shadow-none
+     xl:bg-white/10 xl:backdrop-blur-md xl:border xl:border-white/20 xl:shadow-xl
+    px-6 py-8 sm:px-10 sm:py-12
+    ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+  `}
                 >
                   {/* Badge */}
                   <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-2 sm:mb-4">
@@ -210,7 +213,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8 ">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8">
                     <Link
                       href="/customize-tee"
                       scroll={false}
@@ -278,22 +281,6 @@ const ProfessionalSwiper = ({ images = [] }) => {
                     </Link>
                   </div>
                 </div>
-
-                {/* Trust row */}
-                {/* <div className="hidden absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 lg:flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs text-white/70">
-                  <span className="inline-flex items-center gap-1 sm:gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400"></span>{' '}
-                    100% Cotton
-                  </span>
-                  <span className="inline-flex items-center gap-1 sm:gap-2">
-                    <span className="h-2 w-2 rounded-full bg-sky-400"></span>{' '}
-                    Eco-friendly inks
-                  </span>
-                  <span className="inline-flex items-center gap-1 sm:gap-2">
-                    <span className="h-2 w-2 rounded-full bg-violet-400"></span>{' '}
-                    Made in BD
-                  </span>
-                </div> */}
               </div>
             </div>
           </SwiperSlide>
