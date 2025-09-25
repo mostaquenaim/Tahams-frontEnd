@@ -18,6 +18,7 @@ import {
 import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { FaTimes } from 'react-icons/fa';
 
 const ShowOrders = () => {
   const { user, loading } = useContext(AuthContext);
@@ -304,17 +305,22 @@ const ShowOrders = () => {
                             |
                             <button
                               onClick={() => handleCheck(group.history)}
-                              className={`flex items-center gap-1 ${
-                                group.history.isChecked
-                                  ? 'text-green-600 cursor-default'
-                                  : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                              disabled={group.history.isChecked}
+                              className={`flex items-center gap-1 
+                                text-gray-500 hover:text-gray-700
+                              `}
+                              // disabled={group.history.isChecked}
                             >
                               {group.history.isChecked ? (
-                                <>
-                                  <FiCheck size={14} /> Checked
-                                </>
+                                <div className="group ">
+                                  <span className="group-hover:hidden flex items-center gap-1">
+                                    <FiCheck size={14} />
+                                    Checked
+                                  </span>
+                                  <span className="hidden group-hover:flex items-center gap-1">
+                                    <FaTimes size={14} />
+                                    Uncheck
+                                  </span>
+                                </div>
                               ) : (
                                 'Check'
                               )}

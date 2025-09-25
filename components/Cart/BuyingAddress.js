@@ -193,9 +193,6 @@ const BuyingAddress = ({ data }) => {
                 }
             )
 
-            // console.log(tempItems,'cartt');
-            // console.log('total',newTotalPrice);
-
             if (res.status >= 200 && res.status < 300) {
                 router.push(`/confirm-order/${res.data.trackingToken}`);
             }

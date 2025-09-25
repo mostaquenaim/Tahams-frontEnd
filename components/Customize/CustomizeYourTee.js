@@ -849,38 +849,38 @@ const CustomizeYourTee = () => {
 
   const generatePreview = async (side, exportScale = 1) => {
     // CSS pixel size (your intented display size)
-    const cssWidth = device === "mobile" ? 240 : 400;
-    const cssHeight = device === "mobile" ? 300 : 500;
+    const cssWidth = device === 'mobile' ? 240 : 400;
+    const cssHeight = device === 'mobile' ? 300 : 500;
 
     // Account for Hi-DPI displays and optional exportScale
     const dpr =
       Math.max(1, window.devicePixelRatio || 1) * Math.max(1, exportScale);
 
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = Math.round(cssWidth * dpr);
     canvas.height = Math.round(cssHeight * dpr);
     // Keep the element sized as you expect in the page
     canvas.style.width = `${cssWidth}px`;
     canvas.style.height = `${cssHeight}px`;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     // Draw in CSS pixels by scaling the context once
     ctx.scale(dpr, dpr);
 
     // Better resampling quality (especially when scaling images)
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+    ctx.imageSmoothingQuality = 'high';
 
     try {
       // --- Background ---
       const bgImg = new Image();
-      bgImg.crossOrigin = "anonymous";
+      bgImg.crossOrigin = 'anonymous';
       const bgSrc = selectedColor?.previewImages?.[side];
 
       await new Promise((resolve, reject) => {
         let timeout = setTimeout(
-          () => reject(new Error("Image loading timeout")),
-          5000
+          () => reject(new Error('Image loading timeout')),
+          5000,
         );
         bgImg.onload = async () => {
           clearTimeout(timeout);
@@ -897,9 +897,9 @@ const CustomizeYourTee = () => {
           ctx.fillStyle = selectedColor.color;
           ctx.fillRect(0, 0, cssWidth, cssHeight);
           ctx.strokeStyle =
-            selectedColor.color === "#FFFFFF"
-              ? "#E5E7EB"
-              : "rgba(255,255,255,0.2)";
+            selectedColor.color === '#FFFFFF'
+              ? '#E5E7EB'
+              : 'rgba(255,255,255,0.2)';
           ctx.lineWidth = 2;
           ctx.strokeRect(10, 10, cssWidth - 20, cssHeight - 20);
           resolve();
@@ -923,19 +923,19 @@ const CustomizeYourTee = () => {
           ctx.rotate(rad);
           ctx.translate(-cx, -cy);
 
-          if (element.type === "text") {
+          if (element.type === 'text') {
             // Use full font shorthand
-            const weight = element.style.fontWeight || "400";
+            const weight = element.style.fontWeight || '400';
             const size = element.style.fontSize || 16;
-            const family = element.style.fontFamily || "sans-serif";
+            const family = element.style.fontFamily || 'sans-serif';
             ctx.font = `${weight} ${size}px ${family}`;
-            ctx.fillStyle = element.style.color || "#000";
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            ctx.fillText(element.content || "", element.x, element.y);
-          } else if (element.type === "image") {
+            ctx.fillStyle = element.style.color || '#000';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(element.content || '', element.x, element.y);
+          } else if (element.type === 'image') {
             const img = new Image();
-            img.crossOrigin = "anonymous";
+            img.crossOrigin = 'anonymous';
             await new Promise((resolve) => {
               img.onload = async () => {
                 try {
@@ -946,12 +946,12 @@ const CustomizeYourTee = () => {
                   element.x,
                   element.y,
                   element.width,
-                  element.height
+                  element.height,
                 );
                 resolve();
               };
               img.onerror = () => {
-                console.warn("Design image failed to load:", element.content);
+                console.warn('Design image failed to load:', element.content);
                 resolve();
               };
               img.src = element.content;
@@ -964,7 +964,7 @@ const CustomizeYourTee = () => {
 
       return canvas;
     } catch (error) {
-      console.error("Error creating preview:", error);
+      console.error('Error creating preview:', error);
       throw error;
     }
   };
@@ -1123,15 +1123,28 @@ const CustomizeYourTee = () => {
     }
   };
 
-  const panelStyle = "bg-white rounded-xl shadow-lg border border-gray-200 p-6";
+  // inside your component
+  const getTshirtCost = (size) => {
+    // S–3XL = 395
+    const validSizes = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
+    return validSizes.includes(size) ? 395 : 455; // for now, only pricing S-3XL
+  };
+
+  const minPrintCost = 150;
+  const maxPrintCost = 540;
+
+  const totalMin = (getTshirtCost(selectedSize) + minPrintCost) * quantity;
+  const totalMax = (getTshirtCost(selectedSize) + maxPrintCost) * quantity;
+
+  const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
   const headingTitle =
-    "flex items-center gap-3 text-lg font-semibold text-black mb-6";
+    'flex items-center gap-3 text-lg font-semibold text-black mb-6';
   const buttonStyle =
-    "w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black";
+    'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black';
   const sectionTitle =
-    "text-sm font-medium text-gray-800 mb-3 flex items-center gap-2";
+    'text-sm font-medium text-gray-800 mb-3 flex items-center gap-2';
   const inputStyle =
-    "w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400";
+    'w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-gray-400';
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -1296,12 +1309,12 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 w-full sm:w-auto ${
                     isLoading
-                      ? "bg-orange-400"
-                      : "bg-orange-600 hover:bg-orange-700"
+                      ? 'bg-orange-400'
+                      : 'bg-orange-600 hover:bg-orange-700'
                   }`}
                 >
                   {isLoading ? (
-                    "Processing..."
+                    'Processing...'
                   ) : (
                     <>
                       <Printer size={18} />
@@ -1316,97 +1329,426 @@ const CustomizeYourTee = () => {
 
         {/* Show Form if the user clicks "Request Print Quote" */}
         {isFormOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Enter Your Details
-              </h2>
-
-              {/* details  */}
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your Name"
-                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Your Phone Number"
-                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Your Address"
-                className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-
-              {/* size and quantity */}
-
-              {/* Size Selection */}
-              <section className="mb-6">
-                <h3 className={sectionTitle}>
-                  <Layers size={18} className="text-black" />
-                  Size
-                </h3>
-                <div className="grid grid-cols-5 gap-2.5">
-                  {["S", "M", "L", "XL", "2XL", "3XL"].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all 
-          ${
-            selectedSize === size
-              ? "border-black bg-gray-900 text-white shadow-md"
-              : "border-gray-300 hover:border-gray-400 bg-white text-gray-700"
-          }`}
-                      aria-label={`Select ${size} size`}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all duration-300 animate-in"
+            onClick={(e) =>
+              e.target === e.currentTarget && setIsFormOpen(false)
+            }
+          >
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-100">
+              {/* Header */}
+              <div className="relative bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">
+                      Complete Your Order
+                    </h2>
+                    <p className="text-gray-300 text-sm mt-1">
+                      Fill in your details to place your custom design order
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsFormOpen(false)}
+                    className="text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 p-2 rounded-full"
+                    aria-label="Close form"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      {size}
-                    </button>
-                  ))}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
                 </div>
-              </section>
 
-              {/* Quantity Selection */}
-              <section className="mb-6">
-                <h3 className={sectionTitle}>
-                  <Layers size={18} className="text-black" />
-                  Quantity
-                </h3>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  className={`${inputStyle} w-24`}
-                  aria-label="Select quantity"
-                />
-              </section>
+                {/* Progress indicator */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                  <div className="h-full bg-gradient-to-r from-orange-400 to-orange-600 w-1/3 transition-all duration-500"></div>
+                </div>
+              </div>
 
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleFormSubmit}
-                  disabled={isLoading}
-                  className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
-                    isLoading
-                      ? "bg-orange-400"
-                      : "bg-orange-600 hover:bg-orange-700"
-                  }`}
-                >
-                  {isLoading ? "Submitting..." : "Submit"}
-                </button>
+              {/* Content */}
+              <div className="overflow-y-auto max-h-[40vh] md:max-h-[50vh]">
+                <div className="p-6 space-y-6">
+                  {/* Personal Information Section */}
+                  <section className="space-y-4">
+                    <div className="flex items-center space-x-3 pb-2 border-b border-gray-100">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Personal Information
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="name"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Full Name *
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Enter your full name"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="phone"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Phone Number *
+                        </label>
+                        <input
+                          id="phone"
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+880 1XXX XXXXXX"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="address"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Delivery Address *
+                      </label>
+                      <textarea
+                        id="address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Enter your complete delivery address"
+                        rows={3}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white resize-none"
+                        required
+                      />
+                    </div>
+                  </section>
+
+                  {/* Product Configuration Section */}
+                  <section className="space-y-4">
+                    <div className="flex items-center space-x-3 pb-2 border-b border-gray-100">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-4 h-4 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5H9a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Product Configuration
+                      </h3>
+                    </div>
+
+                    {/* Size Selection */}
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Select Size *
+                      </label>
+                      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+                        {[
+                          'S',
+                          'M',
+                          'L',
+                          'XL',
+                          '2XL',
+                          '3XL',
+                          '4XL',
+                          '5XL',
+                          '6XL',
+                          '7XL',
+                          '8XL',
+                          '9XL',
+                          '10XL',
+                        ].map((size) => (
+                          <button
+                            key={size}
+                            onClick={() => setSelectedSize(size)}
+                            className={`px-3 py-2.5 rounded-lg border-2 text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 ${
+                              selectedSize === size
+                                ? 'border-orange-500 bg-orange-500 text-white shadow-lg shadow-orange-200'
+                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                            }`}
+                            aria-label={`Select size ${size}`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Quantity Selection */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="quantity"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Quantity *
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="quantity"
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={quantity}
+                            onChange={(e) =>
+                              setQuantity(
+                                Math.max(1, parseInt(e.target.value) || 1),
+                              )
+                            }
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                            aria-label="Select quantity"
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex flex-col">
+                            <button
+                              type="button"
+                              onClick={() => setQuantity((prev) => prev + 1)}
+                              className="text-gray-400 hover:text-gray-600 text-xs leading-none"
+                            >
+                              ▲
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQuantity((prev) => Math.max(1, prev - 1))
+                              }
+                              className="text-gray-400 hover:text-gray-600 text-xs leading-none"
+                            >
+                              ▼
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Price Preview */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Estimated Price
+                        </label>
+                        <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4">
+                          {selectedSize ? (
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between text-gray-700">
+                                <span>
+                                  T-shirt ({selectedSize}) × {quantity}
+                                </span>
+                                <span>
+                                  {getTshirtCost(selectedSize) * quantity} BDT
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-gray-700">
+                                <span>Printing × {quantity}</span>
+                                <span>
+                                  {minPrintCost * quantity}–
+                                  {maxPrintCost * quantity} BDT
+                                </span>
+                              </div>
+                              <div className="border-t border-orange-200 pt-2 flex justify-between font-bold text-orange-700">
+                                <span>Total Estimate</span>
+                                <span>
+                                  {totalMin}–{totalMax} BDT
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center text-gray-500 text-sm">
+                              Select a size to view pricing
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Terms and Conditions */}
+                  <section className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg
+                          className="w-3 h-3 text-blue-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                          Order Information
+                        </h4>
+                        <p className="text-xs text-blue-800 leading-relaxed">
+                          • Processing time: 3-5 business days • Payment: Cash
+                          on delivery available • Final price confirmation via
+                          phone call
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                  {/* Validation Status */}
+                  <div className="flex items-center text-sm">
+                    {name && phone && address && selectedSize ? (
+                      <div className="flex items-center text-green-600">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        Ready to submit
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-amber-600">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
+                        </svg>
+                        Please fill all required fields
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <button
+                      onClick={() => setIsFormOpen(false)}
+                      className="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={handleFormSubmit}
+                      disabled={
+                        isLoading ||
+                        !name ||
+                        !phone ||
+                        !address ||
+                        !selectedSize
+                      }
+                      className={`px-8 py-2.5 rounded-xl text-white font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-2 min-w-[140px] ${
+                        isLoading ||
+                        !name ||
+                        !phone ||
+                        !address ||
+                        !selectedSize
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 focus:ring-orange-500 hover:shadow-lg transform hover:scale-105 active:scale-95'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <svg
+                            className="animate-spin w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                            />
+                          </svg>
+                          Place Order
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

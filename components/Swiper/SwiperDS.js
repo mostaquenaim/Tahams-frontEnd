@@ -159,13 +159,13 @@ const ProfessionalSwiper = ({ images = [] }) => {
               <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center top-20 ">
                 <div
                   className={`relative max-w-4xl mx-auto space-y-4 sm:space-y-6 
-    text-white transform transition-all duration-1000 ease-out 
-    rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl
-     lg:bg-transparent lg:backdrop-blur-0 lg:border-transparent lg:shadow-none
-     xl:bg-white/10 xl:backdrop-blur-md xl:border xl:border-white/20 xl:shadow-xl
-    px-6 py-8 sm:px-10 sm:py-12
-    ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
-  `}
+                text-white transform transition-all duration-1000 ease-out 
+                rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl
+                lg:bg-transparent lg:backdrop-blur-0 lg:border-transparent lg:shadow-none
+                xl:bg-white/10 xl:backdrop-blur-md xl:border xl:border-white/20 xl:shadow-xl
+                px-6 py-8 sm:px-10 sm:py-12
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+              `}
                 >
                   {/* Badge */}
                   <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-2 sm:mb-4">

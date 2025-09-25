@@ -29,9 +29,6 @@ export default function Home() {
 
   useEffect(() => {
     TagManager.initialize(tagManagerArgs);
-    // fetch('/banner-images.json')
-    //   .then((res) => res.json())
-    //   .then((data) => setImages(data));
   }, []);
 
   const handleCloseModal = () => {
@@ -122,15 +119,9 @@ export default function Home() {
               </button>
             </div>
           </Modal>
-          {/* Main Content */}
-          {/* {!isModalOpen && */}
-          {/* <MySwiper images={bannerImages}></MySwiper> */}
+          
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
-          {/* <SwiperGPT images={bannerImages}></SwiperGPT> */}
-          {/* <TriangleLoader/> */}
-          {/* } */}
-          {/* <HomeNav></HomeNav> */}
-          <section id='new-arrival'>
+          <section id="new-arrival">
             <NewArrival />
           </section>
           <Popular />

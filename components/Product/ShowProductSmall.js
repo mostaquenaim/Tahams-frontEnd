@@ -120,7 +120,7 @@ const ShowProductSmall = ({ item }) => {
                 {/* image  */}
                 <div
                     onClick={handleProductClick}
-                    className="relative cursor-pointer h-40 w-32 md:h-44 md:w-36 overflow-hidden rounded-t-md flex items-center justify-center bg-white"
+                    className="relative cursor-pointer h-40 w-full md:h-44 md:w-full overflow-hidden rounded-t-md flex items-center justify-center bg-white"
                 >
                     {/* Placeholder Loader (show if not loaded yet) */}
                     {/* Placeholder Loader (shows until main or hover image is loaded) */}

@@ -27,7 +27,7 @@ const Heading = ({
   return (
     <div 
       className={`
-        p-6 rounded-lg shadow-lg
+        p-6 rounded-lg shadow-lg shadow-slate-400
         ${currentTheme.bg} 
         ${currentTheme.text} 
         ${currentTheme.shadow}
