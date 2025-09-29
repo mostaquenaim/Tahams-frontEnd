@@ -12,6 +12,7 @@ import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
 import ProfessionalSwiper from '/components/Swiper/SwiperDS';
+import NewArrivalDraft from '/components/Home/NewArrival/NewArrivalDraft';
 
 export const CompanyContext = createContext(null);
 {
@@ -123,6 +124,7 @@ export default function Home() {
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
           <section id="new-arrival">
             <NewArrival />
+            {/* <NewArrivalDraft/> */}
           </section>
           <Popular />
           <section id="about">

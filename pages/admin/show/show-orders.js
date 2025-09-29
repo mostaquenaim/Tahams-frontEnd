@@ -20,11 +20,18 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { FaTimes } from 'react-icons/fa';
 
-const ShowOrders = () => {
+const ShowOrders = (data) => {
+  // console.log(data.data.module, 'resssss');
   const { user, loading } = useContext(AuthContext);
   const [sortedGroupedOrdersArray, refetch, isPending] = useGroupOrders();
+  // console.log(sortedGroupedOrdersArray,'sortedGroupedOrdersArray');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [addressFilter, setAddressFilter] = useState('all');
+  const [hideCancelled, setHideCancelled] = useState(false);
+  const [addressOptions, setAddressOptions] = useState(
+    data ? data.data.module : [],
+  );
   const axiosPublic = useAxiosPublic();
 
   const filteredOrders = sortedGroupedOrdersArray.filter((order) => {
@@ -36,12 +43,25 @@ const ShowOrders = () => {
       );
 
     const matchesStatus =
-      statusFilter === 'all' ||
-      order.history?.deliveryStatus.name.toLowerCase() ===
-        statusFilter.toLowerCase();
+      (statusFilter === 'all' ||
+        order.history?.deliveryStatus.name.toLowerCase() ===
+          statusFilter.toLowerCase()) &&
+      (addressFilter === 'all' ||
+        order.history?.region.toLowerCase() === addressFilter.toLowerCase());
 
-    return matchesSearch && matchesStatus;
+    const notCancelled =
+      !hideCancelled ||
+      order.history?.deliveryStatus?.name?.toLowerCase() !== 'cancelled';
+
+    return matchesSearch && matchesStatus && notCancelled;
   });
+
+  console.log(filteredOrders,'filteredOrders')
+
+  const totalOrderedPrice = filteredOrders.reduce(
+    (sum, order) => sum + (order?.totalPrice || 0),
+    0,
+  );
 
   const handleCheck = async (history) => {
     await axiosPublic.patch(
@@ -146,6 +166,35 @@ const ShowOrders = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+
+              {/* show non-cancelled orders only */}
+              <label className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hideCancelled}
+                  onChange={(e) => setHideCancelled(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-blue-600"
+                />
+                <span className="text-sm text-gray-700">Hide Cancelled</span>
+              </label>
+
+              {/* filter by address  */}
+              <select
+                className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={addressFilter}
+                onChange={(e) => setAddressFilter(e.target.value)}
+              >
+                {/* Default option */}
+                <option value="all">All Regions</option>
+
+                {addressOptions.map((option) => (
+                  <option key={option.id} value={option.name}>
+                    {option.displayName}
+                  </option>
+                ))}
+              </select>
+
+              {/* filter by statuses  */}
               <select
                 className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 value={statusFilter}
@@ -198,6 +247,14 @@ const ShowOrders = () => {
           ) : filteredOrders.length > 0 ? (
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
+                <div className="flex flex-col items-end justify-end mb-3">
+                  <span className="text-lg font-semibold text-gray-800">
+                    Total Order: {filteredOrders.length}
+                  </span>
+                  <span className="text-lg font-semibold text-gray-800">
+                    Total Ordered Price: ৳{totalOrderedPrice.toLocaleString()}
+                  </span>
+                </div>
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -347,3 +404,14 @@ const ShowOrders = () => {
 };
 
 export default ShowOrders;
+
+export async function getServerSideProps() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_LOCATION}?countryCode=BD`);
+  const data = await res.json();
+
+  return {
+    props: {
+      data,
+    },
+  };
+}

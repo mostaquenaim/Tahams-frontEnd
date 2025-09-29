@@ -11,7 +11,7 @@ const ListComponent = ({
   isSide = false,
   toggleDrawer,
 }) => {
-  // console.log(cat, 'catt');
+  console.log(cat, 'catt');
   // console.log(cats, 78);
   const [subCategories, setSubCategories] = useState([]);
   const [subCategoriesLength, setSubCategoriesLength] = useState(0);
@@ -19,7 +19,6 @@ const ListComponent = ({
   const axiosPublic = useAxiosPublic();
 
   useEffect(() => {
-    // if (cat.name != 'Men' && cat.name != 'Women') {
     axiosPublic
       .get(`/admin/view-product-sub-category/${cat.id}`)
       .then((res) => {
@@ -29,30 +28,38 @@ const ListComponent = ({
         );
         // console.log(res.data, "13");
       });
-    // }
   }, []);
 
-  const List = ({ children, parentClass, parentName }) => {
+  const List = ({ children, parentClass, parentName, filename }) => {
     const [openUl, setOpenUl] = useState(null);
 
     const handleOpenUl = () => {
       setOpenUl(!openUl);
     };
+
     return (
       <div className={`${!isSide && parentClass}`}>
-        {parentName != 'Men' && parentName != 'Women' && !isSide? (
+        {parentName != 'Men' && parentName != 'Women' && !isSide ? (
           <a
             href={`/categories/${parentName}`}
             onClick={handleOpenUl}
-            className="hover:font-extrabold hover:scale-105 duration-300 transition-all  flex gap-1 items-center"
+            className="group"
           >
-            {parentName}
+            <span className='hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center'>
+              {parentName}
             <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
+            </span>
+            {/* {filename && (
+              <img
+              className='hidden md:block md:h-48'
+                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
+              />
+            )} */}
           </a>
         ) : (
           <span
             onClick={handleOpenUl}
-            className="hover:font-extrabold hover:scale-105 duration-300 transition-all  flex gap-1 items-center"
+            className="hover:font-extrabold hover:scale-105 transition-all  flex gap-1 items-center"
           >
             {parentName}
             <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
@@ -84,14 +91,15 @@ const ListComponent = ({
         parentClass={isSide ? 'ulDrawerClass' : 'ulClass'}
         parentName={cat.name}
         isSide={isSide}
+        filename={cat.isGenderVaried ? cat.filename : ''}
       >
         {cat.name == 'Men' || cat.name == 'Women' ? (
           cats.map(
             (catItem, index) =>
               catItem.isGenderVaried &&
-              (cat.name == 'Men' && catItem.isForMen ? (
+              ((cat.name == 'Men' && catItem.isForMen) ||
+                (cat.name == 'Women' && catItem.isForWomen)) && (
                 <ul>
-                  {/* <span className='flex gap-1 items-center pb-3 text-lg font-bold'> {catItem.name} </span> */}
                   <ListComponent
                     isSide={isSide}
                     key={index}
@@ -99,19 +107,20 @@ const ListComponent = ({
                     ListStyle={ListStyle}
                   ></ListComponent>
                 </ul>
-              ) : (
-                cat.name == 'Women' &&
-                catItem.isForWomen && (
-                  <ul>
-                    <ListComponent
-                      isSide={isSide}
-                      key={index}
-                      cat={catItem}
-                      ListStyle={ListStyle}
-                    ></ListComponent>
-                  </ul>
-                )
-              )),
+              ),
+            // : (
+            //   cat.name == 'Women' &&
+            //   catItem.isForWomen && (
+            //     <ul>
+            //       <ListComponent
+            //         isSide={isSide}
+            //         key={index}
+            //         cat={catItem}
+            //         ListStyle={ListStyle}
+            //       ></ListComponent>
+            //     </ul>
+            //   )
+            // )
           )
         ) : (
           <>
