@@ -19,6 +19,7 @@ import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { FaTimes } from 'react-icons/fa';
+import { useRouter } from 'next/router';
 
 const ShowOrders = (data) => {
   // console.log(data.data.module, 'resssss');
@@ -56,7 +57,7 @@ const ShowOrders = (data) => {
     return matchesSearch && matchesStatus && notCancelled;
   });
 
-  console.log(filteredOrders,'filteredOrders')
+  console.log(filteredOrders, 'filteredOrders');
 
   const totalOrderedPrice = filteredOrders.reduce(
     (sum, order) => sum + (order?.totalPrice || 0),
@@ -142,6 +143,20 @@ const ShowOrders = (data) => {
     { value: 'Delivered', label: 'Delivered' },
     { value: 'Cancelled', label: 'Cancelled' },
   ];
+
+  const router = useRouter();
+
+  const handlePathaoCourier = (history) => {
+    // Save data in localStorage
+    localStorage.setItem('pathaoHistory', JSON.stringify(history));
+
+    // Navigate without attaching big object in URL
+    router.push('/admin/add/add-pathao-order');
+  };
+
+  const handleItemClick = (id) => {
+    router.push(`show-order-details/${id}`);
+  };
 
   return (
     <>
@@ -286,22 +301,27 @@ const ShowOrders = (data) => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredOrders.map((group, index) => (
+                      // <Link
+                      //   href={`show-order-details/${group.history?.id}`}
+                      //   className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      // >
                       <motion.tr
                         key={index}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className={
+                        onClick={() => handleItemClick(group.history?.id)}
+                        className={`cursor-pointer hover:bg-black/20 ${
                           group.history.deliveryStatus.id > 6
-                            ? 'bg-red-200 '
+                            ? 'bg-red-200'
                             : group.history.deliveryStatus.id == 6
-                            ? 'bg-green-200 '
+                            ? 'bg-green-200'
                             : group.history.isChecked
                             ? group.history.deliveryStatus.id != 1
                               ? 'bg-yellow-100'
                               : 'bg-yellow-50'
                             : 'bg-white'
-                        }
+                        }`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           #{group.history.id}
@@ -319,6 +339,7 @@ const ShowOrders = (data) => {
                                 key={idx}
                                 href={`/products/details/${order.product.productId}`}
                                 className="text-blue-600 hover:text-blue-800 hover:underline"
+                                onClick={(e) => e.stopPropagation()} // prevent row click
                               >
                                 {order.product.name}
                                 {idx !== group.orders.length - 1 ? ',' : ''}
@@ -353,29 +374,30 @@ const ShowOrders = (data) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-3">
-                            <Link
-                              href={`show-order-details/${group.history?.id}`}
-                              className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                            >
-                              <FiEye size={14} /> View
-                            </Link>
-                            |
                             <button
-                              onClick={() => handleCheck(group.history)}
-                              className={`flex items-center gap-1 
-                                text-gray-500 hover:text-gray-700
-                              `}
-                              // disabled={group.history.isChecked}
+                              onClick={(e) => {
+                                e.stopPropagation(); // 🚀 prevent row click
+                                handlePathaoCourier(group);
+                              }}
+                              className="z-50 flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+                            >
+                              Ship
+                            </button>
+                            |{/* Pathao Courier button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); // 🚀 prevent row click
+                                handleCheck(group.history);
+                              }}
+                              className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
                             >
                               {group.history.isChecked ? (
-                                <div className="group ">
+                                <div className="group">
                                   <span className="group-hover:hidden flex items-center gap-1">
-                                    <FiCheck size={14} />
-                                    Checked
+                                    <FiCheck size={14} /> Checked
                                   </span>
                                   <span className="hidden group-hover:flex items-center gap-1">
-                                    <FaTimes size={14} />
-                                    Uncheck
+                                    <FaTimes size={14} /> Uncheck
                                   </span>
                                 </div>
                               ) : (
@@ -385,6 +407,7 @@ const ShowOrders = (data) => {
                           </div>
                         </td>
                       </motion.tr>
+                      // </Link>
                     ))}
                   </tbody>
                 </table>
