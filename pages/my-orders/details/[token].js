@@ -185,7 +185,7 @@ const OrderDetails = () => {
                     </div>
 
                     {/* Order Status Timeline */}
-                    {orderDetails.length > 0 && (
+                    {/* {orderDetails.length > 0 && (
                         <div className="bg-white rounded-2xl shadow-lg p-6">
                             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                                 <MdLocalShipping className="mr-2 text-blue-600" />
@@ -193,7 +193,7 @@ const OrderDetails = () => {
                             </h2>
                             <OrderComp orderDetails={orderDetails[0]?.history} />
                         </div>
-                    )}
+                    )} */}
                 </div>
 
                 {/* Sidebar - Summary & Customer Info */}
@@ -306,7 +306,7 @@ const OrderDetails = () => {
             <Head>
                 <title>Order Details - {token && token}</title>
             </Head>
-            <div className='container mx-auto px-4 py-8 pt-24 md:pt-32 lg:pt-40'>
+            <div className='container mx-auto px-4 py-8 pt-24 md:pt-32 lg:pt-44'>
                 {loading ? (
                     <LoadingIndicator />
                 ) : error ? (
