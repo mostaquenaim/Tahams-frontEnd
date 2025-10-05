@@ -8,8 +8,8 @@ const CustomizationDetails = () => {
   const id = pathParts[pathParts.length - 1];
 
   const [customizations, refetch, isPending] = useCustomizationReq(id);
-  console.log(customizations,'sdsd');
-  
+  // console.log(customizations,'sdsd');
+
   const [error, setError] = useState(null);
 
   if (isPending) {
@@ -22,7 +22,11 @@ const CustomizationDetails = () => {
     return <div className="text-center py-8 text-red-600">Error: {error}</div>;
   }
 
-  if (!customizations || !Array.isArray(customizations) || customizations.length === 0) {
+  if (
+    !customizations ||
+    !Array.isArray(customizations) ||
+    customizations.length === 0
+  ) {
     return (
       <div className="text-center py-8">Customization request not found.</div>
     );
@@ -30,7 +34,7 @@ const CustomizationDetails = () => {
 
   // Get the first item for general information (they should have the same general details)
   const mainCustomization = customizations[0];
-  
+
   // Group by side for easy access
   // const frontSide = customizations.find(item => item.side === 'front');
   // const backSide = customizations.find(item => item.side === 'back');
@@ -38,7 +42,10 @@ const CustomizationDetails = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/admin/show/show-customization-requests" className="text-blue-600 hover:underline">
+        <Link
+          href="/admin/show/show-customization-requests"
+          className="text-blue-600 hover:underline"
+        >
           &larr; Back to all requests
         </Link>
         <h1 className="text-3xl font-bold mt-4">
@@ -70,7 +77,8 @@ const CustomizationDetails = () => {
             <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
             <div className="space-y-2">
               <p>
-                <span className="font-medium">Name:</span> {mainCustomization.name}
+                <span className="font-medium">Name:</span>{' '}
+                {mainCustomization.name}
               </p>
               <p>
                 <span className="font-medium">Phone:</span>{' '}
@@ -83,7 +91,8 @@ const CustomizationDetails = () => {
               {mainCustomization.user && (
                 <p>
                   <span className="font-medium">User:</span>{' '}
-                  {mainCustomization.user?.name || mainCustomization.user?.email}
+                  {mainCustomization.user?.name ||
+                    mainCustomization.user?.email}
                 </p>
               )}
             </div>
@@ -110,28 +119,32 @@ const CustomizationDetails = () => {
               </p>
               <p>
                 <span className="font-medium">Sides:</span>{' '}
-                {customizations.map(item => item.side).join(', ')}
+                {customizations.map((item) => item.side).join(', ')}
               </p>
             </div>
           </div>
 
           {/* Special Instructions */}
-          {mainCustomization.specialInstructions && mainCustomization.specialInstructions !== "0" && (
-            <div className="bg-white rounded-lg shadow p-4">
-              <h2 className="text-xl font-semibold mb-2">
-                Special Instructions
-              </h2>
-              <p className="whitespace-pre-line">
-                {mainCustomization.specialInstructions}
-              </p>
-            </div>
-          )}
+          {mainCustomization.specialInstructions &&
+            mainCustomization.specialInstructions !== '0' && (
+              <div className="bg-white rounded-lg shadow p-4">
+                <h2 className="text-xl font-semibold mb-2">
+                  Special Instructions
+                </h2>
+                <p className="whitespace-pre-line">
+                  {mainCustomization.specialInstructions}
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Right Column - Design Details for Each Side */}
         <div className="lg:col-span-2 space-y-6">
           {customizations.map((customization) => (
-            <div key={customization.id} className="bg-white rounded-lg shadow p-6">
+            <div
+              key={customization.id}
+              className="bg-white rounded-lg shadow p-6"
+            >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold capitalize">
                   {customization.side} Side Design
@@ -168,13 +181,18 @@ const CustomizationDetails = () => {
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <p
-                              className={`text-lg font-medium rounded p-2 inline-block ${text.color === '#ffffff' || text.color === '#FFFFFF' ? 'bg-black' : 'bg-white border'}`}
+                              className={`text-lg font-medium rounded p-2 inline-block ${
+                                text.color === '#ffffff' ||
+                                text.color === '#FFFFFF'
+                                  ? 'bg-black'
+                                  : 'bg-white border'
+                              }`}
                               style={{
                                 fontFamily: text.fontFamily,
                                 fontSize: `${Math.min(text.fontSize, 20)}px`, // Limit font size for display
                                 fontWeight: text.fontWeight,
                                 color: text.color,
-                                transform: `rotate(${text.rotation || 0}deg)`
+                                transform: `rotate(${text.rotation || 0}deg)`,
                               }}
                             >
                               {text.content}
@@ -197,8 +215,12 @@ const CustomizationDetails = () => {
                             </div>
                           </div>
                           <div className="text-xs bg-white px-2 py-1 rounded border ml-4">
-                            <p>Position: ({text.x}, {text.y})</p>
-                            <p>Size: {text.width}×{text.height}px</p>
+                            <p>
+                              Position: ({text.x}, {text.y})
+                            </p>
+                            <p>
+                              Size: {text.width}×{text.height}px
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -225,13 +247,22 @@ const CustomizationDetails = () => {
                           />
                         </div>
                         <div className="p-3 border-t bg-white">
-                          <h4 className="font-medium text-sm truncate">{image.filename}</h4>
+                          <h4 className="font-medium text-sm truncate">
+                            {image.filename}
+                          </h4>
                           <div className="text-xs text-gray-600 mt-1 space-y-1">
                             <div className="grid grid-cols-2 gap-1">
-                              <p>Original: {image.originalWidth}×{image.originalHeight}px</p>
-                              <p>Display: {image.width}×{image.height}px</p>
+                              <p>
+                                Original: {image.originalWidth}×
+                                {image.originalHeight}px
+                              </p>
+                              <p>
+                                Display: {image.width}×{image.height}px
+                              </p>
                             </div>
-                            <p>Position: ({image.x}, {image.y})</p>
+                            <p>
+                              Position: ({image.x}, {image.y})
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -241,12 +272,14 @@ const CustomizationDetails = () => {
               )}
 
               {/* Show message if no custom content */}
-              {(!customization.customTexts || customization.customTexts.length === 0) && 
-               (!customization.customImages || customization.customImages.length === 0) && (
-                <div className="text-center py-4 text-gray-500">
-                  No custom texts or images for this side
-                </div>
-              )}
+              {(!customization.customTexts ||
+                customization.customTexts.length === 0) &&
+                (!customization.customImages ||
+                  customization.customImages.length === 0) && (
+                  <div className="text-center py-4 text-gray-500">
+                    No custom texts or images for this side
+                  </div>
+                )}
             </div>
           ))}
 

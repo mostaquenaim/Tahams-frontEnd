@@ -1,70 +1,144 @@
 import Link from 'next/link';
 import React from 'react';
-import { FaEye } from 'react-icons/fa';
+import { FaEye, FaCalendarAlt, FaCreditCard, FaBox } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
-const ShowOrderComp = ({ group, idx, cardBtnStyle }) => {
-  // console.log('group', group);
-    return (
-        <div
-            key={idx}
-            className={`bg-white p-4 md:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out transform hover:-translate-y-1`}
-        >
-            <div className="flex flex-col md:space-x-6 space-y-4 md:space-y-0">
-                <div className="">
-                    <div className='flex justify-between'>
-                        <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-1 md:mb-3">
-                            {group.history.paymentMethod.name}
-                        </h2>
-                        <button>
-                            {/* ... icon  */}
-                        </button>
-                    </div>
-                    <p className="text-xs md:text-sm text-gray-500 mb-2 md:mb-4">
-                        Order Placed on {new Date(group.history.BuyingDate).toLocaleDateString()}
-                    </p>
-                </div>
-                <ul className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {group.orders.map((order, idx) => (
-                        <li
-                            key={idx}
-                            className="relative bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 ease-in-out"
-                        >
-                            <Link href={`/products/details/${order.product.productId}`} className="block group">
-                                <img
-                                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
-                                    alt={order.product.name}
-                                    className="w-full h-40 md:h-48 object-cover rounded-lg transition-transform duration-300 ease-in-out group-hover:scale-105"
-                                />
-                                <div className="mt-2 md:mt-3">
-                                    <h3 className="text-sm md:text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300 ease-in-out">
-                                        {order.product.name}
-                                    </h3>
-                                    <p className="text-xs md:text-sm text-gray-500 mt-1">
-                                        Category: <span className="font-semibold text-gray-600">{order.category.category.name}</span>
-                                    </p>
-                                    <p className="text-xs md:text-sm text-gray-500">
-                                        Size: <span className="font-semibold text-gray-600">{order.size}</span>
-                                    </p>
-                                </div>
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
+const ShowOrderComp = ({ group, idx }) => {
+  const getStatusColor = (statusId) => {
+    if (statusId > 6) return 'bg-red-100 text-red-700 border-red-200';
+    if (statusId === 6) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    return 'bg-amber-100 text-amber-700 border-amber-200';
+  };
+
+  const getStatusBorderColor = (statusId) => {
+    if (statusId > 6) return 'border-red-200';
+    if (statusId === 6) return 'border-emerald-200';
+    return 'border-amber-200';
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: idx * 0.05 }}
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300"
+    >
+      {/* Card Header */}
+      <div className={`border-l-4 ${getStatusBorderColor(group.history?.deliveryStatus?.id)} bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <FaBox className="w-3.5 h-3.5 text-blue-600" />
             </div>
-            <div className="mt-4 md:mt-6">
-                <p className="text-lg md:text-xl font-bold text-gray-800">
-                    Total Price: <span className="text-green-600">{(group.totalPrice + group.deliveryFee).toFixed(2)} BDT</span>
-                </p>
-            </div>
-            <Link href={`my-orders/details/${group.history.trackingToken}`} className="block mt-3 md:mt-4">
-                <button
-                    className={`w-full btn btn-accent flex items-center justify-center gap-2 ${cardBtnStyle} hover:bg-accent-hover transition duration-300 ease-in-out`}
-                >
-                    <FaEye /> View Details
-                </button>
-            </Link>
+            <span className="text-sm font-bold text-gray-900">Order #{group.history?.id}</span>
+          </div>
+          <span
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border ${getStatusColor(
+              group.history?.deliveryStatus?.id
+            )}`}
+          >
+            {group.history?.deliveryStatus?.name}
+          </span>
         </div>
-    );
+        <div className="flex items-center gap-4 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5">
+            <FaCalendarAlt className="w-3 h-3" />
+            <span>{new Date(group.history.BuyingDate).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <FaCreditCard className="w-3 h-3" />
+            <span>{group.history.paymentMethod.name}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <div className="p-4">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {group.orders.slice(0, 4).map((order, idx) => (
+            <Link key={idx} href={`/products/details/${order.product.productId}`}>
+              <span className="group block">
+                <div className="relative bg-gray-50 rounded-xl overflow-hidden border border-gray-200 hover:border-blue-400 transition-all">
+                  <div className="aspect-square relative">
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
+                      alt={order.product.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <p className="text-white text-xs font-semibold line-clamp-2">
+                        {order.product.name}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 px-1">
+                  <h3 className="text-xs font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                    {order.product.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                    <span>Size: {order.size}</span>
+                    <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                    <span>Qty: {order.Quantity}</span>
+                  </div>
+                </div>
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Show more indicator */}
+        {group.orders.length > 4 && (
+          <div className="mb-4 text-center">
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg">
+              <FaBox className="w-3 h-3" />
+              +{group.orders.length - 4} more item{group.orders.length - 4 > 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
+
+        {/* Price Summary */}
+        <div className="border-t border-gray-200 pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">Subtotal</span>
+            <span className="text-sm font-semibold text-gray-900">
+              ৳{group.totalPrice.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-gray-600">Delivery Fee</span>
+            <span className="text-sm font-semibold text-gray-900">
+              ৳{group.deliveryFee.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+            <span className="text-base font-bold text-gray-900">Total</span>
+            <span className="text-xl font-bold text-blue-600">
+              ৳{(group.totalPrice + group.deliveryFee).toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* View Details Button */}
+      <div className="px-4 pb-4">
+        <Link href={`my-orders/details/${group.history.trackingToken}`}>
+          <span className="block w-full">
+            <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:shadow-gray-900/20 font-semibold text-sm">
+              <FaEye className="w-4 h-4" />
+              View Order Details
+            </button>
+          </span>
+        </Link>
+      </div>
+    </motion.div>
+  );
 };
 
 export default ShowOrderComp;

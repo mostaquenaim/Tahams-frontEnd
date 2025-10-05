@@ -6,8 +6,7 @@ const Payouts = () => {
   return (
     <div>
       {/* <UnderConstruction /> */}
-
-      <AddPathaoOrder />
+      {/* <AddPathaoOrder /> */}
     </div>
   );
 };

@@ -12,6 +12,8 @@ import {
   ShirtIcon,
 } from 'lucide-react';
 import { FaBangladeshiTakaSign } from 'react-icons/fa6';
+import toast from 'react-hot-toast';
+import useAxiosPublic from '/Hooks/useAxiosPublic';
 
 const AddPathaoOrder = () => {
   const [formData, setFormData] = useState({
@@ -38,34 +40,47 @@ const AddPathaoOrder = () => {
       if (pathaoHistory) {
         try {
           const parsedData = JSON.parse(pathaoHistory);
-          console.log('Parsed data:', parsedData);
+          // console.log('Parsed data:', parsedData);
           setOrderData(parsedData);
-          
+
           // Extract data from the nested structure
           const history = parsedData.history;
           const orders = parsedData.orders || [];
-          
+
           // Calculate total quantity from all orders
-          const totalQuantity = orders.reduce((sum, order) => sum + (order.Quantity || 1), 0);
-          
+          const totalQuantity = orders.reduce(
+            (sum, order) => sum + (order.Quantity || 1),
+            0,
+          );
+
           // Create item description from order details
-          const itemDescription = orders.map(order => 
-            `${order.ProductName || 'Product'} - Size: ${order.size || 'N/A'} - Qty: ${order.Quantity || 1}`
-          ).join(', ');
-          
+          const itemDescription = orders
+            .map(
+              (order) =>
+                `${order.ProductName || 'Product'} - Size: ${
+                  order.size || 'N/A'
+                } - Qty: ${order.Quantity || 1}`,
+            )
+            .join(', ');
+
           // Calculate total weight (estimate based on quantity)
           // You might want to adjust this logic based on your actual weight calculation
           const estimatedWeight = (totalQuantity * 0.3).toFixed(1); // Assuming 0.3kg per item
-          
+
           // Auto-fill form data from localStorage
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             recipient_name: history?.fullName || '',
             recipient_phone: history?.phone_no || '',
-            recipient_address: `${history?.address || ''}, ${history?.city || ''}, ${history?.region || ''}`.trim(),
-            amount_to_collect: parsedData.totalPrice + parsedData.deliveryFee || 0,
+            recipient_address: `${history?.address || ''}, ${
+              history?.city || ''
+            }, ${history?.region || ''}`.trim(),
+            amount_to_collect:
+              parsedData.totalPrice + parsedData.deliveryFee || 0,
             item_description: itemDescription || `Order #${history?.id}`,
-            merchant_order_id: history?.id ? `ORDER-${history.id}` : `ORDER-${Date.now()}`,
+            merchant_order_id: history?.id
+              ? `ORDER-${history.id}`
+              : `ORDER-${Date.now()}`,
             item_quantity: totalQuantity || 1,
             item_weight: 0.5, // Minimum 0.5kg
           }));
@@ -80,6 +95,8 @@ const AddPathaoOrder = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  const axiosPublic = useAxiosPublic();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -105,10 +122,34 @@ const AddPathaoOrder = () => {
         },
       );
 
-      const data = await res.json();
+      const pathaoOrderData = await res.json();
+      // console.log(pathaoOrderData, 'pathaoOrderData');
 
       if (res.ok) {
-        alert('Order placed successfully!');
+        toast.success('Order placed successfully!');
+
+        // console.log(orderData,orderData.history.trackingToken,'orderData.history.trackingToken');
+
+        // Build courier details payload
+        const courierDetails = {
+          consignment_id: pathaoOrderData?.data?.consignment_id || null,
+          merchant_order_id: pathaoOrderData?.data.merchant_order_id,
+          order_status: pathaoOrderData?.data?.status || 'pending',
+          delivery_fee: pathaoOrderData?.data?.delivery_fee || 0,
+          courier_name: 'Pathao',
+          tracking_number: orderData.history.trackingToken || null,
+          recipient_name: orderPayload.recipient_name,
+          recipient_phone: orderPayload.recipient_phone,
+          delivery_address: orderPayload.recipient_address,
+        };
+
+        // Save courier info in DB
+        await axiosPublic.post(
+          `/admin/add-courier/${orderData?.history?.trackingToken}`,
+          courierDetails,
+          { headers: { 'Content-Type': 'application/json' } },
+        );
+
         setFormData({
           store_id: 31663,
           merchant_order_id: '',
@@ -125,8 +166,15 @@ const AddPathaoOrder = () => {
         });
         // Clear localStorage after successful submission
         localStorage.removeItem('pathaoHistory');
+        window.open(
+          'https://merchant.pathao.com/courier/orders/list',
+          '_blank',
+        );
       } else {
-        alert('Failed to place order: ' + (data.message || 'Unknown error'));
+        alert(
+          'Failed to place order: ' +
+            (pathaoOrderData.message || 'Unknown error'),
+        );
       }
     } catch (err) {
       console.error(err);
@@ -136,13 +184,23 @@ const AddPathaoOrder = () => {
     }
   };
 
+  // useEffect(()=>{
+  // console.log(orderData,'orderData');
+
+  // },[orderData])
+
   // Function to get product details from the orders array
   const getProductDetails = () => {
     if (!orderData || !orderData.orders) return '';
-    
-    return orderData.orders.map(order => 
-      `${order.ProductName || 'Product'} - Size: ${order.size || 'N/A'} - Qty: ${order.Quantity || 1}`
-    ).join(', ');
+
+    return orderData.orders
+      .map(
+        (order) =>
+          `${order.ProductName || 'Product'} - Size: ${
+            order.size || 'N/A'
+          } - Qty: ${order.Quantity || 1}`,
+      )
+      .join(', ');
   };
 
   return (
@@ -159,13 +217,21 @@ const AddPathaoOrder = () => {
           <p className="text-gray-600">
             Fill in the details to create a new delivery order
           </p>
-          
+
           {/* Auto-fill Notification */}
           {orderData && (
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
               <div className="flex items-center gap-2 text-blue-700">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <span className="text-sm font-medium">
                   Order data auto-filled from previous selection
@@ -173,8 +239,13 @@ const AddPathaoOrder = () => {
               </div>
               {orderData.history && (
                 <div className="mt-2 text-sm text-blue-600">
-                  <p>Order #{orderData.history.id} - {orderData.history.fullName}</p>
-                  <p>{orderData.orders?.length || 0} item(s) - Total: ৳{orderData.totalPrice || 0}</p>
+                  <p>
+                    Order #{orderData.history.id} - {orderData.history.fullName}
+                  </p>
+                  <p>
+                    {orderData.orders?.length || 0} item(s) - Total: ৳
+                    {orderData.totalPrice || 0}
+                  </p>
                 </div>
               )}
             </div>

@@ -4,7 +4,7 @@ import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Loading from '../../../components/Loading';
 import Link from 'next/link';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import useGroupOrders from '../../../Hooks/useGroupOrders';
 import Head from 'next/head';
 import {
@@ -14,6 +14,9 @@ import {
   FiFilter,
   FiDownload,
   FiChevronDown,
+  FiPackage,
+  FiTruck,
+  FiX,
 } from 'react-icons/fi';
 import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
@@ -22,10 +25,8 @@ import { FaTimes } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 
 const ShowOrders = (data) => {
-  // console.log(data.data.module, 'resssss');
   const { user, loading } = useContext(AuthContext);
   const [sortedGroupedOrdersArray, refetch, isPending] = useGroupOrders();
-  // console.log(sortedGroupedOrdersArray,'sortedGroupedOrdersArray');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [addressFilter, setAddressFilter] = useState('all');
@@ -57,8 +58,6 @@ const ShowOrders = (data) => {
     return matchesSearch && matchesStatus && notCancelled;
   });
 
-  console.log(filteredOrders, 'filteredOrders');
-
   const totalOrderedPrice = filteredOrders.reduce(
     (sum, order) => sum + (order?.totalPrice || 0),
     0,
@@ -81,7 +80,6 @@ const ShowOrders = (data) => {
   useOnClickOutside(exportRef, () => setExportDropdownOpen(false));
 
   const handleExport = (type) => {
-    // Prepare data for export
     const exportData = filteredOrders.map((order) => ({
       'Order ID': order.history.id,
       Customer: order.customer?.name || order.history?.fullName,
@@ -118,20 +116,13 @@ const ShowOrders = (data) => {
   };
 
   const exportToExcel = (data, filename = 'orders.xlsx') => {
-    // Convert JSON data to worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
-
-    // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
-
-    // Write the workbook to a binary Excel file
     const excelBuffer = XLSX.write(workbook, {
       bookType: 'xlsx',
       type: 'array',
     });
-
-    // Save the file using file-saver
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, filename);
   };
@@ -147,10 +138,7 @@ const ShowOrders = (data) => {
   const router = useRouter();
 
   const handlePathaoCourier = (history) => {
-    // Save data in localStorage
     localStorage.setItem('pathaoHistory', JSON.stringify(history));
-
-    // Navigate without attaching big object in URL
     router.push('/admin/add/add-pathao-order');
   };
 
@@ -158,267 +146,379 @@ const ShowOrders = (data) => {
     router.push(`show-order-details/${id}`);
   };
 
+  const getStatusColor = (statusId) => {
+    if (statusId > 6) return 'bg-red-50 border-red-200';
+    if (statusId === 6) return 'bg-emerald-50 border-emerald-200';
+    return 'bg-amber-50 border-amber-200';
+  };
+
+  const getStatusBadgeColor = (statusId) => {
+    if (statusId > 6) return 'bg-red-100 text-red-700 border-red-200';
+    if (statusId === 6) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    return 'bg-amber-100 text-amber-700 border-amber-200';
+  };
+
   return (
     <>
       <Head>
         <title>Order Management | Admin Panel</title>
       </Head>
-      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Order Management
-            </h1>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 p-4 lg:p-8">
+        <div className="max-w-[1600px] mx-auto">
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                <FiPackage className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+                Order Management
+              </h1>
+            </div>
+            <p className="text-gray-600 text-sm ml-14">
+              Manage and track all customer orders in one place
+            </p>
+          </div>
 
-            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-              <div className="relative flex-grow md:w-64">
-                <FiSearch className="absolute left-3 top-3 text-gray-400" />
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Orders</p>
+                  <p className="text-3xl font-bold text-gray-900">{filteredOrders.length}</p>
+                </div>
+                <div className="p-3 bg-blue-50 rounded-xl">
+                  <FiPackage className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    ৳{totalOrderedPrice.toLocaleString()}
+                  </p>
+                </div>
+                <div className="p-3 bg-emerald-50 rounded-xl">
+                  <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 sm:col-span-2 lg:col-span-1"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Avg. Order Value</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    ৳{filteredOrders.length > 0 ? Math.round(totalOrderedPrice / filteredOrders.length).toLocaleString() : 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-50 rounded-xl">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Filters Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search orders..."
-                  className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Search by customer, phone, or product..."
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              {/* show non-cancelled orders only */}
-              <label className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer">
+              {/* Hide Cancelled */}
+              <label className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors min-w-fit">
                 <input
                   type="checkbox"
                   checked={hideCancelled}
                   onChange={(e) => setHideCancelled(e.target.checked)}
-                  className="form-checkbox h-4 w-4 text-blue-600"
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Hide Cancelled</span>
+                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Hide Cancelled</span>
               </label>
 
-              {/* filter by address  */}
-              <select
-                className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                value={addressFilter}
-                onChange={(e) => setAddressFilter(e.target.value)}
-              >
-                {/* Default option */}
-                <option value="all">All Regions</option>
+              {/* Region Filter */}
+              <div className="relative min-w-[180px]">
+                <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <select
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium text-gray-700 appearance-none cursor-pointer"
+                  value={addressFilter}
+                  onChange={(e) => setAddressFilter(e.target.value)}
+                >
+                  <option value="all">All Regions</option>
+                  {addressOptions.map((option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.displayName}
+                    </option>
+                  ))}
+                </select>
+                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
 
-                {addressOptions.map((option) => (
-                  <option key={option.id} value={option.name}>
-                    {option.displayName}
-                  </option>
-                ))}
-              </select>
+              {/* Status Filter */}
+              <div className="relative min-w-[180px]">
+                <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <select
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium text-gray-700 appearance-none cursor-pointer"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
 
-              {/* filter by statuses  */}
-              <select
-                className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              {/* Export */}
               <div className="relative" ref={exportRef}>
                 <button
                   onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-sm hover:shadow-md font-medium text-sm min-w-[140px]"
                 >
-                  <FiDownload size={16} />
+                  <FiDownload className="w-4 h-4" />
                   Export
                   <FiChevronDown
-                    size={16}
-                    className={`transition-transform ${
+                    className={`w-4 h-4 transition-transform duration-200 ${
                       exportDropdownOpen ? 'rotate-180' : ''
                     }`}
                   />
                 </button>
-                {exportDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                    <div className="py-1">
+                <AnimatePresence>
+                  {exportDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20"
+                    >
                       <button
                         onClick={() => handleExport('csv')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        Export as CSV
+                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="font-medium">Export as CSV</span>
                       </button>
                       <button
                         onClick={() => handleExport('excel')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100"
                       >
-                        Export as Excel
+                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="font-medium">Export as Excel</span>
                       </button>
-                    </div>
-                  </div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
 
+          {/* Orders Table */}
           {loading || isPending ? (
             <Loading />
           ) : filteredOrders.length > 0 ? (
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="overflow-x-auto">
-                <div className="flex flex-col items-end justify-end mb-3">
-                  <span className="text-lg font-semibold text-gray-800">
-                    Total Order: {filteredOrders.length}
-                  </span>
-                  <span className="text-lg font-semibold text-gray-800">
-                    Total Ordered Price: ৳{totalOrderedPrice.toLocaleString()}
-                  </span>
-                </div>
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50/80">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Order ID
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Phone
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Products
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Payment
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-100">
                     {filteredOrders.map((group, index) => (
-                      // <Link
-                      //   href={`show-order-details/${group.history?.id}`}
-                      //   className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                      // >
                       <motion.tr
                         key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2, delay: index * 0.02 }}
                         onClick={() => handleItemClick(group.history?.id)}
-                        className={`cursor-pointer hover:bg-black/20 ${
+                        className={`cursor-pointer transition-all duration-200 border-l-4 ${
                           group.history.deliveryStatus.id > 6
-                            ? 'bg-red-200'
-                            : group.history.deliveryStatus.id == 6
-                            ? 'bg-green-200'
+                            ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
+                            : group.history.deliveryStatus.id === 6
+                            ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
                             : group.history.isChecked
-                            ? group.history.deliveryStatus.id != 1
-                              ? 'bg-yellow-100'
-                              : 'bg-yellow-50'
-                            : 'bg-white'
+                            ? group.history.deliveryStatus.id !== 1
+                              ? 'border-l-amber-400 bg-amber-50 hover:bg-amber-100/60'
+                              : 'border-l-amber-300 bg-amber-50 hover:bg-amber-100/40'
+                            : 'border-l-blue-300 bg-white hover:bg-blue-50/50'
                         }`}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          #{group.history.id}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-bold text-gray-900">
+                            #{group.history.id}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {group.customer?.name || group.history?.fullName}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="text"
+                            className="px-3 py-2 text-sm text-gray-900 bg-transparent border border-transparent hover:border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            value={group.customer?.name || group.history?.fullName}
+                            onClick={(e) => e.stopPropagation()}
+                            readOnly
+                          />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {group.history?.phone_no}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="text"
+                            className="px-3 py-2 text-sm text-gray-700 bg-transparent border border-transparent hover:border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+                            value={group.history?.phone_no}
+                            onClick={(e) => e.stopPropagation()}
+                            readOnly
+                          />
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
-                          <div className="flex flex-wrap gap-1">
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
+                          <div className="flex flex-wrap gap-1.5">
                             {group.orders.map((order, idx) => (
                               <Link
                                 key={idx}
                                 href={`/products/details/${order.product.productId}`}
-                                className="text-blue-600 hover:text-blue-800 hover:underline"
-                                onClick={(e) => e.stopPropagation()} // prevent row click
+                                className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-800 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 {order.product.name}
-                                {idx !== group.orders.length - 1 ? ',' : ''}
                               </Link>
                             ))}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {group.history?.paymentMethod?.name || 'N/A'}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg">
+                            {group.history?.paymentMethod?.name || 'N/A'}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(
-                            group.history?.BuyingDate,
-                          ).toLocaleDateString('en-US', {
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                          {new Date(group.history?.BuyingDate).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
                           })}
                         </td>
+                        {/* delivery status  */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              group.history.deliveryStatus.id > 6
-                                ? 'bg-red-100 text-red-800'
-                                : group.history.deliveryStatus.id == 6
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
+                            className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border ${getStatusBadgeColor(
+                              group.history.deliveryStatus.id,
+                            )}`}
                           >
                             {group.history?.deliveryStatus.name}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center gap-3">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
                             <button
                               onClick={(e) => {
-                                e.stopPropagation(); // 🚀 prevent row click
+                                e.stopPropagation();
                                 handlePathaoCourier(group);
                               }}
-                              className="z-50 flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow"
                             >
+                              <FiTruck className="w-3.5 h-3.5" />
                               Ship
                             </button>
-                            |{/* Pathao Courier button */}
                             <button
                               onClick={(e) => {
-                                e.stopPropagation(); // 🚀 prevent row click
+                                e.stopPropagation();
                                 handleCheck(group.history);
                               }}
-                              className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+                              className={
+                                `inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all group ${group?.history?.isChecked && 'bg-emerald-300 hover:bg-emerald-200/50'}`
+                              }
                             >
                               {group.history.isChecked ? (
-                                <div className="group">
-                                  <span className="group-hover:hidden flex items-center gap-1">
-                                    <FiCheck size={14} /> Checked
-                                  </span>
-                                  <span className="hidden group-hover:flex items-center gap-1">
-                                    <FaTimes size={14} /> Uncheck
-                                  </span>
-                                </div>
+                                <>
+                                  {/* <FiCheck className="w-3.5 h-3.5 text-emerald-600" /> */}
+                                  <span className="group-hover:hidden inline">Checked</span>
+                                  <span className="hidden group-hover:inline">Uncheck</span>
+                                </>
                               ) : (
-                                'Check'
+                                <>
+                                  <FiCheck className="w-3.5 h-3.5" />
+                                  <span className="hidden sm:inline">Check</span>
+                                </>
                               )}
                             </button>
                           </div>
                         </td>
                       </motion.tr>
-                      // </Link>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-              <p className="text-gray-500">
-                No orders found matching your criteria.
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center"
+            >
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                <FiPackage className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders found</h3>
+              <p className="text-gray-500 text-sm">
+                Try adjusting your filters or search criteria
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
