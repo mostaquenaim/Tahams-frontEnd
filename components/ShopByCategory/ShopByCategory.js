@@ -20,7 +20,7 @@ const ShopByCategory = () => {
 
     return (
         <>
-            <div className="pt-20 md:pt-16 lg:pt-10 pb-10 shadow-md px-10">
+            <div className="pt-20 md:pt-16 lg:pt-10 pb-10 shadow-md px-2 md:px-10">
                 <Heading first="Shop by" second="CATEGORY"></Heading>
                 <div className="pt-4 md:pt-8 lg:pt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-center">
                     {

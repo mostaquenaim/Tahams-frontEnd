@@ -57,7 +57,7 @@ export default function Home() {
   }, [activePop]);
 
   return (
-    <div>
+    <div className=''>
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           <Head>
