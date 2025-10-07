@@ -23,6 +23,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { FaTimes } from 'react-icons/fa';
 import { useRouter } from 'next/router';
+import { X } from 'lucide-react';
 
 const ShowOrders = (data) => {
   const { user, loading } = useContext(AuthContext);
@@ -35,8 +36,10 @@ const ShowOrders = (data) => {
     data ? data.data.module : [],
   );
   const axiosPublic = useAxiosPublic();
+  const [fraudCheck, setFraudCheck] = useState(null);
+  const [fraudLoad, setFraudLoad] = useState(false);
 
-  console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
+  // console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
 
   const filteredOrders = sortedGroupedOrdersArray.filter((order) => {
     const matchesSearch =
@@ -142,6 +145,59 @@ const ShowOrders = (data) => {
   const handlePathaoCourier = (history) => {
     localStorage.setItem('pathaoHistory', JSON.stringify(history));
     router.push('/admin/add/add-pathao-order');
+  };
+
+  const showCustomerHistory = async (phone_no) => {
+    try {
+      setFraudLoad(true);
+      if (!phone_no) {
+        console.warn('⚠️ No phone number provided.');
+        setFraudLoad(false);
+        return;
+      }
+
+      const url = process.env.NEXT_PUBLIC_FRAUDURL;
+      const apiKey = process.env.NEXT_PUBLIC_FRAUDSPY_API_KEY;
+
+      // console.log(url, apiKey, 'url, apiKey');
+
+      if (!url || !apiKey) {
+        setFraudLoad(false);
+        console.error('❌ Missing environment variables for fraud check.');
+        return;
+      }
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: apiKey.startsWith('Bearer ')
+            ? apiKey
+            : `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ phone: phone_no }),
+      });
+
+      if (!res.ok) {
+        console.error(
+          `❌ Request failed with status ${res.status}: ${res.statusText}`,
+        );
+        setFraudLoad(false);
+        return;
+      }
+
+      const data = await res.json();
+      setFraudCheck(data.overall);
+      setFraudLoad(false);
+      // console.log('✅ Overall:', data.overall);
+      // console.log('🚚 RedX Courier:', data.couriers?.redx ?? 'N/A');
+
+      // return data;
+    } catch (error) {
+      setFraudLoad(false);
+      console.error('❌ Error fetching customer history:', error.message);
+    }
   };
 
   const handleItemClick = (id) => {
@@ -532,6 +588,22 @@ const ShowOrders = (data) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                showCustomerHistory(group.history?.phone_no);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-emerald-100 hover:bg-emerald-200 text-black rounded-lg transition-all shadow-sm hover:shadow"
+                            >
+                              {fraudLoad ? (
+                                <Loading />
+                              ) : (
+                                <span className="flex gap-1">
+                                  <FiSearch className="w-3.5 h-3.5" />
+                                  Details
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 handlePathaoCourier(group);
                               }}
                               className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow"
@@ -595,6 +667,67 @@ const ShowOrders = (data) => {
           )}
         </div>
       </div>
+
+      {fraudCheck && (
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md sm:max-w-lg md:max-w-2xl overflow-hidden transform transition-all duration-300 scale-100">
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-gray-200 p-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                Customer Order History
+              </h2>
+              <button
+                onClick={() => setFraudCheck(null)} // closes the modal
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full hover:bg-gray-100"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                <p className="text-sm text-gray-500 font-medium">
+                  Total Orders
+                </p>
+                <p className="text-xl font-bold text-gray-900">
+                  {fraudCheck.total}
+                </p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4 shadow-sm">
+                <p className="text-sm text-gray-500 font-medium">Delivered</p>
+                <p className="text-xl font-bold text-green-700">
+                  {fraudCheck.delivered}
+                </p>
+              </div>
+              <div className="bg-red-50 rounded-lg p-4 shadow-sm">
+                <p className="text-sm text-gray-500 font-medium">Returned</p>
+                <p className="text-xl font-bold text-red-600">
+                  {fraudCheck.returned}
+                </p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
+                <p className="text-sm text-gray-500 font-medium">
+                  Success Ratio
+                </p>
+                <p className="text-xl font-bold text-blue-700">
+                  {fraudCheck.success_ratio}%
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-200 p-4 flex justify-end">
+              <button
+                onClick={() => setFraudCheck(null)}
+                className="px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
