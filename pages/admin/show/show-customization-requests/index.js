@@ -16,7 +16,7 @@ import { FaCheck } from 'react-icons/fa';
 
 const ShowCustomizationRequests = () => {
   const [customizations, refetch, isPending] = useCustomizationReq();
-  // console.log(customizations, 'customizationscustomizations');
+  console.log(customizations, 'customizationscustomizations');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

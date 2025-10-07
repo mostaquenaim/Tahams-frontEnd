@@ -597,7 +597,7 @@ const ShowOrders = (data) => {
                               ) : (
                                 <span className="flex gap-1">
                                   <FiSearch className="w-3.5 h-3.5" />
-                                  Details
+                                  History
                                 </span>
                               )}
                             </button>
