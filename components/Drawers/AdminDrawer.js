@@ -20,9 +20,11 @@ import useGroupOrders from '../../Hooks/useGroupOrders';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { CustomizationOrderContext } from '/Contexts/CustomizationOrderCountProvider';
 import useCustomizationReq from '/Hooks/useCustomizationReq';
+import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 
 const AdminDrawer = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const { isAdminOpen, setAdminIsOpen } = useContext(AdminDrawerContext);
+
   const [expandedSections, setExpandedSections] = useState({
     Dashboard: true,
     Orders: true,
@@ -229,7 +231,7 @@ const AdminDrawer = () => {
     },
   ];
 
-  const toggleDrawer = () => setIsOpen(!isOpen);
+  const toggleDrawer = () => setAdminIsOpen(!isAdminOpen);
 
   const toggleSection = (sectionName) => {
     setExpandedSections((prev) => ({
@@ -240,17 +242,17 @@ const AdminDrawer = () => {
 
   return (
     <div
-      className={`fixed flex z-40 ${
-        isOpen ? 'w-64' : 'w-20'
-      } transition-all duration-300 ease-in-out h-screen`}
+      className={`fixed flex z-40 
+        ${isAdminOpen ? 'w-64' : 'w-20'}
+       transition-all duration-300 ease-in-out h-screen`}
     >
       <div
-        className={`flex flex-col bg-gray-800 text-white h-full ${
-          isOpen ? 'w-64' : 'w-20'
-        } transition-all duration-300 ease-in-out shadow-xl`}
+        className={`flex flex-col bg-gray-800 text-white h-full 
+          ${isAdminOpen ? 'w-64' : 'w-20'}
+         transition-all duration-300 ease-in-out shadow-xl`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          {isOpen && (
+          {isAdminOpen && (
             <Link
               href="/admin"
               className="text-xl font-bold text-white hover:text-blue-300 transition duration-300 flex items-center"
@@ -262,7 +264,7 @@ const AdminDrawer = () => {
           <button
             onClick={toggleDrawer}
             className="p-2 rounded-md hover:bg-gray-700 transition-colors duration-200"
-            aria-label={isOpen ? 'Collapse menu' : 'Expand menu'}
+            aria-label={isAdminOpen ? 'Collapse menu' : 'Expand menu'}
           >
             <AiOutlineMenu className="text-xl" />
           </button>
@@ -282,17 +284,17 @@ const AdminDrawer = () => {
                   >
                     <div className="flex items-center">
                       {getSectionIcon(link.Name)}
-                      {isOpen && (
+                      {isAdminOpen && (
                         <span className="font-medium">{link.Name}</span>
                       )}
                     </div>
-                    {isOpen && (
+                    {isAdminOpen && (
                       <span className="text-xs">
                         {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
                       </span>
                     )}
                   </div>
-                  {isOpen && isExpanded && (
+                  {isAdminOpen && isExpanded && (
                     // <ul className="pl-8 pt-1 space-y-1 mt-1">
                     <ul className="pl-8 pt-1 space-y-1 mt-1 transition-all duration-300 ease-in-out">
                       {link.Tasks.map((task, taskIndex) => (

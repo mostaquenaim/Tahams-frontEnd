@@ -37,16 +37,16 @@ const ShowNewArrival = ({ ind, prop }) => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
                   >
-                    {/* <h3 className="text-white text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-1 sm:mb-2 line-clamp-2">
+                    <h3 className="hidden md:block text-white text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-1 sm:mb-2 line-clamp-2">
                       {prop.name}
-                    </h3> */}
+                    </h3>
                     {prop.subsub?.name && (
-                      <p className="text-gray-200 text-xs sm:text-sm font-medium uppercase tracking-wide">
+                      <p className="md:hidden text-gray-200 text-xs sm:text-sm font-medium uppercase tracking-wide">
                         {prop.subsub.name}
                       </p>
                     )}
                   </motion.div>
-
+                  
                   {/* Shop Now Button - Hidden on Mobile, Visible on Hover for Desktop */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}

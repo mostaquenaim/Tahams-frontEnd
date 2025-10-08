@@ -13,6 +13,7 @@ import CustomerCheck from '../components/Auth/CustomerCheck';
 import CountProvider from '../Contexts/CountProvider';
 import Head from 'next/head';
 import CustomizationOrderCountProvider from '/Contexts/CustomizationOrderCountProvider';
+import AdminDrawerProvider from '/Contexts/AdminDrawerProvider';
 
 const queryClient = new QueryClient();
 export default function App({ Component, pageProps }) {
@@ -41,9 +42,11 @@ export default function App({ Component, pageProps }) {
 
           <QueryClientProvider client={queryClient}>
             {isAdminRoute ? (
-              <AdminCheck>
-                <Component {...pageProps} />
-              </AdminCheck>
+              <AdminDrawerProvider>
+                <AdminCheck>
+                  <Component {...pageProps} />
+                </AdminCheck>
+              </AdminDrawerProvider>
             ) : (
               <CustomerCheck>
                 <Component {...pageProps} />

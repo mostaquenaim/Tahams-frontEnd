@@ -17,6 +17,8 @@ import {
   FiPackage,
   FiTruck,
   FiX,
+  FiArrowUp,
+  FiArrowDown,
 } from 'react-icons/fi';
 import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
@@ -28,6 +30,7 @@ import { X } from 'lucide-react';
 const ShowOrders = (data) => {
   const { user, loading } = useContext(AuthContext);
   const [sortedGroupedOrdersArray, refetch, isPending] = useGroupOrders();
+  console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [addressFilter, setAddressFilter] = useState('all');
@@ -39,9 +42,13 @@ const ShowOrders = (data) => {
   const [fraudCheck, setFraudCheck] = useState(null);
   const [fraudLoad, setFraudLoad] = useState(false);
 
-  // console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'asc',
+  });
 
-  const filteredOrders = sortedGroupedOrdersArray.filter((order) => {
+  let filteredOrders = sortedGroupedOrdersArray.filter((order) => {
     const matchesSearch =
       order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.history?.phone_no?.includes(searchTerm) ||
@@ -63,10 +70,106 @@ const ShowOrders = (data) => {
     return matchesSearch && matchesStatus && notCancelled;
   });
 
-  const totalOrderedPrice = filteredOrders.reduce(
+  // Sorting function
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Apply sorting to filtered orders
+  const sortedOrders = React.useMemo(() => {
+    let sortableOrders = [...filteredOrders];
+
+    if (sortConfig.key) {
+      sortableOrders.sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortConfig.key) {
+          case 'id':
+            aValue = a.history.id;
+            bValue = b.history.id;
+            break;
+          case 'customer':
+            aValue = (
+              a.customer?.name ||
+              a.history?.fullName ||
+              ''
+            ).toLowerCase();
+            bValue = (
+              b.customer?.name ||
+              b.history?.fullName ||
+              ''
+            ).toLowerCase();
+            break;
+          case 'phone':
+            aValue = a.history?.phone_no || '';
+            bValue = b.history?.phone_no || '';
+            break;
+          case 'price':
+            aValue =
+              a.orders.reduce(
+                (acc, order) => acc + (order.totalPrice || 0),
+                0,
+              ) + (a.history?.deliveryFee || 0);
+            bValue =
+              b.orders.reduce(
+                (acc, order) => acc + (order.totalPrice || 0),
+                0,
+              ) + (b.history?.deliveryFee || 0);
+            break;
+          case 'date':
+            aValue = new Date(a.history?.BuyingDate).getTime();
+            bValue = new Date(b.history?.BuyingDate).getTime();
+            break;
+          case 'status':
+            aValue = a.history?.deliveryStatus.name.toLowerCase();
+            bValue = b.history?.deliveryStatus.name.toLowerCase();
+            break;
+          case 'payment':
+            aValue = (a.history?.paymentMethod?.name || '').toLowerCase();
+            bValue = (b.history?.paymentMethod?.name || '').toLowerCase();
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return sortableOrders;
+  }, [filteredOrders, sortConfig]);
+
+  const totalOrderedPrice = sortedOrders.reduce(
     (sum, order) => sum + (order?.totalPrice || 0),
     0,
   );
+
+  // Sort icon component
+  const SortIcon = ({ columnKey }) => {
+    if (sortConfig.key !== columnKey) {
+      return (
+        <div className="inline-flex flex-col ml-1 opacity-30">
+          <FiArrowUp className="w-3 h-3 -mb-1" />
+          <FiArrowDown className="w-3 h-3" />
+        </div>
+      );
+    }
+    return sortConfig.direction === 'asc' ? (
+      <FiArrowUp className="w-3.5 h-3.5 ml-1 text-blue-600" />
+    ) : (
+      <FiArrowDown className="w-3.5 h-3.5 ml-1 text-blue-600" />
+    );
+  };
 
   const handleCheck = async (history) => {
     await axiosPublic.patch(
@@ -85,7 +188,7 @@ const ShowOrders = (data) => {
   useOnClickOutside(exportRef, () => setExportDropdownOpen(false));
 
   const handleExport = (type) => {
-    const exportData = filteredOrders.map((order) => ({
+    const exportData = sortedOrders.map((order) => ({
       'Order ID': order.history.id,
       Customer: order.customer?.name || order.history?.fullName,
       Phone: order.history?.phone_no,
@@ -159,8 +262,6 @@ const ShowOrders = (data) => {
       const url = process.env.NEXT_PUBLIC_FRAUDURL;
       const apiKey = process.env.NEXT_PUBLIC_FRAUDSPY_API_KEY;
 
-      // console.log(url, apiKey, 'url, apiKey');
-
       if (!url || !apiKey) {
         setFraudLoad(false);
         console.error('❌ Missing environment variables for fraud check.');
@@ -190,10 +291,6 @@ const ShowOrders = (data) => {
       const data = await res.json();
       setFraudCheck(data.overall);
       setFraudLoad(false);
-      // console.log('✅ Overall:', data.overall);
-      // console.log('🚚 RedX Courier:', data.couriers?.redx ?? 'N/A');
-
-      // return data;
     } catch (error) {
       setFraudLoad(false);
       console.error('❌ Error fetching customer history:', error.message);
@@ -211,8 +308,9 @@ const ShowOrders = (data) => {
   };
 
   const getStatusBadgeColor = (statusId) => {
-    if (statusId > 6) return 'bg-red-100 text-red-700 border-red-200';
-    if (statusId === 6)
+    if (statusId > 6 || statusId === 'Pickup_Cancelled')
+      return 'bg-red-100 text-red-700 border-red-200';
+    if (statusId === 6 || statusId == 'Delivered')
       return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     return 'bg-amber-100 text-amber-700 border-amber-200';
   };
@@ -252,7 +350,7 @@ const ShowOrders = (data) => {
                     Total Orders
                   </p>
                   <p className="text-3xl font-bold text-gray-900">
-                    {filteredOrders.length}
+                    {sortedOrders.length}
                   </p>
                 </div>
                 <div className="p-3 bg-blue-50 rounded-xl">
@@ -307,9 +405,9 @@ const ShowOrders = (data) => {
                   </p>
                   <p className="text-3xl font-bold text-gray-900">
                     ৳
-                    {filteredOrders.length > 0
+                    {sortedOrders.length > 0
                       ? Math.round(
-                          totalOrderedPrice / filteredOrders.length,
+                          totalOrderedPrice / sortedOrders.length,
                         ).toLocaleString()
                       : 0}
                   </p>
@@ -466,32 +564,77 @@ const ShowOrders = (data) => {
           {/* Orders Table */}
           {loading || isPending ? (
             <Loading />
-          ) : filteredOrders.length > 0 ? (
+          ) : sortedOrders.length > 0 ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50/80">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Order ID
+                      <th
+                        onClick={() => handleSort('id')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Order ID
+                          <SortIcon columnKey="id" />
+                        </div>
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Customer
+                      <th
+                        onClick={() => handleSort('customer')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Customer
+                          <SortIcon columnKey="customer" />
+                        </div>
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Phone
+                      <th
+                        onClick={() => handleSort('phone')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Phone
+                          <SortIcon columnKey="phone" />
+                        </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Products
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Payment
+                      <th
+                        onClick={() => handleSort('price')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Price
+                          <SortIcon columnKey="price" />
+                        </div>
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Date
+                      <th
+                        onClick={() => handleSort('payment')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Payment
+                          <SortIcon columnKey="payment" />
+                        </div>
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Status
+                      <th
+                        onClick={() => handleSort('date')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Date
+                          <SortIcon columnKey="date" />
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => handleSort('status')}
+                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                      >
+                        <div className="flex items-center">
+                          Status
+                          <SortIcon columnKey="status" />
+                        </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Actions
@@ -499,7 +642,7 @@ const ShowOrders = (data) => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {filteredOrders.map((group, index) => (
+                    {sortedOrders.map((group, index) => (
                       <motion.tr
                         key={index}
                         initial={{ opacity: 0 }}
@@ -507,12 +650,23 @@ const ShowOrders = (data) => {
                         transition={{ duration: 0.2, delay: index * 0.02 }}
                         onClick={() => handleItemClick(group.history?.id)}
                         className={`cursor-pointer transition-all duration-200 border-l-4 ${
-                          group.history?.courierInfo
+                          group.history?.courierInfo &&
+                          group.history.courierInfo.order_status_slug !=
+                            'Pickup_Cancelled' &&
+                          group.history.courierInfo.order_status_slug !=
+                            'Delivered'
                             ? 'border-l-emerald-400 bg-sky-50 hover:bg-sky-100'
+                            : group.history?.courierInfo &&
+                              group.history.courierInfo.order_status_slug ===
+                                'Pickup_Cancelled'
+                            ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
+                            : group.history.deliveryStatus.id === 6 ||
+                              (group.history?.courierInfo &&
+                                group.history.courierInfo.order_status_slug ==
+                                  'Delivered')
+                            ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
                             : group.history.deliveryStatus.id > 6
                             ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
-                            : group.history.deliveryStatus.id === 6
-                            ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
                             : group.history.isChecked
                             ? group.history.deliveryStatus.id !== 1
                               ? 'border-l-amber-400 bg-amber-50 hover:bg-amber-100/60'
@@ -545,6 +699,7 @@ const ShowOrders = (data) => {
                             readOnly
                           />
                         </td>
+                        {/* products  */}
                         <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
                           <div className="flex flex-wrap gap-1.5">
                             {group.orders.map((order, idx) => (
@@ -559,6 +714,25 @@ const ShowOrders = (data) => {
                             ))}
                           </div>
                         </td>
+                        {/* price  */}
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
+                          <div className="flex flex-wrap gap-1.5">
+                            {(() => {
+                              const totalPrice =
+                                group.orders.reduce(
+                                  (acc, order) => acc + (order.totalPrice || 0),
+                                  0,
+                                ) + (group.history?.deliveryFee || 0);
+
+                              return (
+                                <span className="flex gap-1 font-medium text-gray-900">
+                                  ৳ {totalPrice.toLocaleString('en-BD')}
+                                </span>
+                              );
+                            })()}
+                          </div>
+                        </td>
+                        {/* payment method  */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg">
                             {group.history?.paymentMethod?.name || 'N/A'}
@@ -577,14 +751,19 @@ const ShowOrders = (data) => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border ${getStatusBadgeColor(
-                              group.history.deliveryStatus.id,
+                              group.history?.courierInfo
+                                ? group.history.courierInfo.order_status_slug
+                                : group.history.deliveryStatus.id,
                             )}`}
                           >
-                            {group.history?.deliveryStatus.name}
+                            {group.history?.courierInfo
+                              ? group.history.courierInfo.order_status
+                              : group.history.deliveryStatus.name}
                           </span>
                         </td>
+                        {/* actions  */}
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-center gap-2">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -623,8 +802,7 @@ const ShowOrders = (data) => {
                             >
                               {group.history.isChecked ? (
                                 <>
-                                  {/* <FiCheck className="w-3.5 h-3.5 text-emerald-600" /> */}
-                                  <span className="group-hover:hidden inline">
+                                  <span className="group-hover:hidden inline text-green-700 font-extrabold">
                                     Checked
                                   </span>
                                   <span className="hidden group-hover:inline">
@@ -677,7 +855,7 @@ const ShowOrders = (data) => {
                 Customer Order History
               </h2>
               <button
-                onClick={() => setFraudCheck(null)} // closes the modal
+                onClick={() => setFraudCheck(null)}
                 className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full hover:bg-gray-100"
               >
                 <X size={22} />

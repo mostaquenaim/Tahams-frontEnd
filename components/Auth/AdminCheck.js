@@ -8,11 +8,14 @@ import Loading from '../Loading';
 import DrawerProvider from '/Contexts/DrawerProvider';
 import Head from 'next/head';
 import Link from 'next/link';
+import AdminDrawerProvider from '/Contexts/AdminDrawerProvider';
+import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 
 const AdminCheck = ({ children }) => {
   const { user } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const [isAdmin, setIsAdmin] = useState(null); //
+  const { isAdminOpen } = useContext(AdminDrawerContext);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -49,10 +52,16 @@ const AdminCheck = ({ children }) => {
 
   if (isAdmin) {
     return (
-      <div className="flex bg-gray-100 min-h-screen font-inter text-gray-800">
-        <AdminDrawer />
-        <main className="flex-1 ml-64 p-6 transition-all">{children}</main>
-      </div>
+        <div className="flex bg-gray-100 min-h-screen font-inter text-gray-800">
+          <AdminDrawer />
+          <main
+            className={`flex-1  p-6 transition-all ${
+              isAdminOpen ? 'translate-x-64' : 'translate-x-10'
+            }`}
+          >
+            {children}
+          </main>
+        </div>
     );
   }
 
