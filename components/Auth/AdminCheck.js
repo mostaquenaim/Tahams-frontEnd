@@ -56,11 +56,14 @@ const AdminCheck = ({ children }) => {
           <AdminDrawer />
           <main
             className={`flex-1  p-6 transition-all ${
-              isAdminOpen ? 'translate-x-64' : 'translate-x-10'
+              isAdminOpen ? 'ml-64' : 'ml-10'
             }`}
           >
             {children}
           </main>
+                  {/* <main className="flex-1 ml-64 p-6 transition-all">{children}</main> */}
+
+
         </div>
     );
   }
