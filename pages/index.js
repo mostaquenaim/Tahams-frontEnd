@@ -13,6 +13,7 @@ import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
 import ProfessionalSwiper from '/components/Swiper/SwiperDS';
 import NewArrivalDraft from '/components/Home/NewArrival/NewArrivalDraft';
+import SectionShow from '/components/Home/SectionShow/SectionShow';
 
 export const CompanyContext = createContext(null);
 {
@@ -56,8 +57,19 @@ export default function Home() {
     }
   }, [activePop]);
 
+  const [photos, setPhotos] = useState([
+    '/customized/rivers-of-bd-og.jpg',
+    '/customized/customization-cover.jpg',
+    '/customized/just-cant.jpg',
+    '/customized/dragon-ball-z.jpg',
+    // '/customized/ctg-banglar-chithi.jpg',
+    '/customized/adventure.jpg'
+  ]);
+
+  const [layout, setLayout] = useState('style1');
+
   return (
-    <div className=''>
+    <div className="">
       <CompanyContext.Provider value="unused">
         <ThemeProvider>
           <Head>
@@ -120,12 +132,20 @@ export default function Home() {
               </button>
             </div>
           </Modal>
-          
+
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
           <section id="new-arrival">
             <NewArrival />
             {/* <NewArrivalDraft/> */}
           </section>
+          {/* <section id="new-section">
+            <SectionShow
+              layout={layout}
+              photos={photos}
+              isEditing={true}
+              onLayoutChange={setLayout}
+            />{' '}
+          </section> */}
           <Popular />
           <section id="about">
             <WhyUs></WhyUs>

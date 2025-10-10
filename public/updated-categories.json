@@ -7,12 +7,12 @@
   {
     "id": 2,
     "categoryName": "Toddler",
-    "filename": "category-wise-images/eid-customize-happy-goru-looking.jpg"
+    "filename": "customized/ctg-banglar-chithi.jpg"
   },
   {
     "id": 3,
     "categoryName": "Adults",
-    "filename": "category-wise-images/eid-customize-goru-hello.jpg"
+    "filename": "customized/just-cant.jpg"
   },
   {
     "id": 4,
@@ -22,7 +22,7 @@
   {
     "id": 5,
     "categoryName": "Bigboss",
-    "filename": "category-wise-images/eid-customize-bhai-jitsen.jpg"
+    "filename": "/customized/rivers-of-bd-og.jpg"
   },
   {
     "id": 6,
@@ -32,6 +32,6 @@
   {
     "id": 7,
     "categoryName": "Gift",
-    "filename": "category-wise-images/eid-customize-goru-mubarak.jpg"
+    "filename": "customized/just-cant.jpg"
   }
 ]

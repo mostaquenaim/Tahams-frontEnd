@@ -52,19 +52,17 @@ const AdminCheck = ({ children }) => {
 
   if (isAdmin) {
     return (
-        <div className="flex bg-gray-100 min-h-screen font-inter text-gray-800">
-          <AdminDrawer />
-          <main
-            className={`flex-1  p-6 transition-all ${
-              isAdminOpen ? 'ml-64' : 'ml-10'
-            }`}
-          >
-            {children}
-          </main>
-                  {/* <main className="flex-1 ml-64 p-6 transition-all">{children}</main> */}
-
-
-        </div>
+      <div className="flex bg-gray-100 min-h-screen font-inter text-gray-800">
+        <AdminDrawer />
+        <main
+          className={`flex-1  p-6 transition-all ${
+            isAdminOpen ? 'ml-64' : 'ml-10'
+          }`}
+        >
+          {children}
+        </main>
+        {/* <main className="flex-1 ml-64 p-6 transition-all">{children}</main> */}
+      </div>
     );
   }
 

@@ -5,6 +5,9 @@ import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 
+import Swal from 'sweetalert2'; // make sure it's installed
+import toast from 'react-hot-toast';
+
 const PaymentProcess = () => {
   const { user, loading } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
@@ -18,26 +21,54 @@ const PaymentProcess = () => {
         user?.email ||
         JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
 
-      if (!email) {
-        throw new Error('No email found for the user or guest');
-      }
+      if (!email) throw new Error('No email found for the user or guest');
 
       const result = await axiosPublic.get(
         `/admin/get-buying-history-by-token/${token}?email=${email}`,
       );
-      // console.log(result.data,'result');
+
       setBuyingHistory(result.data);
+      handleAddressUpdateCheck(); // 👈 trigger after data load
     };
-    fetchHistory();
+
+    if (token && (user || localStorage.getItem('guestCustomerInfo'))) {
+      fetchHistory();
+    }
   }, [user?.email, router.query]);
 
-  // Display buying history data or implement your payment logic
+  // 👇 New helper: silently check and update user address if needed
+  const handleAddressUpdateCheck = async () => {
+    try {
+      const savedAddress = JSON.parse(localStorage.getItem('userAddress'));
+
+      if (!savedAddress) return;
+
+      toast.loading('Updating your default address...', { id: 'addr-update' });
+
+      await axiosPublic.put(`admin/update-user-address/${savedAddress.id}`, {
+        name: savedAddress.fullName,
+        region: savedAddress.region,
+        city: savedAddress.city,
+        address: savedAddress.address,
+      });
+
+      localStorage.removeItem('userAddress');
+
+      toast.success('Your default info has been updated.', {
+        id: 'addr-update',
+      });
+    } catch (err) {
+      console.error('Error updating address:', err);
+      toast.error('Failed to update address. Try again later.');
+    }
+  };
+
+  // UI section remains same
   return (
     <div className="min-h-screen">
       <Head>
         <title>Confirm Order</title>
       </Head>
-      {/* <NavbarCompTwo /> */}
       <div className="pt-20 lg:pt-48 min-h-screen">
         {loading ? (
           <span className="loading loading-spinner loading-md"></span>
@@ -45,7 +76,6 @@ const PaymentProcess = () => {
           <PaymentInfo history={buyingHistory} />
         )}
       </div>
-      {/* <Footer /> */}
     </div>
   );
 };

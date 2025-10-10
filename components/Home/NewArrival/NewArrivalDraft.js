@@ -2,11 +2,11 @@ import React from 'react';
 
 const NewArrivalDraft = () => {
   const photos = [
-    '/category-wise-images/eid-customize-bhai-jitsen.jpg',
-    '/tahams-cp-winter.jpg',
-    '/category-wise-images/eid-customize-goru-hello.jpg',
-    '/category-wise-images/eid-customize-goru-mubarak.jpg',
-    '/category-wise-images/eid-customize-happy-goru-looking.jpg',
+    '/customized/rivers-of-bd-og.jpg',
+    '/customized/customization-cover.jpg',
+    '/customized/just-cant.jpg',
+    '/customized/just-cant.jpg',
+    '/customized/ctg-banglar-chithi.jpg',
   ];
 
   return (
