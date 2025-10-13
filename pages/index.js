@@ -159,6 +159,10 @@ export default function Home() {
           </Modal>
 
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
+          <section id="new-arrival">
+            <NewArrival />
+            {/* <NewArrivalDraft/> */}
+          </section>
           <section id="new-section">
             <SectionShow
               layout={layout}
@@ -166,10 +170,6 @@ export default function Home() {
               isEditing={true}
               onLayoutChange={setLayout}
             />{' '}
-          </section>
-          <section id="new-arrival">
-            <NewArrival />
-            {/* <NewArrivalDraft/> */}
           </section>
           <Popular />
           <section id="about">
