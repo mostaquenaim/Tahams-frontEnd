@@ -1542,7 +1542,7 @@ const CustomizeYourTee = () => {
                             aria-label="Select quantity"
                           />
                           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex flex-col">
-                            <button
+                            {/* <button
                               type="button"
                               onClick={() => setQuantity((prev) => prev + 1)}
                               className="text-gray-400 hover:text-gray-600 text-xs leading-none"
@@ -1557,7 +1557,7 @@ const CustomizeYourTee = () => {
                               className="text-gray-400 hover:text-gray-600 text-xs leading-none"
                             >
                               ▼
-                            </button>
+                            </button> */}
                           </div>
                         </div>
                       </div>

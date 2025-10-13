@@ -1,7 +1,7 @@
 
 const WhyUs = () => {
     return (
-        <section className="pt-4 md:pt-8 lg:pt-10 bg-white px-2">
+        <section className="pt-4 md:pt-8 lg:pt-10 bg-white space-y-8 py-12 px-2 sm:px-4 lg:px-8 max-w-7xl mx-auto">
             <div className="container mx-auto flex flex-col md:grid md:grid-cols-3 items-center justify-center lg:justify-between">
                 {/* Left Section */}
                 <div className="text-center lg:text-left lg:px-14 mb-8 lg:mb-0 col-span-2">

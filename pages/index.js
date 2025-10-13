@@ -58,12 +58,37 @@ export default function Home() {
   }, [activePop]);
 
   const [photos, setPhotos] = useState([
-    '/customized/rivers-of-bd-og.jpg',
-    '/customized/customization-cover.jpg',
-    '/customized/just-cant.jpg',
-    '/customized/dragon-ball-z.jpg',
-    // '/customized/ctg-banglar-chithi.jpg',
-    '/customized/adventure.jpg'
+    {
+      link: '/products/details/bangladesh-map-customized-t-shirt-682',
+      name: 'Signature Prints',
+      item: '/customized/rivers-of-bd-og.jpg',
+      onHover: '/customized/Animated_Water_Video_Generation.mp4',
+    },
+    {
+      link: '/customize-tee',
+      name: 'Customize Your Own Tee',
+      item: '/customized/customization-cover.jpg',
+    },
+    {
+      link: '/products/details/just-cant-customize-733',
+      // name: 'Signature Prints',
+      item: '/customized/just-cant.jpg',
+    },
+    {
+      link: '/products/details/dragon-ball-z-customized-t-shirt--742',
+      // name: 'Signature Prints',
+      item: '/customized/dragon-ball-z.jpg',
+    },
+    {
+      link: '/products/details/power-rangers-customize--741',
+      // name: 'Signature Prints',
+      item: '/customized/adventure.jpg',
+    },
+    {
+      link: '/products/details/best-life-customize--740',
+      // name: 'Signature Prints',
+      item: '/customized/sky-high-vibe.jpg',
+    },
   ]);
 
   const [layout, setLayout] = useState('style1');
@@ -134,18 +159,18 @@ export default function Home() {
           </Modal>
 
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
-          <section id="new-arrival">
-            <NewArrival />
-            {/* <NewArrivalDraft/> */}
-          </section>
-          {/* <section id="new-section">
+          <section id="new-section">
             <SectionShow
               layout={layout}
               photos={photos}
               isEditing={true}
               onLayoutChange={setLayout}
             />{' '}
-          </section> */}
+          </section>
+          <section id="new-arrival">
+            <NewArrival />
+            {/* <NewArrivalDraft/> */}
+          </section>
           <Popular />
           <section id="about">
             <WhyUs></WhyUs>

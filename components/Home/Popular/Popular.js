@@ -7,7 +7,7 @@ const Popular = () => {
   const popular = useLoadPopularItems();
   return (
     <>
-      <div className="pt-10 md:pt-16 lg:pt-10 shadow-md">
+      <div className="pt-10 md:pt-16 lg:pt-10 shadow-md space-y-8 py-12 px-2 sm:px-4 lg:px-8 max-w-7xl mx-auto">
         <div className="px-2 md:px-10">
           <Heading first="CUSTOMER" second="FAVORITE"></Heading>
         </div>
