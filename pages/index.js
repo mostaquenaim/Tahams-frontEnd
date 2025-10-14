@@ -91,6 +91,29 @@ export default function Home() {
     },
   ]);
 
+  const [bigbossProducts, srtBigbossProducts] = useState([
+    {
+      link: '/products/details/bangladesh-map-customized-t-shirt-682',
+      item: '/bigboss/Black-Basic-Tee-BB.jpg',
+    },
+    {
+      link: '/customize-tee',
+      item: '/bigboss/thumbnail.jpg',
+    },
+    {
+      link: '/products/details/just-cant-customize-733',
+      item: '/bigboss/Maroon-Basic-Tee-BB.jpg',
+    },
+    {
+      link: '/products/details/dragon-ball-z-customized-t-shirt--742',
+      item: '/bigboss/Marshmallow-Basic-Tee-BB.jpg',
+    },
+    {
+      link: '/products/details/power-rangers-customize--741',
+      item: '/bigboss/Navy-Basic-Tee-BB.jpg',
+    },
+  ]);
+
   const [layout, setLayout] = useState('style1');
 
   return (
@@ -175,6 +198,14 @@ export default function Home() {
           <section id="about">
             <WhyUs></WhyUs>
           </section>
+          {/* <section id="bigboss-section">
+            <SectionShow
+              layout={'style6'}
+              photos={bigbossProducts}
+              isEditing={true}
+              onLayoutChange={setLayout}
+            />{' '}
+          </section> */}
           <ShopByCategory></ShopByCategory>
           <Payment></Payment>
           {/* <Footer></Footer> */}
