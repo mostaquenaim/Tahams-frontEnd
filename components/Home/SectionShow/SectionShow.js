@@ -74,7 +74,8 @@ const SectionShow = ({ layout, photos, isEditing, onLayoutChange }) => {
                     muted
                     loop
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover opacity-0 opacity-100 transition-opacity duration-700 ease-out"
+                    controls={false}
+                    className="absolute inset-0 w-full h-full object-cover opacity-100 transition-opacity duration-700 ease-out"
                   />
                 )}
 
