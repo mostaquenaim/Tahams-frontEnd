@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Heading from '/components/Header/Heading';
 import { useState, useEffect } from 'react';
 
-const SectionShow = ({ layout, photos, isEditing, onLayoutChange }) => {
+const SectionShow = ({ layout, photos, fullCollection, isEditing, onLayoutChange }) => {
   const [loading, setLoading] = useState(true);
 
   // Simulate loading for 1s (can be adjusted or tied to real image loading)

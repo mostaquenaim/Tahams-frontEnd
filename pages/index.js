@@ -115,6 +115,11 @@ export default function Home() {
   ]);
 
   const [layout, setLayout] = useState('style1');
+  const [treasureClicked, setTreasureClicked] = useState(true);
+
+  const handleTreasureBox = () => {
+    setTreasureClicked(!treasureClicked);
+  };
 
   return (
     <div className="">
@@ -182,23 +187,24 @@ export default function Home() {
           </Modal>
 
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
-          <section id="new-arrival">
-            <NewArrival />
-            {/* <NewArrivalDraft/> */}
-          </section>
-          <section id="new-section">
-            <SectionShow
-              layout={layout}
-              photos={photos}
-              isEditing={true}
-              onLayoutChange={setLayout}
-            />{' '}
-          </section>
-          <Popular />
-          <section id="about">
-            <WhyUs></WhyUs>
-          </section>
-          {/* <section id="bigboss-section">
+          <div className="relative">
+            <section id="new-arrival">
+              <NewArrival />
+              {/* <NewArrivalDraft/> */}
+            </section>
+            <section id="new-section">
+              <SectionShow
+                layout={layout}
+                photos={photos}
+                isEditing={true}
+                onLayoutChange={setLayout}
+              />{' '}
+            </section>
+            <Popular />
+            <section id="about">
+              <WhyUs></WhyUs>
+            </section>
+            {/* <section id="bigboss-section">
             <SectionShow
               layout={'style6'}
               photos={bigbossProducts}
@@ -206,7 +212,131 @@ export default function Home() {
               onLayoutChange={setLayout}
             />{' '}
           </section> */}
-          <ShopByCategory></ShopByCategory>
+            <ShopByCategory></ShopByCategory>
+            <figure
+              onClick={handleTreasureBox}
+              className={`w-20 h-20 fixed z-50 transition-all duration-700 ease-in-out 
+    ${
+      treasureClicked
+        ? 'bottom-1/2 right-1/2 translate-x-1/2 translate-y-1/2 scale-[5]'
+        : 'bottom-4 right-4 translate-x-0 translate-y-0'
+    }`}
+            >
+              <div className="absolute inset-0 rounded-full blur-xl bg-yellow-400/40 animate-pulse"></div>
+
+              {/* TOP IMAGE */}
+              <img
+                src="/treasure/treasure-cover.png"
+                alt="Treasure Cover"
+                className={`translate-y-6 origin-bottom transition-transform duration-700 ease-in-out scale-[1.2] z-30 relative
+      ${
+        treasureClicked
+          ? 'delay-300 duration-1000 rotate-[-180deg]'
+          : 'rotate-0'
+      }
+    `}
+              />
+
+              {/* MIDDLE IMAGE */}
+              <img
+                src="/treasure/tbox-3d part.png"
+                alt="Treasure Glow"
+                className={`absolute -mt-2 transition-opacity z-10 ${
+                  !treasureClicked ? 'opacity-100' : 'opacity-100'
+                }`}
+              />
+
+              {/* perfumes  */}
+              {/* perfumes  */}
+              {/* perfumes  */}
+              <div className="flex gap-2">
+                <img
+                  src="/perfumes/212-vip.png"
+                  alt="212 vip"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000 duration-[0.1s] -translate-y-12 -translate-x-12'
+                        : 'opacity-100'
+                    }`}
+                />
+                <img
+                  src="/perfumes/bleu-de-chanel.png"
+                  alt="bleu-de-chanel"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2 ml-2
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000  duration-[0.2s] -translate-y-12  -translate-x-8'
+                        : 'opacity-100'
+                    }`}
+                />
+                <img
+                  src="/perfumes/cool-water.png"
+                  alt="cool-water.png"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2 ml-4
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000  duration-[0.3s] -translate-y-12  -translate-x-4'
+                        : 'opacity-100'
+                    }`}
+                />
+                <img
+                  src="/perfumes/ehsas-al-arab.png"
+                  alt="ehsas-al-arab"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2 ml-6
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000  duration-[0.4s] -translate-y-12  translate-x-0'
+                        : 'opacity-100'
+                    }`}
+                />
+                <img
+                  src="/perfumes/hugo-boss.png"
+                  alt="hugo-boss"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2 ml-8
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000  duration-[0.5s] -translate-y-12  translate-x-4'
+                        : 'opacity-100'
+                    }`}
+                />
+                <img
+                  src="/perfumes/vampire-blood.png"
+                  alt="vampire-blood"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2 ml-10
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000  duration-[0.6s] -translate-y-12  translate-x-8'
+                        : 'opacity-100'
+                    }`}
+                />
+                <img
+                  src="/perfumes/versace.png"
+                  alt="versace"
+                  className={`absolute transition-all z-[15] 
+                    h-10 -translate-y-2 ml-12
+                    ${
+                      treasureClicked
+                        ? 'opacity-100  delay-1000  duration-[0.7s] -translate-y-12  translate-x-12'
+                        : 'opacity-100'
+                    }`}
+                />
+              </div>
+
+              {/* BOTTOM IMAGE */}
+              <img
+                src="/treasure/tbox-2d.png"
+                alt="Treasure Box Base"
+                className="z-20 relative"
+              />
+            </figure>
+          </div>
           <Payment></Payment>
           {/* <Footer></Footer> */}
         </ThemeProvider>
