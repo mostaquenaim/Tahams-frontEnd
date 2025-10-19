@@ -1482,8 +1482,15 @@ const CustomizeYourTee = () => {
 
                     {/* Size Selection */}
                     <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Select Size *
+                      <label className="text-sm font-medium text-gray-700 flex justify-between">
+                        <span>Select Size *</span>
+                        <a
+                          target="_blank"
+                          href="https://res.cloudinary.com/dwel7fcr4/image/upload/v1760876302/half-sleeve_jz72id.png"
+                          className="text-blue-500 underline"
+                        >
+                          check size guide
+                        </a>
                       </label>
                       <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                         {[
