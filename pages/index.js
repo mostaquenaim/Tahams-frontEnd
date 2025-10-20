@@ -117,7 +117,7 @@ export default function Home() {
   ]);
 
   const [layout, setLayout] = useState('style1');
-  const [treasureClicked, setTreasureClicked] = useState(true);
+  const [treasureClicked, setTreasureClicked] = useState(false);
 
   const handleTreasureBox = () => {
     setTreasureClicked(!treasureClicked);
@@ -215,10 +215,10 @@ export default function Home() {
             />{' '}
           </section> */}
             <ShopByCategory></ShopByCategory>
-            {/* <PerfumeBox
+            <PerfumeBox
               handleTreasureBox={handleTreasureBox}
               treasureClicked={treasureClicked}
-            /> */}
+            />
           </div>
           <Payment></Payment>
           {/* <Footer></Footer> */}
