@@ -1,7 +1,12 @@
 import Link from 'next/link';
-import React from 'react';
+import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
+  const [activePerfume, setActivePerfume] = useState(null);
+  const router = useRouter();
+
   const perfumes = [
     {
       src: '/perfumes/212-vip.png',
@@ -61,115 +66,146 @@ const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
     },
   ];
 
-  return (
-    <div className="hidden md:block fixed z-50 bottom-4 right-4">
-      <figure
-        className={`w-20 h-20 transition-all duration-700 ease-in-out 
-          ${treasureClicked ? 'scale-[5]' : 'hover:scale-110 hover:rotate-3'}`}
-        style={{
-          transform: treasureClicked
-            ? 'translate(-50%, -50%) scale(5)'
-            : 'none',
-          position: treasureClicked ? 'fixed' : 'relative',
-          top: treasureClicked ? '50%' : 'auto',
-          left: treasureClicked ? '50%' : 'auto',
-          right: treasureClicked ? 'auto' : '1rem',
-          bottom: treasureClicked ? 'auto' : '1rem',
-        }}
-      >
-        {/* Enhanced Background Glow */}
-        <div
-          className={`absolute inset-0 rounded-2xl blur-2xl transition-all duration-1000
-          ${
-            treasureClicked
-              ? 'bg-yellow-400 scale-150'
-              : 'bg-gradient-to-br from-yellow-400/20 to-amber-600/20 animate-pulse'
-          }`}
-        ></div>
+  const handlePerfumeClick = (p) => {
+    setActivePerfume(p);
+    setTimeout(() => router.push(p.url), 1200); // navigate after animation
+  };
 
-        {/* TOP IMAGE */}
-        <img
-          onClick={handleTreasureBox}
-          src="/treasure/treasure-cover.png"
-          alt="Treasure Cover"
-          className={`translate-y-6 origin-bottom transition-transform duration-700 ease-in-out scale-[1.2] z-30 relative cursor-pointer
+  const handleClose = () => {
+    setActivePerfume(null);
+  };
+
+  return (
+    <>
+      {/* TREASURE BOX */}
+      <div className="hidden md:block fixed z-50 bottom-4 right-4">
+        <figure
+          className={`w-20 h-20 transition-all duration-700 ease-in-out 
+            ${treasureClicked ? 'scale-[5]' : 'hover:scale-110 hover:rotate-3'}`}
+          style={{
+            transform: treasureClicked
+              ? 'translate(-50%, -50%) scale(5)'
+              : 'none',
+            position: treasureClicked ? 'fixed' : 'relative',
+            top: treasureClicked ? '50%' : 'auto',
+            left: treasureClicked ? '50%' : 'auto',
+            right: treasureClicked ? 'auto' : '1rem',
+            bottom: treasureClicked ? 'auto' : '1rem',
+          }}
+        >
+          {/* Glow Background */}
+          <div
+            className={`absolute inset-0 rounded-2xl blur-2xl transition-all duration-1000
             ${
               treasureClicked
-                ? 'delay-300 duration-1000 rotate-[-180deg]'
-                : 'rotate-0'
-            }
-          `}
-        />
+                ? 'bg-yellow-400 scale-150'
+                : 'bg-gradient-to-br from-yellow-400/20 to-amber-600/20 animate-pulse'
+            }`}
+          ></div>
 
-        {/* MIDDLE IMAGE */}
-        <img
-          onClick={handleTreasureBox}
-          src="/treasure/tbox-3d part.png"
-          alt="Treasure Glow"
-          className={`absolute -mt-2 transition-opacity z-10 cursor-pointer ${
-            !treasureClicked ? 'opacity-100' : 'opacity-100'
-          }`}
-        />
+          {/* TOP IMAGE */}
+          <img
+            onClick={handleTreasureBox}
+            src="/treasure/treasure-cover.png"
+            alt="Treasure Cover"
+            className={`translate-y-6 origin-bottom transition-transform duration-700 ease-in-out scale-[1.2] z-30 relative cursor-pointer
+              ${
+                treasureClicked
+                  ? 'delay-300 duration-1000 rotate-[-180deg]'
+                  : 'rotate-0'
+              }
+            `}
+          />
 
-        {/* Perfumes with colored glow */}
-        <div className="flex gap-2">
-          {perfumes.map((p, i) => (
-            <div
-              key={p.alt}
-              className={`absolute transition-all duration-700 ease-out
-                  ${
-                    treasureClicked
-                      ? `opacity-100 ${p.offset} -translate-y-16`
-                      : 'opacity-0 -translate-y-2'
-                  }`}
-              style={{
-                transitionDelay: treasureClicked ? `${i * 100 + 500}ms` : '0ms',
-              }}
-            >
-              {/* Individual Perfume Glow */}
+          {/* MIDDLE IMAGE */}
+          <img
+            onClick={handleTreasureBox}
+            src="/treasure/tbox-3d part.png"
+            alt="Treasure Glow"
+            className="absolute -mt-2 transition-opacity z-10 cursor-pointer opacity-100"
+          />
+
+          {/* Perfumes */}
+          <div className="flex gap-2">
+            {perfumes.map((p, i) => (
               <div
-                className={`absolute inset-0 rounded-full blur-lg transition-opacity duration-500
-                  ${treasureClicked ? 'opacity-100' : 'opacity-0'} ${p.color}`}
-              ></div>
-
-              <Link
-                href={p.url}
-                className="relative block transition-all duration-300 hover:scale-125 hover:rotate-6 group"
-              >
-                {/* Enhanced Perfume Shadow */}
-                <div
-                  className={`absolute inset-0 rounded-full transition-all duration-300
-                    ${
-                      treasureClicked ? `${p.glow} shadow-xl` : 'shadow-none'
-                    } group-hover:scale-110`}
-                ></div>
-
-                {/* FIXED: Simplified image transitions */}
-                <img
-                  src={p.src}
-                  alt={p.alt}
-                  className={`h-10 relative z-10 transition-all duration-500
+                key={p.alt}
+                className={`absolute transition-all duration-700 ease-out
                     ${
                       treasureClicked
-                        ? 'drop-shadow-2xl translate-y-0'
-                        : 'drop-shadow-md translate-y-1'
-                    } 
-                    group-hover:drop-shadow-2xl`}
-                />
-              </Link>
-            </div>
-          ))}
-        </div>
+                        ? `opacity-100 ${p.offset} -translate-y-16`
+                        : 'opacity-0 -translate-y-2'
+                    }`}
+                style={{
+                  transitionDelay: treasureClicked ? `${i * 100 + 500}ms` : '0ms',
+                }}
+              >
+                <div
+                  className={`absolute inset-0 rounded-full blur-lg transition-opacity duration-500
+                    ${treasureClicked ? 'opacity-100' : 'opacity-0'} ${p.color}`}
+                ></div>
 
-        {/* BOTTOM IMAGE */}
-        <img
-          onClick={handleTreasureBox}
-          src="/treasure/tbox-2d.png"
-          alt="Treasure Box Base"
-          className="z-20 relative cursor-pointer"
-        />
-      </figure>
-    </div>
+                <div
+                  onClick={() => handlePerfumeClick(p)}
+                  className="relative block transition-all duration-300 hover:scale-125 hover:rotate-6 group cursor-pointer"
+                >
+                  <div
+                    className={`absolute inset-0 rounded-full transition-all duration-300
+                      ${
+                        treasureClicked ? `${p.glow} shadow-xl` : 'shadow-none'
+                      } group-hover:scale-110`}
+                  ></div>
+
+                  <img
+                    src={p.src}
+                    alt={p.alt}
+                    className={`h-10 relative z-10 transition-all duration-500
+                      ${
+                        treasureClicked
+                          ? 'drop-shadow-2xl translate-y-0'
+                          : 'drop-shadow-md translate-y-1'
+                      } 
+                      group-hover:drop-shadow-2xl`}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* BOTTOM IMAGE */}
+          <img
+            onClick={handleTreasureBox}
+            src="/treasure/tbox-2d.png"
+            alt="Treasure Box Base"
+            className="z-20 relative cursor-pointer"
+          />
+        </figure>
+      </div>
+
+      {/* FULLSCREEN PERFUME OVERLAY */}
+      <AnimatePresence>
+        {activePerfume && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center"
+            onClick={handleClose}
+          >
+            <motion.img
+              key={activePerfume.src}
+              src={activePerfume.src}
+              alt={activePerfume.alt}
+              initial={{ scale: 0.2, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.2, opacity: 0 }}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+              className="max-h-[80vh] w-auto drop-shadow-[0_0_60px_rgba(255,255,255,0.3)] rounded-2xl"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
