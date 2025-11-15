@@ -3,7 +3,12 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
+const PerfumeBox = ({
+  treasureClicked,
+  handleTreasureBox,
+  isTreasureClicked,
+}) => {
+  // console.log(isTreasureClicked, 'isTreasureClicked');
   const [activePerfume, setActivePerfume] = useState(null);
   const router = useRouter();
 
@@ -72,16 +77,34 @@ const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
   };
 
   const handleClose = () => {
-    setActivePerfume(null);
+    handleTreasureBox();
   };
 
   return (
     <>
+      {/* ✖ Close button */}
+      {/* <button
+        onClick={handleClose}
+        className={`fixed top-6 right-6 text-black text-3xl w-14 h-14 font-bold z-[110] hover:text-black/60 transition-opacity bg-red-200 rounded-xl opacity-0 ${
+          treasureClicked ? 'opacity-100' : 'opacity-0 '
+        }`}
+      >
+        ×
+      </button> */}
+      <div className="inset-0 bg-black h-full w-full"></div>
       {/* TREASURE BOX */}
-      <div className="hidden md:block fixed z-50 bottom-4 right-4">
+      <div
+        className={`hidden md:block fixed z-50 bottom-4 right-4 ${
+          !isTreasureClicked &&
+          !treasureClicked &&
+          'animate-zoomInOut hover:animate-none'
+        }`}
+      >
         <figure
           className={`w-20 h-20 transition-all duration-700 ease-in-out 
-            ${treasureClicked ? 'scale-[5]' : 'hover:scale-110 hover:rotate-3'}`}
+            ${
+              treasureClicked ? 'scale-[5]' : 'hover:scale-110 hover:rotate-3'
+            }`}
           style={{
             transform: treasureClicked
               ? 'translate(-50%, -50%) scale(5)'
@@ -93,6 +116,9 @@ const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
             bottom: treasureClicked ? 'auto' : '1rem',
           }}
         >
+          {/* <div
+            className={`absolute h-24 w-24 bg-yellow-100 rounded-full transition-all duration-1000`}
+          ></div> */}
           {/* Glow Background */}
           <div
             className={`absolute inset-0 rounded-2xl blur-2xl transition-all duration-1000
@@ -137,12 +163,16 @@ const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
                         : 'opacity-0 -translate-y-2'
                     }`}
                 style={{
-                  transitionDelay: treasureClicked ? `${i * 100 + 500}ms` : '0ms',
+                  transitionDelay: treasureClicked
+                    ? `${i * 100 + 500}ms`
+                    : '0ms',
                 }}
               >
                 <div
                   className={`absolute inset-0 rounded-full blur-lg transition-opacity duration-500
-                    ${treasureClicked ? 'opacity-100' : 'opacity-0'} ${p.color}`}
+                    ${treasureClicked ? 'opacity-100' : 'opacity-0'} ${
+                    p.color
+                  }`}
                 ></div>
 
                 <div
@@ -190,8 +220,8 @@ const PerfumeBox = ({ treasureClicked, handleTreasureBox }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center"
-            onClick={handleClose}
           >
+            {/* Perfume image */}
             <motion.img
               key={activePerfume.src}
               src={activePerfume.src}

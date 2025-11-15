@@ -78,6 +78,14 @@ const CustomizeYourTee = () => {
       },
       name: 'White',
     },
+    {
+      color: '#5A2F0F',
+      previewImages: {
+        front: '/preview-images/brown-tee.png',
+        back: '/preview-images/brown-back.png',
+      },
+      name: 'Brown',
+    },
   ];
 
   const [viewSide, setViewSide] = useState('front');
@@ -140,7 +148,7 @@ const CustomizeYourTee = () => {
   // user fetch
   useEffect(() => {
     if (!loading) {
-      const guestCustomerInfo = getGuestCustomerInfo();
+      const guestCustomerInfo = getGuestCustomerInfo(user);
       setCustomerEmail(user?.email || guestCustomerInfo.email);
     }
   }, [loading, user]);

@@ -118,8 +118,15 @@ export default function Home() {
 
   const [layout, setLayout] = useState('style1');
   const [treasureClicked, setTreasureClicked] = useState(false);
+  const [isTreasureClicked, setIsTreasureClicked] = useState(false);
+
+  useEffect(() => {
+    const treasureClicked = localStorage.getItem('treasureClicked') === 'true';
+    setIsTreasureClicked(treasureClicked);
+  }, [treasureClicked]);
 
   const handleTreasureBox = () => {
+    localStorage.setItem('treasureClicked', true);
     setTreasureClicked(!treasureClicked);
   };
 
@@ -218,6 +225,7 @@ export default function Home() {
             <PerfumeBox
               handleTreasureBox={handleTreasureBox}
               treasureClicked={treasureClicked}
+              isTreasureClicked={isTreasureClicked}
             />
           </div>
           <Payment></Payment>

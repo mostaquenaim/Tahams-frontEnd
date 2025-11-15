@@ -1,6 +1,4 @@
 import React from 'react';
-import NavbarCompTwo from '../components/Header/NavbarCompDraft';
-import Footer from '../components/Footer/Footer';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -15,14 +13,14 @@ const Custom404 = () => {
         <p className="text-gray-500">
           The page you are looking for doesn't exist.
         </p>
-        <div className="text-center mt-4">
-          <Link
+        {/* <div className="text-center mt-4"> */}
+        <Link
           href={'/login'}
-            className="btn btn-primary bg-black hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-black"
-          >
-            Login
-          </Link>
-        </div>
+          className="btn btn-primary bg-black hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-black"
+        >
+          Login
+        </Link>
+        {/* </div> */}
       </div>
     </>
   );

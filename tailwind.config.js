@@ -13,11 +13,16 @@ module.exports = {
       },
       animation: {
         shine: 'shine 1.5s ease-in-out infinite',
+        zoomInOut: 'zoomInOut 1.5s ease-in-out infinite',
       },
       keyframes: {
         shine: {
           '0%': { left: '-100%' },
           '100%': { left: '100%' },
+        },
+        zoomInOut: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.08)' },
         },
       },
     },

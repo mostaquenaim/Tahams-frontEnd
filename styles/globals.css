@@ -121,16 +121,15 @@
 @keyframes shadowPulse {
   0%,
   100% {
-    box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3), /* pink-500 */
-      0 2px 4px -2px rgba(236, 72, 153, 0.2);
+    box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3),
+      /* pink-500 */ 0 2px 4px -2px rgba(236, 72, 153, 0.2);
   }
   50% {
-    box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.5), /* brighter pink */
-      0 4px 6px -4px rgba(236, 72, 153, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.5),
+      /* brighter pink */ 0 4px 6px -4px rgba(236, 72, 153, 0.3);
   }
 }
 
 .animate-shadowPulse {
   animation: shadowPulse 2s infinite ease-in-out;
 }
-
