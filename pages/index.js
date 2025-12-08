@@ -159,7 +159,7 @@ export default function Home() {
             <link
               rel="preload"
               as="image"
-              href="/cover-marshmallow.jpg"
+              href="/cover-photos/Tahams-Winter-Cover.jpg"
               fetchpriority="high"
             />
           </Head>

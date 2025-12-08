@@ -47,8 +47,14 @@ const ShowOrderDetails = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
         <div className="text-center">
-          <FaBox className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-xl text-gray-600">No order details found</p>
+          {loading ? (
+            <Loading />
+          ) : (
+            <>
+              <FaBox className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-xl text-gray-600">No order details found</p>
+            </>
+          )}
         </div>
       </div>
     );

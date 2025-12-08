@@ -70,6 +70,23 @@ const ShowOrders = (data) => {
     return matchesSearch && matchesStatus && notCancelled;
   });
 
+  // column configuration
+  const [columnConfig, setColumnConfig] = useState({
+    id: true,
+    customer: true,
+    phone: true,
+    products: true,
+    payment: true,
+    date: true,
+    status: true,
+    actions: true,
+  });
+
+  const [columnDropdownOpen, setColumnDropdownOpen] = useState(false);
+  const columnRef = useRef(null);
+
+  useOnClickOutside(columnRef, () => setColumnDropdownOpen(false));
+
   // Sorting function
   const handleSort = (key) => {
     let direction = 'asc';
@@ -190,12 +207,30 @@ const ShowOrders = (data) => {
   const handleExport = (type) => {
     const exportData = sortedOrders.map((order) => ({
       'Order ID': order.history.id,
-      Customer: order.customer?.name || order.history?.fullName,
-      Phone: order.history?.phone_no,
-      Products: order.orders.map((o) => o.product.name).join(', '),
-      Payment: order.history?.paymentMethod?.name || 'N/A',
-      Date: new Date(order.history?.BuyingDate).toLocaleDateString(),
-      Status: order.history?.deliveryStatus.name,
+
+      ...(columnConfig.customer && {
+        Customer: order.customer?.name || order.history?.fullName,
+      }),
+
+      ...(columnConfig.phone && {
+        Phone: String(order.history?.phone_no || ''),
+      }),
+
+      ...(columnConfig.products && {
+        Products: order.orders.map((o) => o.product.name).join(', '),
+      }),
+
+      ...(columnConfig.payment && {
+        Payment: order.history?.paymentMethod?.name || 'N/A',
+      }),
+
+      ...(columnConfig.date && {
+        Date: new Date(order.history?.BuyingDate).toLocaleDateString(),
+      }),
+
+      ...(columnConfig.status && {
+        Status: order.history?.deliveryStatus.name,
+      }),
     }));
 
     if (type === 'csv') {
@@ -447,6 +482,40 @@ const ShowOrders = (data) => {
                 />
               </div>
 
+              <div className="relative" ref={columnRef}>
+                <button
+                  onClick={() => setColumnDropdownOpen(!columnDropdownOpen)}
+                  className="px-4 py-2 bg-gray-100 border border-gray-300 text-sm rounded-xl hover:bg-gray-200 flex items-center gap-2"
+                >
+                  <FiFilter /> Columns
+                </button>
+
+                {/* column configuration  */}
+                {columnDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white shadow-lg border border-gray-200 rounded-xl p-3 z-50">
+                    {Object.entries(columnConfig).map(([key, value]) => (
+                      <label
+                        key={key}
+                        className="flex items-center justify-between py-1.5 cursor-pointer text-sm"
+                      >
+                        <span className="capitalize">{key}</span>
+                        <input
+                          type="checkbox"
+                          checked={value}
+                          onChange={() =>
+                            setColumnConfig((prev) => ({
+                              ...prev,
+                              [key]: !prev[key],
+                            }))
+                          }
+                          className="w-4 h-4"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Hide Cancelled */}
               <label className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors min-w-fit">
                 <input
@@ -569,79 +638,101 @@ const ShowOrders = (data) => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
+                  {/* table head  */}
                   <thead className="bg-gray-50/80">
                     <tr>
-                      <th
-                        onClick={() => handleSort('id')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Order ID
-                          <SortIcon columnKey="id" />
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort('customer')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Customer
-                          <SortIcon columnKey="customer" />
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort('phone')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Phone
-                          <SortIcon columnKey="phone" />
-                        </div>
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Products
-                      </th>
-                      <th
-                        onClick={() => handleSort('price')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Price
-                          <SortIcon columnKey="price" />
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort('payment')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Payment
-                          <SortIcon columnKey="payment" />
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort('date')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Date
-                          <SortIcon columnKey="date" />
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort('status')}
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
-                      >
-                        <div className="flex items-center">
-                          Status
-                          <SortIcon columnKey="status" />
-                        </div>
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Actions
-                      </th>
+                      {/* order id  */}
+                      {columnConfig.id && (
+                        <th
+                          onClick={() => handleSort('id')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Order ID
+                            <SortIcon columnKey="id" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.customer && (
+                        <th
+                          onClick={() => handleSort('customer')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Customer
+                            <SortIcon columnKey="customer" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.phone && (
+                        <th
+                          onClick={() => handleSort('phone')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Phone
+                            <SortIcon columnKey="phone" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.products && (
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          Products
+                        </th>
+                      )}
+                      {columnConfig.price && (
+                        <th
+                          onClick={() => handleSort('price')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Price
+                            <SortIcon columnKey="price" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.payment && (
+                        <th
+                          onClick={() => handleSort('payment')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Payment
+                            <SortIcon columnKey="payment" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.date && (
+                        <th
+                          onClick={() => handleSort('date')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Date
+                            <SortIcon columnKey="date" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.status && (
+                        <th
+                          onClick={() => handleSort('status')}
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none"
+                        >
+                          <div className="flex items-center">
+                            Status
+                            <SortIcon columnKey="status" />
+                          </div>
+                        </th>
+                      )}
+                      {columnConfig.actions && (
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      )}
                     </tr>
                   </thead>
+                  {/* table head close */}
+                  {/* table body  */}
                   <tbody className="bg-white divide-y divide-gray-100">
                     {sortedOrders.map((group, index) => (
                       <motion.tr
@@ -652,9 +743,9 @@ const ShowOrders = (data) => {
                         onClick={() => handleItemClick(group.history?.id)}
                         className={`cursor-pointer transition-all duration-200 border-l-4 ${
                           group.history?.courierInfo &&
-                          group.history.courierInfo.order_status_slug !=
+                          group.history.courierInfo.order_status_slug !==
                             'Pickup_Cancelled' &&
-                          group.history.courierInfo.order_status_slug !=
+                          group.history.courierInfo.order_status_slug !==
                             'Delivered'
                             ? 'border-l-emerald-400 bg-sky-50 hover:bg-sky-100'
                             : group.history?.courierInfo &&
@@ -663,7 +754,7 @@ const ShowOrders = (data) => {
                             ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
                             : group.history.deliveryStatus.id === 6 ||
                               (group.history?.courierInfo &&
-                                group.history.courierInfo.order_status_slug ==
+                                group.history.courierInfo.order_status_slug ===
                                   'Delivered')
                             ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
                             : group.history.deliveryStatus.id > 6
@@ -675,155 +766,183 @@ const ShowOrders = (data) => {
                             : 'border-l-blue-300 bg-white hover:bg-blue-50/50'
                         }`}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-bold text-gray-900">
-                            #{group.history.id}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="text"
-                            className="px-3 py-2 text-sm text-gray-900 bg-transparent border border-transparent hover:border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                            value={
-                              group.customer?.name || group.history?.fullName
-                            }
-                            onClick={(e) => e.stopPropagation()}
-                            readOnly
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="text"
-                            className="px-3 py-2 text-sm text-gray-700 bg-transparent border border-transparent hover:border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
-                            value={group.history?.phone_no}
-                            onClick={(e) => e.stopPropagation()}
-                            readOnly
-                          />
-                        </td>
-                        {/* products  */}
-                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-                          <div className="flex flex-wrap gap-1.5">
-                            {group.orders.map((order, idx) => (
-                              <Link
-                                key={idx}
-                                href={`/products/details/${order.product.productId}`}
-                                className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-800 transition-colors"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {order.product.name}
-                              </Link>
-                            ))}
-                          </div>
-                        </td>
-                        {/* price  */}
-                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-                          <div className="flex flex-wrap gap-1.5">
+                        {/* ID */}
+                        {columnConfig.id && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm font-bold text-gray-900">
+                              #{group.history.id}
+                            </span>
+                          </td>
+                        )}
+
+                        {/* Customer Name */}
+                        {columnConfig.customer && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input
+                              type="text"
+                              className="px-3 py-2 text-sm text-gray-900 bg-transparent border border-transparent hover:border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                              value={
+                                group.customer?.name || group.history?.fullName
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              readOnly
+                            />
+                          </td>
+                        )}
+
+                        {/* Phone */}
+                        {columnConfig.phone && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input
+                              type="text"
+                              className="px-3 py-2 text-sm text-gray-700 bg-transparent border border-transparent hover:border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+                              value={`${group.history?.phone_no || ''}`}
+                              onClick={(e) => e.stopPropagation()}
+                              readOnly
+                            />
+                          </td>
+                        )}
+
+                        {/* Products */}
+                        {columnConfig.products && (
+                          <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
+                            <div className="flex flex-wrap gap-1.5">
+                              {group.orders.map((order, idx) => (
+                                <Link
+                                  key={idx}
+                                  href={`/products/details/${order.product.productId}`}
+                                  className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-800 transition-colors"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {order.product.name}
+                                </Link>
+                              ))}
+                            </div>
+                          </td>
+                        )}
+
+                        {/* Price */}
+                        {columnConfig.price && (
+                          <td className="px-6 py-4 text-sm text-gray-700">
                             {(() => {
                               const totalPrice =
                                 group.orders.reduce(
                                   (acc, order) => acc + (order.totalPrice || 0),
                                   0,
                                 ) + (group.history?.deliveryFee || 0);
-
                               return (
-                                <span className="flex gap-1 font-medium text-gray-900">
+                                <span className="font-medium text-gray-900">
                                   ৳ {totalPrice.toLocaleString('en-BD')}
                                 </span>
                               );
                             })()}
-                          </div>
-                        </td>
-                        {/* payment method  */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg">
-                            {group.history?.paymentMethod?.name || 'N/A'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
-                          {new Date(
-                            group.history?.BuyingDate,
-                          ).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </td>
-                        {/* delivery status  */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border ${getStatusBadgeColor(
-                              group.history?.courierInfo
-                                ? group.history.courierInfo.order_status_slug
-                                : group.history.deliveryStatus.id,
-                            )}`}
-                          >
-                            {group.history?.courierInfo
-                              ? group.history.courierInfo.order_status
-                              : group.history.deliveryStatus.name}
-                          </span>
-                        </td>
-                        {/* actions  */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-col items-center gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                showCustomerHistory(group.history?.phone_no);
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-emerald-100 hover:bg-emerald-200 text-black rounded-lg transition-all shadow-sm hover:shadow"
+                          </td>
+                        )}
+
+                        {/* Payment Method */}
+                        {columnConfig.payment && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg">
+                              {group.history?.paymentMethod?.name || 'N/A'}
+                            </span>
+                          </td>
+                        )}
+
+                        {/* Date */}
+                        {columnConfig.date && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                            {new Date(
+                              group.history?.BuyingDate,
+                            ).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </td>
+                        )}
+
+                        {/* Status */}
+                        {columnConfig.status && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border ${getStatusBadgeColor(
+                                group.history?.courierInfo
+                                  ? group.history.courierInfo.order_status_slug
+                                  : group.history.deliveryStatus.id,
+                              )}`}
                             >
-                              {fraudLoad ? (
-                                <Loading />
-                              ) : (
-                                <span className="flex gap-1">
-                                  <FiSearch className="w-3.5 h-3.5" />
-                                  History
-                                </span>
-                              )}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePathaoCourier(group);
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow"
-                            >
-                              <FiTruck className="w-3.5 h-3.5" />
-                              Ship
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCheck(group.history);
-                              }}
-                              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all group ${
-                                group?.history?.isChecked &&
-                                'bg-emerald-300 hover:bg-emerald-200/50'
-                              }`}
-                            >
-                              {group.history.isChecked ? (
-                                <>
-                                  <span className="group-hover:hidden inline text-green-700 font-extrabold">
-                                    Checked
-                                  </span>
-                                  <span className="hidden group-hover:inline">
-                                    Uncheck
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <FiCheck className="w-3.5 h-3.5" />
-                                  <span className="hidden sm:inline">
-                                    Check
-                                  </span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </td>
+                              {group.history?.courierInfo
+                                ? group.history.courierInfo.order_status
+                                : group.history.deliveryStatus.name}
+                            </span>
+                          </td>
+                        )}
+
+                        {/* Actions */}
+                        {columnConfig.actions && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col items-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showCustomerHistory(group.history?.phone_no);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-emerald-100 hover:bg-emerald-200 text-black rounded-lg transition-all shadow-sm hover:shadow"
+                              >
+                                {fraudLoad ? (
+                                  <Loading />
+                                ) : (
+                                  <>
+                                    <FiSearch className="w-3.5 h-3.5" /> History
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePathaoCourier(group);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow"
+                              >
+                                <FiTruck className="w-3.5 h-3.5" /> Ship
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCheck(group.history);
+                                }}
+                                className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all group ${
+                                  group?.history?.isChecked &&
+                                  'bg-emerald-300 hover:bg-emerald-200/50'
+                                }`}
+                              >
+                                {group.history.isChecked ? (
+                                  <>
+                                    <span className="group-hover:hidden inline text-green-700 font-extrabold">
+                                      Checked
+                                    </span>
+                                    <span className="hidden group-hover:inline">
+                                      Uncheck
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <FiCheck className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">
+                                      Check
+                                    </span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </motion.tr>
                     ))}
                   </tbody>
+                  {/* table body close */}
                 </table>
               </div>
             </div>

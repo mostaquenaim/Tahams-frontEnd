@@ -138,9 +138,7 @@ const AddNewArrivals = ({ previousArrivals }) => {
                 <div className="w-full md:w-1/4 relative">
                   {!isEditing[index] ? (
                     <div className="flex items-center justify-between border p-2 rounded">
-                      <span>
-                        {item?.subsub?.name || 'Select category'}
-                      </span>
+                      <span>{item?.subsub?.name || 'Select category'}</span>
                       <button
                         onClick={() => {
                           const editState = [...isEditing];
