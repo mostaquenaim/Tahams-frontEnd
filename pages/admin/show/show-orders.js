@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import useOrder from '../../../Hooks/useOrder';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Loading from '../../../components/Loading';
 import Link from 'next/link';
@@ -75,6 +74,7 @@ const ShowOrders = (data) => {
     id: true,
     customer: true,
     phone: true,
+    price: true,
     products: true,
     payment: true,
     date: true,

@@ -25,14 +25,16 @@ import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 const AdminDrawer = () => {
   const { isAdminOpen, setAdminIsOpen } = useContext(AdminDrawerContext);
 
+  // console.log(isAdminOpen,'isAdminOpen');
+
   const [expandedSections, setExpandedSections] = useState({
     Dashboard: true,
     Orders: true,
     Products: true,
   });
   const router = useRouter();
-  const [sortedGroupedOrdersArray] = useGroupOrders();
-  const [customizations] = useCustomizationReq();
+  const [sortedGroupedOrdersArray] = useGroupOrders(isAdminOpen);
+  const [customizations] = useCustomizationReq(0,isAdminOpen);
   const { setShowCount, showCount } = useContext(CountContext);
   const { showCustomizedCount, setShowCustomizedCount } = useContext(
     CustomizationOrderContext,

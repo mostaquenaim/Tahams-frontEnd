@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import useAxiosPublic from './useAxiosPublic';
 
-const useGroupOrders = () => {
+const useGroupOrders = ( isEnabled = true) => {
   const { user, loading } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
 
@@ -59,7 +59,7 @@ const useGroupOrders = () => {
   } = useQuery({
     queryKey: ['sortedGroupedOrdersArray', user?.email],
     queryFn: fetchGroupOrderData,
-    enabled: !loading && !!user,
+    enabled: !loading && !!user && isEnabled,
   });
 
   return [sortedGroupedOrdersArray, refetch, isPending];

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useContext, useState, useEffect } from 'react';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
 
-const useCustomizationReq = (id = 0) => {
+const useCustomizationReq = (id = 0, isEnabled=true) => {
   const { user } = useContext(AuthContext);
   const [customerEmail, setCustomerEmail] = useState('');
 
@@ -51,7 +51,7 @@ const useCustomizationReq = (id = 0) => {
   } = useQuery({
     queryKey: ['customizations', customerEmail, id],
     queryFn: loadCustomizations,
-    enabled: !!customerEmail,
+    enabled: !!customerEmail && isEnabled,
   });
 
   return [customizations, refetch, isLoading || isFetching];
