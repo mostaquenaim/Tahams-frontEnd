@@ -33,20 +33,23 @@ const AdminDrawer = () => {
     Products: true,
   });
   const router = useRouter();
-  const [sortedGroupedOrdersArray] = useGroupOrders(isAdminOpen);
-  const [customizations] = useCustomizationReq(0,isAdminOpen);
+  // const [sortedGroupedOrdersArray] = useGroupOrders(
+    // isAdminOpen
+  // );
+  // const [customizations] = useCustomizationReq(0,isAdminOpen);
   const { setShowCount, showCount } = useContext(CountContext);
   const { showCustomizedCount, setShowCustomizedCount } = useContext(
     CustomizationOrderContext,
   );
 
-  const uncheckedCount = sortedGroupedOrdersArray.filter(
-    (group) => !group.history.isChecked,
-  ).length;
+  const uncheckedCount = 0
+  // sortedGroupedOrdersArray.filter(
+  //   (group) => !group.history.isChecked,
+  // ).length;
   setShowCount(uncheckedCount);
 
-  const customizedCount =
-    customizations.filter((group) => !group.isChecked).length / 2;
+  const customizedCount = 0
+    // customizations.filter((group) => !group.isChecked).length / 2;
 
   //   console.log(customizedCount,'customizedCount');
 

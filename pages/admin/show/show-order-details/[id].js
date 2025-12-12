@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
 import Loading from '../../../../components/Loading';
 import Image from 'next/image';
-import useOrder from '../../../../Hooks/useOrder';
 import { AuthContext } from '../../../../Contexts/Auth/AuthProvider';
 import OrderComp from '../../../../components/orderComp';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -28,12 +27,13 @@ import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
+import useOrderGroup from '/Hooks/useOrderGroup';
 
 const ShowOrderDetails = () => {
   const router = useRouter();
   const { id } = router.query;
   const { user } = useContext(AuthContext);
-  const [orders] = useOrder();
+  const { specificOrders: group, isPending } = useOrderGroup(id);
   const { loading } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
@@ -42,8 +42,8 @@ const ShowOrderDetails = () => {
   const [message, setMessage] = useState('');
 
   // Filtered Order Details
-  const group = orders.filter((order) => order.history?.id == id);
-  if (group.length === 0) {
+  // const group = orders.filter((order) => order.history?.id == id);
+  if (!isPending && group.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
         <div className="text-center">
@@ -60,8 +60,8 @@ const ShowOrderDetails = () => {
     );
   }
 
-  const customer = group[0]?.customer;
-  const history = group[0]?.history;
+  const customer = group && group[0]?.customer;
+  const history = group && group[0]?.history;
 
   // Modal handlers
   const openMessageBox = () => setIsConfirmationMessageBoxOpen(true);
@@ -106,7 +106,7 @@ const ShowOrderDetails = () => {
   };
 
   const totalPrice =
-    group.reduce((acc, order) => acc + order.totalPrice, 0) +
+    group && group.reduce((acc, order) => acc + order.totalPrice, 0) +
     (history?.deliveryFee || 0);
 
   return (
@@ -207,7 +207,7 @@ const ShowOrderDetails = () => {
                   </div>
                   {/* ordered items  */}
                   <div className="p-6 space-y-4">
-                    {group.map((order, index) => (
+                     { group && group.map((order, index) => (
                       <motion.div
                         key={order.id}
                         initial={{ opacity: 0, y: 20 }}
@@ -316,7 +316,7 @@ const ShowOrderDetails = () => {
                       <span>Subtotal</span>
                       <span className="font-semibold">
                         ৳
-                        {group
+                        {group && group
                           .reduce((acc, order) => acc + order.totalPrice, 0)
                           .toLocaleString()}
                       </span>

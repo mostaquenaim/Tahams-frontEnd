@@ -9,7 +9,7 @@ import Head from 'next/head';
 const ShowOrderDetails = () => {
     const router = useRouter();
     const { id } = router.query;
-    const [orders] = useOrder();
+    const [orders] = useOrder(1,10);
     const { loading } = useContext(AuthContext)
   // console.log('orders', orders);
 

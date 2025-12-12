@@ -7,7 +7,7 @@ import Head from 'next/head';
 
 const ShowOrders = () => {
     const { user, loading } = useContext(AuthContext);
-    const [orders] = useOrder();
+    const [orders] = useOrder(1,100,true, true);
     // const axiosPublic = useAxiosPublic();
 
     // Group orders by history ID

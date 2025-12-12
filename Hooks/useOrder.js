@@ -3,7 +3,8 @@ import useAxiosPublic from './useAxiosPublic';
 import { useContext } from 'react';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
-const useOrder = () => {
+const useOrder = (page = 1, limit = 20, isEnabled = true, allItems = false) => {
+  // console.log(allItems,'allItems');
   const axiosPublic = useAxiosPublic();
   const { user, loading } = useContext(AuthContext);
 
@@ -18,7 +19,7 @@ const useOrder = () => {
     }
 
     const res = await axiosPublic.get(
-      `/admin/get-all-buying-history?email=${tmpEmail}`,
+      `/admin/get-all-buying-history?email=${tmpEmail}&page=${page}&limit=${limit}&allItems=${allItems}`,
     );
     // console.log(res.data, 'res.data');
     return res.data;
@@ -30,13 +31,15 @@ const useOrder = () => {
       user?.email ||
         (typeof window !== 'undefined' &&
           JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email),
+      page,
     ],
     queryFn: fetchCartData,
     enabled:
       !loading &&
       (!!user?.email ||
         (typeof window !== 'undefined' &&
-          !!JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email)),
+          !!JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email)) &&
+      isEnabled,
   });
 
   return [orders, refetch];

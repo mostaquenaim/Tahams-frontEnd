@@ -28,7 +28,6 @@ import { X } from 'lucide-react';
 
 const ShowOrders = (data) => {
   const { user, loading } = useContext(AuthContext);
-  const [sortedGroupedOrdersArray, refetch, isPending] = useGroupOrders();
   // console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -40,6 +39,9 @@ const ShowOrders = (data) => {
   const axiosPublic = useAxiosPublic();
   const [fraudCheck, setFraudCheck] = useState(null);
   const [fraudLoad, setFraudLoad] = useState(false);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const {sortedGroupedOrdersArray, refetch, isPending} = useGroupOrders(page, limit);
 
   // Sorting state
   const [sortConfig, setSortConfig] = useState({
@@ -965,6 +967,28 @@ const ShowOrders = (data) => {
           )}
         </div>
       </div>
+
+      <div className="flex items-center justify-center gap-4 py-6">
+  <button
+    disabled={page === 1}
+    onClick={() => setPage(page - 1)}
+    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-40"
+  >
+    Previous
+  </button>
+
+  <span className="text-sm text-gray-700">
+    Page {page}
+  </span>
+
+  <button
+    onClick={() => setPage(page + 1)}
+    className="px-4 py-2 bg-gray-200 rounded"
+  >
+    Next
+  </button>
+</div>
+
 
       {fraudCheck && (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">

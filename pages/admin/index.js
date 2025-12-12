@@ -32,7 +32,9 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 const AdminDashboard = () => {
-  const [sortedGroupedOrdersArray, isPending] = useGroupOrders();
+  console.log("no work");
+  const {sortedGroupedOrdersArray, isPending} = useGroupOrders(1,10);
+
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
   const [loading, setLoading] = useState(false);
