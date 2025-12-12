@@ -13,6 +13,7 @@ const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems=false) 
     );
 
     const orders = res.data;
+    console.log(orders,'ordersorders');
 
     // Filter to keep only non-draft orders
     const filteredOrders = orders.filter((order) => !order.history?.isDraft);

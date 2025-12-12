@@ -40,7 +40,7 @@ const ShowOrders = (data) => {
   const [fraudCheck, setFraudCheck] = useState(null);
   const [fraudLoad, setFraudLoad] = useState(false);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 50;
   const {sortedGroupedOrdersArray, refetch, isPending} = useGroupOrders(page, limit);
 
   // Sorting state
