@@ -16,7 +16,20 @@ const ShowUsers = () => {
   const router = useRouter();
   const [roles, setRoles] = useState([]);
   const [editUserId, setEditUserId] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [dateStats, setDateStats] = useState({
+    total: 0,
+    days: 0,
+    average: 0,
+  });
 
+  const getDhakaDate = (date) =>
+    new Date(date).toLocaleDateString('en-CA', {
+      timeZone: 'Asia/Dhaka',
+    });
+
+  //   fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -105,9 +118,33 @@ const ShowUsers = () => {
       filtered = filtered.filter((user) => user.role === roleFilter);
     }
 
+    // ✅ Date range filter (Asia/Dhaka safe)
+    if (startDate && endDate) {
+      filtered = filtered.filter((user) => {
+        const userDate = getDhakaDate(user.created_at);
+        return userDate >= startDate && userDate <= endDate;
+      });
+
+      // 📊 Stats calculation
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const days = Math.max(
+        1,
+        Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1,
+      );
+
+      const total = filtered.length;
+      const average = (total / days).toFixed(2);
+
+      setDateStats({ total, days, average });
+    } else {
+      setDateStats({ total: 0, days: 0, average: 0 });
+    }
+
+    console.log(filtered, 'filtered');
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page on filter change
-  }, [search, roleFilter, users]);
+    setCurrentPage(1);
+  }, [search, roleFilter, startDate, endDate, users]);
 
   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
 
@@ -148,6 +185,67 @@ const ShowUsers = () => {
           <option value="seller">Seller</option>
           <option value="employee">Employee</option>
         </select>
+
+        {/* Date-wise Filter */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <input
+              type="date"
+              className="input input-bordered"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+
+            <span className="text-sm text-gray-500">to</span>
+
+            <input
+              type="date"
+              className="input input-bordered"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            {startDate && endDate && (
+              <div className="text-sm font-medium text-gray-700">
+                <div>
+                  Total users created:{' '}
+                  <span className="font-semibold">{dateStats.total}</span>
+                </div>
+                <div>
+                  Average per day:{' '}
+                  <span className="font-semibold">{dateStats.average}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {startDate && endDate && (
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+              }}
+            >
+              Clear
+            </button>
+          )}
+
+          {/* {dateFilter && (
+            <div className="text-sm font-medium text-gray-700">
+              Total users created on this date:{' '}
+              <span className="font-semibold">{dateCount}</span>
+            </div>
+          )} */}
+
+          {/* {dateFilter && (
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => setDateFilter('')}
+            >
+              Clear
+            </button>
+          )} */}
+        </div>
       </div>
 
       {/* Table */}
@@ -176,7 +274,9 @@ const ShowUsers = () => {
                 <td className="py-2 px-4">{user.email}</td>
                 <td className="py-2 px-4 capitalize">{user.role}</td>
                 <td className="py-2 px-4 capitalize">
-                  {new Date(user.created_at).toLocaleDateString('en-GB')}
+                  {new Date(user.created_at).toLocaleString('en-GB', {
+                    timeZone: 'Asia/Dhaka',
+                  })}
                 </td>
                 <td className="py-2 px-4">
                   <div className="flex gap-2">
