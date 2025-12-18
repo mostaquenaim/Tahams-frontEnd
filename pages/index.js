@@ -16,6 +16,7 @@ import NewArrivalDraft from '/components/Home/NewArrival/NewArrivalDraft';
 import SectionShow from '/components/Home/SectionShow/SectionShow';
 import Link from 'next/link';
 import PerfumeBox from '/components/Home/PerfumeBox';
+import { getGuestCustomerInfo } from '/utils/guestCustomer';
 
 export const CompanyContext = createContext(null);
 {
@@ -26,6 +27,10 @@ export default function Home() {
   // const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const activePop = useLoadActivePop();
+
+  useEffect(()=>{
+    getGuestCustomerInfo()
+  },[])
 
   const tagManagerArgs = {
     gtmId: 'GTM-K89SSG9W', // Replace with your GTM ID

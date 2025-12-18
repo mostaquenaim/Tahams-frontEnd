@@ -1,5 +1,5 @@
 export const getGuestCustomerInfo = (user) => {
-    console.log(user,'usersss');
+    // console.log(user,'usersss');
      // Check for guest customer info in localStorage
      let guestCustomerInfo = JSON.parse(localStorage.getItem('guestCustomerInfo'));
 
