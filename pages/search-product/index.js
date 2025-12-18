@@ -30,6 +30,7 @@ const SearchProduct = () => {
         setIsLoading(true);
         try {
             const response = await axiosPublic.get(`admin/search-products?q=${searchQuery}`);
+            // console.log(searchQuery,'searchQuery');
             setProducts(response.data);
         } catch (error) {
             console.error(error);

@@ -17,6 +17,9 @@ import SectionShow from '/components/Home/SectionShow/SectionShow';
 import Link from 'next/link';
 import PerfumeBox from '/components/Home/PerfumeBox';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
+import ZipperSpecial from '/components/Home/WinterSpecial/ZipperSpecial';
+import KangarooSpecial from '/components/Home/WinterSpecial/KangarooSpecial';
+import SweatshirtSpecial from '/components/Home/WinterSpecial/SweatshirtSpecial';
 
 export const CompanyContext = createContext(null);
 {
@@ -28,9 +31,9 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const activePop = useLoadActivePop();
 
-  useEffect(()=>{
-    getGuestCustomerInfo()
-  },[])
+  useEffect(() => {
+    getGuestCustomerInfo();
+  }, []);
 
   const tagManagerArgs = {
     gtmId: 'GTM-K89SSG9W', // Replace with your GTM ID
@@ -206,9 +209,14 @@ export default function Home() {
               <NewArrival />
               {/* <NewArrivalDraft/> */}
             </section>
-            <section>
-              {/* <p className="text-3xl flex items-center justify-center">Montserrat Test</p> */}
-
+            <section id='zipper-hoodie'>
+              <ZipperSpecial></ZipperSpecial>
+            </section>
+            <section id='sweatshirt'>
+              <SweatshirtSpecial></SweatshirtSpecial>
+            </section>
+            <section id='kangaroo-hoodie'>
+              <KangarooSpecial></KangarooSpecial>
             </section>
             <section id="new-section">
               <SectionShow
