@@ -10,13 +10,13 @@ const Heading = ({
     dark: {
       bg: 'bg-black',
       text: 'text-white text-opacity-80',
-      border: 'border-white',
+      border: 'border-blue-600',
       shadow: 'shadow-neutral-600',
     },
     light: {
       bg: 'bg-white',
       text: 'text-gray-800',
-      border: 'border-gray-800',
+      border: 'border-blue-600',
       shadow: 'shadow-gray-300',
     },
   };
@@ -30,13 +30,14 @@ const Heading = ({
         ${currentTheme.bg} 
         ${currentTheme.text} 
         ${currentTheme.shadow}
+        ${currentTheme.border} border 
         ${center ? 'text-center' : 'text-left'}
         ${className}
       `}
     >
       {/* First line of text - optional */}
       {first && (
-        <div className="text-lg md:text-2xl lg:text-4xl font-semibold mb-2">
+        <div className="text-blue-600 text-sm md:text-base lg:text-xl font-semibold mb-2">
           {first}
         </div>
       )}
@@ -48,7 +49,7 @@ const Heading = ({
             first ? 'mt-2' : ''
           }`}
         >
-          <span className={`pb-1 border-b-2 ${currentTheme.border}`}>
+          <span className={`pb-1 border-b-2 border-blue-600 ${currentTheme.border}`}>
             {second}
           </span>
         </div>

@@ -14,6 +14,12 @@ import CountProvider from '../Contexts/CountProvider';
 import Head from 'next/head';
 import CustomizationOrderCountProvider from '/Contexts/CustomizationOrderCountProvider';
 import AdminDrawerProvider from '/Contexts/AdminDrawerProvider';
+import { Montserrat } from 'next/font/google';
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+});
 
 const queryClient = new QueryClient();
 export default function App({ Component, pageProps }) {
@@ -26,36 +32,38 @@ export default function App({ Component, pageProps }) {
   const isAdminAdd = router.pathname.startsWith('/admin/add');
 
   return (
-    <AuthProvider>
-      <CountProvider>
-        <CustomizationOrderCountProvider>
-          <Head>
-            <link rel="icon" href="/favicon.ico" />
-            {isAdminAdd ? (
-              <title>Admin - Add</title>
-            ) : isAdminRoute ? (
-              <title>Admin Dashboard</title>
-            ) : (
-              <title>Tahams - The Unique Way of Life </title>
-            )}
-          </Head>
+    <div className={montserrat.className}>
+      <AuthProvider>
+        <CountProvider>
+          <CustomizationOrderCountProvider>
+            <Head>
+              <link rel="icon" href="/favicon.ico" />
+              {isAdminAdd ? (
+                <title>Admin - Add</title>
+              ) : isAdminRoute ? (
+                <title>Admin Dashboard</title>
+              ) : (
+                <title>Tahams - The Unique Way of Life </title>
+              )}
+            </Head>
 
-          <QueryClientProvider client={queryClient}>
-            {isAdminRoute ? (
-              <AdminDrawerProvider>
-                <AdminCheck>
+            <QueryClientProvider client={queryClient}>
+              {isAdminRoute ? (
+                <AdminDrawerProvider>
+                  <AdminCheck>
+                    <Component {...pageProps} />
+                  </AdminCheck>
+                </AdminDrawerProvider>
+              ) : (
+                <CustomerCheck>
                   <Component {...pageProps} />
-                </AdminCheck>
-              </AdminDrawerProvider>
-            ) : (
-              <CustomerCheck>
-                <Component {...pageProps} />
-              </CustomerCheck>
-            )}
-            <Toaster />
-          </QueryClientProvider>
-        </CustomizationOrderCountProvider>
-      </CountProvider>
-    </AuthProvider>
+                </CustomerCheck>
+              )}
+              <Toaster />
+            </QueryClientProvider>
+          </CustomizationOrderCountProvider>
+        </CountProvider>
+      </AuthProvider>
+    </div>
   );
 }

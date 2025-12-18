@@ -3,10 +3,10 @@ import Document, { Html, Head, Main, NextScript } from 'next/document';
 export default class MyDocument extends Document {
   render() {
     return (
-      <Html lang="en" data-theme="light">
+      <Html lang="en" data-theme="light" className="font-montserrat">
         <Head />
-        
-        <body className='font-montserrat'>
+
+        <body >
           <Main />
           <NextScript />
         </body>

@@ -16,10 +16,8 @@ import { RiShirtLine } from 'react-icons/ri';
 import { MdInventory, MdLocalOffer } from 'react-icons/md';
 import { CountContext } from '../../Contexts/CountProvider';
 import { Badge } from '@mui/material';
-import useGroupOrders from '../../Hooks/useGroupOrders';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { CustomizationOrderContext } from '/Contexts/CustomizationOrderCountProvider';
-import useCustomizationReq from '/Hooks/useCustomizationReq';
 import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 
 const AdminDrawer = () => {
@@ -34,7 +32,7 @@ const AdminDrawer = () => {
   });
   const router = useRouter();
   // const [sortedGroupedOrdersArray] = useGroupOrders(
-    // isAdminOpen
+  // isAdminOpen
   // );
   // const [customizations] = useCustomizationReq(0,isAdminOpen);
   const { setShowCount, showCount } = useContext(CountContext);
@@ -42,14 +40,14 @@ const AdminDrawer = () => {
     CustomizationOrderContext,
   );
 
-  const uncheckedCount = 0
+  const uncheckedCount = 0;
   // sortedGroupedOrdersArray.filter(
   //   (group) => !group.history.isChecked,
   // ).length;
   setShowCount(uncheckedCount);
 
-  const customizedCount = 0
-    // customizations.filter((group) => !group.isChecked).length / 2;
+  const customizedCount = 0;
+  // customizations.filter((group) => !group.isChecked).length / 2;
 
   //   console.log(customizedCount,'customizedCount');
 

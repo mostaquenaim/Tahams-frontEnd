@@ -1,19 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { GetServerSideProps } from 'next';
-import axios from 'axios';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 import toast from 'react-hot-toast';
 import Head from 'next/head';
 import Image from 'next/image';
 import { compressImage } from '../edit/product/[id]';
+import Loading from '@/components/Loading';
 
-const AddNewArrivals = ({ previousArrivals }) => {
+const AddNewArrivals = () => {
   const [subSubCategories] = useLoadSubSubCategories();
   const axiosPublic = useAxiosPublic();
 
   // Initialize form data with existing arrivals and empty slots
-  const [formData, setFormData] = useState(() => {
+  const [formData, setFormData] = useState([]);
+  const [isEditing, setIsEditing] = useState([]);
+  const [previousArrivals, setPreviousArrivals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [token, setToken] = useState('');
+  const [isUploading, setIsUploading] = useState({});
+
+  // access token
+  useEffect(() => {
+    const at = localStorage.getItem('access_token');
+    setToken(at);
+  }, []);
+
+  // fetch new arrivals
+  useEffect(() => {
+    const fetchArrivals = async () => {
+      try {
+        const res = await axiosPublic.get('/admin/view-new-arrivals');
+
+        const sortedArrivals = res.data
+          .filter((item) => item.isActive)
+          .sort((a, b) => a.serial - b.serial);
+
+        setPreviousArrivals(sortedArrivals);
+      } catch (error) {
+        console.error('Error fetching previous arrivals:', error);
+        toast.error('Failed to load arrivals');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArrivals();
+  }, []);
+
+  // set formdata
+  useEffect(() => {
+    if (!previousArrivals.length) return;
+
     const existingArrivals = previousArrivals.map((item) => ({
       ...item,
       subSubCategory: item.subsub?.id || '',
@@ -23,7 +61,7 @@ const AddNewArrivals = ({ previousArrivals }) => {
         : null,
     }));
 
-    const emptySlots = Array(Math.max(0, 4 - previousArrivals.length)).fill({
+    const emptySlots = Array(Math.max(0, 4 - existingArrivals.length)).fill({
       name: '',
       description: '',
       category: '',
@@ -32,20 +70,11 @@ const AddNewArrivals = ({ previousArrivals }) => {
       preview: null,
     });
 
-    return [...existingArrivals, ...emptySlots];
-  });
+    const finalData = [...existingArrivals, ...emptySlots];
 
-  const [isEditing, setIsEditing] = useState(
-    Array(formData.length).fill(false),
-  );
-
-  const [token, setToken] = useState('');
-  const [isUploading, setIsUploading] = useState({});
-
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-  }, []);
+    setFormData(finalData);
+    setIsEditing(Array(finalData.length).fill(false));
+  }, [previousArrivals]);
 
   // Clean up object URLs on unmount
   useEffect(() => {
@@ -204,6 +233,14 @@ const AddNewArrivals = ({ previousArrivals }) => {
       );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loading></Loading>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -433,27 +470,6 @@ const AddNewArrivals = ({ previousArrivals }) => {
       </div>
     </div>
   );
-};
-
-export const getServerSideProps = async () => {
-  try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API}/admin/view-new-arrivals`,
-    );
-
-    const sortedArrivals = response.data
-      .filter((item) => item.isActive)
-      .sort((a, b) => a.serial - b.serial);
-
-    return {
-      props: { previousArrivals: sortedArrivals },
-    };
-  } catch (error) {
-    console.error('Error fetching previous arrivals:', error);
-    return {
-      props: { previousArrivals: [] },
-    };
-  }
 };
 
 export default AddNewArrivals;

@@ -37,7 +37,7 @@ const ShowNewArrival = ({ ind, prop }) => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
                   >
-                    <h3 className="hidden md:block text-white text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-1 sm:mb-2 line-clamp-2">
+                    <h3 className="hidden md:block text-white text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-1 sm:mb-2 line-clamp-2">
                       {prop.name}
                     </h3>
                     {prop.subsub?.name && (
@@ -46,7 +46,7 @@ const ShowNewArrival = ({ ind, prop }) => {
                       </p>
                     )}
                   </motion.div>
-                  
+
                   {/* Shop Now Button - Hidden on Mobile, Visible on Hover for Desktop */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -55,8 +55,18 @@ const ShowNewArrival = ({ ind, prop }) => {
                   >
                     <span className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-100 transition-colors">
                       Shop Now
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"
+                        />
                       </svg>
                     </span>
                   </motion.div>
@@ -76,7 +86,7 @@ const ShowNewArrival = ({ ind, prop }) => {
 
             {/* Bottom Info Section - Mobile Only */}
             <div className="sm:hidden p-3 bg-white">
-              <h3 className="text-gray-900 text-sm font-bold mb-1 ">
+              <h3 className="text-gray-900 text-sm font-bold mb-1">
                 {prop.name}
               </h3>
               {/* {prop.subsub?.name && (

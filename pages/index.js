@@ -206,6 +206,10 @@ export default function Home() {
               <NewArrival />
               {/* <NewArrivalDraft/> */}
             </section>
+            <section>
+              {/* <p className="text-3xl flex items-center justify-center">Montserrat Test</p> */}
+
+            </section>
             <section id="new-section">
               <SectionShow
                 layout={layout}
