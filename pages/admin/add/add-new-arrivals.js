@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import Head from 'next/head';
 import Image from 'next/image';
 import { compressImage } from '../edit/product/[id]';
-import Loading from '@/components/Loading';
+import Loading from '/components/Loading';
 
 const AddNewArrivals = () => {
   const [subSubCategories] = useLoadSubSubCategories();
