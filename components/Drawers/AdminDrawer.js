@@ -203,7 +203,7 @@ const AdminDrawer = () => {
           ),
         },
         { href: '/admin/show/show-requests', label: 'Cancel/Return Requests' },
-        { href: '/MyCart', label: 'View Carts' },
+        { href: '/admin/show/show-all-carts', label: 'View Carts' },
       ],
     },
     {
