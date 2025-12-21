@@ -19,7 +19,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ProductSize from '/components/Product/ProductSize';
 
 const Product = ({ product }) => {
-  // console.log('product-test', product);
+  // console.log('product-test', product.productPictures);
   const [isAddedToWishlist, setAddedToWishlist] = useState(false);
   const [showGotoCart, setShowGotoCart] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
@@ -81,6 +81,7 @@ const Product = ({ product }) => {
 
   // set selected image
   useEffect(() => {
+    // console.log(product && product.filename);
     setSelectedImage(product && product.filename);
   }, [product]);
 
@@ -205,7 +206,7 @@ const Product = ({ product }) => {
   };
 
   const handleCategoryChange = (categoryId) => {
-  // console.log(categoryId, 'catid');
+    // console.log(categoryId, 'catid');
     setSelectedCategory(categoryId);
     const firstSize = product.pscs.find((p) => p.category.id == categoryId)
       ?.size?.name;
@@ -265,7 +266,7 @@ const Product = ({ product }) => {
           customerEmail: customEmail, // Use guest email
         });
 
-      // console.log(response.data, 'rspdar');
+        // console.log(response.data, 'rspdar');
 
         // console.log(response.data,'cart data');
         localStorage.setItem('defaultCartItem', response.data.id);
@@ -371,7 +372,13 @@ const Product = ({ product }) => {
           <div className="md:w-1/2">
             {selectedImage ? (
               <ImageZoom
-                photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
+                // zoomPhoto={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
+                photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${
+                  // product.thumbImage
+                  //   ? product.thumbImage
+                  //   :
+                  selectedImage
+                }`}
               />
             ) : (
               <Loading />
@@ -388,7 +395,9 @@ const Product = ({ product }) => {
               />
               <label htmlFor={`main-image`} className="relative">
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
+                  src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${
+                    product.thumbImage ? product.thumbImage : filename
+                  }`}
                   alt={name}
                   className="h-32 w-24 cursor-pointer"
                 />
