@@ -12,7 +12,7 @@ import { handleUploadWithCloudinary } from '/components/Images/AddImageToCloudin
 const ShowAllSeries = () => {
   const axiosPublic = useAxiosPublic();
   const [series, refetch, isPending] = useLoadSeries();
-// console.log(series, 'seriesss');
+  // console.log(series, 'seriesss');
 
   const [editId, setEditId] = useState(null);
   const [nameEdits, setNameEdits] = useState({});
@@ -116,7 +116,7 @@ const ShowAllSeries = () => {
       //     formData.append('image', imageEdits[id]);
       //   }
 
-    // console.log(imageLink);
+      // console.log(imageLink);
 
       formData.append('filename', imageLink);
 
@@ -124,7 +124,7 @@ const ShowAllSeries = () => {
         `/admin/updateCategory/${id}`,
         {
           name: newName,
-          filename: imageLink, 
+          filename: imageLink,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -236,7 +236,13 @@ const ShowAllSeries = () => {
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          value={`${cat.name}${(cat.isForMen && !cat.isForWomen) ? ' (Men)' : (!cat.isForMen && cat.isForWomen) ? ' (Women)' : ''}`}
+                          value={`${cat.name}${
+                            cat.isForMen && !cat.isForWomen
+                              ? ' (Men)'
+                              : !cat.isForMen && cat.isForWomen
+                              ? ' (Women)'
+                              : ''
+                          }`}
                           disabled
                           className="input input-sm input-bordered"
                         />

@@ -218,14 +218,6 @@ const NavBarCompRe = () => {
             ) : (
               ''
             )),
-          //  : (
-          //   <Link
-          //     href={'/customize-tee'}
-          //     className="btn rounded-lg shadow-md hover:shadow-lg shadow-rose-100 hover:shadow-rose-200"
-          //   >
-          //     Customize
-          //   </Link>
-          // ),
         )}
     </>
   );

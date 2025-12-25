@@ -15,6 +15,7 @@ const ListComponent = ({
   // console.log(cats, 78);
   const [subCategories, setSubCategories] = useState([]);
   const [subCategoriesLength, setSubCategoriesLength] = useState(0);
+  const [imageUrl, setImageUrl] = useState(cat?.filename || '');
 
   const axiosPublic = useAxiosPublic();
 
@@ -45,9 +46,9 @@ const ListComponent = ({
             onClick={handleOpenUl}
             className="group"
           >
-            <span className='hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center'>
+            <span className="hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center">
               {parentName}
-            <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
+              <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
             </span>
             {/* {filename && (
               <img
@@ -128,7 +129,12 @@ const ListComponent = ({
               <ul>
                 <img
                   className={`hidden w-64 ${isSide ? 'hidden' : ' lg:flex'}`}
-                  src={`${cat?.filename}` || '/placeholder.jpg'}
+                  src={`${imageUrl}` || '/placeholder.jpg'}
+                  onError={() =>
+                    setImageUrl(
+                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtySoziKZsJLwj81PGIi1jMRBmzvaaiYWG1Q&s',
+                    )
+                  }
                 />
               </ul>
             )}
