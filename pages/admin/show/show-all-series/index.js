@@ -4,9 +4,6 @@ import Loading from '../../../../components/Loading';
 import Head from 'next/head';
 import Swal from 'sweetalert2';
 import useLoadSeries from '../../../../Hooks/useLoadSeries';
-import { FaFile, FaFileUpload } from 'react-icons/fa';
-import { FaFileImage } from 'react-icons/fa6';
-import { FiUpload } from 'react-icons/fi';
 import { handleUploadWithCloudinary } from '/components/Images/AddImageToCloudinary';
 
 const ShowAllSeries = () => {
