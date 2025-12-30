@@ -13,7 +13,7 @@ export const handleUploadWithCloudinary = async (file) => {
 
   // const { cloudName, upload_preset } = await sigRes.data;
 
-  const { signature, timestamp, apiKey, cloudName, folder } = data;
+  const { signature, timestamp, apiKey, cloudName, folder } = sigRes.data;
 
   const formData = new FormData();
   formData.append('file', file);
@@ -37,6 +37,5 @@ export const handleUploadWithCloudinary = async (file) => {
     '/upload/w_600,q_auto,f_auto/',
   );
 
-  // Store THIS in DB (recommended)
   return optimizedUrl;
 };
