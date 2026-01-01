@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "text": "Advance bKash 150 BDT on Outside Dhaka Orders. (bKash merchant payment - 01314188605)",
+    "bgColor": "#ffffff",
+    "textColor": "#000000"
+  },
+  {
+    "id": 2,
+    "text": "Order easily ",
+    "bgColor": "#ffffff",
+    "textColor": "#000000",
+    "links": [
+      {
+        "text": "Call Now",
+        "url": "tel:+8801314188605"
+      },
+      {
+        "text": "Facebook",
+        "url": "https://www.facebook.com/tahamsbd"
+      },
+      {
+        "text": "Instagram",
+        "url": "https://www.instagram.com/tahams_bd"
+      },
+      {
+        "text": "Messenger",
+        "url": "https://m.me/111664024670524"
+      }
+    ]
+  }
+]

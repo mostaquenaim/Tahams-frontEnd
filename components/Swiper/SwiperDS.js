@@ -279,13 +279,13 @@ const ProfessionalSwiper = ({ images = [] }) => {
       </Swiper>
 
       {/* Progress Bar */}
-      <div className="absolute top-0 left-0 h-1 bg-white/30 w-full z-10">
+      {/* <div className="absolute top-0 left-0 h-1 bg-white/30 w-full z-10">
         <div
           ref={progressBarRef}
-          className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-5000 ease-linear swiper-progress-bar"
-          style={{ transition: 'width 5s linear' }}
+          className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-2000 ease-linear swiper-progress-bar"
+          style={{ transition: 'width 2s linear' }}
         ></div>
-      </div>
+      </div> */}
     </div>
   );
 };

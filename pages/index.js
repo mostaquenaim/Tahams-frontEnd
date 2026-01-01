@@ -1,6 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
 import ThemeProvider from '/Contexts/ThemeProvider';
-import MySwiper from '/components/Swiper/MySwiper';
 import ShopByCategory from '/components/ShopByCategory/ShopByCategory';
 import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
@@ -20,6 +19,7 @@ import { getGuestCustomerInfo } from '/utils/guestCustomer';
 import ZipperSpecial from '/components/Home/WinterSpecial/ZipperSpecial';
 import KangarooSpecial from '/components/Home/WinterSpecial/KangarooSpecial';
 import SweatshirtSpecial from '/components/Home/WinterSpecial/SweatshirtSpecial';
+import PromoBannerCarousel from '/components/Swiper/PromotionalBanner';
 
 export const CompanyContext = createContext(null);
 {
@@ -202,20 +202,19 @@ export default function Home() {
               </button>
             </div>
           </Modal>
-
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
           <div className="relative">
             <section id="new-arrival">
               <NewArrival />
               {/* <NewArrivalDraft/> */}
             </section>
-            <section id='zipper-hoodie'>
+            <section id="zipper-hoodie">
               <ZipperSpecial></ZipperSpecial>
             </section>
-            <section id='sweatshirt'>
+            <section id="sweatshirt">
               <SweatshirtSpecial></SweatshirtSpecial>
             </section>
-            <section id='kangaroo-hoodie'>
+            <section id="kangaroo-hoodie">
               <KangarooSpecial></KangarooSpecial>
             </section>
             <section id="new-section">
