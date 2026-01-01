@@ -33,7 +33,8 @@ const BuyingAddress = ({ data }) => {
   // Delivery fee constants
   const DELIVERY_FEES = {
     DHAKA_INSIDE: 80,
-    DHAKA_OUTSIDE: 120,
+    DHAKA_AROUND: 120,
+    DHAKA_OUTSIDE: 150,
     OTHER_REGIONS: 150,
     WEDNESDAY_DISCOUNT: 0,
   };
@@ -48,8 +49,8 @@ const BuyingAddress = ({ data }) => {
     switch (location) {
       case 'dhaka-inside':
         return DELIVERY_FEES.DHAKA_INSIDE;
-      case 'dhaka-outside':
-        return DELIVERY_FEES.DHAKA_OUTSIDE;
+      case 'dhaka-around':
+        return DELIVERY_FEES.DHAKA_AROUND;
       default:
         return DELIVERY_FEES.OTHER_REGIONS;
     }
@@ -127,7 +128,7 @@ const BuyingAddress = ({ data }) => {
         setIsOutsideDhaka(newOutsideState);
 
         if (newOutsideState) {
-          updateDeliveryFee(getDeliveryFee('dhaka-outside'));
+          updateDeliveryFee(getDeliveryFee('dhaka-around'));
           const res = await axios.get(`/Dhaka-outside-delivery.json`);
           setCities(res.data);
         } else {
@@ -142,7 +143,7 @@ const BuyingAddress = ({ data }) => {
       if (cityValue === 'Dhaka - South' || cityValue === 'Dhaka - North') {
         updateDeliveryFee(getDeliveryFee('dhaka-inside'));
       } else if (!isOutsideDhaka) {
-        updateDeliveryFee(getDeliveryFee('dhaka-outside'));
+        updateDeliveryFee(getDeliveryFee('dhaka-around'));
       }
     }
   };
