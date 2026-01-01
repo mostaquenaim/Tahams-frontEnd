@@ -51,6 +51,8 @@ const BuyingAddress = ({ data }) => {
         return DELIVERY_FEES.DHAKA_INSIDE;
       case 'dhaka-around':
         return DELIVERY_FEES.DHAKA_AROUND;
+      case 'dhaka-outside':
+        return DELIVERY_FEES.DHAKA_OUTSIDE;
       default:
         return DELIVERY_FEES.OTHER_REGIONS;
     }
@@ -98,6 +100,7 @@ const BuyingAddress = ({ data }) => {
     loadCartItems();
   }, []);
 
+  // handle region change
   const handleRegionChange = async (e) => {
     const selectedRegionValue = e.target.value;
     setSelectedRegion(selectedRegionValue);
@@ -144,6 +147,8 @@ const BuyingAddress = ({ data }) => {
         updateDeliveryFee(getDeliveryFee('dhaka-inside'));
       } else if (!isOutsideDhaka) {
         updateDeliveryFee(getDeliveryFee('dhaka-around'));
+      } else {
+        updateDeliveryFee(getDeliveryFee('dhaka-outside'));
       }
     }
   };
@@ -175,6 +180,7 @@ const BuyingAddress = ({ data }) => {
     }
   };
 
+  // handle submit
   const onSubmit = async (formData) => {
     if (isSubmitting) return;
 
