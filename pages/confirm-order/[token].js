@@ -69,7 +69,7 @@ const PaymentProcess = () => {
       <Head>
         <title>Confirm Order</title>
       </Head>
-      <div className="pt-20 lg:pt-48 min-h-screen">
+      <div className="pt-40 lg:pt-56 min-h-screen">
         {loading ? (
           <span className="loading loading-spinner loading-md"></span>
         ) : (

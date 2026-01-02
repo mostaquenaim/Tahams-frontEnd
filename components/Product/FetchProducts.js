@@ -1,13 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import ShowProduct from '/components/Product/ShowProduct';
 import FilterComp from '/components/Filter/Filter';
-import {
-  FaCrown,
-  FaFacebook,
-  FaFacebookMessenger,
-  FaFilter,
-  FaInstagram,
-} from 'react-icons/fa';
+import { FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import useLoadColors from '../../Hooks/useLoadColors';
 import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
@@ -21,462 +15,369 @@ const FetchProducts = ({
   isLoading = false,
 }) => {
   const [sortOption, setSortOption] = useState('default');
-  const [selectedProducts, setSelectedProducts] = useState(categories);
   const [selectedColors, setSelectedColors] = useState([]);
   const [priceRange, setPriceRange] = useState([1, 4000]);
   const [selectedAvailability, setSelectedAvailability] = useState('');
   const [selectedOffer, setSelectedOffer] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [windowWidth, setWindowWidth] = useState();
+  const [itemsPerPage] = useState(12);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   const colors = useLoadColors();
   const { showGotoCart } = useContext(AuthContext);
 
+  // Dynamic Category Name Extraction
+  const categoryName = useMemo(() => {
+    return (
+      categories?.[0]?.pscs?.[0]?.category?.category?.category?.name ||
+      'Collection'
+    );
+  }, [categories]);
+
   useEffect(() => {
-    typeof window !== 'undefined'
-      ? setWindowWidth(window.innerWidth)
-      : setWindowWidth(0);
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    // Set initial width
-    handleResize();
-
-    // Add event listener for window resize
+    setWindowWidth(window.innerWidth);
+    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
-
-    // Cleanup event listener on unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const updateSelectedProducts = () => {
-    setSelectedProducts(categories);
-
-    let filteredProducts = categories.filter((product) => {
-      // Check color
+  const filteredAndSortedProducts = useMemo(() => {
+    if (!categories) return [];
+    let filtered = categories.filter((product) => {
       if (
         selectedColors.length > 0 &&
         !selectedColors.includes(product.color?.name)
-      ) {
+      )
         return false;
-      }
-
-      // Check price range filter
       const productPrice = parseInt(
         (product.sellingPrice * (100 - product.discountPercentage)) / 100,
       );
-      if (productPrice < priceRange[0] || productPrice > priceRange[1]) {
+      if (productPrice < priceRange[0] || productPrice > priceRange[1])
         return false;
-      }
-
-      // Check availability filter
       if (
         selectedAvailability !== '' &&
-        String(product.ifStock) != selectedAvailability
-      ) {
+        String(product.ifStock) !== selectedAvailability
+      )
         return false;
-      }
-
-      // Check offer filter
-      if (selectedOffer === 'discount' && product.discountPercentage <= 0) {
+      if (selectedOffer === 'discount' && product.discountPercentage <= 0)
         return false;
-      }
-
       return true;
     });
 
-    // Apply sorting
     if (sortOption === 'priceLowToHigh') {
-      filteredProducts = filteredProducts.sort(
+      filtered.sort(
         (a, b) =>
-          parseInt((a.sellingPrice * (100 - a.discountPercentage)) / 100) -
-          parseInt((b.sellingPrice * (100 - b.discountPercentage)) / 100),
+          (a.sellingPrice * (100 - a.discountPercentage)) / 100 -
+          (b.sellingPrice * (100 - b.discountPercentage)) / 100,
       );
     } else if (sortOption === 'priceHighToLow') {
-      filteredProducts = filteredProducts.sort(
+      filtered.sort(
         (a, b) =>
-          parseInt((b.sellingPrice * (100 - b.discountPercentage)) / 100) -
-          parseInt((a.sellingPrice * (100 - a.discountPercentage)) / 100),
+          (b.sellingPrice * (100 - b.discountPercentage)) / 100 -
+          (a.sellingPrice * (100 - a.discountPercentage)) / 100,
       );
     }
-
-    // Update selected products
-    setSelectedProducts(filteredProducts);
-  };
-
-  useEffect(() => {
-    if (categories) {
-      updateSelectedProducts();
-    }
+    return filtered;
   }, [
+    categories,
     selectedColors,
     priceRange,
     selectedAvailability,
     selectedOffer,
     sortOption,
-    categories,
   ]);
+
+  const paginatedProducts = filteredAndSortedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
 
   if (!categories || isLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center text-center">
+      <div className="min-h-[70vh] flex justify-center items-center">
         <Loading />
       </div>
     );
   }
 
-  const handleColorChange = (color) => {
-    if (selectedColors.includes(color)) {
-      setSelectedColors(selectedColors.filter((c) => c !== color));
-    } else {
-      setSelectedColors([...selectedColors, color]);
-    }
-  };
-
-  const handlePriceChange = (value) => {
-    setPriceRange(value);
-  };
-
-  const handleAvailabilityChange = (event) => {
-    setSelectedAvailability(event.target.value);
-  };
-
-  const handleOfferChange = (event) => {
-    setSelectedOffer(event.target.value);
-  };
-
-  const handleSortChange = (event) => {
-    setSortOption(event.target.value);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const paginatedProducts = selectedProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  const totalPages = Math.ceil(selectedProducts.length / itemsPerPage);
-
   return (
-    <div>
-      <div className="pt-20 lg:pt-48 mx-10">
-        {/* Sort By dropdown */}
-        <div className="flex flex-col items-center md:flex-row gap-4 justify-between mr-10 md:mr-14 lg:mr-20  lg:pb-10">
-          <div className="font-semibold text-3xl uppercase underline">
-            {categories[0]?.pscs[0]?.category?.category?.category?.name}
+    <div className="bg-white min-h-screen">
+      {/* Header Section */}
+      <div className="pt-40 lg:pt-56 pb-8 px-6 lg:px-12 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-light tracking-tight text-gray-900 uppercase">
+              {categoryName}
+            </h1>
+            <p className="text-gray-500 text-sm mt-2">
+              {filteredAndSortedProducts.length} Products Found
+            </p>
           </div>
 
-          <select
-            id="sortDropdown"
-            value={sortOption}
-            onChange={handleSortChange}
-          >
-            <option value="default">Sort by: Default</option>
-            <option value="priceLowToHigh">Price: Low to High</option>
-            <option value="priceHighToLow">Price: High to Low</option>
-          </select>
-        </div>
-
-        {/* filter  */}
-        <div className="flex text-center items-center justify-center gap-2 py-3 md:hidden">
-          <div className="drawer">
-            <input
-              id="filter-drawer"
-              type="checkbox"
-              className="drawer-toggle"
-            />
-            <div className="drawer-content">
+          <div className="flex items-center gap-4">
+            <div className="md:hidden drawer w-auto">
+              <input
+                id="filter-drawer"
+                type="checkbox"
+                className="drawer-toggle"
+              />
               <label
                 htmlFor="filter-drawer"
-                className="btn btn-primary drawer-button"
+                className="btn btn-outline btn-sm rounded-full px-5 flex gap-2"
               >
-                <FaFilter></FaFilter>Filter
+                <FaFilter className="text-xs" /> Filter
               </label>
-            </div>
-            <div className="drawer-side z-50">
-              <label
-                htmlFor="filter-drawer"
-                aria-label="close sidebar"
-                className="drawer-overlay"
-              ></label>
-              <ul className="menu p-4 w-72 min-h-full bg-base-200 text-base-content pt-20">
-                <FilterComp
-                  handleColorChange={handleColorChange}
-                  handlePriceChange={handlePriceChange}
-                  handleAvailabilityChange={handleAvailabilityChange}
-                  handleOfferChange={handleOfferChange}
-                  selectedColors={selectedColors}
-                  priceRange={priceRange}
-                  selectedOffer={selectedOffer}
-                  selectedAvailability={selectedAvailability}
-                  colors={colors}
-                ></FilterComp>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3">
-          <div className="hidden md:row-span-5 md:block">
-            <FilterComp
-              handleColorChange={handleColorChange}
-              handlePriceChange={handlePriceChange}
-              handleAvailabilityChange={handleAvailabilityChange}
-              handleOfferChange={handleOfferChange}
-              selectedColors={selectedColors}
-              priceRange={priceRange}
-              selectedOffer={selectedOffer}
-              selectedAvailability={selectedAvailability}
-              colors={colors}
-            ></FilterComp>
-          </div>
-          {/* show product  */}
-          {paginatedProducts ? (
-            paginatedProducts.length > 0 ? (
-              paginatedProducts.map((category, index) => (
-                <ShowProduct key={index} item={category}></ShowProduct>
-              ))
-            ) : (
-              <div className="xl:col-span-3 w-full flex flex-col items-center justify-center py-8 sm:py-12 lg:py-16 px-4 text-center">
-                <div className="mb-6">
-                  <svg
-                    className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gray-300 mx-auto mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 8l3 3 3-3"
-                    />
-                  </svg>
-                </div>
-
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-800 mb-2">
-                  No Products Available Right Now
-                </h3>
-
-                <p className="text-sm sm:text-base text-gray-500 mb-6 max-w-xs sm:max-w-md px-2">
-                  We're currently updating our inventory. Check back soon or get
-                  in touch for the latest product availability!
-                </p>
-
-                <div className="bg-gray-50 rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-sm lg:max-w-md">
-                  <h4 className="font-medium text-gray-800 mb-4 text-sm sm:text-base">
-                    Stay Updated
-                  </h4>
-
-                  <div className="space-y-3">
-                    <a
-                      href="tel:+8801602054102"
-                      className="flex items-center justify-center gap-2 bg-black text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm sm:text-base w-full"
-                    >
-                      <Phone className="w-4 h-4" />
-                      <span className="hidden xs:inline">Call Us: </span>
-                      <span>+88 01602-054102</span>
-                    </a>
-
-                    {/* Desktop/Tablet Layout */}
-                    <div className="hidden sm:flex gap-2">
-                      <a
-                        href="https://www.facebook.com/tahamsbd/"
-                        className="flex-1 bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-1"
-                      >
-                        <Facebook className="w-4 h-4" />
-                        Facebook
-                      </a>
-
-                      <a
-                        href="https://www.instagram.com/tahams_bd/"
-                        className="flex-1 bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-1"
-                      >
-                        <Instagram className="w-4 h-4" />
-                        Instagram
-                      </a>
-
-                      <a
-                        href="https://m.me/111664024670524"
-                        className="flex-1 bg-black text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-1"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        Messenger
-                      </a>
-                    </div>
-
-                    {/* Mobile Layout - Stacked */}
-                    <div className="sm:hidden space-y-2">
-                      <a
-                        href="https://www.facebook.com/tahamsbd/"
-                        className="w-full bg-black text-white px-4 py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2"
-                      >
-                        <Facebook className="w-4 h-4" />
-                        Facebook
-                      </a>
-
-                      <a
-                        href="https://www.instagram.com/tahams_bd/"
-                        className="w-full bg-black text-white px-4 py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2"
-                      >
-                        <Instagram className="w-4 h-4" />
-                        Instagram
-                      </a>
-
-                      <a
-                        href="https://m.me/111664024670524"
-                        className="w-full bg-black text-white px-4 py-2.5 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center justify-center gap-2"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        Messenger
-                      </a>
-                    </div>
-
-                    <p className="text-xs text-gray-500 mt-3 px-2">
-                      Follow us for real-time inventory updates and new
-                      arrivals!
-                    </p>
-                  </div>
+              <div className="drawer-side z-[100]">
+                <label
+                  htmlFor="filter-drawer"
+                  className="drawer-overlay"
+                ></label>
+                <div className="p-6 w-80 min-h-full bg-white text-base-content pt-10">
+                  <h2 className="text-xl font-bold mb-6">Filters</h2>
+                  <FilterComp
+                    handleColorChange={(c) =>
+                      setSelectedColors((prev) =>
+                        prev.includes(c)
+                          ? prev.filter((x) => x !== c)
+                          : [...prev, c],
+                      )
+                    }
+                    handlePriceChange={setPriceRange}
+                    handleAvailabilityChange={(e) =>
+                      setSelectedAvailability(e.target.value)
+                    }
+                    handleOfferChange={(e) => setSelectedOffer(e.target.value)}
+                    selectedColors={selectedColors}
+                    priceRange={priceRange}
+                    selectedOffer={selectedOffer}
+                    selectedAvailability={selectedAvailability}
+                    colors={colors}
+                  />
                 </div>
               </div>
-            )
-          ) : (
-            <div className="text-3xl text-center">Loading...</div>
-          )}
-        </div>
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center my-5 space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
-                                ${
-                                  currentPage === 1
-                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-white'
-                                }`}
+            </div>
+
+            <select
+              className="select select-bordered select-sm rounded-full bg-white text-gray-700"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
             >
-              Prev
-            </button>
-
-            {Array.from({ length: totalPages }, (_, index) => {
-              const page = index + 1;
-
-              if (page === 1 || page === totalPages) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
-                                            ${
-                                              currentPage === page
-                                                ? 'bg-black text-white scale-105'
-                                                : 'bg-white'
-                                            }`}
-                  >
-                    {page}
-                  </button>
-                );
-              }
-
-              if (
-                (page === currentPage - 1 ||
-                  page === currentPage ||
-                  page === currentPage + 1) &&
-                windowWidth >= 640
-              ) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
-                                            ${
-                                              currentPage === page
-                                                ? 'bg-black text-white scale-105'
-                                                : 'bg-white'
-                                            }`}
-                  >
-                    {page}
-                  </button>
-                );
-              }
-
-              if (
-                windowWidth >= 640 &&
-                (page === currentPage - 2 ||
-                  page === currentPage + 2 ||
-                  (currentPage === 1 && page === 3) ||
-                  (currentPage === totalPages && page === totalPages - 2))
-              ) {
-                return (
-                  <span key={page} className="px-2 text-gray-500">
-                    ...
-                  </span>
-                );
-              }
-
-              if (
-                (page === currentPage - 1 ||
-                  page === currentPage ||
-                  page === currentPage + 1) &&
-                windowWidth < 640
-              ) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
-                                            ${
-                                              currentPage === page
-                                                ? 'bg-black text-white scale-105'
-                                                : 'bg-white'
-                                            }`}
-                  >
-                    {page}
-                  </button>
-                );
-              }
-
-              return null;
-            })}
-
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`px-3 py-2 text-sm sm:px-4 sm:py-2 rounded-lg transition-all duration-300 border border-black text-black hover:bg-black hover:text-white 
-                                ${
-                                  currentPage === totalPages
-                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-white'
-                                }`}
-            >
-              Next
-            </button>
+              <option value="default">Sort by: Default</option>
+              <option value="priceLowToHigh">Price: Low to High</option>
+              <option value="priceHighToLow">Price: High to Low</option>
+            </select>
           </div>
-        )}
+        </div>
       </div>
-      {
-        // showGotoCart &&
-        <Link
-          href={'/MyCart'}
-          className={`border border-t-8 border-black w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${
-            !showGotoCart &&
-            'pointer-events-none opacity-0 transition duration-700'
-          }`}
-        >
-          Go to cart
-        </Link>
-      }
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto py-10">
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block w-64 flex-shrink-0">
+            <div className="sticky top-32">
+              <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-2 uppercase tracking-widest text-xs">
+                Refine By
+              </h3>
+              <FilterComp
+                handleColorChange={(c) =>
+                  setSelectedColors((prev) =>
+                    prev.includes(c)
+                      ? prev.filter((x) => x !== c)
+                      : [...prev, c],
+                  )
+                }
+                handlePriceChange={setPriceRange}
+                handleAvailabilityChange={(e) =>
+                  setSelectedAvailability(e.target.value)
+                }
+                handleOfferChange={(e) => setSelectedOffer(e.target.value)}
+                selectedColors={selectedColors}
+                priceRange={priceRange}
+                selectedOffer={selectedOffer}
+                selectedAvailability={selectedAvailability}
+                colors={colors}
+              />
+            </div>
+          </aside>
+
+          {/* Product Grid */}
+          <main className="flex-1">
+            {/* show filters above product section  */}
+            {(selectedColors.length > 0 ||
+              selectedAvailability !== '' ||
+              selectedOffer !== 'all') && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {selectedColors.map((color) => (
+                  <span
+                    key={color}
+                    className="flex items-center gap-2 px-3 py-1 bg-slate-100 text-[11px] font-bold uppercase rounded-full"
+                  >
+                    {color}
+                    <button
+                      onClick={() =>
+                        setSelectedColors((prev) =>
+                          prev.filter((c) => c !== color),
+                        )
+                      }
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {selectedAvailability !== '' && (
+                  <span className="flex items-center gap-2 px-3 py-1 bg-slate-100 text-[11px] font-bold uppercase rounded-full">
+                    {selectedAvailability === 'true'
+                      ? 'In Stock'
+                      : 'Out of Stock'}
+                    <button onClick={() => setSelectedAvailability('')}>
+                      ×
+                    </button>
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setSelectedColors([]);
+                    setSelectedAvailability('');
+                    setSelectedOffer('all');
+                  }}
+                  className="text-[11px] font-bold uppercase text-red-600 ml-2"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
+
+            {paginatedProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                {paginatedProducts.map((item, index) => (
+                  <ShowProduct key={item.id || index} item={item} />
+                ))}
+              </div>
+            ) : (
+              <EmptyStateSection />
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center mt-16 space-x-2">
+                <button
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 border rounded-full disabled:opacity-30 hover:bg-gray-50 transition"
+                >
+                  <FaChevronLeft className="text-xs" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-10 h-10 rounded-full text-sm font-medium transition-all ${
+                        currentPage === page
+                          ? 'bg-black text-white'
+                          : 'hover:bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
+                <button
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 border rounded-full disabled:opacity-30 hover:bg-gray-50 transition"
+                >
+                  <FaChevronRight className="text-xs" />
+                </button>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+
+      {/* Sticky Cart Bar */}
+      <Link
+        href="/MyCart"
+        className={`fixed bottom-0 left-0 w-full h-16 bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-3 transition-all duration-500 z-[60] shadow-2xl ${
+          !showGotoCart
+            ? 'translate-y-full opacity-0'
+            : 'translate-y-0 opacity-100'
+        }`}
+      >
+        <span className="font-semibold uppercase tracking-widest text-sm">
+          View Cart & Checkout
+        </span>
+        <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">NEW</span>
+      </Link>
     </div>
   );
 };
+
+// Extracted Empty State for Cleaner Code
+const EmptyStateSection = () => (
+  <div className="flex flex-col items-center justify-center py-20 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100 px-6">
+    <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-6">
+      <svg
+        className="w-10 h-10 text-gray-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1}
+          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 8l3 3 3-3"
+        />
+      </svg>
+    </div>
+    <h3 className="text-2xl font-semibold text-gray-800">No Products Found</h3>
+    <p className="text-gray-500 mt-2 max-w-sm">
+      We couldn't find any products matching your current filters. Try adjusting
+      them or contact us.
+    </p>
+
+    <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl">
+      <SocialBtn
+        icon={<Phone size={18} />}
+        label="Call"
+        href="tel:+8801602054102"
+      />
+      <SocialBtn
+        icon={<Facebook size={18} />}
+        label="Facebook"
+        href="https://facebook.com/tahamsbd/"
+      />
+      <SocialBtn
+        icon={<Instagram size={18} />}
+        label="Instagram"
+        href="https://instagram.com/tahams_bd/"
+      />
+      <SocialBtn
+        icon={<MessageCircle size={18} />}
+        label="Chat"
+        href="https://m.me/111664024670524"
+      />
+    </div>
+  </div>
+);
+
+const SocialBtn = ({ icon, label, href }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noreferrer"
+    className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-gray-100 hover:border-black transition-all group"
+  >
+    <div className="text-gray-400 group-hover:text-black transition-colors">
+      {icon}
+    </div>
+    <span className="text-xs font-medium text-gray-600 group-hover:text-black">
+      {label}
+    </span>
+  </a>
+);
 
 export default FetchProducts;

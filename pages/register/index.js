@@ -125,7 +125,7 @@ const Register = () => {
             <Head>
                 <title>Register - Tahams </title>
             </Head>
-            <div className='pt-48 pb-10'>
+            <div className='pt-56 pb-10'>
                 {!otpSent ? (
                     <form onSubmit={handleSubmit(onRegisterSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
                         <Link className='' href='/'>

@@ -1,4 +1,3 @@
-import Loading from '/components/Loading';
 import FetchProducts from '/components/Product/FetchProducts';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import React, { useState, useEffect } from 'react';
@@ -6,47 +5,42 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 const SearchProduct = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [products, setProducts] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const axiosPublic = useAxiosPublic();
-    const router = useRouter();
+  const axiosPublic = useAxiosPublic();
+  const router = useRouter();
+  const { search } = router.query; // Get search directly
 
-    useEffect(() => {
-        const { search } = router.query; // Access the query param `search` from URL
-        if (search) {
-            setSearchQuery(search);
-        }
-    }, [router.query]); // Trigger when the URL query changes
+  useEffect(() => {
+    if (search) {
+      setIsLoading(true);
+      axiosPublic
+        .get(`admin/search-products?q=${search}`)
+        .then((response) => {
+          setProducts(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [search]); 
 
-    useEffect(() => {
-        if (searchQuery) {
-            fetchProducts(searchQuery);
-        }
-    }, [searchQuery]);
-
-    const fetchProducts = async (searchQuery) => {
-        setIsLoading(true);
-        try {
-            const response = await axiosPublic.get(`admin/search-products?q=${searchQuery}`);
-            // console.log(searchQuery,'searchQuery');
-            setProducts(response.data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div>
-            <Head>
-                <title>{searchQuery} - search results</title>
-            </Head>
-            <FetchProducts categories={products} query={searchQuery} isLoading={isLoading}/>
-        </div>
-    );
+  return (
+    <div>
+      <Head>
+        <title>{search || 'Search'} - search results</title>
+      </Head>
+      <FetchProducts
+        categories={products}
+        query={search}
+        isLoading={isLoading}
+      />
+    </div>
+  );
 };
 
 export default SearchProduct;

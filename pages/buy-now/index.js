@@ -22,7 +22,7 @@ const BuyNow = ({ data }) => {
       <Head>
         <title>Purchase Product</title>
       </Head>
-      <div className="pt-20 lg:pt-48 flex flex-col md:flex-row justify-around items-start container mx-auto">
+      <div className="pt-40 lg:pt-56 flex flex-col md:flex-row justify-around items-start container mx-auto">
         <DeliveryFeeProvider>
             <BuyingAddress data={data} />
             <FinalCart cartItems={cartItems} />

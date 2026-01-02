@@ -128,7 +128,6 @@ const ShowProductSmall = ({ item }) => {
           onClick={handleProductClick}
           className="relative cursor-pointer h-40 w-full md:h-44 md:w-full overflow-hidden rounded-t-md flex items-center justify-center bg-white"
         >
-          {/* Placeholder Loader (show if not loaded yet) */}
           {/* Placeholder Loader (shows until main or hover image is loaded) */}
           {(!hovered && !mainLoaded) || (hovered && !hoverLoaded) ? (
             <div className="absolute w-full h-full bg-gray-300 animate-pulse rounded-t-md z-0" />

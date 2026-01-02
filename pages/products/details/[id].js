@@ -366,7 +366,7 @@ const Product = ({ product }) => {
         <title>{product.name}</title>
       </Head>
       {/* <NavbarCompTwo /> */}
-      <div className="container mx-auto p-4 min-h-screen pt-20 lg:pt-48 pb-10">
+      <div className="container mx-auto p-4 min-h-screen pt-40 lg:pt-56 pb-10">
         <div className="flex flex-col md:flex-row">
           {/* Product Image */}
           <div className="md:w-1/2">
