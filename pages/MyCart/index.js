@@ -7,6 +7,7 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Link from 'next/link';
 import Head from 'next/head';
 import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils/ga4';
+import Loading from '/components/Loading';
 
 const MyCart = () => {
   const [isLoading ,cart, refetch] = useCart();
@@ -136,7 +137,7 @@ const MyCart = () => {
       <section className='pt-20 lg:pt-40 min-h-screen'>
         <div className="container mx-auto px-4">
           <h1 className='font-semibold text-xl m-5'>Select cart items to checkout</h1>
-          {cart.length > 0 ? (
+          {isLoading ? <Loading></Loading> : cart.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {cart.map((item) => (
                 <div key={item.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col items-start justify-between space-y-4">

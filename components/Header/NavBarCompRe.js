@@ -30,11 +30,11 @@ const NAV_END_BTN_CLASS = 'btn btn-square btn-ghost text-xl';
 const SEARCH_DEBOUNCE_DELAY = 300;
 
 const NavBarCompRe = () => {
-  // Hooks
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
   const { user, logOut } = useContext(AuthContext);
   const [categories, , isPending] = useLoadCats();
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext); // MOVED UP
 
   // State
   const [searchBtn, setSearchBtn] = useState(false);
@@ -45,6 +45,19 @@ const NavBarCompRe = () => {
   const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Effects
+  // useEffect(() => {
+  //   const fetchGenders = async () => {
+  //     try {
+  //       const response = await axiosPublic.get('/admin/view-genders');
+  //       setGenders(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching genders:', error);
+  //     }
+  //   };
+
+  //   fetchGenders();
+  // }, [axiosPublic]);
+
   useEffect(() => {
     const fetchGenders = async () => {
       try {
@@ -54,9 +67,14 @@ const NavBarCompRe = () => {
         console.error('Error fetching genders:', error);
       }
     };
-
     fetchGenders();
   }, [axiosPublic]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) clearTimeout(searchTimeout);
+    };
+  }, [searchTimeout]);
 
   // Cleanup search timeout on unmount
   useEffect(() => {
@@ -144,11 +162,12 @@ const NavBarCompRe = () => {
     [handleSearch],
   );
 
-  if (isPending) {
-    return <Loading />;
-  }
   // styles
   const navEndBtnClass = 'btn btn-square btn-ghost text-xl';
+
+  // const Li = ({ children }) => (
+  //   <li className="transition md:hover:scale-105">{children}</li>
+  // );
 
   const Li = ({ children }) => (
     <li className="transition md:hover:scale-105">{children}</li>
@@ -174,8 +193,6 @@ const NavBarCompRe = () => {
       </Li>
     </>
   );
-
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext);
 
   const ListStyle = ({ goto, pageName, extraClass }) => {
     const onBtnClick = () => {
@@ -264,6 +281,10 @@ const NavBarCompRe = () => {
         )}
       </div>
     );
+
+  if (isPending) {
+    return <Loading />;
+  }
 
   return (
     <div data-theme="black" className="relative">

@@ -13,6 +13,7 @@ const ListListComponent = ({ sub, ListStyle }) => {
         axiosPublic.get(`/admin/view-product-sub-sub-category/${sub.id}`)
             .then(res => {
                 const all = res.data || [];
+                // console.log(res.data,'subcategories');
 
                 const printed = all.filter(cat =>
                     cat.name.toLowerCase().includes('printed')
@@ -27,6 +28,7 @@ const ListListComponent = ({ sub, ListStyle }) => {
                     );
 
                 setPrintedCats(printed);
+                // console.log(nonPrinted);
                 setCats(nonPrinted);
             });
     }, [axiosPublic, sub.id]);

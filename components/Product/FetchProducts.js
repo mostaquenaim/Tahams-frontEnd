@@ -14,6 +14,7 @@ const FetchProducts = ({
   query = '',
   isLoading = false,
 }) => {
+  // console.log(categories,'categories');
   const [sortOption, setSortOption] = useState('default');
   const [selectedColors, setSelectedColors] = useState([]);
   const [priceRange, setPriceRange] = useState([1, 4000]);

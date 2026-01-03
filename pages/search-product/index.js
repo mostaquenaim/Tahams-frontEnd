@@ -3,6 +3,7 @@ import useAxiosPublic from '/Hooks/useAxiosPublic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Loading from '/components/Loading';
 
 const SearchProduct = () => {
   const [products, setProducts] = useState([]);
@@ -28,6 +29,12 @@ const SearchProduct = () => {
         });
     }
   }, [search]); 
+
+  if (isLoading){
+    return <div className='h-screen flex justify-center items-center'>
+      <Loading></Loading>
+    </div>
+  }
 
   return (
     <div>
