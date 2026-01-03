@@ -233,6 +233,20 @@ const BuyingAddress = ({ data }) => {
         return;
       }
 
+      // Show final confirmation before placing order
+      const finalConfirm = await Swal.fire({
+        title: 'Order Confirmed',
+        text: 'Thank you for your purchase. We will ship your items as soon as possible.',
+        icon: 'success',
+        confirmButtonColor: '#000000',
+        confirmButtonText: 'OK',
+      });
+
+      if (!finalConfirm.isConfirmed) {
+        setIsSubmitting(false);
+        return;
+      }
+
       // Show loading state
       Swal.fire({
         title: 'Processing Order',

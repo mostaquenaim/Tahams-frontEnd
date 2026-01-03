@@ -98,6 +98,7 @@ const NavBarCompRe = () => {
     }
   }, [logOut]);
 
+  // handle search
   const handleSearch = useCallback(() => {
     if (!searchInput.trim()) return;
 
@@ -106,6 +107,7 @@ const NavBarCompRe = () => {
     setSearchedProducts([]);
   }, [searchInput, router]);
 
+  // handle search input
   const handleSearchInput = useCallback(
     async (e) => {
       const query = e.target.value;
@@ -144,6 +146,7 @@ const NavBarCompRe = () => {
     [axiosPublic, searchTimeout],
   );
 
+  // handle result click
   const handleResultClick = useCallback(
     (id) => {
       setSearchInput('');
