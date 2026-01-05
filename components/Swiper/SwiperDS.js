@@ -18,7 +18,6 @@ import Link from 'next/link';
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 const ProfessionalSwiper = ({ images = [] }) => {
-  // Normalize slides whether array is strings or objects
   const slides = useMemo(
     () =>
       images.map((i, idx) =>
@@ -30,25 +29,15 @@ const ProfessionalSwiper = ({ images = [] }) => {
   );
 
   const [isVisible, setIsVisible] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const progressBarRef = useRef(null);
   const swiperRef = useRef(null);
 
   useEffect(() => {
     setIsVisible(true);
-
-    // Initialize progress bar animation
-    if (progressBarRef.current) {
-      progressBarRef.current.style.width = '0%';
-      setTimeout(() => {
-        if (progressBarRef.current) {
-          progressBarRef.current.style.width = '100%';
-        }
-      }, 50);
-    }
   }, []);
 
   const handleSlideChange = (swiper) => {
-    // Reset and animate progress bar on slide change
     if (progressBarRef.current) {
       progressBarRef.current.style.width = '0%';
       setTimeout(() => {
@@ -60,7 +49,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden group">
+    <div className="relative w-full overflow-hidden group/main">
       <Swiper
         ref={swiperRef}
         modules={[Autoplay, EffectFade, Navigation, Pagination, A11y]}
@@ -85,142 +74,155 @@ const ProfessionalSwiper = ({ images = [] }) => {
             return `<span class="${className}" style="width: 10px; height: 10px; background: rgba(255,255,255,0.7); margin: 0 4px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease;"></span>`;
           },
         }}
-        a11y={{
-          prevSlideMessage: 'Previous slide',
-          nextSlideMessage: 'Next slide',
-          firstSlideMessage: 'This is the first slide',
-          lastSlideMessage: 'This is the last slide',
-          paginationBulletMessage: 'Go to slide {{index}}',
-        }}
         loop={true}
         className="h-full"
         onSlideChange={handleSlideChange}
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div className="relative pt-16 lg:pt-40">
+            <div className="relative pt-16 lg:pt-48 h-full">
               <div className="relative w-full overflow-hidden">
                 <picture>
                   <source
                     media="(max-width: 640px)"
-                    srcSet={
-                      slide.mobileSrc || slide.src.startsWith('/')
-                        ? slide.src
-                        : `/${slide.src}`
-                    }
-                  />
-                  <source
-                    media="(min-width: 641px) and (max-width: 1024px)"
-                    srcSet={
-                      slide.tabletSrc || slide.src.startsWith('/')
-                        ? slide.src
-                        : `/${slide.src}`
-                    }
+                    srcSet={slide.mobileSrc || slide.src}
                   />
                   <img
                     src={
                       slide.src.startsWith('/') ? slide.src : `/${slide.src}`
                     }
                     alt={slide.alt}
-                    className="w-full object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh]  
-                               scale-105 will-change-transform animate-[kenburns_12s_ease-in-out_infinite]"
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    fetchPriority={index === 0 ? 'high' : 'auto'}
-                    decoding="async"
+                    className="w-full object-cover h-[58vh] sm:h-[64vh] lg:h-[72vh] 2xl:h-[76vh] scale-105 animate-[kenburns_12s_ease-in-out_infinite]"
                   />
                 </picture>
               </div>
 
-              {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
 
-              {/* Content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center top-20 ">
+              {/* Main Wrapper */}
+              <div
+                className={`absolute inset-x-0 bottom-0 flex transition-all duration-700 ease-in-out px-6 sm:px-12 pb-16 lg:pb-20
+                ${isMinimized ? 'justify-start' : 'justify-center'}`}
+              >
                 <div
-                  className={`relative max-w-4xl mx-auto space-y-4 sm:space-y-6 
-                              text-white transform transition-all duration-1000 ease-out 
-                              rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl
-                              lg:bg-transparent lg:backdrop-blur-0 lg:border-transparent lg:shadow-none
-                              xl:bg-white/10 xl:backdrop-blur-md xl:border xl:border-white/20 xl:shadow-xl
-                              px-6 py-8 sm:px-10 sm:py-12
+                  className={`relative w-full transform transition-all duration-700 ease-in-out 
+                              text-white rounded-2xl group/box
+                              ${
+                                isMinimized
+                                  ? 'max-w-max bg-transparent border-transparent shadow-none p-0'
+                                  : 'max-w-4xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl px-6 py-8 sm:px-10 sm:py-12'
+                              }
                               ${
                                 isVisible
                                   ? 'opacity-100 translate-y-0'
                                   : 'opacity-0 translate-y-10'
                               }
-              `}
+                  `}
                 >
-                  {/* Badge */}
-                  <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-2 sm:mb-4">
-                    <span className="text-xs font-semibold tracking-wider uppercase">
-                      Premium Collection
-                    </span>
-                  </div>
+                  {/* Toggle Button: Hidden by default when minimized, shows on hover of the main container */}
+                  <button
+                    onClick={() => setIsMinimized(!isMinimized)}
+                    className={`absolute -top-3 -right-3 z-50 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full border border-white/30 transition-all duration-300
+                      ${
+                        isMinimized
+                          ? 'opacity-0 group-main/main:hover:opacity-100 group-hover:scale-110'
+                          : 'opacity-100'
+                      }
+                    `}
+                    title={isMinimized ? 'Expand' : 'Minimize'}
+                  >
+                    {isMinimized ? (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M18 12H6"
+                        />
+                      </svg>
+                    )}
+                  </button>
 
-                  {/* Headline */}
-                  <h1 className="text-2xl lg:text-6xl font-bold leading-tight">
-                    Design Your{' '}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                      Thought
-                    </span>
-                  </h1>
-
-                  {/* Subheadline */}
-                  <p className="hidden lg:block text-base text-gray-200 max-w-2xl mx-auto leading-relaxed">
-                    Customize premium tees with your unique style — bold,
-                    distinctive, and crafted exclusively for you.
-                  </p>
-
-                  {/* Stats */}
-                  <div className="hidden md:flex justify-center items-center gap-4 sm:gap-6 py-2 sm:py-4 flex-wrap">
-                    <div className="text-center">
-                      <div className="text-xl sm:text-2xl font-bold">1000+</div>
-                      <div className="text-xs sm:text-sm text-gray-300">
-                        Designs Created
-                      </div>
+                  {/* Content to hide when minimized */}
+                  <div
+                    className={`flex flex-col items-center justify-center text-center transition-all duration-500 ease-in-out overflow-hidden ${
+                      isMinimized
+                        ? 'max-h-0 opacity-0'
+                        : 'max-h-[1000px] opacity-100 mb-6 sm:mb-8'
+                    }`}
+                  >
+                    <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-4">
+                      <span className="text-xs font-semibold tracking-wider uppercase">
+                        Premium Collection
+                      </span>
                     </div>
-                    <div className="w-1 h-4 sm:h-6 bg-white/30 rounded-full hidden sm:block"></div>
-                    <div className="text-center">
-                      <div className="text-xl sm:text-2xl font-bold">98%</div>
-                      <div className="text-xs sm:text-sm text-gray-300">
-                        Customer Satisfaction
+
+                    <h1 className="text-2xl lg:text-6xl font-bold leading-tight mb-4">
+                      Design Your{' '}
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                        Thought
+                      </span>
+                    </h1>
+
+                    <p className="hidden lg:block text-base text-gray-200 max-w-2xl mx-auto leading-relaxed mb-6">
+                      Customize premium tees with your unique style — bold,
+                      distinctive, and crafted exclusively for you.
+                    </p>
+
+                    <div className="hidden md:flex justify-center items-center gap-6 py-2 flex-wrap">
+                      <div className="text-center">
+                        <div className="text-xl sm:text-2xl font-bold">
+                          1000+
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-300">
+                          Designs
+                        </div>
                       </div>
-                    </div>
-                    <div className="w-1 h-4 sm:h-6 bg-white/30 rounded-full hidden sm:block"></div>
-                    <div className="text-center">
-                      <div className="text-xl sm:text-2xl font-bold">24h</div>
-                      <div className="text-xs sm:text-sm text-gray-300">
-                        Fast Delivery
+                      <div className="w-1 h-6 bg-white/30 rounded-full"></div>
+                      <div className="text-center">
+                        <div className="text-xl sm:text-2xl font-bold">98%</div>
+                        <div className="text-xs sm:text-sm text-gray-300">
+                          Happy
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 sm:mt-8">
+                  <div
+                    className={`flex flex-col sm:flex-row gap-3 sm:gap-4 transition-all duration-700
+                    ${isMinimized ? 'justify-start' : 'justify-center'}`}
+                  >
                     <Link
                       href="/customize-tee"
-                      scroll={false}
-                      className="group relative inline-flex items-center justify-center 
-                        text-sm font-semibold tracking-wide
-                        px-6 py-2 sm:px-8 sm:py-3
-                        rounded-xl shadow-lg overflow-hidden
-                        bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 
-                        text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-                      aria-label="Customize your t-shirt now"
+                      className="group/btn relative inline-flex items-center justify-center text-sm font-semibold px-6 py-2 sm:px-8 sm:py-3 rounded-xl shadow-lg bg-gradient-to-r from-blue-600 to-purple-700 text-white transition-all hover:-translate-y-0.5"
                     >
-                      <span
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                        -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                      ></span>
-
                       <span className="relative flex items-center gap-2">
                         <svg
-                          className="w-4 h-4 sm:w-5 sm:h-5"
+                          className="w-4 h-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
                             strokeLinecap="round"
@@ -235,23 +237,14 @@ const ProfessionalSwiper = ({ images = [] }) => {
 
                     <Link
                       href="#new-arrival"
-                      className="group relative inline-flex items-center justify-center 
-                        text-sm font-semibold tracking-wide
-                        px-6 py-2 sm:px-8 sm:py-3
-                        rounded-xl shadow-lg overflow-hidden
-                        bg-transparent border-2 border-white/30 hover:border-white
-                        text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-                      aria-label="View our t-shirt collection"
+                      className="group/btn relative inline-flex items-center justify-center text-sm font-semibold px-6 py-2 sm:px-8 sm:py-3 rounded-xl shadow-lg border-2 border-white/30 hover:border-white text-white transition-all hover:-translate-y-0.5"
                     >
-                      <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-
                       <span className="relative flex items-center gap-2">
                         <svg
-                          className="w-4 h-4 sm:w-5 sm:h-5"
+                          className="w-4 h-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
                             strokeLinecap="round"
@@ -270,22 +263,11 @@ const ProfessionalSwiper = ({ images = [] }) => {
           </SwiperSlide>
         ))}
 
-        {/* Custom Navigation Arrows */}
-        <div className="swiper-button-next !text-white !right-4 sm:!right-6 opacity-70 hover:opacity-100 transition-opacity duration-300 after:!text-xl sm:after:!text-2xl"></div>
-        <div className="swiper-button-prev !text-white !left-4 sm:!left-6 opacity-70 hover:opacity-100 transition-opacity duration-300 after:!text-xl sm:after:!text-2xl"></div>
-
-        {/* Custom Pagination */}
-        <div className="swiper-pagination !bottom-4 sm:!bottom-6"></div>
+        {/* Swiper Controls */}
+        <div className="swiper-button-next !text-white !right-4 opacity-70 hover:opacity-100 after:!text-xl"></div>
+        <div className="swiper-button-prev !text-white !left-4 opacity-70 hover:opacity-100 after:!text-xl"></div>
+        <div className="swiper-pagination !bottom-4"></div>
       </Swiper>
-
-      {/* Progress Bar */}
-      {/* <div className="absolute top-0 left-0 h-1 bg-white/30 w-full z-10">
-        <div
-          ref={progressBarRef}
-          className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-2000 ease-linear swiper-progress-bar"
-          style={{ transition: 'width 2s linear' }}
-        ></div>
-      </div> */}
     </div>
   );
 };
