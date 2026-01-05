@@ -160,7 +160,7 @@ export default function Home() {
             <meta property="og:type" content="website" />
             <meta
               property="og:image"
-              content="https://tahamsbd.com/og-image.jpg"
+              content="https://tahamsbd.com/cover-photos/Tahams-Winter-Cover.jpg"
             />
 
             {/* 🔥 Preload LCP image */}
