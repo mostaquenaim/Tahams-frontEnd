@@ -233,31 +233,6 @@ const BuyingAddress = ({ data }) => {
         return;
       }
 
-      // Show final confirmation before placing order
-      const finalConfirm = await Swal.fire({
-        title: 'Order Confirmed',
-        text: 'Thank you for your purchase. We will ship your items as soon as possible.',
-        icon: 'success',
-        confirmButtonColor: '#000000',
-        confirmButtonText: 'OK',
-      });
-
-      if (!finalConfirm.isConfirmed) {
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Show loading state
-      Swal.fire({
-        title: 'Processing Order',
-        html: 'Please wait while we process your order...',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
       const isAddressChanged =
         formData.fullName !== userData.name ||
         selectedRegion !== userData.region ||
@@ -300,6 +275,31 @@ const BuyingAddress = ({ data }) => {
       // Submit order
       const response = await axiosPublic.post(`/admin/add-to-buy`, orderData);
 
+      // Show final confirmation before placing order
+      const finalConfirm = await Swal.fire({
+        title: 'Order Confirmed',
+        text: 'Thank you for your purchase. We will ship your items as soon as possible.',
+        icon: 'success',
+        confirmButtonColor: '#000000',
+        confirmButtonText: 'OK',
+      });
+
+      if (!finalConfirm.isConfirmed) {
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Show loading state
+      Swal.fire({
+        title: 'Processing Order',
+        html: 'Please wait while we process your order...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      
       // Track order with GA4
       pushToDataLayer('purchase', {
         order_id: response.data.id,

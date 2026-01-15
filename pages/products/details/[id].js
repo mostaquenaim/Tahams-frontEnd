@@ -637,15 +637,20 @@ const Product = ({ product }) => {
         />
       </div>
       {
-        // showGotoCart &&
         <Link
-          href={'/MyCart'}
-          className={`w-full h-20 bg-slate-700 hover:bg-black text-center flex justify-center items-center text-white text-xl sticky bottom-0 ${
-            !showGotoCart &&
-            'pointer-events-none opacity-0 transition duration-700'
+          href="/MyCart"
+          className={`fixed bottom-0 left-0 w-full h-16 bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-3 transition-all duration-500 z-[60] shadow-2xl ${
+            !showGotoCart
+              ? 'translate-y-full opacity-0'
+              : 'translate-y-0 opacity-100'
           }`}
         >
-          Go to cart
+          <span className="font-semibold uppercase tracking-widest text-sm">
+            View Cart & Checkout
+          </span>
+          <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">
+            NEW
+          </span>
         </Link>
       }
 

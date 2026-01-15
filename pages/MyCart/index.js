@@ -6,11 +6,15 @@ import Swal from 'sweetalert2';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Link from 'next/link';
 import Head from 'next/head';
-import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils/ga4';
+import {
+  discountedPrice,
+  generateTempItems,
+  pushToDataLayer,
+} from '../../utils/ga4';
 import Loading from '/components/Loading';
 
 const MyCart = () => {
-  const [isLoading ,cart, refetch] = useCart();
+  const [isLoading, cart, refetch] = useCart();
   // console.log(cart,'cart');
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
@@ -19,14 +23,14 @@ const MyCart = () => {
   const [checkedItems, setCheckedItems] = useState([]);
 
   useEffect(() => {
-    const cartItem = parseInt(localStorage.getItem('defaultCartItem'))
-  // console.log('cartItem', cartItem);
-    setCheckedItems([cartItem])
-  }, [])
+    const cartItem = parseInt(localStorage.getItem('defaultCartItem'));
+    // console.log('cartItem', cartItem);
+    setCheckedItems([cartItem]);
+  }, []);
 
   // Toggle the selection of an item
   const toggleItemSelection = (itemId) => {
-  // console.log('cartItem', itemId);
+    // console.log('cartItem', itemId);
     if (checkedItems.includes(itemId)) {
       setCheckedItems(checkedItems.filter((id) => id !== itemId));
     } else {
@@ -43,18 +47,16 @@ const MyCart = () => {
     localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
 
     // Calculate total price
-    const totalPrice = discountedPrice(selectedItems)
+    const totalPrice = discountedPrice(selectedItems);
 
     // Prepare items for dataLayer
-    const tempItems = generateTempItems(selectedItems)
+    const tempItems = generateTempItems(selectedItems);
 
-    pushToDataLayer('begin_checkout',
-      {
-        currency: "BDT",
-        totalPrice: totalPrice,
-        items: tempItems
-      }
-    )
+    pushToDataLayer('begin_checkout', {
+      currency: 'BDT',
+      totalPrice: totalPrice,
+      items: tempItems,
+    });
 
     // Navigate to the buy-now page
     router.push({
@@ -67,7 +69,7 @@ const MyCart = () => {
     // console.log('itemId==', item);
     Swal.fire({
       title: 'Are you sure?',
-      text: 'You won\'t be able to revert this!',
+      text: "You won't be able to revert this!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -75,14 +77,14 @@ const MyCart = () => {
       confirmButtonText: 'Yes, delete it!',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        pushToDataLayer('remove_from_cart',
-          { item }
-        )
+        pushToDataLayer('remove_from_cart', { item });
 
-        const result = await axiosPublic.delete(`/admin/delete-cart/${item.uniqueId}`)
+        const result = await axiosPublic.delete(
+          `/admin/delete-cart/${item.uniqueId}`,
+        );
         if (result.data.affected > 0) {
           Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
-          refetch()
+          refetch();
         }
       }
     });
@@ -97,15 +99,19 @@ const MyCart = () => {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete them!'
+      confirmButtonText: 'Yes, delete them!',
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           const result = await axiosPublic.delete('/admin/delete-carts', {
-            data: { checkedItems }
+            data: { checkedItems },
           });
           if (result.data.affected > 0) {
-            Swal.fire('Deleted!', 'Your selected items have been deleted.', 'success');
+            Swal.fire(
+              'Deleted!',
+              'Your selected items have been deleted.',
+              'success',
+            );
             refetch();
             setCheckedItems([]); // Clear selected items after deletion
           }
@@ -134,13 +140,20 @@ const MyCart = () => {
       <Head>
         <title>My Cart - Tahams</title>
       </Head>
-      <section className='pt-20 lg:pt-40 min-h-screen'>
+      <section className="pt-20 lg:pt-56 min-h-screen pb-10">
         <div className="container mx-auto px-4">
-          <h1 className='font-semibold text-xl m-5'>Select cart items to checkout</h1>
-          {isLoading ? <Loading></Loading> : cart.length > 0 ? (
+          <h1 className="font-semibold text-xl m-5">
+            Select cart items to checkout
+          </h1>
+          {isLoading ? (
+            <Loading></Loading>
+          ) : cart.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {cart.map((item) => (
-                <div key={item.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col items-start justify-between space-y-4">
+                <div
+                  key={item.id}
+                  className="bg-white shadow-md rounded-lg p-4 flex flex-col items-start justify-between space-y-4"
+                >
                   <div className="flex justify-between w-full">
                     <input
                       type="checkbox"
@@ -157,31 +170,65 @@ const MyCart = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <img
-                      className='w-16 h-16 rounded-full border-black border-2'
+                      className="w-16 h-16 rounded-full border-black border-2"
                       src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.product.filename}`}
                       alt={item.ProductName}
                     />
                     <div className="flex flex-col">
                       <span className="font-semibold">{item.ProductName}</span>
-                      <span className="text-gray-500 text-sm">{item?.category?.category?.category?.name}</span>
-                      <span className="text-gray-500 text-sm">Size: {item.size}</span>
+                      <span className="text-gray-500 text-sm">
+                        {item?.category?.category?.category?.name}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        Size: {item.size}
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between w-full">
                     <span className="font-bold">{item.Quantity} pcs</span>
                     <span className="font-bold text-green-600">
-                      {item.product.sellingPrice - parseInt(item.product.sellingPrice * item.product.discountPercentage / 100) + parseInt(item.product.sellingPrice * item.product.vatPercentage / 100)} BDT
+                      {item.product.sellingPrice -
+                        parseInt(
+                          (item.product.sellingPrice *
+                            item.product.discountPercentage) /
+                            100,
+                        ) +
+                        parseInt(
+                          (item.product.sellingPrice *
+                            item.product.vatPercentage) /
+                            100,
+                        )}{' '}
+                      BDT
                     </span>
                   </div>
                   <div className="w-full flex justify-between items-center">
-                    <span className="font-semibold text-lg">Total: {item.Quantity * parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + parseInt(item.product.sellingPrice * item.product.vatPercentage / 100))} BDT</span>
+                    <span className="font-semibold text-lg">
+                      Total:{' '}
+                      {item.Quantity *
+                        parseInt(
+                          item.product.sellingPrice -
+                            (item.product.sellingPrice *
+                              item.product.discountPercentage) /
+                              100 +
+                            parseInt(
+                              (item.product.sellingPrice *
+                                item.product.vatPercentage) /
+                                100,
+                            ),
+                        )}{' '}
+                      BDT
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className='text-4xl font-bold text-center'>
-              No products in cart. <Link href={'/'} className='text-blue-600'>Shop now!</Link> 😃
+            <p className="text-4xl font-bold text-center">
+              No products in cart.{' '}
+              <Link href={'/'} className="text-blue-600">
+                Shop now!
+              </Link>{' '}
+              😃
             </p>
           )}
 
@@ -189,13 +236,17 @@ const MyCart = () => {
             <div className="mt-8 flex justify-end gap-4">
               <button
                 onClick={handleCheckout}
-                className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-accent'}`}
+                className={`btn ${
+                  checkedItems.length === 0 ? 'btn-disabled' : 'btn-accent'
+                }`}
               >
                 Checkout
               </button>
               <button
                 onClick={handleDeleteSelected}
-                className={`btn ${checkedItems.length === 0 ? 'btn-disabled' : 'btn-error'}`}
+                className={`btn ${
+                  checkedItems.length === 0 ? 'btn-disabled' : 'btn-error'
+                }`}
               >
                 <RiDeleteBin5Fill />
               </button>
