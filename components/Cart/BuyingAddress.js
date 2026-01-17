@@ -278,10 +278,24 @@ const BuyingAddress = ({ data }) => {
       // Show final confirmation before placing order
       const finalConfirm = await Swal.fire({
         title: 'Order Confirmed',
-        text: 'Thank you for your purchase. We will ship your items as soon as possible.',
+        html: `
+    <div>
+      <p>Thank you for your purchase. We will ship your items as soon as possible.</p>
+      ${
+        process.env.NEXT_PUBLIC_BKASHCASHBACK
+          ? `<p style="margin-top: 10px; color: #28a745; font-weight: bold;">
+          🎉 Special Offer: Pay with bKash and get ${process.env.NEXT_PUBLIC_BKASHCASHBACK}% cashback!
+        </p>`
+          : ''
+      }
+    </div>
+  `,
         icon: 'success',
         confirmButtonColor: '#000000',
-        confirmButtonText: 'OK',
+        confirmButtonText: 'Proceed to payment',
+        footer: process.env.NEXT_PUBLIC_BKASHCASHBACK
+          ? '<span style="font-size: 12px; color: #666;">Cashback will be credited to your bKash account within 24 hours</span>'
+          : '',
       });
 
       if (!finalConfirm.isConfirmed) {
@@ -299,7 +313,7 @@ const BuyingAddress = ({ data }) => {
           Swal.showLoading();
         },
       });
-      
+
       // Track order with GA4
       pushToDataLayer('purchase', {
         order_id: response.data.id,
