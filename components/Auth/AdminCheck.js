@@ -82,7 +82,7 @@ const AdminCheck = ({ children }) => {
           <div className="text-center mt-4">
             <Link
               href={'/login'}
-              className="btn btn-primary bg-black hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-black"
+              className="btn btn-neutral"
             >
               Login
             </Link>
