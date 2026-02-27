@@ -1,329 +1,167 @@
+'use client';
+
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
-import { AiOutlineMenu, AiOutlineDashboard } from 'react-icons/ai';
-import {
-  FiPackage,
-  FiTag,
-  FiFileText,
-  FiCreditCard,
-  FiUsers,
-  FiLayers,
-  FiSettings,
-} from 'react-icons/fi';
-import { BsGraphUp, BsGift } from 'react-icons/bs';
-import { RiShirtLine } from 'react-icons/ri';
-import { MdInventory, MdLocalOffer } from 'react-icons/md';
-import { CountContext } from '../../Contexts/CountProvider';
-import { Badge } from '@mui/material';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import { CustomizationOrderContext } from '/Contexts/CustomizationOrderCountProvider';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Badge, Tooltip } from '@mui/material';
+import { FiMenu, FiChevronDown, FiActivity } from 'react-icons/fi';
 import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
+import { CountContext } from '../../Contexts/CountProvider';
+import { CustomizationOrderContext } from '/Contexts/CustomizationOrderCountProvider';
+import { NAV_CONFIG } from './Config/NavConfig';
 
 const AdminDrawer = () => {
-  const { isAdminOpen, setAdminIsOpen } = useContext(AdminDrawerContext);
-
-  // console.log(isAdminOpen,'isAdminOpen');
-
-  const [expandedSections, setExpandedSections] = useState({
-    Dashboard: true,
-    Orders: true,
-    Products: true,
-  });
   const router = useRouter();
-  // const [sortedGroupedOrdersArray] = useGroupOrders(
-  // isAdminOpen
-  // );
-  // const [customizations] = useCustomizationReq(0,isAdminOpen);
-  const { setShowCount, showCount } = useContext(CountContext);
-  const { showCustomizedCount, setShowCustomizedCount } = useContext(
-    CustomizationOrderContext,
-  );
+  const { isAdminOpen, setAdminIsOpen } = useContext(AdminDrawerContext);
+  const { showCount } = useContext(CountContext);
+  const { showCustomizedCount } = useContext(CustomizationOrderContext);
 
-  const uncheckedCount = 0;
-  // sortedGroupedOrdersArray.filter(
-  //   (group) => !group.history.isChecked,
-  // ).length;
-  setShowCount(uncheckedCount);
+  const [expandedSections, setExpandedSections] = useState({});
 
-  const customizedCount = 0;
-  // customizations.filter((group) => !group.isChecked).length / 2;
-
-  //   console.log(customizedCount,'customizedCount');
-
-  setShowCustomizedCount(customizedCount);
-
-  const getSectionIcon = (sectionName) => {
-    switch (sectionName) {
-      case 'Dashboard':
-        return <AiOutlineDashboard className="mr-3" />;
-      case 'Inventory':
-        return <MdInventory className="mr-3" />;
-      case 'Coupons':
-        return <FiTag className="mr-3" />;
-      case 'Reports':
-        return <BsGraphUp className="mr-3" />;
-      case 'Payments':
-        return <FiCreditCard className="mr-3" />;
-      case 'Role Management':
-        return <FiUsers className="mr-3" />;
-      case 'User Management':
-        return <FiUsers className="mr-3" />;
-      case 'Products':
-        return <FiPackage className="mr-3" />;
-      case 'Series':
-        return <FiLayers className="mr-3" />;
-      case 'Categories':
-        return <FiLayers className="mr-3" />;
-      case 'Product Types':
-        return <RiShirtLine className="mr-3" />;
-      case 'Orders':
-        return <FiFileText className="mr-3" />;
-      case 'Promotions':
-        return <BsGift className="mr-3" />;
-      case 'Attributes':
-        return <MdLocalOffer className="mr-3" />;
-      case 'Settings':
-        return <FiSettings className="mr-3" />;
-      default:
-        return <FiPackage className="mr-3" />;
+  useEffect(() => {
+    const currentPath = router.pathname;
+    const activeSection = NAV_CONFIG.find((section) =>
+      section.Tasks.some((task) => task.href === currentPath),
+    );
+    if (activeSection) {
+      setExpandedSections((prev) => ({ ...prev, [activeSection.Name]: true }));
     }
-  };
+  }, [router.pathname]);
 
-  const navLinks = [
-    {
-      Name: 'Dashboard',
-      Tasks: [
-        { href: '/admin/show/show-views', label: 'Statistics / Views' },
-        { href: '/admin/sync/sync-sales-count', label: 'Sync Sales Count' },
-      ],
-    },
-    {
-      Name: 'Inventory',
-      Tasks: [
-        { href: '/admin/inventory/stock-status', label: 'Stock Status' },
-        { href: '/admin/inventory/low-stock', label: 'Low Stock Alerts' },
-        { href: '/admin/inventory/warehouse', label: 'Warehouse Management' },
-      ],
-    },
-    {
-      Name: 'Coupons',
-      Tasks: [
-        { href: '/admin/promotions/create-coupon', label: 'Create Coupon' },
-        { href: '/admin/promotions/manage-coupons', label: 'Manage Coupons' },
-        { href: '/admin/promotions/usage-logs', label: 'Coupon Usage Logs' },
-      ],
-    },
-    {
-      Name: 'Reports',
-      Tasks: [
-        { href: '/admin/reports/sales', label: 'Sales Report' },
-        { href: '/admin/reports/inventory', label: 'Inventory Report' },
-        { href: '/admin/reports/customers', label: 'Customer Report' },
-        { href: '/admin/reports/tax', label: 'Tax Report' },
-      ],
-    },
-    {
-      Name: 'Payments',
-      Tasks: [
-        { href: '/admin/payments/transactions', label: 'All Transactions' },
-        { href: '/admin/payments/refunds', label: 'Refund Requests' },
-        { href: '/admin/payments/payouts', label: 'Vendor Payouts' },
-      ],
-    },
-    {
-      Name: 'Role Management',
-      Tasks: [{ href: '/admin/Manage/roles', label: 'Manage Roles' }],
-    },
-    {
-      Name: 'User Management',
-      Tasks: [
-        { href: '/admin/show/show-users', label: 'All Users / Customers' },
-        { href: '/admin/show/user-details', label: 'View User Details' },
-        { href: '/admin/Analytics/user-insights', label: 'User Analytics' },
-      ],
-    },
-    {
-      Name: 'Products',
-      Tasks: [
-        { href: '/admin/add/add-product', label: 'Add Product' },
-        { href: '/admin/publish-product', label: 'Unpublished Products' },
-        { href: '/admin/all-products', label: 'All Products' },
-      ],
-    },
-    {
-      Name: 'Series',
-      Tasks: [
-        { href: '/admin/add/add-series', label: 'Add Series' },
-        { href: '/admin/show/show-all-series', label: 'Show Series' },
-      ],
-    },
-    {
-      Name: 'Categories',
-      Tasks: [
-        { href: '/admin/add/add-category', label: 'Add Category (for Series)' },
-        { href: '/admin/show/show-all-categories', label: 'Show Categories' },
-      ],
-    },
-    {
-      Name: 'Product Types',
-      Tasks: [
-        { href: '/admin/add/add-product-type', label: 'Add Product Type' },
-        {
-          href: '/admin/show/product-type',
-          label: 'Show / Edit Product Types',
-        },
-      ],
-    },
-    {
-      Name: 'Orders',
-      Tasks: [
-        {
-          href: '/admin/show/show-orders',
-          label: (
-            <Badge
-              badgeContent={showCount}
-              color="secondary"
-              overlap="rectangular"
-            >
-              Show Orders
-            </Badge>
-          ),
-        },
-        {
-          href: '/admin/show/show-customization-requests',
-          label: (
-            <Badge
-              badgeContent={showCustomizedCount}
-              color="secondary"
-              overlap="rectangular"
-            >
-              Customization Requests
-            </Badge>
-          ),
-        },
-        { href: '/admin/show/show-requests', label: 'Cancel/Return Requests' },
-        { href: '/admin/show/Show-All-Carts', label: 'View Carts' },
-      ],
-    },
-    {
-      Name: 'Promotions',
-      Tasks: [
-        { href: '/admin/add/add-new-arrivals', label: 'New Arrivals' },
-        { href: '/admin/add/add-new-pop-up', label: 'Add Pop-Up' },
-        { href: '/admin/edit/update-pop-up', label: 'Update Pop-Up' },
-        { href: '/admin/edit/update-discount', label: 'Update Discount' },
-      ],
-    },
-    {
-      Name: 'Attributes',
-      Tasks: [
-        { href: '/admin/add/add-color', label: 'Add Color' },
-        { href: '/admin/add/add-size', label: 'Add Size' },
-        { href: '/admin/add/add-fabric', label: 'Add Fabric' },
-      ],
-    },
-    {
-      Name: 'Settings',
-      Tasks: [
-        {
-          href: '/admin/settings/rearrange-navbar',
-          label: 'Rearrange Navbar Items',
-        },
-      ],
-    },
-  ];
-
-  const toggleDrawer = () => setAdminIsOpen(!isAdminOpen);
-
-  const toggleSection = (sectionName) => {
+  const toggleSection = (name) => {
     setExpandedSections((prev) => ({
       ...prev,
-      [sectionName]: !prev[sectionName],
+      [name]: !prev[name],
     }));
   };
 
   return (
-    <div
-      className={`fixed flex z-40 
-        ${isAdminOpen ? 'w-64' : 'w-20'}
-       transition-all duration-300 ease-in-out h-screen`}
+    <aside
+      className={`fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out border-r border-white/5 bg-[#0f172a] text-slate-300 shadow-2xl
+        ${isAdminOpen ? 'w-72' : 'w-20'}`}
     >
-      <div
-        className={`flex flex-col bg-gray-800 text-white h-full 
-          ${isAdminOpen ? 'w-64' : 'w-20'}
-         transition-all duration-300 ease-in-out shadow-xl`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+      {/* Header */}
+      <div className="flex h-16 items-center justify-between px-6 border-b border-white/5">
+        <AnimatePresence mode="wait">
           {isAdminOpen && (
-            <Link
-              href="/admin"
-              className="text-xl font-bold text-white hover:text-blue-300 transition duration-300 flex items-center"
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="flex items-center gap-3"
             >
-              <AiOutlineDashboard className="mr-2" />
-              Admin Panel
-            </Link>
+              <div className="p-2 bg-blue-600 rounded-lg text-white">
+                <FiActivity size={18} />
+              </div>
+              <span className="text-lg font-bold tracking-tight text-white uppercase">
+                Nexus Admin
+              </span>
+            </motion.div>
           )}
-          <button
-            onClick={toggleDrawer}
-            className="p-2 rounded-md hover:bg-gray-700 transition-colors duration-200"
-            aria-label={isAdminOpen ? 'Collapse menu' : 'Expand menu'}
-          >
-            <AiOutlineMenu className="text-xl" />
-          </button>
-        </div>
+        </AnimatePresence>
 
-        <div className="flex-1 overflow-y-auto py-4">
-          <ul className="space-y-1">
-            {navLinks.map((link, index) => {
-              const isExpanded = expandedSections[link.Name];
-              return (
-                <li key={index} className="px-2">
-                  <div
-                    className={`flex items-center justify-between cursor-pointer py-2 px-3 rounded-md ${
-                      isExpanded ? 'bg-gray-700' : 'hover:bg-gray-700'
-                    }`}
-                    onClick={() => toggleSection(link.Name)}
-                  >
-                    <div className="flex items-center">
-                      {getSectionIcon(link.Name)}
-                      {isAdminOpen && (
-                        <span className="font-medium">{link.Name}</span>
-                      )}
-                    </div>
+        <button
+          onClick={() => setAdminIsOpen(!isAdminOpen)}
+          className="p-2 rounded-xl hover:bg-white/5 hover:text-white transition-all active:scale-90"
+        >
+          <FiMenu size={20} />
+        </button>
+      </div>
+
+      {/* Navigation Body */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 custom-scrollbar h-[calc(100vh-64px)]">
+        <ul className="space-y-2">
+          {NAV_CONFIG.map((section) => {
+            const isExpanded = expandedSections[section.Name];
+            const hasActiveChild = section.Tasks.some(
+              (t) => t.href === router.pathname,
+            );
+
+            return (
+              <li key={section.Name} className="group">
+                {/* Section Header */}
+                <button
+                  onClick={() =>
+                    isAdminOpen
+                      ? toggleSection(section.Name)
+                      : setAdminIsOpen(true)
+                  }
+                  className={`flex w-full items-center justify-between p-3 rounded-xl transition-all
+                    ${isExpanded || hasActiveChild ? 'bg-white/5 text-white' : 'hover:bg-white/5 hover:text-white'}
+                  `}
+                >
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`text-xl transition-colors ${hasActiveChild ? 'text-blue-500' : 'text-slate-400 group-hover:text-blue-400'}`}
+                    >
+                      {section.Icon}
+                    </span>
                     {isAdminOpen && (
-                      <span className="text-xs">
-                        {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+                      <span className="text-sm font-semibold tracking-wide">
+                        {section.Name}
                       </span>
                     )}
                   </div>
-                  {isAdminOpen && isExpanded && (
-                    // <ul className="pl-8 pt-1 space-y-1 mt-1">
-                    <ul className="pl-8 pt-1 space-y-1 mt-1 transition-all duration-300 ease-in-out">
-                      {link.Tasks.map((task, taskIndex) => (
-                        <li key={taskIndex}>
-                          <Link href={task.href}>
-                            <div
-                              className={`block py-2 px-3 rounded-md text-sm cursor-pointer transition-colors duration-200 ${
-                                router.pathname === task.href
-                                  ? 'bg-blue-600 text-white font-medium'
-                                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                              }`}
-                            >
-                              {task.label}
-                            </div>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+
+                  {isAdminOpen && (
+                    <FiChevronDown
+                      className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                      size={14}
+                    />
                   )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </div>
-    </div>
+                </button>
+
+                {/* Sub-menu (Tasks) */}
+                <AnimatePresence>
+                  {isAdminOpen && isExpanded && (
+                    <motion.ul
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mt-1 ml-4 border-l border-white/5"
+                    >
+                      {section.Tasks.map((task) => {
+                        const isActive = router.pathname === task.href;
+                        // Dynamic badges for specific labels
+                        const badgeCount =
+                          task.id === 'orders'
+                            ? showCount
+                            : task.id === 'custom'
+                              ? showCustomizedCount
+                              : 0;
+
+                        return (
+                          <li key={task.label}>
+                            <Link href={task.href}>
+                              <div
+                                className={`group flex items-center justify-between mx-2 my-1 p-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer
+                                ${
+                                  isActive
+                                    ? 'bg-blue-600/10 text-blue-400'
+                                    : 'text-slate-400 hover:text-white hover:translate-x-1'
+                                }`}
+                              >
+                                <span>{task.label}</span>
+                                {badgeCount > 0 && (
+                                  <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">
+                                    {badgeCount}
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
   );
 };
 
