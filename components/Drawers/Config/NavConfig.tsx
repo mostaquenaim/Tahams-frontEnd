@@ -1,18 +1,19 @@
-import { 
-  FiPieChart, 
-  FiBox, 
-  FiTag, 
-  FiBarChart2, 
-  FiCreditCard, 
-  FiShield, 
-  FiUsers, 
-  FiLayers, 
-  FiCommand, 
-  FiScissors, 
-  FiFileText, 
-  FiGift, 
-  FiGrid, 
-  FiSettings 
+import {
+  FiPieChart,
+  FiBox,
+  FiTag,
+  FiBarChart2,
+  FiCreditCard,
+  FiShield,
+  FiUsers,
+  FiLayers,
+  FiFileText,
+  FiGift,
+  FiGrid,
+  FiSettings,
+  FiList, // New icon for Series
+  FiType, // New icon for Product Types
+  FiFolder, // New icon for Categories
 } from 'react-icons/fi';
 
 export const NAV_CONFIG = [
@@ -84,19 +85,45 @@ export const NAV_CONFIG = [
       { href: '/admin/all-products', label: 'All Products' },
     ],
   },
+  // --- NEW SECTIONS START ---
+  {
+    Name: 'Series',
+    Icon: <FiList />,
+    Tasks: [
+      { href: '/admin/add/add-series', label: 'Add Series' },
+      { href: '/admin/show/show-all-series', label: 'Show Series' },
+    ],
+  },
+  {
+    Name: 'Categories',
+    Icon: <FiFolder />,
+    Tasks: [
+      { href: '/admin/add/add-category', label: 'Add Category (for Series)' },
+      { href: '/admin/show/show-all-categories', label: 'Show Categories' },
+    ],
+  },
+  {
+    Name: 'Product Types',
+    Icon: <FiType />,
+    Tasks: [
+      { href: '/admin/add/add-product-type', label: 'Add Product Type' },
+      { href: '/admin/show/product-type', label: 'Show / Edit Product Types' },
+    ],
+  },
+  // --- NEW SECTIONS END ---
   {
     Name: 'Orders',
     Icon: <FiFileText />,
     Tasks: [
-      { 
-        id: 'orders', // Used for dynamic badge logic
-        href: '/admin/show/show-orders', 
-        label: 'Show Orders' 
+      {
+        id: 'orders', // Use this ID in your component to wrap with <Badge />
+        href: '/admin/show/show-orders',
+        label: 'Show Orders',
       },
-      { 
-        id: 'custom', // Used for dynamic badge logic
-        href: '/admin/show/show-customization-requests', 
-        label: 'Customization Requests' 
+      {
+        id: 'custom', // Use this ID in your component to wrap with <Badge />
+        href: '/admin/show/show-customization-requests',
+        label: 'Customization Requests',
       },
       { href: '/admin/show/show-requests', label: 'Cancel/Return Requests' },
       { href: '/admin/show/Show-All-Carts', label: 'View Carts' },
@@ -125,7 +152,10 @@ export const NAV_CONFIG = [
     Name: 'Settings',
     Icon: <FiSettings />,
     Tasks: [
-      { href: '/admin/settings/rearrange-navbar', label: 'Rearrange Navbar Items' },
+      {
+        href: '/admin/settings/rearrange-navbar',
+        label: 'Rearrange Navbar Items',
+      },
     ],
   },
 ];

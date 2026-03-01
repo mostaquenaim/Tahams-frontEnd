@@ -42,6 +42,12 @@ const FetchProducts = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    console.log(selectedOffer, 'all filters');
+    console.log(selectedAvailability, 'availability');
+    console.log(selectedColors, 'colors');
+  }, [selectedOffer, selectedAvailability, selectedColors]);
+
   const filteredAndSortedProducts = useMemo(() => {
     if (!categories) return [];
     let filtered = categories.filter((product) => {
@@ -208,7 +214,7 @@ const FetchProducts = ({
             {/* show filters above product section  */}
             {(selectedColors.length > 0 ||
               selectedAvailability !== '' ||
-              selectedOffer !== 'all') && (
+              selectedOffer !== '') && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedColors.map((color) => (
                   <span

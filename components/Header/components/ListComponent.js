@@ -2,7 +2,6 @@ import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import React, { useEffect, useState } from 'react';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import ListListComponent from './components/ListListComponent';
-import Link from 'next/link';
 
 const ListComponent = ({
   cat,
