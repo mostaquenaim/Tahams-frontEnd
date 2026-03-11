@@ -10,8 +10,6 @@ const ListComponent = ({
   isSide = false,
   toggleDrawer,
 }) => {
-  // console.log(cat, 'catt');
-  // console.log(cats, 78);
   const [subCategories, setSubCategories] = useState([]);
   const [subCategoriesLength, setSubCategoriesLength] = useState(0);
   const [imageUrl, setImageUrl] = useState(cat?.filename || '');
@@ -30,7 +28,13 @@ const ListComponent = ({
       });
   }, []);
 
-  const List = ({ children, parentClass, parentName, filename }) => {
+  const List = ({
+    children,
+    parentClass,
+    parentName,
+    isGenderVaried,
+    filename,
+  }) => {
     const [openUl, setOpenUl] = useState(null);
 
     const handleOpenUl = () => {
@@ -45,16 +49,12 @@ const ListComponent = ({
             onClick={handleOpenUl}
             className="group"
           >
-            <span className="hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center">
+            <span
+              className={`hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center`}
+            >
               {parentName}
               <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
             </span>
-            {/* {filename && (
-              <img
-              className='hidden md:block md:h-48'
-                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
-              />
-            )} */}
           </a>
         ) : (
           <span
@@ -91,6 +91,7 @@ const ListComponent = ({
         parentClass={isSide ? 'ulDrawerClass' : 'ulClass'}
         parentName={cat.name}
         isSide={isSide}
+        isGenderVaried={cat.isGenderVaried}
         filename={cat.isGenderVaried ? cat.filename : ''}
       >
         {cat.name == 'Men' || cat.name == 'Women' ? (
@@ -108,19 +109,6 @@ const ListComponent = ({
                   ></ListComponent>
                 </ul>
               ),
-            // : (
-            //   cat.name == 'Women' &&
-            //   catItem.isForWomen && (
-            //     <ul>
-            //       <ListComponent
-            //         isSide={isSide}
-            //         key={index}
-            //         cat={catItem}
-            //         ListStyle={ListStyle}
-            //       ></ListComponent>
-            //     </ul>
-            //   )
-            // )
           )
         ) : (
           <>

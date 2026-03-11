@@ -1,15 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import AdminDrawer from '../Drawers/AdminDrawer';
-import NavbarCompTwo from '../Header/NavbarCompDraft';
 import Footer from '../Footer/Footer';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Loading from '../Loading';
 import DrawerProvider from '/Contexts/DrawerProvider';
 import Head from 'next/head';
 import Link from 'next/link';
-import AdminDrawerProvider from '/Contexts/AdminDrawerProvider';
 import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
+import NavBarCompRe from '../Header/NavBarCompRe';
 
 const AdminCheck = ({ children }) => {
   const { user } = useContext(AuthContext);
@@ -72,7 +71,8 @@ const AdminCheck = ({ children }) => {
         <Head>
           <title>404 - Not Found </title>
         </Head>
-        <NavbarCompTwo />
+
+        <NavBarCompRe />
 
         <div className="min-h-screen flex flex-col justify-center items-center">
           <h1 className="text-4xl font-extrabold mb-4">404 - Page Not Found</h1>
@@ -80,10 +80,7 @@ const AdminCheck = ({ children }) => {
             The page you are looking for doesn't exist.
           </p>
           <div className="text-center mt-4">
-            <Link
-              href={'/login'}
-              className="btn btn-neutral"
-            >
+            <Link href={'/login'} className="btn btn-neutral">
               Login
             </Link>
           </div>

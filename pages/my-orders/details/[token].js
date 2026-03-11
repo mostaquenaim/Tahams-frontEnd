@@ -1,12 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import NavbarCompTwo from '../../../components/Header/NavbarCompDraft';
-import Footer from '../../../components/Footer/Footer';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdMoreHoriz, MdLocationOn, MdPhone, MdEmail, MdPerson, MdLocalShipping, MdPayment, MdCheckCircle } from 'react-icons/md';
 import { BsBoxSeam, BsCreditCard } from 'react-icons/bs';
-import OrderComp from '../../../components/orderComp';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Head from 'next/head';
 

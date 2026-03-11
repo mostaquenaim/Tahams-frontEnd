@@ -34,7 +34,7 @@ const NavBarCompRe = () => {
   const router = useRouter();
   const { user, logOut } = useContext(AuthContext);
   const [categories, , isPending] = useLoadCats();
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext); // MOVED UP
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext); 
 
   // State
   const [searchBtn, setSearchBtn] = useState(false);
@@ -43,20 +43,6 @@ const NavBarCompRe = () => {
   const [searchedProducts, setSearchedProducts] = useState([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState(null);
-
-  // Effects
-  // useEffect(() => {
-  //   const fetchGenders = async () => {
-  //     try {
-  //       const response = await axiosPublic.get('/admin/view-genders');
-  //       setGenders(response.data);
-  //     } catch (error) {
-  //       console.error('Error fetching genders:', error);
-  //     }
-  //   };
-
-  //   fetchGenders();
-  // }, [axiosPublic]);
 
   useEffect(() => {
     const fetchGenders = async () => {
@@ -167,10 +153,6 @@ const NavBarCompRe = () => {
 
   // styles
   const navEndBtnClass = 'btn btn-square btn-ghost text-xl';
-
-  // const Li = ({ children }) => (
-  //   <li className="transition md:hover:scale-105">{children}</li>
-  // );
 
   const Li = ({ children }) => (
     <li className="transition md:hover:scale-105">{children}</li>

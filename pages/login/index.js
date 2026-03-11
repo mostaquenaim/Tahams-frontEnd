@@ -173,7 +173,6 @@ const Login = () => {
             <Head>
                 <title>Login - Tahams</title>
             </Head>
-            {/* <NavbarCompTwo /> */}
             <div className='pt-56 pb-10'>
                 <form onSubmit={handleSubmit(onsubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
                     <Link className='' href='/'>

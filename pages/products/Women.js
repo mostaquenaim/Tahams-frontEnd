@@ -7,7 +7,6 @@ const Women = () => {
              <Head>
                 <title>Women - Tahams</title>
             </Head>
-            {/* <NavbarCompTwo></NavbarCompTwo> */}
             <div className='min-h-screen'>
 
             </div>

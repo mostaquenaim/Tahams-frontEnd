@@ -121,7 +121,6 @@ const Register = () => {
 
     return (
         <>
-            {/* <NavbarCompTwo /> */}
             <Head>
                 <title>Register - Tahams </title>
             </Head>
