@@ -36,7 +36,7 @@ export default function Home() {
   }, []);
 
   const tagManagerArgs = {
-    gtmId: 'GTM-K89SSG9W', // Replace with your GTM ID
+    gtmId: process.env.NEXT_PUBLIC_GTM_ID, // Replace with your GTM ID
   };
 
   useEffect(() => {

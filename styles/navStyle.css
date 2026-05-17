@@ -4,6 +4,7 @@
 .ulClass:hover > ul {
   display: flex;
 }
+/* Men/Women use .ulClassClick — no hover rule, visibility is React-controlled */
 .ulDrawerClass:hover > ul {
   display: block;
   position: relative;

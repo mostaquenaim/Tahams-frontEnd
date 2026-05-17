@@ -11,7 +11,7 @@ import ImageZoom from '../../draft/image-zoom-inner';
 import { getGuestCustomerInfo } from '../../../utils/guestCustomer';
 import Head from 'next/head';
 import Loading from '/components/Loading';
-import { generateTempItems, pushToDataLayer } from '../../../utils/ga4';
+import { pushToDataLayer } from '../../../utils/ga4';
 import { AddToWish } from '/utils/WishFunctions';
 import { DeleteFromWish } from '/utils/WishFunctions';
 import PeopleAlsoLike from '/components/Product/PeopleAlsoLike';
