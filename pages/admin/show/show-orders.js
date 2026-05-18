@@ -291,50 +291,15 @@ const ShowOrders = (data) => {
   };
 
   const showCustomerHistory = async (phone_no) => {
+    if (!phone_no) return;
     try {
       setFraudLoad(true);
-      if (!phone_no) {
-        console.warn('⚠️ No phone number provided.');
-        setFraudLoad(false);
-        return;
-      }
-
-      const url = process.env.NEXT_PUBLIC_FRAUDURL;
-      const apiKey = process.env.NEXT_PUBLIC_FRAUDSPY_API_KEY;
-
-      if (!url || !apiKey) {
-        setFraudLoad(false);
-        console.error('❌ Missing environment variables for fraud check.');
-        return;
-      }
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: apiKey.startsWith('Bearer ')
-            ? apiKey
-            : `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({ phone: phone_no }),
-      });
-
-      if (!res.ok) {
-        console.error(
-          `❌ Request failed with status ${res.status}: ${res.statusText}`,
-        );
-        setFraudLoad(false);
-        return;
-      }
-
-      const data = await res.json();
-      // console.log(data.overall);
-      setFraudCheck(data.overall);
-      setFraudLoad(false);
+      const res = await axiosPublic.post('admin/fraud-check', { phone: phone_no });
+      setFraudCheck(res.data.overall);
     } catch (error) {
-      setFraudLoad(false);
       console.error('❌ Error fetching customer history:', error.message);
+    } finally {
+      setFraudLoad(false);
     }
   };
 
