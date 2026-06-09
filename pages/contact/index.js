@@ -116,6 +116,10 @@ const Contact = () => {
                     Shop No: 1, Block: A, Level: 5, Bashundhara City Shopping
                     Complex{' '}
                   </p>
+                  <p className="text-gray-600">
+                    <span className="font-semibold">Display Center 3:</span>{' '}
+                    23, 4-C Shaista Khan Rd, Lalbagh, Dhaka
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">

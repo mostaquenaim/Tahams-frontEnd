@@ -27,6 +27,11 @@ const CONTACT_INFO = {
         'Shop No: 1, Block: A, Level: 5\nBashundhara City Shopping Complex',
       phone: '01332136066',
     },
+    {
+      title: 'Display Center 3',
+      address: '23, 4-C Shaista Khan Rd,\nLalbagh, Dhaka',
+      phone: '01349019745',
+    },
   ],
   email: 'tahamsbd@gmail.com',
 };
