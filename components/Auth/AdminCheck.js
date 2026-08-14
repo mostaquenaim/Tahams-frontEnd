@@ -1,26 +1,29 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import AdminDrawer from '../Drawers/AdminDrawer';
 import Footer from '../Footer/Footer';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import Loading from '../Loading';
 import DrawerProvider from '/Contexts/DrawerProvider';
-import Head from 'next/head';
-import Link from 'next/link';
 import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 import NavBarCompRe from '../Header/NavBarCompRe';
+import Custom404 from '/pages/404';
+
+const ADMIN_CHECK_RETRY_DELAY_MS = 800;
 
 const AdminCheck = ({ children }) => {
   const { user } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const [isAdmin, setIsAdmin] = useState(null); //
   const { isAdminOpen } = useContext(AdminDrawerContext);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    isMountedRef.current = true;
+
+    const checkAdminStatus = async (isRetry = false) => {
       try {
         const token = localStorage.getItem('access_token');
-        // console.log(token,'tokkk');
 
         const response = await axiosPublic.get(`/admin/checkIfAdmin`, {
           headers: {
@@ -28,17 +31,35 @@ const AdminCheck = ({ children }) => {
           },
         });
 
-        // console.log(response.data);
-
-        // ✅ Use response.data
-        setIsAdmin(response.data?.isAdmin === true);
+        if (isMountedRef.current) {
+          setIsAdmin(response.data?.isAdmin === true);
+        }
       } catch (error) {
         console.error('Admin check failed:', error.message);
-        setIsAdmin(false);
+
+        // A real "not an admin" answer from the backend - trust it immediately.
+        const isAuthFailure =
+          error.response?.status === 401 || error.response?.status === 403;
+
+        if (!isRetry && !isAuthFailure) {
+          // Network error/timeout/5xx - could be transient, retry once before giving up.
+          setTimeout(() => {
+            if (isMountedRef.current) checkAdminStatus(true);
+          }, ADMIN_CHECK_RETRY_DELAY_MS);
+          return;
+        }
+
+        if (isMountedRef.current) {
+          setIsAdmin(false);
+        }
       }
     };
 
     checkAdminStatus();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [user]);
 
   if (isAdmin === null) {
@@ -66,28 +87,11 @@ const AdminCheck = ({ children }) => {
   }
 
   return (
-    <>
-      <DrawerProvider>
-        <Head>
-          <title>404 - Not Found </title>
-        </Head>
-
-        <NavBarCompRe />
-
-        <div className="min-h-screen flex flex-col justify-center items-center">
-          <h1 className="text-4xl font-extrabold mb-4">404 - Page Not Found</h1>
-          <p className="text-gray-500">
-            The page you are looking for doesn't exist.
-          </p>
-          <div className="text-center mt-4">
-            <Link href={'/login'} className="btn btn-neutral">
-              Login
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </DrawerProvider>
-    </>
+    <DrawerProvider>
+      <NavBarCompRe />
+      <Custom404 />
+      <Footer />
+    </DrawerProvider>
   );
 };
 

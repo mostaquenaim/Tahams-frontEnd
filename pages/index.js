@@ -168,7 +168,7 @@ export default function Home() {
               rel="preload"
               as="image"
               href="/cover-photos/Tahams-Winter-Cover.jpg"
-              fetchpriority="high"
+              fetchPriority="high"
             />
           </Head>
 

@@ -91,7 +91,6 @@ const PerfumeBox = ({
       >
         ×
       </button> */}
-      <div className="inset-0 bg-black h-full w-full"></div>
       {/* TREASURE BOX */}
       <div
         className={`hidden md:block fixed z-50 bottom-4 right-4 ${

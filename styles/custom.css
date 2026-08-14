@@ -1,11 +1,9 @@
-/* Define the initial width as 0 */
-hr {
+/* Nav underline: starts collapsed, grows to full width when its parent <li> is hovered */
+.nav-underline {
     width: 0;
-    transition: width 300ms ease; /* Apply the transition to the width property */
+    transition: width 300ms ease;
   }
-  
-  /* On hover, change the width to 100% */
-  li:hover hr {
+
+  li:hover .nav-underline {
     width: 100%;
   }
-  

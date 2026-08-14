@@ -2,9 +2,11 @@ import ShowProductSmall from '/components/Product/ShowProductSmall';
 import Heading from '/components/Header/Heading';
 import useSearch from '/Hooks/useSearch';
 import React from 'react';
+import { useRouter } from 'next/router';
 
 const KangarooSpecial = () => {
   const { searchedItems, isPending } = useSearch('kangaroo');
+  const router = useRouter();
   //   console.log(searchedItems,'searchedItems');
 
   const DISPLAY_LIMIT = 16;

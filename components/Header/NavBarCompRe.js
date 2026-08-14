@@ -12,7 +12,6 @@ import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
 // Components
 import ResponsiveNavBar from './ResponsiveNavBar';
 import ListComponent from './components/ListComponent';
-import Loading from '../Loading';
 
 // Hooks
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
@@ -32,7 +31,7 @@ const SEARCH_DEBOUNCE_DELAY = 300;
 const NavBarCompRe = () => {
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
-  const { user, logOut } = useContext(AuthContext);
+  const { user, logOut, loading: authLoading } = useContext(AuthContext);
   const [categories, , isPending] = useLoadCats();
   const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext); 
 
@@ -170,7 +169,7 @@ const NavBarCompRe = () => {
         <Link href="/contact">Contact Us</Link>
       </Li>
       <Li>
-        {user ? (
+        {authLoading ? null : user ? (
           <button onClick={handleLogout}>Logout</button>
         ) : (
           <Link href="/login">Login</Link>
@@ -190,7 +189,7 @@ const NavBarCompRe = () => {
         className={`hover:text-zinc-400 md:border-b-2 border-transparent hover:border-zinc-600 text-opacity-70 ${extraClass}`}
       >
         <button onClick={onBtnClick}>{pageName}</button>
-        <hr className="hidden hover:inline-block w-full border-black duration-300 transition-width"></hr>
+        <hr className="nav-underline hidden hover:inline-block border-black duration-300 transition-width"></hr>
       </li>
       // hidden hover:inline-block
     );
@@ -200,29 +199,35 @@ const NavBarCompRe = () => {
   const links = (
     <>
       <ListStyle goto="/" pageName="Home" />
-      {genders &&
-        genders.map((gender, index) => (
-          <ListComponent
-            key={index}
-            cat={gender}
-            cats={categories}
-            ListStyle={ListStyle}
-          ></ListComponent>
-        ))}
-      {categories &&
-        categories.map(
-          (cat, index) =>
-            cat.name != 'Customize' &&
-            (!cat.isGenderVaried ? (
+      {isPending ? (
+        <li className="text-sm text-gray-300 px-2">Loading menu…</li>
+      ) : (
+        <>
+          {genders &&
+            genders.map((gender, index) => (
               <ListComponent
                 key={index}
-                cat={cat}
+                cat={gender}
+                cats={categories}
                 ListStyle={ListStyle}
               ></ListComponent>
-            ) : (
-              ''
-            )),
-        )}
+            ))}
+          {categories &&
+            categories.map(
+              (cat, index) =>
+                cat.name != 'Customize' &&
+                (!cat.isGenderVaried ? (
+                  <ListComponent
+                    key={index}
+                    cat={cat}
+                    ListStyle={ListStyle}
+                  ></ListComponent>
+                ) : (
+                  ''
+                )),
+            )}
+        </>
+      )}
     </>
   );
 
@@ -266,10 +271,6 @@ const NavBarCompRe = () => {
         )}
       </div>
     );
-
-  if (isPending) {
-    return <Loading />;
-  }
 
   return (
     <div data-theme="black" className="relative">

@@ -296,6 +296,7 @@ const BuyingAddress = ({ data }) => {
         carts,
         deliveryFee: finalDeliveryFee,
         ...(dc && { isPickup: true, pickupCenter: dc.name }),
+        ...(formData.facebookProfile && { facebookProfile: formData.facebookProfile }),
       };
 
       const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
@@ -486,6 +487,35 @@ const BuyingAddress = ({ data }) => {
           {errors.phoneNumber && (
             <p className="text-red-500 text-xs mt-1.5">{errors.phoneNumber.message}</p>
           )}
+        </div>
+
+        {/* ── Facebook Profile Link (Optional) ── */}
+        <div className="mb-6">
+          <label
+            htmlFor="facebookProfile"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Facebook Profile Link{' '}
+            <span className="text-gray-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="url"
+            id="facebookProfile"
+            className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+            placeholder="e.g. facebook.com/yourname"
+            {...register('facebookProfile', {
+              pattern: {
+                value: /^(https?:\/\/)?(www\.)?(facebook|fb)\.com\/.+/i,
+                message: 'Please enter a valid Facebook profile link',
+              },
+            })}
+          />
+          {errors.facebookProfile && (
+            <p className="text-red-500 text-xs mt-1.5">{errors.facebookProfile.message}</p>
+          )}
+          <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+            Completely optional — feel free to skip this. If you do share it, our team may reach out to you on Messenger regarding your order.
+          </p>
         </div>
 
         {/* ══════════════════════════════════

@@ -16,15 +16,6 @@
   }
 }
 
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(200%) rotate(45deg);
-  }
-}
-
 @keyframes float {
   0%,
   100% {
@@ -37,10 +28,6 @@
 
 .animate-gradient-shift {
   animation: gradient-shift 8s ease infinite;
-}
-
-.animate-shine {
-  animation: shine 2s ease infinite;
 }
 
 .animate-float {
