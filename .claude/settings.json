@@ -2,19 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(gh pr *)",
-      "Bash(timeout 60 bash -c 'until curl -sf http://localhost:8000 >/dev/null; do sleep 1; done')",
-      "Bash(chromium-cli --session tahams)",
-      "Bash(node \"C:\\\\Users\\\\USER\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\e--Tahams-Frontend-Tahams-frontend-og\\\\b3ab77ad-7f7b-4ac1-aadb-1e819e6fe5fe\\\\scratchpad\\\\screenshot.js\")",
-      "Bash(npm root *)",
-      "Read(//e//**)",
-      "Bash(npx --no-install node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
-      "Bash(npx --no-install playwright screenshot --wait-for-timeout 3000 --viewport-size \"1280,1400\" --full-page \"http://localhost:8000/buy-now\" \"C:\\\\Users\\\\USER\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\e--Tahams-Frontend-Tahams-frontend-og\\\\b3ab77ad-7f7b-4ac1-aadb-1e819e6fe5fe\\\\scratchpad\\\\checkout-full.png\")",
-      "PowerShell(Get-ChildItem -Path \"$env:LOCALAPPDATA\\\\npm-cache\\\\_npx\" -Directory | ForEach-Object { $p = Join-Path $_.FullName 'node_modules\\\\playwright'; if \\(Test-Path $p\\) { Write-Output $_.FullName } })",
-      "Read(//e/Tahams/Tahams-backend/**)",
-      "Read(//e/Tahams/Tahams-backend/src/**)",
-      "Read(//e/Tahams/Tahams-backend/src/Admin/Controllers/**)",
-      "Read(//e/Tahams/Tahams-backend/src/Admin/Services/**)",
-      "Read(//e/Tahams/Tahams-backend/src/Global/Entities/**)"
+      "Bash(npm run *)",
+      "Bash(echo \"started with pid $!\")",
+      "Bash(curl -s -o /tmp/homepage.html -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/)",
+      "Bash(command -v node)",
+      "Bash(node -e \"console.log\\('node ok'\\)\")",
+      "Bash(curl -s -o /tmp/admin.html -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/admin)"
     ]
   }
 }
