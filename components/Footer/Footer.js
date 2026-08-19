@@ -37,7 +37,7 @@ const CONTACT_INFO = {
 };
 
 const COMPANY_LINKS = [
-  { href: '/#about', label: 'About us' },
+  { href: '/about', label: 'About us' },
   { href: '/contact', label: 'Contact' },
   { href: '/careers', label: 'Careers' },
   { href: '/press', label: 'Press Kit' },

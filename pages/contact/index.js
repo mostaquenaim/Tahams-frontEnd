@@ -47,6 +47,7 @@ const Contact = () => {
                     id="name"
                     placeholder="Enter your name"
                     className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                    required
                   />
                 </div>
                 <div>
@@ -62,6 +63,7 @@ const Contact = () => {
                     id="email"
                     placeholder="Enter your email"
                     className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                    required
                   />
                 </div>
                 <div>
@@ -77,6 +79,7 @@ const Contact = () => {
                     rows="4"
                     placeholder="Write your message"
                     className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                    required
                   ></textarea>
                 </div>
                 <button
@@ -117,8 +120,8 @@ const Contact = () => {
                     Complex{' '}
                   </p>
                   <p className="text-gray-600">
-                    <span className="font-semibold">Display Center 3:</span>{' '}
-                    23, 4-C Shaista Khan Rd, Lalbagh, Dhaka
+                    <span className="font-semibold">Display Center 3:</span> 23,
+                    4-C Shaista Khan Rd, Lalbagh, Dhaka
                   </p>
                 </div>
               </div>
@@ -132,9 +135,7 @@ const Contact = () => {
               <div className="flex items-center space-x-4">
                 <FaEnvelope className="text-2xl text-black" />
                 <div>
-                  <p className="font-semibold text-gray-800">
-                    Email
-                  </p>
+                  <p className="font-semibold text-gray-800">Email</p>
                   <p className="text-gray-600">tahamsbd@gmail.com</p>
                 </div>
               </div>
