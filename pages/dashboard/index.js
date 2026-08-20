@@ -61,7 +61,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 p-4 lg:p-8 pt-20 lg:pt-40">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="mb-8">
+          <div className="mb-8 mt-28 sm:mt-20">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
