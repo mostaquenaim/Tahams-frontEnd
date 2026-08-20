@@ -13,8 +13,7 @@ const Artist = () => {
           <section className="mb-12 text-center">
             <h1 className="text-4xl font-bold mb-4">Collaborate with Tahams</h1>
             <p className="text-gray-700 text-lg">
-              We are always looking for creative artists to collaborate with us.
-              If you have a passion for fashion and art, we would love to hear
+              We are always looking for creative artists to collaborate with us. If you have a passion for fashion and art, we would love to hear
               from you!
             </p>
           </section>
