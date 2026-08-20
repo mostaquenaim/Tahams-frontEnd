@@ -1,3 +1,4 @@
+import ContactForm from '/components/Forms/ContactForm';
 import Head from 'next/head';
 import React from 'react';
 import {
@@ -29,67 +30,7 @@ const Contact = () => {
 
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Contact Form */}
-            <div className="bg-white p-8 shadow-lg rounded-lg">
-              <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-                Contact Form
-              </h2>
-              <form className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    placeholder="Enter your name"
-                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Your Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Enter your email"
-                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Your Message
-                  </label>
-                  <textarea
-                    name="message"
-                    id="message"
-                    rows="4"
-                    placeholder="Write your message"
-                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
-                    required
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-3 px-4 bg-black text-white font-semibold rounded-md hover:bg-gray-800 transition"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
+            <ContactForm/>
 
             {/* Contact Information */}
             <div className="bg-white p-8 shadow-lg rounded-lg space-y-8">
