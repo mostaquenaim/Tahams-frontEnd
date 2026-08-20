@@ -4,10 +4,6 @@
 @tailwind utilities;
 
 
-html {
-  scroll-behavior: smooth;
-}
-
 /* In your global.css */
 @keyframes gradient-shift {
   0% {
