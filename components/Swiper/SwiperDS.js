@@ -107,7 +107,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                 ${isMinimized ? 'justify-start' : 'justify-center'}`}
               >
                 <div
-                  className={`relative w-full transform transition-all duration-700 ease-in-out 
+                  className={`relative top-10 sm:top-8 w-full transform transition-all duration-700 ease-in-out 
                               text-white rounded-2xl group/box
                               ${
                                 isMinimized
