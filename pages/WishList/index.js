@@ -39,7 +39,7 @@ const WishList = () => {
         <title>Wishlist - Tahams </title>
       </Head>
       <div className="container mx-auto p-4 min-h-screen md:p-6 lg:p-8 xl:p-10">
-        <h1 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold mb-4 lg:pt-40 pt-60 flex text-center items-center justify-center">
+        <h1 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold mb-4 pt-44 lg:pt-48 flex text-center items-center justify-center">
           Your Wishlist
         </h1>
         {isPending ? (
