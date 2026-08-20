@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { AiTwotoneHeart } from 'react-icons/ai';
+import { scrollToSection } from '/utils/scrollToSection';
 import {
   FaFacebook,
   FaInstagram,
@@ -37,7 +38,7 @@ const CONTACT_INFO = {
 };
 
 const COMPANY_LINKS = [
-  { href: '#about', label: 'About us' },
+  { href: '/about', label: 'About us' },
   { href: '/contact', label: 'Contact' },
   { href: '/careers', label: 'Careers' },
   { href: '/press', label: 'Press Kit' },
@@ -126,9 +127,10 @@ const SectionTitle = ({ children }) => (
   </h3>
 );
 
-const NavLink = ({ href, children }) => (
+const NavLink = ({ href, children, onClick }) => (
   <Link
     href={href}
+    onClick={onClick}
     className="text-gray-400 hover:text-white transition-colors duration-300 hover:translate-x-1 transform inline-block py-1"
   >
     {children}
@@ -219,7 +221,12 @@ const Footer = () => {
                   <div className="space-y-3">
                     {COMPANY_LINKS.map((link) => (
                       <div key={link.href}>
-                        <NavLink href={link.href}>{link.label}</NavLink>
+                        <NavLink
+                          href={link.href}
+                          onClick={link.href === '/about' ? (e) => scrollToSection('about', e) : undefined}
+                        >
+                          {link.label}
+                        </NavLink>
                       </div>
                     ))}
                   </div>
