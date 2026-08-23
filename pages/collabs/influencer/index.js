@@ -8,7 +8,7 @@ const Influencer = () => {
       <Head>
         <title>Influencer Collaboration</title>
       </Head>
-      <div className="min-h-screen bg-gray-100 pt-40">
+      <div className="min-h-screen bg-gray-100 pt-40 lg:pt-48">
         <div className="container mx-auto p-8">
           <section className="mb-12 text-center">
             <h1 className="text-4xl font-bold mb-4">
