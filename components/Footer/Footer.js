@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { AiTwotoneHeart } from 'react-icons/ai';
+import { scrollToSection } from '/utils/scrollToSection';
+import ComingSoon from '../ComingSoon';
 import {
   FaFacebook,
   FaInstagram,
@@ -37,7 +40,7 @@ const CONTACT_INFO = {
 };
 
 const COMPANY_LINKS = [
-  { href: '#about', label: 'About us' },
+  { href: '/#about', label: 'About us' },
   { href: '/contact', label: 'Contact' },
   { href: '/careers', label: 'Careers' },
   { href: '/press', label: 'Press Kit' },
@@ -126,9 +129,10 @@ const SectionTitle = ({ children }) => (
   </h3>
 );
 
-const NavLink = ({ href, children }) => (
+const NavLink = ({ href, children, onClick }) => (
   <Link
     href={href}
+    onClick={onClick}
     className="text-gray-400 hover:text-white transition-colors duration-300 hover:translate-x-1 transform inline-block py-1"
   >
     {children}
@@ -137,6 +141,9 @@ const NavLink = ({ href, children }) => (
 
 // Main Component
 const Footer = () => {
+  const router = useRouter();
+  const isHomepage = router.pathname === '/';
+
   return (
     <footer className="bg-gray-900 text-white" role="contentinfo">
       {/* Main Footer Content */}
@@ -217,11 +224,19 @@ const Footer = () => {
                     <span id="company-heading">Company</span>
                   </SectionTitle>
                   <div className="space-y-3">
-                    {COMPANY_LINKS.map((link) => (
-                      <div key={link.href}>
-                        <NavLink href={link.href}>{link.label}</NavLink>
-                      </div>
-                    ))}
+                    {COMPANY_LINKS.map((link) => {
+                      const isAboutLink = link.label === 'About us';
+                      return (
+                        <div key={link.href}>
+                          <NavLink
+                            href={isAboutLink ? '/#about' : link.href}
+                            onClick={isAboutLink && isHomepage ? (e) => scrollToSection('about', e) : undefined}
+                          >
+                            {link.label}
+                          </NavLink>
+                        </div>
+                      );
+                    })}
                   </div>
                 </nav>
 

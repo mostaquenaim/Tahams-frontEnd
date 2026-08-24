@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from 'react';
 import ThemeProvider from '/Contexts/ThemeProvider';
+import { scrollToSection } from '/utils/scrollToSection';
 import ShopByCategory from '/components/ShopByCategory/ShopByCategory';
 import WhyUs from '/components/WhyUs/WhyUs';
 import Payment from '/components/Payment/Payment';
@@ -33,6 +34,14 @@ export default function Home() {
 
   useEffect(() => {
     getGuestCustomerInfo();
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash === '#about') {
+      setTimeout(() => {
+        scrollToSection('about');
+      }, 300);
+    }
   }, []);
 
   const tagManagerArgs = {

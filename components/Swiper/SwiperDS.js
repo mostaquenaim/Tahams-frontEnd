@@ -16,6 +16,7 @@ import 'swiper/css/scrollbar';
 import 'swiper/css/effect-fade';
 import Link from 'next/link';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { scrollToSection } from '/utils/scrollToSection';
 
 const ProfessionalSwiper = ({ images = [] }) => {
   const slides = useMemo(
@@ -106,7 +107,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
                 ${isMinimized ? 'justify-start' : 'justify-center'}`}
               >
                 <div
-                  className={`relative w-full transform transition-all duration-700 ease-in-out 
+                  className={`relative top-10 sm:top-8 w-full transform transition-all duration-700 ease-in-out 
                               text-white rounded-2xl group/box
                               ${
                                 isMinimized
@@ -237,6 +238,7 @@ const ProfessionalSwiper = ({ images = [] }) => {
 
                     <Link
                       href="#new-arrival"
+                      onClick={(e) => scrollToSection('new-arrival', e)}
                       className="group/btn relative inline-flex items-center justify-center text-sm font-semibold px-6 py-2 sm:px-8 sm:py-3 rounded-xl shadow-lg border-2 border-white/30 hover:border-white text-white transition-all hover:-translate-y-0.5"
                     >
                       <span className="relative flex items-center gap-2">

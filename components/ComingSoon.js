@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Clock } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
 
 const ComingSoon = ({ pageTitle }) => {
@@ -17,7 +16,7 @@ const ComingSoon = ({ pageTitle }) => {
         </h1>
         <p className="text-gray-600 text-lg mb-8">This page is coming soon</p>
 
-        <Link href="/" className="btn btn-outline  capitalize gap-2 group mt-3">
+        <Link href="/" className="btn btn-outline capitalize gap-2 group mt-3">
           <ArrowLeft
             size={18}
             className="transition-transform duration-200 group-hover:-translate-x-1"

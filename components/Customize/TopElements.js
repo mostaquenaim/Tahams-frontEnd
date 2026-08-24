@@ -3,13 +3,13 @@ import { FaFacebook } from 'react-icons/fa';
 
 const TopElements = () => {
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 mt-24 sm:mt-5 lg:mt-12">
       {/* Left side: Title & Subtitle */}
       <div className="w-full lg:w-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center lg:text-left">
           T-Shirt Design Studio
         </h1>
-        <p className="text-gray-500 mt-1 text-sm sm:text-base">
+        <p className="text-gray-500 text-center lg:text-left mt-1 text-sm sm:text-base">
           Create custom apparel designs for your business
         </p>
       </div>
@@ -20,7 +20,7 @@ const TopElements = () => {
           Contact us for custom design consultations & orders
         </p>
 
-        <div className="flex gap-3 sm:gap-4 w-full lg:w-auto justify-start lg:justify-end">
+        <div className="flex gap-3 sm:gap-4 w-full lg:w-auto justify-center sm:justify-start lg:justify-end mt-2">
           <a
             href="https://www.facebook.com/tahamsbd"
             target="_blank"
