@@ -7,7 +7,10 @@
       "Bash(curl -s -o /tmp/homepage.html -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/)",
       "Bash(command -v node)",
       "Bash(node -e \"console.log\\('node ok'\\)\")",
-      "Bash(curl -s -o /tmp/admin.html -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/admin)"
+      "Bash(curl -s -o /tmp/admin.html -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/admin)",
+      "Bash(curl -s -o /tmp/homepage_ssr.html -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/)",
+      "Bash(curl -s -o /dev/null -w \"\" http://localhost:8000/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/)"
     ]
   }
 }

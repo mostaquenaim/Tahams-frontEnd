@@ -3,12 +3,13 @@ import ShowNewArrival from './ShowNewArrival';
 import Heading from '../../Header/Heading';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 
-const NewArrival = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+const NewArrival = ({ initialProducts = null }) => {
+  const [products, setProducts] = useState(initialProducts || []);
+  const [loading, setLoading] = useState(!initialProducts);
   const axiosPublic = useAxiosPublic();
 
   useEffect(() => {
+    if (initialProducts) return;
     fetchNewArrivals();
   }, []);
 
@@ -36,11 +37,11 @@ const NewArrival = () => {
               ></div>
             ))
           : products.map((product, index) => (
-              <>
+              <React.Fragment key={product.id ?? index}>
                 {product.serial != 'discontinued' && (
-                  <ShowNewArrival key={index} ind={index} prop={product} />
+                  <ShowNewArrival ind={index} prop={product} />
                 )}
-              </>
+              </React.Fragment>
             ))}
       </div>
     </div>

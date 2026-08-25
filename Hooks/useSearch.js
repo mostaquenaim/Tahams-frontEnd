@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import useAxiosPublic from './useAxiosPublic';
 
-const useSearch = (searchQuery) => {
+const useSearch = (searchQuery, initialData) => {
   const axiosPublic = useAxiosPublic();
 
   const fetchSearchData = async () => {
@@ -22,6 +22,7 @@ const useSearch = (searchQuery) => {
     queryFn: fetchSearchData,
     enabled: !!searchQuery, // only run when query exists
     staleTime: 30 * 1000,   // optional but smart
+    ...(initialData ? { initialData } : {}),
   });
 
   return {
