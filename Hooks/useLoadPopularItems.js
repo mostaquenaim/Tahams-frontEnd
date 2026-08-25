@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import useAxiosPublic from '../Hooks/useAxiosPublic';
 
-const useLoadPopularItems = () => {
-    const [popular, setPopular] = useState([]);
+const useLoadPopularItems = (initialData = null) => {
+    const [popular, setPopular] = useState(initialData || []);
     const axiosPublic = useAxiosPublic();
 
     useEffect(() => {
+        if (initialData) return;
+
         const loadPopular = async () => {
             try {
                 const result = await axiosPublic.get('/admin/view-popular-items');

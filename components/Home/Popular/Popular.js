@@ -3,8 +3,8 @@ import Heading from '/components/Header/Heading';
 import React from 'react';
 import ShowProductSmall from '/components/Product/ShowProductSmall';
 
-const Popular = () => {
-  const popular = useLoadPopularItems();
+const Popular = ({ initialItems = null }) => {
+  const popular = useLoadPopularItems(initialItems);
   return (
     <>
       <div className="pt-10 md:pt-16 lg:pt-10 shadow-md space-y-8 py-12 px-2 sm:px-4 lg:px-8 max-w-7xl mx-auto">

@@ -1,23 +1,8 @@
-import { useEffect, useState } from "react";
 import ShowCat from "./ShowCat";
 import Heading from "../Header/Heading";
-import axios from "axios";
-import useAxiosPublic from '../../Hooks/useAxiosPublic'
+import cats from "/public/categories.json";
 
 const ShopByCategory = () => {
-    const [cats, setCats] = useState([])
-    const axiosPublic = useAxiosPublic()
-
-    useEffect(() => {
-        axios.get('/categories.json')
-            .then(res => 
-                {
-                    // console.log(res.data);
-                    setCats(res.data)
-                }
-                )
-    }, [])
-
     return (
         <>
             <div className="pt-20 md:pt-16 lg:pt-10 pb-10 shadow-md px-2 space-y-8 py-12 sm:px-4 lg:px-8 max-w-7xl mx-auto">

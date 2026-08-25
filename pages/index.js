@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
+import axios from 'axios';
 import ThemeProvider from '/Contexts/ThemeProvider';
 import ShopByCategory from '/components/ShopByCategory/ShopByCategory';
 import WhyUs from '/components/WhyUs/WhyUs';
@@ -6,7 +7,6 @@ import Payment from '/components/Payment/Payment';
 import Modal from 'react-modal';
 import TagManager from 'react-gtm-module';
 import Head from 'next/head';
-import useLoadActivePop from '/./Hooks/useLoadActivePop';
 import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
@@ -26,10 +26,17 @@ export const CompanyContext = createContext(null);
   /* unused */
 }
 
-export default function Home() {
+export default function Home({
+  initialNewArrivals,
+  initialPopularItems,
+  initialActivePop,
+  initialZipperItems,
+  initialKangarooItems,
+  initialSweatshirtItems,
+}) {
   // const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const activePop = useLoadActivePop();
+  const [activePop] = useState(initialActivePop);
 
   useEffect(() => {
     getGuestCustomerInfo();
@@ -168,7 +175,7 @@ export default function Home() {
               rel="preload"
               as="image"
               href="/cover-photos/Tahams-Winter-Cover.jpg"
-              fetchPriority="high"
+              fetchpriority="high"
             />
           </Head>
 
@@ -205,17 +212,17 @@ export default function Home() {
           <ProfessionalSwiper images={bannerImages}></ProfessionalSwiper>
           <div className="relative">
             <section id="new-arrival">
-              <NewArrival />
+              <NewArrival initialProducts={initialNewArrivals} />
               {/* <NewArrivalDraft/> */}
             </section>
             <section id="zipper-hoodie">
-              <ZipperSpecial></ZipperSpecial>
+              <ZipperSpecial initialItems={initialZipperItems}></ZipperSpecial>
             </section>
             <section id="sweatshirt">
-              <SweatshirtSpecial></SweatshirtSpecial>
+              <SweatshirtSpecial initialItems={initialSweatshirtItems}></SweatshirtSpecial>
             </section>
             <section id="kangaroo-hoodie">
-              <KangarooSpecial></KangarooSpecial>
+              <KangarooSpecial initialItems={initialKangarooItems}></KangarooSpecial>
             </section>
             <section id="new-section">
               <SectionShow
@@ -225,7 +232,7 @@ export default function Home() {
                 onLayoutChange={setLayout}
               />{' '}
             </section>
-            <Popular />
+            <Popular initialItems={initialPopularItems} />
             <section id="about">
               <WhyUs></WhyUs>
             </section>
@@ -250,4 +257,42 @@ export default function Home() {
       </CompanyContext.Provider>
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  const api = process.env.NEXT_PUBLIC_API;
+  const get = (path) =>
+    axios
+      .get(`${api}${path}`)
+      .then((r) => r.data)
+      .catch(() => null);
+
+  const [
+    newArrivals,
+    popularItems,
+    activePop,
+    zipperItems,
+    kangarooItems,
+    sweatshirtItems,
+  ] = await Promise.all([
+    get('/admin/view-new-arrivals'),
+    get('/admin/view-popular-items'),
+    get('/admin/view-active-pop-up'),
+    get(`/admin/search-products?q=${encodeURIComponent('zipper hoodie')}`),
+    get(`/admin/search-products?q=${encodeURIComponent('kangaroo')}`),
+    get(`/admin/search-products?q=${encodeURIComponent('sweatshirt')}`),
+  ]);
+
+  return {
+    props: {
+      initialNewArrivals: (newArrivals || [])
+        .slice()
+        .sort((a, b) => a.serial - b.serial),
+      initialPopularItems: popularItems || [],
+      initialActivePop: activePop || null,
+      initialZipperItems: zipperItems || [],
+      initialKangarooItems: kangarooItems || [],
+      initialSweatshirtItems: sweatshirtItems || [],
+    },
+  };
 }

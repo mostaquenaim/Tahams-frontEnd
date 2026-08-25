@@ -4,8 +4,8 @@ import useSearch from '/Hooks/useSearch';
 import React from 'react';
 import { useRouter } from 'next/router';
 
-const SweatshirtSpecial = () => {
-  const { searchedItems, isPending } = useSearch('sweatshirt');
+const SweatshirtSpecial = ({ initialItems = null }) => {
+  const { searchedItems, isPending } = useSearch('sweatshirt', initialItems);
   const router = useRouter();
 
   const DISPLAY_LIMIT = 16;

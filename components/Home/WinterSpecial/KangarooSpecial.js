@@ -4,8 +4,8 @@ import useSearch from '/Hooks/useSearch';
 import React from 'react';
 import { useRouter } from 'next/router';
 
-const KangarooSpecial = () => {
-  const { searchedItems, isPending } = useSearch('kangaroo');
+const KangarooSpecial = ({ initialItems = null }) => {
+  const { searchedItems, isPending } = useSearch('kangaroo', initialItems);
   const router = useRouter();
   //   console.log(searchedItems,'searchedItems');
 

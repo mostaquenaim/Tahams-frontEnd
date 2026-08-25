@@ -4,8 +4,8 @@ import useSearch from '/Hooks/useSearch';
 import React from 'react';
 import { useRouter } from 'next/router';
 
-const ZipperSpecial = () => {
-  const { searchedItems, isPending } = useSearch('zipper hoodie');
+const ZipperSpecial = ({ initialItems = null }) => {
+  const { searchedItems, isPending } = useSearch('zipper hoodie', initialItems);
   const router = useRouter();
   //   console.log(searchedItems,'searchedItems');
 
