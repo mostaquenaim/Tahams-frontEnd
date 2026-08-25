@@ -36,9 +36,9 @@ const ShowOrders = () => {
             <Head>
                 <title>My Orders - Tahams</title>
             </Head>
-            <div className='min-h-screen bg-gray-100 p-8 pt-20 lg:pt-40'>
-                <h1 className='text-3xl font-bold text-center mb-8'>Orders</h1>
-                <div className='container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            <div className='min-h-screen bg-gray-100 p-8 pt-60 lg:pt-60'>
+                <h1 className='text-3xl font-bold text-center mb-4'>Orders</h1>
+                <div className='container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center'>
                     {loading ? (
                         <Loading />
                     ) : groupedOrdersArray.length > 0 ? (
@@ -46,7 +46,7 @@ const ShowOrders = () => {
                             <ShowOrderComp group={group} idx={index} cardBtnStyle={cardBtnStyle} />
                         ))
                     ) : (
-                        <p className='text-center text-gray-600'>No orders found.</p>
+                        <p className='text-center text-gray-600 col-span-full'>No orders found.</p>
                     )}
                 </div>
             </div>

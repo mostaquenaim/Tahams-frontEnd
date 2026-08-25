@@ -61,7 +61,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 p-4 lg:p-8 pt-20 lg:pt-40">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="mb-8">
+          <div className="mb-8 mt-28 sm:mt-20">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
@@ -245,7 +245,7 @@ const Dashboard = () => {
                   <div className="text-center py-8">
                     <FaBox className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No orders yet</p>
-                    <Link href="/products">
+                    <Link href="/">
                       <span className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold">
                         Start Shopping
                         <FiArrowRight className="w-4 h-4" />
