@@ -33,7 +33,7 @@ const NavBarCompRe = () => {
   const router = useRouter();
   const { user, logOut, loading: authLoading } = useContext(AuthContext);
   const [categories, , isPending] = useLoadCats();
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext); 
+  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext);
 
   // State
   const [searchBtn, setSearchBtn] = useState(false);
@@ -69,6 +69,10 @@ const NavBarCompRe = () => {
       }
     };
   }, [searchTimeout]);
+
+  useEffect(() => {
+    router.prefetch('/search-product');
+  }, [router]);
 
   // Handlers
   const handleLogout = useCallback(async () => {

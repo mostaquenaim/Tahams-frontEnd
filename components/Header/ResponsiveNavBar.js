@@ -5,7 +5,7 @@ import {
   AiOutlineShoppingCart,
 } from 'react-icons/ai';
 import LeftDrawer from '../Drawers/LeftDrawer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import PromoBannerCarousel from '../Swiper/PromotionalBanner';
@@ -26,6 +26,10 @@ const ResponsiveNavBar = ({
   const [searchedProducts, setSearchedProducts] = useState([]);
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
+
+  useEffect(() => {
+  router.prefetch('/search-product');
+}, [router]);
 
   const handleSearch = () => {
     fnc(!btn);
@@ -54,6 +58,12 @@ const ResponsiveNavBar = ({
     fnc(!btn);
     router.push(`/products/details/${id}`);
   };
+
+  const handleKeyPress = (e) => {
+  if (e.key === 'Enter') {
+    handleSearch();
+  }
+};
 
   return (
     <div>
@@ -122,6 +132,7 @@ const ResponsiveNavBar = ({
               placeholder="Search"
               value={searchInput}
               onChange={(e) => handleSearchInput(e)}
+              onKeyDown={handleKeyPress}
             />
             {/* Search Results Dropdown with Image */}
             {searchInput && searchedProducts.length > 0 && (
