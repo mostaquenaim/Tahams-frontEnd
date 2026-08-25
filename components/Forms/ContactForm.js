@@ -19,7 +19,7 @@ const ContactForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Your Name
+            Your Name *
           </label>
           <input
             type="text"
@@ -33,7 +33,7 @@ const ContactForm = () => {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Your Email
+            Your Email *
           </label>
           <input
             type="email"
@@ -48,7 +48,7 @@ const ContactForm = () => {
 
         <div>
           <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-            Your Message
+            Your Message *
           </label>
           <textarea
             name="message"

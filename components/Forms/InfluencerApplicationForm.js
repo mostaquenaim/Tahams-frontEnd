@@ -1,7 +1,7 @@
-// components/Forms/ArtistApplicationForm.js
+// components/Forms/InfluencerApplicationForm.js
 import { useForm, ValidationError } from '@formspree/react';
 
-const ArtistApplicationForm = () => {
+const InfluencerApplicationForm = () => {
   const [state, handleSubmit] = useForm(process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID);
 
   if (state.succeeded) {
@@ -46,21 +46,34 @@ const ArtistApplicationForm = () => {
 
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Portfolio Link
+          Social Media Handle *
         </label>
         <input
-          type="url"
-          name="portfolio"
+          type="text"
+          name="socialMediaHandle"
           className="w-full px-3 py-2 border rounded-lg"
-          placeholder="Enter your portfolio link"
+          placeholder="Enter your social media handle"
+          required
         />
-        <ValidationError prefix="Portfolio" field="portfolio" errors={state.errors} className="text-red-500 text-sm mt-1" />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          Audience Details *
+        </label>
+        <textarea
+          name="audienceDetails"
+          className="w-full px-3 py-2 border rounded-lg"
+          placeholder="Tell us about your audience"
+          rows="4"
+          required
+        ></textarea>
       </div>
 
       <button
         type="submit"
         disabled={state.submitting}
-        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+        className="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 disabled:opacity-50"
       >
         {state.submitting ? 'Submitting...' : 'Submit'}
       </button>
@@ -68,4 +81,4 @@ const ArtistApplicationForm = () => {
   );
 };
 
-export default ArtistApplicationForm;
+export default InfluencerApplicationForm;
