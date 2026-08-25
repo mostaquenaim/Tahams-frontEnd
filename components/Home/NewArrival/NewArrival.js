@@ -37,11 +37,11 @@ const NewArrival = ({ initialProducts = null }) => {
               ></div>
             ))
           : products.map((product, index) => (
-              <>
+              <React.Fragment key={product.id ?? index}>
                 {product.serial != 'discontinued' && (
-                  <ShowNewArrival key={index} ind={index} prop={product} />
+                  <ShowNewArrival ind={index} prop={product} />
                 )}
-              </>
+              </React.Fragment>
             ))}
       </div>
     </div>

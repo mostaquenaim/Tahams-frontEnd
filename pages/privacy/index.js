@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import ComingSoon from '../../components/ComingSoon';
+import PrivacyPolicy from '../../components/Legal/PrivacyPolicy';
 
 const Privacy = () => {
   return (
@@ -7,7 +7,7 @@ const Privacy = () => {
       <Head>
         <title>Privacy Policy - Tahams</title>
       </Head>
-      <ComingSoon pageTitle="Privacy Policy" />
+      <PrivacyPolicy />
     </>
   );
 };
