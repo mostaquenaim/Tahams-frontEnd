@@ -19,7 +19,7 @@ const InfluencerApplicationForm = () => {
     <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md">
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Name
+          Name *
         </label>
         <input
           type="text"
@@ -32,7 +32,7 @@ const InfluencerApplicationForm = () => {
 
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Email
+          Email *
         </label>
         <input
           type="email"
@@ -46,7 +46,7 @@ const InfluencerApplicationForm = () => {
 
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Social Media Handle
+          Social Media Handle *
         </label>
         <input
           type="text"
@@ -59,7 +59,7 @@ const InfluencerApplicationForm = () => {
 
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Audience Details
+          Audience Details *
         </label>
         <textarea
           name="audienceDetails"
