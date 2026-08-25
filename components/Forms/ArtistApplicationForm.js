@@ -19,7 +19,7 @@ const ArtistApplicationForm = () => {
     <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md">
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Name
+          Name *
         </label>
         <input
           type="text"
@@ -32,7 +32,7 @@ const ArtistApplicationForm = () => {
 
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
-          Email
+          Email *
         </label>
         <input
           type="email"
@@ -53,7 +53,6 @@ const ArtistApplicationForm = () => {
           name="portfolio"
           className="w-full px-3 py-2 border rounded-lg"
           placeholder="Enter your portfolio link"
-          required
         />
         <ValidationError prefix="Portfolio" field="portfolio" errors={state.errors} className="text-red-500 text-sm mt-1" />
       </div>
