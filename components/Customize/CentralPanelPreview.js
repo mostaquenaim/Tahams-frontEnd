@@ -330,7 +330,7 @@ const CentralPanelPreview = ({
                               },
                             })
                           }
-                          className="w-32 text-sm bg-white border border-gray-300 rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          className="w-32 text-sm bg-white border border-gray-300 rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none"
                           style={{
                             fontFamily: item.style.fontFamily || 'Arial',
                           }}
