@@ -118,6 +118,7 @@ const CustomizeYourTee = () => {
   const [printArea, setPrintArea] = useState();
   const [printWidth, setPrintWidth] = useState(180);
   const [printHeight, setPrintHeight] = useState(270);
+  const [printSizeOption, setPrintSizeOption] = useState('normal'); // 'normal' | 'large'
   const [isDoubleClicked, setIsDoubleClicked] = useState(false);
   const [isElementOutOfBounds, setIsElementOutOfBounds] = useState(false);
   const [textStyle, setTextStyle] = useState({
@@ -156,13 +157,23 @@ const CustomizeYourTee = () => {
   // set print width and height
   useEffect(() => {
     if (device === 'mobile') {
-      setPrintWidth(105);
-      setPrintHeight(162);
+      if (printSizeOption === 'large') {
+        setPrintWidth(120);
+        setPrintHeight(170);
+      } else {
+        setPrintWidth(105);
+        setPrintHeight(162);
+      }
     } else {
-      setPrintWidth(180);
-      setPrintHeight(270);
+      if (printSizeOption === 'large') {
+        setPrintWidth(210);
+        setPrintHeight(300);
+      } else {
+        setPrintWidth(180);
+        setPrintHeight(270);
+      }
     }
-  }, [device]);
+  }, [device, printSizeOption]);
 
   // fonts fetch
   useEffect(() => {
@@ -218,35 +229,44 @@ const CustomizeYourTee = () => {
 
   // set print area
   useEffect(() => {
+    const isFrontLarge = viewSide === 'front' && printSizeOption === 'large';
+
     const area = {
       left:
         canvasRef.current && viewSide === 'front'
-          ? canvasRef.current.offsetWidth * 0.27
+          ? canvasRef.current.offsetWidth * (isFrontLarge ? 0.23 : 0.27)
           : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetWidth * 0.27
           : 80,
       top:
         canvasRef.current && viewSide === 'front'
-          ? canvasRef.current.offsetHeight * 0.25
+          ? canvasRef.current.offsetHeight * (isFrontLarge ? 0.19 : 0.25)
           : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetHeight * 0.2
           : 125,
       right:
         canvasRef.current && viewSide === 'front'
-          ? canvasRef.current.offsetWidth * 0.71
+          ? canvasRef.current.offsetWidth * (isFrontLarge ? 0.77 : 0.71)
           : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetWidth * 0.71
           : 320,
       bottom:
         canvasRef.current && viewSide === 'front'
-          ? canvasRef.current.offsetHeight * 0.78
+          ? canvasRef.current.offsetHeight * (isFrontLarge ? 0.84 : 0.78)
           : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetHeight * 0.74
           : 375,
     };
 
     setPrintArea(area);
-  }, [canvasRef, viewSide, device]);
+  }, [canvasRef, viewSide, device, printSizeOption]);
+
+  // large print only applies to the front view; reset when navigating away
+  useEffect(() => {
+    if (viewSide !== 'front') {
+      setPrintSizeOption('normal');
+    }
+  }, [viewSide]);
 
   // compute width/height from text + font
   const computeTextBox = (text, style, device, canvasRef) => {
@@ -1053,6 +1073,8 @@ const CustomizeYourTee = () => {
         fd.append('address', address);
         fd.append('size', selectedSize);
         fd.append('quantity', quantity);
+        // backend/DB may not have a column for this yet - sending it anyway so it's available once support is added
+        fd.append('printSize', printSizeOption);
         if (customerEmail) fd.append('email', customerEmail); // make sure server supports this
         if (instructions) fd.append('specialInstructions', instructions);
         fd.append('groupId', groupId); // server should store this to link both sides
@@ -1231,6 +1253,8 @@ const CustomizeYourTee = () => {
             isElementOutOfBounds={isElementOutOfBounds}
             printHeight={printHeight}
             printWidth={printWidth}
+            printSizeOption={printSizeOption}
+            setPrintSizeOption={setPrintSizeOption}
             //ref
             inputRefs={inputRefs}
             setIsDoubleClicked={setIsDoubleClicked}
