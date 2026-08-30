@@ -18,6 +18,7 @@ import {
   FiX,
   FiArrowUp,
   FiArrowDown,
+  FiFileText,
 } from 'react-icons/fi';
 import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
@@ -743,8 +744,15 @@ const ShowOrders = (data) => {
                         {/* ID */}
                         {columnConfig.id && (
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-bold text-gray-900">
+                            <span className="text-sm font-bold text-gray-900 inline-flex items-center gap-1.5">
                               #{group.history.id}
+                              {group.history?.notes && (
+                                <FiFileText
+                                  className="text-purple-500"
+                                  title={`Note: ${group.history.notes}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              )}
                             </span>
                           </td>
                         )}

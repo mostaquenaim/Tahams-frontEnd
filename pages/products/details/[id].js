@@ -237,6 +237,10 @@ const Product = ({ product }) => {
 
   // cart add handling
   const handleAddToCart = async () => {
+    if (!ifStock) {
+      return;
+    }
+
     if (
       product.pscs[0].category.category.category.name == 'Couples' &&
       (!selectedFemaleSize || !selectedSize)
@@ -303,6 +307,10 @@ const Product = ({ product }) => {
 
   // buy now handling
   const handleBuyNow = async () => {
+    if (!ifStock) {
+      return;
+    }
+
     if (
       product.pscs[0].category.category.category.name === 'Couples' &&
       (!selectedFemaleSize || !selectedSize)
@@ -585,23 +593,23 @@ const Product = ({ product }) => {
             <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
               <button
                 className={`btn btn-primary ${
-                  isAddedToCart || (userInfo && userInfo.role == 'admin')
+                  !ifStock || isAddedToCart || (userInfo && userInfo.role == 'admin')
                     ? 'btn-disabled'
                     : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'
                 }`}
                 onClick={handleAddToCart}
               >
-                <FaShoppingCart /> Add to Cart
+                <FaShoppingCart /> {ifStock ? 'Add to Cart' : 'Out of Stock'}
               </button>
               <button
                 className={`btn btn-accent ${
-                  userInfo && userInfo.role == 'admin'
+                  !ifStock || (userInfo && userInfo.role == 'admin')
                     ? 'btn-disabled'
                     : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'
                 }`}
                 onClick={handleBuyNow}
               >
-                🛍️ Buy Now
+                {ifStock ? '🛍️ Buy Now' : 'Out of Stock'}
               </button>
             </div>
 
