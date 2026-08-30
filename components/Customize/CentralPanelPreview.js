@@ -213,7 +213,7 @@ const CentralPanelPreview = ({
 
             {/* Dropdown list of colors */}
             {expanded && (
-              <div className="absolute mt-2 flex flex-col gap-2 bg-white rounded-lg shadow-lg border z-10">
+              <div className="absolute mt-2 flex flex-col gap-2 bg-white rounded-lg shadow-lg border z-[1]">
                 {tshirtColors.map((colorOption) => (
                   <button
                     key={colorOption.color}
@@ -571,7 +571,7 @@ const CentralPanelPreview = ({
             {/* Design Elements with Clipping */}
             {elements[viewSide].map((element) => {
               return (
-                <div key={element.id} className="relative">
+                <div key={element.id} className="relative z-[1]">
                   {/* out of print range warning  */}
                   <div className="absolute right-0">
                     {isElementOutOfBounds && (
@@ -632,13 +632,12 @@ const CentralPanelPreview = ({
                     onDoubleClick={() => setEditingId(element.id)}
                   >
                     {/* Print area clipping mask */}
-                    <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute inset-0 overflow-hidden z-[1]">
                       {element.type === 'text' ? (
                         editingId === element.id ? (
                           <input
                             type="text"
                             value={element.content}
-                            placeholder="Enter text..."
                             onChange={(e) =>
                               updateElement(element.id, {
                                 content: e.target.value,
@@ -697,7 +696,7 @@ const CentralPanelPreview = ({
                   {/* Control Handles for Selected Element */}
                   {selectedElement === element.id && (
                     <div
-                      className="absolute pointer-events-none z-20"
+                      className="absolute pointer-events-none z-[1]"
                       style={{
                         left: element.x - 4,
                         top: element.y - 4,
