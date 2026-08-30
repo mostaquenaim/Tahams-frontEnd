@@ -7,7 +7,7 @@ import {
   ShirtIcon,
   X,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { IoIosResize } from 'react-icons/io';
 
 const CentralPanelPreview = ({
@@ -55,9 +55,12 @@ const CentralPanelPreview = ({
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [fillColor, setFillColor] = useState('fill-[#000000]');
+  const [previewColor, setPreviewColor] = useState(null);
+  const colorPickerRef = useRef(null);
   // console.log(selectedColor.color, 'dcdsd');
 
   const [textFieldBlink, setTextFieldBlink] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   // const [isEditing, setIsEditing] = useState({
   //   id: 0,
   // });
@@ -70,6 +73,22 @@ const CentralPanelPreview = ({
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
+
+  useEffect(() => {
+    if (!expanded) return;
+
+    const handleClickOutside = (e) => {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(e.target)
+      ) {
+        setExpanded(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [expanded]);
 
   // Function to check if rotation is near snap angles and show lines
   const updateRotationSnapLines = (
@@ -150,8 +169,8 @@ const CentralPanelPreview = ({
     <div className="lg:col-span-6">
       <div className={panelStyle}>
         {/* heading and switch sides  */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className={headingTitle}>Design Preview</h2>
+        <div className="flex justify-between items-center mb-5">
+          <h2 className={`${headingTitle} !mb-0`}>Design Preview</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() =>
@@ -171,7 +190,7 @@ const CentralPanelPreview = ({
         {/* elements */}
         <div className="flex flex-wrap gap-5 m-3 justify-start">
           {/* select color */}
-          <div className="relative">
+          <div className="relative" ref={colorPickerRef}>
             {/* Selected color (acts as toggle) */}
             <button
               onClick={() => setExpanded(!expanded)}
@@ -180,7 +199,6 @@ const CentralPanelPreview = ({
                   ? 'border-gray-400'
                   : 'border-black shadow-md scale-110 ring-2 ring-gray-300'
               }`}
-              // style={{ backgroundColor: selectedColor.color }}
               aria-label={`Selected ${selectedColor.name}`}
               title={selectedColor.name}
             >
@@ -191,15 +209,11 @@ const CentralPanelPreview = ({
                 }`}
                 style={{ fill: selectedColor.color.toLowerCase() }}
               />
-              {/* <div
-                className="h-5 w-5 rounded-full"
-                style={{ backgroundColor: selectedColor.color.toLowerCase() }}
-              ></div> */}
             </button>
 
             {/* Dropdown list of colors */}
             {expanded && (
-              <div className="absolute mt-2 flex flex-col gap-2 z-10 bg-white rounded-lg shadow-lg border ">
+              <div className="absolute mt-2 flex flex-col gap-2 bg-white rounded-lg shadow-lg border z-[1]">
                 {tshirtColors.map((colorOption) => (
                   <button
                     key={colorOption.color}
@@ -207,6 +221,8 @@ const CentralPanelPreview = ({
                       setSelectedColor(colorOption);
                       setExpanded(false); // collapse after selecting
                     }}
+                    onMouseEnter={() => setPreviewColor(colorOption)}
+                    onMouseLeave={() => setPreviewColor(null)}
                     className={`w-12 h-12 rounded-lg border-2 transition-all hover:scale-110 focus:outline-none ${
                       selectedColor.color === colorOption.color
                         ? 'border-black shadow-md scale-110 ring-2 ring-gray-300'
@@ -460,7 +476,7 @@ const CentralPanelPreview = ({
               maxWidth: device === 'mobile' ? '240px' : '400px',
               height: 'calc(100vw * 1.25)', // 5:4 aspect ratio
               maxHeight: device === 'mobile' ? '300px' : '500px',
-              backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
+              backgroundImage: `url(${(previewColor || selectedColor).previewImages[viewSide]})`,
               backgroundSize: 'cover',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
@@ -555,7 +571,7 @@ const CentralPanelPreview = ({
             {/* Design Elements with Clipping */}
             {elements[viewSide].map((element) => {
               return (
-                <div key={element.id} className="relative">
+                <div key={element.id} className="relative z-[1]">
                   {/* out of print range warning  */}
                   <div className="absolute right-0">
                     {isElementOutOfBounds && (
@@ -613,43 +629,59 @@ const CentralPanelPreview = ({
                     onClick={(e) => handleElementClick(element, e)}
                     onMouseDown={(e) => handleElementStart(e, element)}
                     onTouchStart={(e) => handleElementStart(e, element)}
-                    onDoubleClick={() => setIsDoubleClicked(true)}
+                    onDoubleClick={() => setEditingId(element.id)}
                   >
                     {/* Print area clipping mask */}
-                    <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute inset-0 overflow-hidden z-[1]">
                       {element.type === 'text' ? (
-                        <div
-                          // onDoubleClick={handleDoubleClick}
-                          style={{
-                            fontSize: element.style.fontSize,
-                            color: element.style.color,
-                            fontWeight: element.style.fontWeight,
-                            fontFamily: element.style.fontFamily,
-                            whiteSpace: 'nowrap',
-                            userSelect: 'none',
-                            lineHeight: '1',
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {/* {isEditing.id === element.id ? (
-                            <input
-                              type="text"
-                              value={element.content}
-                              onChange={(e) =>
-                                updateElement(element.id, {
-                                  content: e.target.value,
-                                })
-                              }
-                              className={`flex-1 min-w-0 text-sm border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
-                              placeholder="Enter text content..."
-                            />
-                          ) : ( */}
-                          {element.content}
-                          {/* )} */}
-                        </div>
+                        editingId === element.id ? (
+                          <input
+                            type="text"
+                            value={element.content}
+                            onChange={(e) =>
+                              updateElement(element.id, {
+                                content: e.target.value,
+                              })
+                            }
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onBlur={() => setEditingId(null)}
+                            autoFocus
+                            style={{
+                              fontSize: element.style.fontSize,
+                              color: element.style.color,
+                              fontWeight: element.style.fontWeight,
+                              fontFamily: element.style.fontFamily,
+                              lineHeight: '1',
+                              width: '100%',
+                              height: '100%',
+                              background: 'transparent',
+                              border: 'none',
+                              outline: 'none',
+                              padding: 0,
+                              margin: 0,
+                              cursor: 'text',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              fontSize: element.style.fontSize,
+                              color: element.style.color,
+                              fontWeight: element.style.fontWeight,
+                              fontFamily: element.style.fontFamily,
+                              whiteSpace: 'nowrap',
+                              userSelect: 'none',
+                              lineHeight: '1',
+                              width: '100%',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            {element.content}
+                          </div>
+                        )
                       ) : (
                         <img
                           src={element.content}
@@ -664,7 +696,7 @@ const CentralPanelPreview = ({
                   {/* Control Handles for Selected Element */}
                   {selectedElement === element.id && (
                     <div
-                      className="absolute pointer-events-none z-20"
+                      className="absolute pointer-events-none z-[1]"
                       style={{
                         left: element.x - 4,
                         top: element.y - 4,

@@ -121,13 +121,43 @@ const RightPanel = ({
                         })
                       }
                       className={inputStyle}
+                      style={{
+                            fontFamily: element.style.fontFamily || 'Arial',
+                          }}
                     >
-                      <option value="Arial">Arial</option>
-                      <option value="Helvetica">Helvetica</option>
-                      <option value="Times New Roman">Times New Roman</option>
-                      <option value="Georgia">Georgia</option>
-                      <option value="Verdana">Verdana</option>
-                      <option value="Impact">Impact</option>
+                      <option value="Arial" style={{ fontFamily: 'Arial' }}>
+                            Arial
+                          </option>
+                          <option
+                            value="Helvetica"
+                            style={{ fontFamily: 'Helvetica' }}
+                          >
+                            Helvetica
+                          </option>
+                          <option
+                            value="Times New Roman"
+                            style={{ fontFamily: 'Times New Roman' }}
+                          >
+                            Times New Roman
+                          </option>
+                          <option
+                            value="Georgia"
+                            style={{ fontFamily: 'Georgia' }}
+                          >
+                            Georgia
+                          </option>
+                          <option
+                            value="Verdana"
+                            style={{ fontFamily: 'Verdana' }}
+                          >
+                            Verdana
+                          </option>
+                          <option
+                            value="Impact"
+                            style={{ fontFamily: 'Impact' }}
+                          >
+                            Impact
+                          </option>
                     </select>
                   </div>
                 </div>
