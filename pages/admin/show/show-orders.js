@@ -29,6 +29,7 @@ import { X } from 'lucide-react';
 const ShowOrders = (data) => {
   const { user, loading } = useContext(AuthContext);
   // console.log(sortedGroupedOrdersArray, 'sortedGroupedOrdersArray');
+  const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [addressFilter, setAddressFilter] = useState('all');
@@ -41,10 +42,35 @@ const ShowOrders = (data) => {
   const [fraudLoad, setFraudLoad] = useState(false);
   const [page, setPage] = useState(1);
   const limit = 50;
-  const { sortedGroupedOrdersArray, refetch, isPending } = useGroupOrders(
-    page,
-    limit,
-  );
+
+  // Debounce the search box so every keystroke doesn't fire a request —
+  // search/filter/status now run server-side against the full dataset,
+  // not just the rows on the current page.
+  useEffect(() => {
+    const timeout = setTimeout(() => setSearchTerm(searchInput), 400);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
+
+  // Any filter change should land the admin back on page 1 — staying on
+  // page 3 of a now-different result set is confusing.
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter, addressFilter, hideCancelled]);
+
+  const {
+    sortedGroupedOrdersArray,
+    total,
+    totalPages,
+    totalRevenue,
+    avgOrderValue,
+    refetch,
+    isPending,
+  } = useGroupOrders(page, limit, true, false, {
+    search: searchTerm,
+    status: statusFilter,
+    region: addressFilter,
+    hideCancelled,
+  });
 
   // Sorting state
   const [sortConfig, setSortConfig] = useState({
@@ -52,27 +78,7 @@ const ShowOrders = (data) => {
     direction: 'asc',
   });
 
-  let filteredOrders = sortedGroupedOrdersArray.filter((order) => {
-    const matchesSearch =
-      order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.history?.phone_no?.includes(searchTerm) ||
-      order.orders.some((o) =>
-        o.product.name.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-
-    const matchesStatus =
-      (statusFilter === 'all' ||
-        order.history?.deliveryStatus.name.toLowerCase() ===
-          statusFilter.toLowerCase()) &&
-      (addressFilter === 'all' ||
-        order.history?.region.toLowerCase() === addressFilter.toLowerCase());
-
-    const notCancelled =
-      !hideCancelled ||
-      order.history?.deliveryStatus?.name?.toLowerCase() !== 'cancelled';
-
-    return matchesSearch && matchesStatus && notCancelled;
-  });
+  const filteredOrders = sortedGroupedOrdersArray;
 
   // column configuration
   const [columnConfig, setColumnConfig] = useState({
@@ -170,11 +176,6 @@ const ShowOrders = (data) => {
 
     return sortableOrders;
   }, [filteredOrders, sortConfig]);
-
-  const totalOrderedPrice = sortedOrders.reduce(
-    (sum, order) => sum + (order?.totalPrice || 0),
-    0,
-  );
 
   // Sort icon component
   const SortIcon = ({ columnKey }) => {
@@ -307,17 +308,25 @@ const ShowOrders = (data) => {
     router.push(`show-order-details/${id}`);
   };
 
-  const getStatusColor = (statusId) => {
-    if (statusId > 6) return 'bg-red-50 border-red-200';
-    if (statusId === 6) return 'bg-emerald-50 border-emerald-200';
-    return 'bg-amber-50 border-amber-200';
-  };
+  // Courier slugs that mean the order failed/was cancelled — checked
+  // case-insensitively so "Cancelled", "cancelled", "Pickup_Cancelled" etc.
+  // all resolve the same way instead of only one exact string matching.
+  const FAILED_COURIER_SLUGS = ['cancelled', 'pickup_cancelled', 'returned', 'return'];
 
-  const getStatusBadgeColor = (statusId) => {
-    if (statusId > 6 || statusId === 'Pickup_Cancelled')
-      return 'bg-red-100 text-red-700 border-red-200';
-    if (statusId === 6 || statusId == 'Delivered')
-      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+  const getStatusBadgeColor = (history) => {
+    const slug = history?.courierInfo?.order_status_slug?.toLowerCase();
+
+    if (slug) {
+      if (FAILED_COURIER_SLUGS.includes(slug))
+        return 'bg-red-100 text-red-700 border-red-200';
+      if (slug === 'delivered')
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      return 'bg-amber-100 text-amber-700 border-amber-200';
+    }
+
+    const statusId = history?.deliveryStatus?.id;
+    if (statusId > 6) return 'bg-red-100 text-red-700 border-red-200';
+    if (statusId === 6) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     return 'bg-amber-100 text-amber-700 border-amber-200';
   };
 
@@ -356,7 +365,7 @@ const ShowOrders = (data) => {
                     Total Orders
                   </p>
                   <p className="text-3xl font-bold text-gray-900">
-                    {sortedOrders.length}
+                    {total.toLocaleString()}
                   </p>
                 </div>
                 <div className="p-3 bg-blue-50 rounded-xl">
@@ -377,7 +386,7 @@ const ShowOrders = (data) => {
                     Total Revenue
                   </p>
                   <p className="text-3xl font-bold text-gray-900">
-                    ৳{totalOrderedPrice.toLocaleString()}
+                    ৳{Math.round(totalRevenue).toLocaleString()}
                   </p>
                 </div>
                 <div className="p-3 bg-emerald-50 rounded-xl">
@@ -410,12 +419,7 @@ const ShowOrders = (data) => {
                     Avg. Order Value
                   </p>
                   <p className="text-3xl font-bold text-gray-900">
-                    ৳
-                    {sortedOrders.length > 0
-                      ? Math.round(
-                          totalOrderedPrice / sortedOrders.length,
-                        ).toLocaleString()
-                      : 0}
+                    ৳{Math.round(avgOrderValue).toLocaleString()}
                   </p>
                 </div>
                 <div className="p-3 bg-purple-50 rounded-xl">
@@ -447,8 +451,8 @@ const ShowOrders = (data) => {
                   type="text"
                   placeholder="Search by customer, phone, or product..."
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                 />
               </div>
 
@@ -836,9 +840,7 @@ const ShowOrders = (data) => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border ${getStatusBadgeColor(
-                                group.history?.courierInfo
-                                  ? group.history.courierInfo.order_status_slug
-                                  : group.history.deliveryStatus.id,
+                                group.history,
                               )}`}
                             >
                               {group.history?.courierInfo
@@ -939,17 +941,20 @@ const ShowOrders = (data) => {
       <div className="flex items-center justify-center gap-4 py-6">
         <button
           disabled={page === 1}
-          onClick={() => setPage(page - 1)}
+          onClick={() => setPage((p) => p - 1)}
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-40"
         >
           Previous
         </button>
 
-        <span className="text-sm text-gray-700">Page {page}</span>
+        <span className="text-sm text-gray-700">
+          Page {page} of {Math.max(totalPages, 1)} &middot; {total.toLocaleString()} orders
+        </span>
 
         <button
-          onClick={() => setPage(page + 1)}
-          className="px-4 py-2 bg-gray-200 rounded"
+          disabled={page >= totalPages}
+          onClick={() => setPage((p) => p + 1)}
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-40"
         >
           Next
         </button>
