@@ -365,7 +365,7 @@ const Product = ({ product }) => {
       <Head>
         <title>{product.name}</title>
       </Head>
-      <div className="container mx-auto p-4 min-h-screen pt-40 lg:pt-56 pb-10">
+      <div className="max-w-7xl mx-auto p-4 min-h-screen pt-48 lg:pt-56 pb-10">
         <div className="flex flex-col md:flex-row">
           {/* Product Image */}
           <div className="md:w-1/2">
@@ -434,7 +434,7 @@ const Product = ({ product }) => {
           </div>
 
           {/* Product Details */}
-          <div className="md:w-1/2 p-4">
+          <div className="md:w-1/2 ">
             <h1 className="text-2xl font-bold mb-2">{name}</h1>
 
             {/* Wishlist Icon */}
@@ -504,7 +504,7 @@ const Product = ({ product }) => {
               <div className="mb-4">
                 <p className="text-gray-600 font-semibold">Color:</p>
                 <div
-                  className="p-5 w-32 rounded-full text-center border-black border-2"
+                  className="p-3 w-24 rounded-full text-center border-black border-1"
                   style={{ backgroundColor: color.colorCode }}
                 >
                   <span
