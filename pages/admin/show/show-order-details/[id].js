@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Loading from '../../../../components/Loading';
 import Image from 'next/image';
@@ -22,6 +22,7 @@ import {
   FaPhone,
   FaCreditCard,
   FaReceipt,
+  FaStickyNote,
 } from 'react-icons/fa';
 import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
 import Modal from 'react-modal';
@@ -40,6 +41,26 @@ const ShowOrderDetails = () => {
   const [isConfirmationMessageBoxOpen, setIsConfirmationMessageBoxOpen] =
     useState(false);
   const [message, setMessage] = useState('');
+
+  // Per-order notes shared with the orders list page — same localStorage
+  // key/structure (an object keyed by order id) so both pages stay in sync.
+  const ORDER_NOTES_STORAGE_KEY = 'admin_order_notes';
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [hasNote, setHasNote] = useState(false);
+
+  const history = group?.[0]?.history;
+
+  useEffect(() => {
+    if (!history?.id) return;
+    try {
+      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
+      const notes = stored ? JSON.parse(stored) : {};
+      setHasNote(Boolean(notes[history.id] && notes[history.id].trim()));
+    } catch (error) {
+      console.error('Failed to load order notes from localStorage:', error);
+    }
+  }, [history?.id]);
 
   // Filtered Order Details
   // const group = orders.filter((order) => order.history?.id == id);
@@ -61,7 +82,6 @@ const ShowOrderDetails = () => {
   }
 
   const customer = group && group[0]?.customer;
-  const history = group && group[0]?.history;
 
   // Modal handlers
   const openMessageBox = () => setIsConfirmationMessageBoxOpen(true);
@@ -69,6 +89,33 @@ const ShowOrderDetails = () => {
 
   const openConfirmationModal = () => setIsConfirmationModalOpen(true);
   const closeConfirmationModal = () => setIsConfirmationModalOpen(false);
+
+  // Note modal handlers
+  const openNoteModal = () => {
+    try {
+      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
+      const notes = stored ? JSON.parse(stored) : {};
+      setNoteText(notes[history?.id] || '');
+    } catch (error) {
+      console.error('Failed to load order notes from localStorage:', error);
+      setNoteText('');
+    }
+    setIsNoteModalOpen(true);
+  };
+  const closeNoteModal = () => setIsNoteModalOpen(false);
+
+  const handleSaveNote = () => {
+    try {
+      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
+      const notes = stored ? JSON.parse(stored) : {};
+      notes[history?.id] = noteText;
+      localStorage.setItem(ORDER_NOTES_STORAGE_KEY, JSON.stringify(notes));
+      setHasNote(Boolean(noteText && noteText.trim()));
+    } catch (error) {
+      console.error('Failed to save order note to localStorage:', error);
+    }
+    closeNoteModal();
+  };
 
   // Handle delete with confirmation
   const handleDelete = async () => {
@@ -176,6 +223,13 @@ const ShowOrderDetails = () => {
                     >
                       <FaEnvelope className="w-4 h-4" />
                       Send Message
+                    </button>
+                    <button
+                      onClick={openNoteModal}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                    >
+                      <FaStickyNote className="w-4 h-4" />
+                      {hasNote ? 'Edit Note' : 'Add Note'}
                     </button>
                     <button
                       onClick={openConfirmationModal}
@@ -528,6 +582,57 @@ const ShowOrderDetails = () => {
                         className="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
                       >
                         Send Message
+                      </button>
+                    </div>
+                  </motion.div>
+                </Modal>
+              )}
+            </AnimatePresence>
+
+            {/* Note Modal */}
+            <AnimatePresence>
+              {isNoteModalOpen && (
+                <Modal
+                  isOpen={isNoteModalOpen}
+                  onRequestClose={closeNoteModal}
+                  contentLabel={hasNote ? 'Edit Note' : 'Add Note'}
+                  ariaHideApp={false}
+                  className="fixed inset-0 flex items-center justify-center p-4 z-50"
+                  overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8"
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2.5 bg-amber-100 rounded-lg">
+                        <FaStickyNote className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {hasNote ? 'Edit Note' : 'Add Note'}
+                      </h2>
+                    </div>
+                    <textarea
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none text-gray-900"
+                      placeholder="e.g. didn't answer call, cancelled - reason..."
+                      rows="6"
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                    />
+                    <div className="flex gap-3 mt-6">
+                      <button
+                        onClick={closeNoteModal}
+                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveNote}
+                        className="flex-1 px-4 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors"
+                      >
+                        Save
                       </button>
                     </div>
                   </motion.div>

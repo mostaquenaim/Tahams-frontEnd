@@ -24,7 +24,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { FaTimes } from 'react-icons/fa';
 import { useRouter } from 'next/router';
-import { X } from 'lucide-react';
+import { X, StickyNote } from 'lucide-react';
 
 const ShowOrders = (data) => {
   const { user, loading } = useContext(AuthContext);
@@ -42,6 +42,60 @@ const ShowOrders = (data) => {
   const [fraudLoad, setFraudLoad] = useState(false);
   const [page, setPage] = useState(1);
   const limit = 50;
+
+  // Per-order notes (e.g. "customer didn't pick up call", "cancelled - reason")
+  // are kept purely client-side in localStorage, keyed by order id. This page
+  // only reads them for display — they're authored/edited on the order
+  // details page, which writes to the same key/structure.
+  const ORDER_NOTES_STORAGE_KEY = 'admin_order_notes';
+  const [orderNotes, setOrderNotes] = useState({});
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
+      if (stored) setOrderNotes(JSON.parse(stored));
+    } catch (error) {
+      console.error('Failed to load order notes from localStorage:', error);
+    }
+  }, []);
+
+  // Only one note popover is open at a time, tracked by order id.
+  const [openNoteId, setOpenNoteId] = useState(null);
+  const noteButtonRefs = useRef({});
+  const [notePosition, setNotePosition] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (openNoteId === null) return;
+
+    const updatePosition = () => {
+      const btn = noteButtonRefs.current[openNoteId];
+      if (!btn) return;
+
+      const rect = btn.getBoundingClientRect();
+      const scrollContainer = document.querySelector('.overflow-x-auto');
+      const containerRect = scrollContainer?.getBoundingClientRect();
+
+      // button ta table-er visible area-r baire chole gele, popup bondho kore dao
+      if (
+        containerRect &&
+        (rect.left < containerRect.left || rect.right > containerRect.right)
+      ) {
+        setOpenNoteId(null);
+        return;
+      }
+
+      setNotePosition({ top: rect.bottom + 8, left: rect.left });
+    };
+
+    const scrollContainer = document.querySelector('.overflow-x-auto');
+    scrollContainer?.addEventListener('scroll', updatePosition);
+    window.addEventListener('scroll', updatePosition);
+
+    return () => {
+      scrollContainer?.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
+  }, [openNoteId]);
 
   // Debounce the search box so every keystroke doesn't fire a request —
   // search/filter/status now run server-side against the full dataset,
@@ -90,6 +144,7 @@ const ShowOrders = (data) => {
     payment: true,
     date: true,
     status: true,
+    notes: true,
     actions: true,
   });
 
@@ -237,6 +292,10 @@ const ShowOrders = (data) => {
       ...(columnConfig.status && {
         Status: order.history?.deliveryStatus.name,
       }),
+
+      ...(columnConfig.notes && {
+        Notes: orderNotes[order.history.id] || '',
+      }),
     }));
 
     if (type === 'csv') {
@@ -295,7 +354,9 @@ const ShowOrders = (data) => {
     if (!phone_no) return;
     try {
       setFraudLoad(true);
-      const res = await axiosPublic.post('admin/fraud-check', { phone: phone_no });
+      const res = await axiosPublic.post('admin/fraud-check', {
+        phone: phone_no,
+      });
       setFraudCheck(res.data.overall);
     } catch (error) {
       console.error('❌ Error fetching customer history:', error.message);
@@ -311,7 +372,12 @@ const ShowOrders = (data) => {
   // Courier slugs that mean the order failed/was cancelled — checked
   // case-insensitively so "Cancelled", "cancelled", "Pickup_Cancelled" etc.
   // all resolve the same way instead of only one exact string matching.
-  const FAILED_COURIER_SLUGS = ['cancelled', 'pickup_cancelled', 'returned', 'return'];
+  const FAILED_COURIER_SLUGS = [
+    'cancelled',
+    'pickup_cancelled',
+    'returned',
+    'return',
+  ];
 
   const getStatusBadgeColor = (history) => {
     const slug = history?.courierInfo?.order_status_slug?.toLowerCase();
@@ -326,7 +392,8 @@ const ShowOrders = (data) => {
 
     const statusId = history?.deliveryStatus?.id;
     if (statusId > 6) return 'bg-red-100 text-red-700 border-red-200';
-    if (statusId === 6) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    if (statusId === 6)
+      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     return 'bg-amber-100 text-amber-700 border-amber-200';
   };
 
@@ -698,6 +765,11 @@ const ShowOrders = (data) => {
                           </div>
                         </th>
                       )}
+                      {columnConfig.notes && (
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          Notes
+                        </th>
+                      )}
                       {columnConfig.actions && (
                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           Actions
@@ -723,21 +795,21 @@ const ShowOrders = (data) => {
                             'Delivered'
                             ? 'border-l-emerald-400 bg-sky-50 hover:bg-sky-100'
                             : group.history?.courierInfo &&
-                              group.history.courierInfo.order_status_slug ===
-                                'Pickup_Cancelled'
-                            ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
-                            : group.history.deliveryStatus.id === 6 ||
-                              (group.history?.courierInfo &&
                                 group.history.courierInfo.order_status_slug ===
-                                  'Delivered')
-                            ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
-                            : group.history.deliveryStatus.id > 6
-                            ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
-                            : group.history.isChecked
-                            ? group.history.deliveryStatus.id !== 1
-                              ? 'border-l-amber-400 bg-amber-50 hover:bg-amber-100/60'
-                              : 'border-l-amber-300 bg-amber-50 hover:bg-amber-100/40'
-                            : 'border-l-blue-300 bg-white hover:bg-blue-50/50'
+                                  'Pickup_Cancelled'
+                              ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
+                              : group.history.deliveryStatus.id === 6 ||
+                                  (group.history?.courierInfo &&
+                                    group.history.courierInfo
+                                      .order_status_slug === 'Delivered')
+                                ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
+                                : group.history.deliveryStatus.id > 6
+                                  ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
+                                  : group.history.isChecked
+                                    ? group.history.deliveryStatus.id !== 1
+                                      ? 'border-l-amber-400 bg-amber-50 hover:bg-amber-100/60'
+                                      : 'border-l-amber-300 bg-amber-50 hover:bg-amber-100/40'
+                                    : 'border-l-blue-300 bg-white hover:bg-blue-50/50'
                         }`}
                       >
                         {/* ID */}
@@ -850,6 +922,81 @@ const ShowOrders = (data) => {
                           </td>
                         )}
 
+                        {/* Notes */}
+                        {columnConfig.notes && (
+                          <td className="px-6 py-4">
+                            {(() => {
+                              const isNoteOpen =
+                                openNoteId === group.history.id;
+                              const noteText = orderNotes[group.history.id];
+                              return (
+                                <div
+                                  className="relative inline-block"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    ref={(el) =>
+                                      (noteButtonRefs.current[
+                                        group.history.id
+                                      ] = el)
+                                    }
+                                    onClick={() => {
+                                      if (!isNoteOpen) {
+                                        const rect =
+                                          noteButtonRefs.current[
+                                            group.history.id
+                                          ].getBoundingClientRect();
+                                        setNotePosition({
+                                          top: rect.bottom + 8,
+                                          left: rect.left,
+                                        });
+                                      }
+                                      setOpenNoteId(
+                                        isNoteOpen ? null : group.history.id,
+                                      );
+                                    }}
+                                    className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-colors ${
+                                      noteText
+                                        ? 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                                        : 'text-gray-400 bg-gray-50 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                    title="View note"
+                                  >
+                                    <StickyNote className="w-4 h-4" />
+                                  </button>
+
+                                  {isNoteOpen && (
+                                    <div
+                                      className="fixed w-64 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg p-3 z-50 text-sm text-gray-700 whitespace-pre-wrap break-words"
+                                      style={{
+                                        top: notePosition.top,
+                                        left: notePosition.left,
+                                      }}
+                                    >
+                                      <div className="flex justify-end mb-1">
+                                        <button
+                                          onClick={() => setOpenNoteId(null)}
+                                          className="text-gray-400 hover:text-gray-600"
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                      {noteText &&
+                                      noteText.trim().length > 0 ? (
+                                        noteText
+                                      ) : (
+                                        <span className="text-gray-400 italic">
+                                          No notes added
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </td>
+                        )}
+
                         {/* Actions */}
                         {columnConfig.actions && (
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -948,7 +1095,8 @@ const ShowOrders = (data) => {
         </button>
 
         <span className="text-sm text-gray-700">
-          Page {page} of {Math.max(totalPages, 1)} &middot; {total.toLocaleString()} orders
+          Page {page} of {Math.max(totalPages, 1)} &middot;{' '}
+          {total.toLocaleString()} orders
         </span>
 
         <button

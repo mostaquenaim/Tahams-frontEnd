@@ -18,6 +18,13 @@ import PeopleAlsoLike from '/components/Product/PeopleAlsoLike';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProductSize from '/components/Product/ProductSize';
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Zoom, Thumbs, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/zoom';
+import 'swiper/css/thumbs';
+import 'swiper/css/navigation';
+
 const Product = ({ product }) => {
   // console.log('product-test', product.productPictures);
   const [isAddedToWishlist, setAddedToWishlist] = useState(false);
@@ -80,10 +87,7 @@ const Product = ({ product }) => {
   };
 
   // set selected image
-  useEffect(() => {
-    // console.log(product && product.filename);
-    setSelectedImage(product && product.filename);
-  }, [product]);
+  const [thumbsSwiper, setThumbsSwiper] = useState(null);
 
   // view count
   useEffect(() => {
@@ -172,6 +176,14 @@ const Product = ({ product }) => {
     totalViews,
     color,
   } = product;
+
+  const images = [
+    `${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`,
+    ...(product.productPictures?.map(
+      (pp) => `${process.env.NEXT_PUBLIC_API}/admin/getimage/${pp.filename}`,
+    ) || []),
+  ];
+  const displayImages = images.slice(0, 6);
 
   const uniqueCategories = [
     ...new Map(product.pscs.map((p) => [p.category.id, p.category])).values(),
@@ -365,76 +377,91 @@ const Product = ({ product }) => {
       <Head>
         <title>{product.name}</title>
       </Head>
-      <div className="container mx-auto p-4 min-h-screen pt-40 lg:pt-56 pb-10">
-        <div className="flex flex-col md:flex-row">
+      <div className="max-w-7xl mx-auto p-4 min-h-screen pt-48 lg:pt-56 pb-10">
+        <div className="flex flex-col md:flex-row gap-5 sm:gap-0">
           {/* Product Image */}
           <div className="md:w-1/2">
-            {selectedImage ? (
-              <ImageZoom
-                // zoomPhoto={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${selectedImage}`}
-                photo={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${
-                  // product.thumbImage
-                  //   ? product.thumbImage
-                  //   :
-                  selectedImage
-                }`}
-              />
-            ) : (
-              <Loading />
-            )}
-            <div className="flex gap-4">
-              <input
-                type="radio"
-                id={`main-image`}
-                name="productImage"
-                value={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`}
-                className="hidden"
-                defaultChecked // Ensures that the first image is initially selected
-                onChange={() => setSelectedImage(filename)}
-              />
-              <label htmlFor={`main-image`} className="relative">
-                <img
-                  src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${
-                    product.thumbImage ? product.thumbImage : filename
-                  }`}
-                  alt={name}
-                  className="h-32 w-24 cursor-pointer"
-                />
-                {selectedImage === filename && (
-                  <div className="overlay bg-white opacity-50 absolute top-0 left-0 w-full h-full"></div>
-                )}
-              </label>
-              {product.productPictures.length > 0 &&
-                product.productPictures.map((pp, idx) => (
-                  <Fragment key={idx}>
-                    <input
-                      type="radio"
-                      id={`thumbnail-image-${idx}`}
-                      name="productImage"
-                      value={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${pp.filename}`}
-                      className="hidden"
-                      onChange={() => setSelectedImage(pp.filename)}
+            <Swiper
+              modules={[Zoom, Thumbs]}
+              zoom={{ maxRatio: 10 }}
+              thumbs={{
+                swiper:
+                  thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
+              }}
+              className="w-full h-72 md:h-96 md:w-80 lg:h-[600px] lg:w-[480px] rounded !mx-0 cursor-zoom-in"
+            >
+              {displayImages.map((img, idx) => (
+                <SwiperSlide key={idx}>
+                  <div className="swiper-zoom-container">
+                    <img
+                      src={img}
+                      alt={name}
+                      className="w-full h-full object-cover"
                     />
-                    <label
-                      htmlFor={`thumbnail-image-${idx}`}
-                      className="relative"
-                    >
-                      <img
-                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${pp.filename}`}
-                        alt={name}
-                        className="h-32 w-24 cursor-pointer"
-                      />
-                      {selectedImage === pp.filename && (
-                        <div className="overlay bg-white opacity-50 absolute top-0 left-0 w-full h-full"></div>
-                      )}
-                    </label>
-                  </Fragment>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            <div className="relative mt-4 w-full md:w-80 lg:w-[480px]">
+              <Swiper
+                onSwiper={setThumbsSwiper}
+                modules={[Thumbs, Navigation]}
+                navigation={{ nextEl: '.thumb-next', prevEl: '.thumb-prev' }}
+                spaceBetween={8}
+                slidesPerView="auto"
+                watchSlidesProgress={true}
+                className="px-8"
+              >
+                {displayImages.map((img, idx) => (
+                  <SwiperSlide
+                    key={idx}
+                    className="group !w-14 lg:!w-24 cursor-pointer"
+                  >
+                    <img
+                      src={img}
+                      alt={name}
+                      className="h-20 w-14 lg:h-32 lg:w-24 object-cover rounded opacity-60 group-[.swiper-slide-thumb-active]:opacity-100 transition-opacity"
+                    />
+                  </SwiperSlide>
                 ))}
+              </Swiper>
+
+              <button className="thumb-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md rounded-full p-1.5 hover:bg-gray-100 [&.swiper-button-disabled]:opacity-0 [&.swiper-button-disabled]:pointer-events-none transition-opacity">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              <button className="thumb-next absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md rounded-full p-1.5 hover:bg-gray-100 [&.swiper-button-disabled]:opacity-0 [&.swiper-button-disabled]:pointer-events-none transition-opacity">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
 
           {/* Product Details */}
-          <div className="md:w-1/2 p-4">
+          <div className="md:w-1/2 ">
             <h1 className="text-2xl font-bold mb-2">{name}</h1>
 
             {/* Wishlist Icon */}
@@ -469,7 +496,9 @@ const Product = ({ product }) => {
             <p className="text-green-600 text-lg mb-2">
               {discountPercentage > 0 ? (
                 <span>
-                  {parseInt((sellingPrice * (100 - discountPercentage)) / 100)}{' '}
+                  {parseInt(
+                    (sellingPrice * (100 - discountPercentage)) / 100,
+                  )}{' '}
                 </span>
               ) : (
                 <span>{sellingPrice} </span>
@@ -504,7 +533,7 @@ const Product = ({ product }) => {
               <div className="mb-4">
                 <p className="text-gray-600 font-semibold">Color:</p>
                 <div
-                  className="p-5 w-32 rounded-full text-center border-black border-2"
+                  className="p-3 w-24 rounded-full text-center border-black border-1"
                   style={{ backgroundColor: color.colorCode }}
                 >
                   <span
