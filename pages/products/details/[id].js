@@ -1,4 +1,4 @@
-import { Fragment, useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useEffect, useState, useRef  } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -48,6 +48,8 @@ const Product = ({ product }) => {
   const [customEmail, setCustomEmail] = useState('');
   const [showDiscountSuccess, setShowDiscountSuccess] = useState(false);
   const [discountEligible, setDiscountEligible] = useState(false);
+
+  const goToCartTimeoutRef = useRef(null);
 
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
@@ -306,9 +308,9 @@ const Product = ({ product }) => {
           setIsAddedToCart(false);
         }, 700);
 
-        setTimeout(() => {
-          setShowGotoCart(false);
-        }, 16000);
+        goToCartTimeoutRef.current = setTimeout(() => {
+  setShowGotoCart(false);
+}, 16000);
       }
     }
 
@@ -317,6 +319,18 @@ const Product = ({ product }) => {
       user_email: customEmail,
     });
   };
+
+  const handleCartBarMouseEnter = () => {
+  if (goToCartTimeoutRef.current) {
+    clearTimeout(goToCartTimeoutRef.current);
+  }
+};
+
+const handleCartBarMouseLeave = () => {
+  goToCartTimeoutRef.current = setTimeout(() => {
+    setShowGotoCart(false);
+  }, 16000);
+};
 
   // buy now handling
   const handleBuyNow = async () => {
@@ -679,6 +693,8 @@ const Product = ({ product }) => {
       {
         <Link
           href="/MyCart"
+          onMouseEnter={handleCartBarMouseEnter}
+  onMouseLeave={handleCartBarMouseLeave}
           className={`fixed bottom-0 left-0 w-full h-16 bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-3 transition-all duration-500 z-[60] shadow-2xl ${
             !showGotoCart
               ? 'translate-y-full opacity-0'
