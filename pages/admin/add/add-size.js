@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 import Head from 'next/head';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const AddSize = () => {
     const [sizeName, setSizeName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const axiosSecure = useAxiosSecure();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -21,25 +23,14 @@ const AddSize = () => {
         }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/add-size`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: sizeName }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to add size');
-            }
+            await axiosSecure.post('/admin/add-size', { name: sizeName });
 
             setSizeName('');
             setSuccess('Size added successfully');
         } catch (error) {
-            console.error('Error adding size:', error.message);
-            setError(error.message);
+            const message = error.response?.data?.message || 'Failed to add size';
+            console.error('Error adding size:', message);
+            setError(message);
         } finally {
             setLoading(false);
         }

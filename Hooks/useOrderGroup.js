@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import useAxiosPublic from './useAxiosPublic';
+import useAxiosSecure from './useAxiosSecure';
 
 const useOrderGroup = (historyId) => {
-  console.log('object-lok');
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const fetchOrderData = async () => {
-    const res = await axiosPublic.get(`/admin/order-group/${historyId}`);
-    console.log(res.data, 'res.data');
+    const res = await axiosSecure.get(`/admin/order-group/${historyId}`);
     return res.data;
   };
 

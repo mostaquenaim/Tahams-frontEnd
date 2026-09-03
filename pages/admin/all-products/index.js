@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import useProduct from '../../../Hooks/useProduct';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import Modal from 'react-modal';
 import {
   FiEdit2,
@@ -28,6 +29,7 @@ const ShowProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editedProducts, setEditedProducts] = useState({});
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [syncing, setSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -217,7 +219,7 @@ const ShowProducts = () => {
   const handleSyncViews = async () => {
     try {
       setSyncing(true);
-      const response = await axiosPublic.get('/admin/sync-view-count');
+      const response = await axiosSecure.get('/admin/sync-view-count');
     // console.log('Sync view count response:', response.data);
     } catch (error) {
       console.error('Error fetching sync view count:', error);
