@@ -30,7 +30,7 @@ const DISPLAY_CENTERS = [
   },
 ];
 
-const BuyingAddress = ({ data }) => {
+const BuyingAddress = ({ data, notes }) => {
   const {
     register,
     handleSubmit,
@@ -297,6 +297,7 @@ const BuyingAddress = ({ data }) => {
         deliveryFee: finalDeliveryFee,
         ...(dc && { isPickup: true, pickupCenter: dc.name }),
         ...(formData.facebookProfile && { facebookProfile: formData.facebookProfile }),
+        ...(notes?.trim() && { notes: notes.trim() }),
       };
 
       const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
@@ -718,7 +719,7 @@ const BuyingAddress = ({ data }) => {
             {deliveryFee > 0 && (
               <div className="mb-6 flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
                 <p className="text-sm text-gray-600 font-medium">Delivery Fee</p>
-                <p className="text-sm font-bold text-black">৳{deliveryFee}</p>
+                <p className="text-sm font-bold text-black">৳{deliveryFee.toLocaleString()}</p>
               </div>
             )}
           </>

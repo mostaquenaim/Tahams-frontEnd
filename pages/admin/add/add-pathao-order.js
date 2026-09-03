@@ -14,6 +14,7 @@ import {
 import { FaBangladeshiTakaSign } from 'react-icons/fa6';
 import toast from 'react-hot-toast';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 
 const AddPathaoOrder = () => {
   const [formData, setFormData] = useState({
@@ -97,6 +98,7 @@ const AddPathaoOrder = () => {
   };
 
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,72 +115,61 @@ const AddPathaoOrder = () => {
     };
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/admin/create-pathao-order`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderPayload),
-        },
+      const res = await axiosSecure.post(
+        '/admin/create-pathao-order',
+        orderPayload,
       );
 
-      const pathaoOrderData = await res.json();
-      // console.log(pathaoOrderData, 'pathaoOrderData');
+      const pathaoOrderData = res.data;
 
-      if (res.ok) {
-        toast.success('Order placed successfully!');
+      toast.success('Order placed successfully!');
 
-        // console.log(orderData,orderData.history.trackingToken,'orderData.history.trackingToken');
+      // Build courier details payload
+      const courierDetails = {
+        consignment_id: pathaoOrderData?.data?.consignment_id || null,
+        merchant_order_id: pathaoOrderData?.data.merchant_order_id,
+        order_status: pathaoOrderData?.data?.status || 'pending',
+        delivery_fee: pathaoOrderData?.data?.delivery_fee || 0,
+        courier_name: 'Pathao',
+        tracking_number: orderData.history.trackingToken || null,
+        recipient_name: orderPayload.recipient_name,
+        recipient_phone: orderPayload.recipient_phone,
+        delivery_address: orderPayload.recipient_address,
+      };
 
-        // Build courier details payload
-        const courierDetails = {
-          consignment_id: pathaoOrderData?.data?.consignment_id || null,
-          merchant_order_id: pathaoOrderData?.data.merchant_order_id,
-          order_status: pathaoOrderData?.data?.status || 'pending',
-          delivery_fee: pathaoOrderData?.data?.delivery_fee || 0,
-          courier_name: 'Pathao',
-          tracking_number: orderData.history.trackingToken || null,
-          recipient_name: orderPayload.recipient_name,
-          recipient_phone: orderPayload.recipient_phone,
-          delivery_address: orderPayload.recipient_address,
-        };
+      // Save courier info in DB
+      await axiosPublic.post(
+        `/admin/add-courier/${orderData?.history?.trackingToken}`,
+        courierDetails,
+        { headers: { 'Content-Type': 'application/json' } },
+      );
 
-        // Save courier info in DB
-        await axiosPublic.post(
-          `/admin/add-courier/${orderData?.history?.trackingToken}`,
-          courierDetails,
-          { headers: { 'Content-Type': 'application/json' } },
-        );
-
-        setFormData({
-          store_id: 31663,
-          merchant_order_id: '',
-          recipient_name: '',
-          recipient_phone: '',
-          recipient_address: '',
-          delivery_type: 48,
-          item_type: 2,
-          special_instruction: '',
-          item_quantity: 1,
-          item_weight: '0.5',
-          item_description: '',
-          amount_to_collect: 0,
-        });
-        // Clear localStorage after successful submission
-        localStorage.removeItem('pathaoHistory');
-        window.open(
-          'https://merchant.pathao.com/courier/orders/list',
-          '_blank',
-        );
-      } else {
-        alert(
-          'Failed to place order: ' +
-            (pathaoOrderData.message || 'Unknown error'),
-        );
-      }
+      setFormData({
+        store_id: 31663,
+        merchant_order_id: '',
+        recipient_name: '',
+        recipient_phone: '',
+        recipient_address: '',
+        delivery_type: 48,
+        item_type: 2,
+        special_instruction: '',
+        item_quantity: 1,
+        item_weight: '0.5',
+        item_description: '',
+        amount_to_collect: 0,
+      });
+      // Clear localStorage after successful submission
+      localStorage.removeItem('pathaoHistory');
+      window.open(
+        'https://merchant.pathao.com/courier/orders/list',
+        '_blank',
+      );
     } catch (err) {
       console.error(err);
-      alert('Failed to place order. Please try again.');
+      alert(
+        'Failed to place order: ' +
+          (err.response?.data?.message || 'Please try again.'),
+      );
     } finally {
       setLoading(false);
     }

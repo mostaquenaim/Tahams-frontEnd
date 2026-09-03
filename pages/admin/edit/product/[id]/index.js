@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import Loading from '../../../../../components/Loading';
 import useAxiosPublic from '../../../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../../../Hooks/useAxiosSecure';
 import { FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useLoadColors from '../../../../../Hooks/useLoadColors';
@@ -73,6 +74,7 @@ const EditProduct = ({ product }) => {
 
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
     const tempCats = new Set();
@@ -267,7 +269,7 @@ const EditProduct = ({ product }) => {
     formData.append('id', product.id);
 
     try {
-      const response = await axiosPublic.post(
+      const response = await axiosSecure.post(
         '/admin/update-product-pictures',
         formData,
         {

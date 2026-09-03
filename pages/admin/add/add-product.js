@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from '../../../components/Product/ProductFormComp';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import SelectionFormComp from '../../../components/Product/SelectionFormComp';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 import useLoadColors from '../../../Hooks/useLoadColors';
@@ -25,6 +26,7 @@ export default function AddProduct() {
   const [additionalImagesPreview, setAdditionalImagesPreview] = useState([]);
 
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const {
     register,
@@ -295,7 +297,7 @@ export default function AddProduct() {
     });
 
     try {
-      await axiosPublic.post('/admin/add-product-pictures', formData, {
+      await axiosSecure.post('/admin/add-product-pictures', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
