@@ -308,7 +308,7 @@ const Product = ({ product }) => {
 
         setTimeout(() => {
           setShowGotoCart(false);
-        }, 3000);
+        }, 16000);
       }
     }
 
@@ -545,7 +545,7 @@ const Product = ({ product }) => {
               <div className="mb-4">
                 <p className="text-gray-600 font-semibold">Color:</p>
                 <div
-                  className="p-3 w-24 rounded-full text-center border-black border-1"
+                  className="p-3 w-32 mt-1 rounded-full text-center border-black border-1"
                   style={{ backgroundColor: color.colorCode }}
                 >
                   <span
