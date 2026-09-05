@@ -5,7 +5,7 @@ import {
   AiOutlineShoppingCart,
 } from 'react-icons/ai';
 import LeftDrawer from '../Drawers/LeftDrawer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import useAxiosPublic from '/Hooks/useAxiosPublic';
 import PromoBannerCarousel from '../Swiper/PromotionalBanner';
@@ -30,6 +30,17 @@ const ResponsiveNavBar = ({
   useEffect(() => {
   router.prefetch('/search-product');
 }, [router]);
+
+const detailsRef = useRef(null);
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (detailsRef.current && !detailsRef.current.contains(e.target)) {
+      detailsRef.current.open = false;
+    }
+  };
+  document.addEventListener('click', handleClickOutside);
+  return () => document.removeEventListener('click', handleClickOutside);
+}, []);
 
   const handleSearch = () => {
     fnc(!btn);
@@ -101,7 +112,7 @@ const ResponsiveNavBar = ({
               </Link>
             </li>
             <li>
-              <details>
+              <details ref={detailsRef}>
                 <summary>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

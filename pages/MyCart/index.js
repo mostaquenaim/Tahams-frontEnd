@@ -141,8 +141,8 @@ const MyCart = () => {
         <title>My Cart - Tahams</title>
       </Head>
       <section className="pt-20 lg:pt-56 min-h-screen pb-10">
-        <div className="container mx-auto px-4">
-          <h1 className="font-semibold text-xl m-5">
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="font-semibold text-xl my-5">
             Select cart items to checkout
           </h1>
           {isLoading ? (

@@ -36,29 +36,19 @@ const ShowOrders = () => {
             <Head>
                 <title>My Orders - Tahams</title>
             </Head>
-            <div className='min-h-screen bg-gray-100 p-8 pt-60 lg:pt-60'>
+            <div className='min-h-screen bg-gray-100 p-8 pt-48 lg:pt-60'>
                 <h1 className='text-3xl font-bold text-center mb-4'>Orders</h1>
-                {loading ? (
-                    <Loading />
-                ) : !user ? (
-                    <div className='container mx-auto text-center text-gray-600'>
-                        <p>Log in to see your order history here.</p>
-                        <p className='mt-1'>
-                            Checked out as a guest? Use the tracking link from your order
-                            confirmation email or SMS to check that order&apos;s status.
-                        </p>
-                    </div>
-                ) : (
-                    <div className='container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center'>
-                        {groupedOrdersArray.length > 0 ? (
-                            groupedOrdersArray.map((group, index) => (
-                                <ShowOrderComp group={group} idx={index} cardBtnStyle={cardBtnStyle} />
-                            ))
-                        ) : (
-                            <p className='text-center text-gray-600 col-span-full'>No orders found.</p>
-                        )}
-                    </div>
-                )}
+                <div className='max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center'>
+                    {loading ? (
+                        <Loading />
+                    ) : groupedOrdersArray.length > 0 ? (
+                        groupedOrdersArray.map((group, index) => (
+                            <ShowOrderComp group={group} idx={index} cardBtnStyle={cardBtnStyle} />
+                        ))
+                    ) : (
+                        <p className='text-center text-gray-600 col-span-full'>No orders found.</p>
+                    )}
+                </div>
             </div>
         </>
     );

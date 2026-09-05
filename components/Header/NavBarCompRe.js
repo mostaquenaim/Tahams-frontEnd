@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useRef,
 } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -73,6 +74,17 @@ const NavBarCompRe = () => {
   useEffect(() => {
     router.prefetch('/search-product');
   }, [router]);
+
+  const detailsRef = useRef(null);
+  useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (detailsRef.current && !detailsRef.current.contains(e.target)) {
+      detailsRef.current.open = false;
+    }
+  };
+  document.addEventListener('click', handleClickOutside);
+  return () => document.removeEventListener('click', handleClickOutside);
+}, []);
 
   // Handlers
   const handleLogout = useCallback(async () => {
@@ -341,7 +353,7 @@ const NavBarCompRe = () => {
               </Link>
             </li>
             <li>
-              <details>
+              <details ref={detailsRef}>
                 <summary>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
