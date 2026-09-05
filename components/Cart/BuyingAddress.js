@@ -30,7 +30,7 @@ const DISPLAY_CENTERS = [
   },
 ];
 
-const BuyingAddress = ({ data }) => {
+const BuyingAddress = ({ data, notes }) => {
   const {
     register,
     handleSubmit,
@@ -107,11 +107,14 @@ const BuyingAddress = ({ data }) => {
 
   const fetchUserData = async () => {
     try {
-      const email =
-        user?.email ||
-        JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
-      if (!email) return;
-      const result = await axiosPublic.get(`admin/get-user-by-email/${email}`);
+      // Saved-address prefill needs proof of who's asking, which only a
+      // logged-in Firebase user can give - guests just type it in fresh.
+      if (!user) return;
+      const idToken = await user.getIdToken();
+      const result = await axiosPublic.get(
+        `admin/get-user-by-email/${user.email}`,
+        { headers: { Authorization: `Bearer ${idToken}` } },
+      );
       setUserData(result.data);
       reset({
         fullName: result.data?.name || '',
@@ -198,13 +201,13 @@ const BuyingAddress = ({ data }) => {
       region !== userData.region ||
       city !== userData.city ||
       address !== userData.address;
-    if (isAddressChanged && userData.id) {
-      await axiosPublic.put(`admin/update-user-address/${userData.id}`, {
-        name: formData.fullName,
-        region,
-        city,
-        address,
-      });
+    if (isAddressChanged && userData.id && user) {
+      const idToken = await user.getIdToken();
+      await axiosPublic.put(
+        `admin/update-user-address/${userData.id}`,
+        { name: formData.fullName, region, city, address },
+        { headers: { Authorization: `Bearer ${idToken}` } },
+      );
     }
   };
 
@@ -271,7 +274,7 @@ const BuyingAddress = ({ data }) => {
         deliveryCity !== userData.city ||
         deliveryAddress !== userData.address;
 
-      if (isAddressChanged) {
+      if (isAddressChanged && userData.id && user) {
         localStorage.setItem(
           'userAddress',
           JSON.stringify({
@@ -297,6 +300,7 @@ const BuyingAddress = ({ data }) => {
         deliveryFee: finalDeliveryFee,
         ...(dc && { isPickup: true, pickupCenter: dc.name }),
         ...(formData.facebookProfile && { facebookProfile: formData.facebookProfile }),
+        ...(notes?.trim() && { notes: notes.trim() }),
       };
 
       const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
@@ -718,7 +722,7 @@ const BuyingAddress = ({ data }) => {
             {deliveryFee > 0 && (
               <div className="mb-6 flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
                 <p className="text-sm text-gray-600 font-medium">Delivery Fee</p>
-                <p className="text-sm font-bold text-black">৳{deliveryFee}</p>
+                <p className="text-sm font-bold text-black">৳{deliveryFee.toLocaleString()}</p>
               </div>
             )}
           </>

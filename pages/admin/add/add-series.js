@@ -1,18 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 import Head from 'next/head';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const AddCategory = () => {
     const [categoryName, setCategoryName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-
-    const [token, setToken] = useState('')
-
-    useEffect(() => {
-        const at = localStorage.getItem('access_token');
-        setToken(at)
-    }, [])
+    const axiosSecure = useAxiosSecure();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -20,26 +15,14 @@ const AddCategory = () => {
         setSuccess('');
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/add-category`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ name: categoryName }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to add category');
-            }
+            await axiosSecure.post('/admin/add-category', { name: categoryName });
 
             setCategoryName('');
             setSuccess('Category added successfully');
         } catch (error) {
-            console.error('Error adding category:', error.message);
-            setError(error.message);
+            const message = error.response?.data?.message || 'Failed to add category';
+            console.error('Error adding category:', message);
+            setError(message);
         }
     };
 

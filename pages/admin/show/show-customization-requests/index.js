@@ -9,7 +9,7 @@ import useCustomizationReq from '/Hooks/useCustomizationReq';
 import Loading from '/components/Loading';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
-import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 import Swal from 'sweetalert2';
 import _ from 'lodash'; // install lodash if not already: npm i lodash
 import { FaCheck } from 'react-icons/fa';
@@ -135,11 +135,9 @@ const ShowCustomizationRequests = () => {
     { value: 'rejected', label: 'Rejected' },
   ];
 
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const handleDeleteCustomReq = async (id) => {
-    const token = localStorage.getItem('access_token');
-
     Swal.fire({
       title: 'Are you sure?',
       text: 'This action will permanently delete the customization request.',
@@ -151,11 +149,8 @@ const ShowCustomizationRequests = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await axiosPublic.delete(
+          const res = await axiosSecure.delete(
             `/admin/delete-customization-request/${id}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
           );
 
           Swal.fire(
@@ -176,17 +171,11 @@ const ShowCustomizationRequests = () => {
   };
 
   const handleCheckRequest = async (customization) => {
-    const token = localStorage.getItem('access_token');
     try {
-      const res = await axiosPublic.put(
+      const res = await axiosSecure.put(
         `/admin/update-customization-request/${customization.groupId}`,
         {
           isChecked: !customization.isChecked,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         },
       );
 

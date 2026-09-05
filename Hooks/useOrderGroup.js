@@ -1,20 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { useContext } from 'react';
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import useAxiosPublic from './useAxiosPublic';
+import useAxiosSecure from './useAxiosSecure';
 
 const useOrderGroup = (historyId) => {
-  console.log('object-lok');
-  const axiosPublic = useAxiosPublic();
-  const { user, loading } = useContext(AuthContext);
+  const axiosSecure = useAxiosSecure();
 
   const fetchOrderData = async () => {
-    const res = await axiosPublic.get(`/admin/order-group/${historyId}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
-    console.log(res.data, 'res.data');
+    const res = await axiosSecure.get(`/admin/order-group/${historyId}`);
     return res.data;
   };
 

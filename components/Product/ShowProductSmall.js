@@ -49,6 +49,8 @@ const ShowProductSmall = ({ item }) => {
   }, []);
 
   const handleAddToCart = async () => {
+    if (!ifStock) return;
+
     let customEmail = user?.email || '';
 
     if (!user) {
@@ -186,14 +188,15 @@ const ShowProductSmall = ({ item }) => {
           <div className="flex gap-1 justify-center items-center">
             <button
               className={`btn btn-xs ${
-                userInfo && userInfo.role == 'admin'
+                !ifStock || (userInfo && userInfo.role == 'admin')
                   ? 'btn-disabled'
                   : 'bg-black/90 hover:bg-black border-black border-1 text-white duration-300 hover:shadow-black'
               }`}
+              disabled={!ifStock || (userInfo && userInfo.role == 'admin')}
               onClick={handleAddToCart}
             >
               <ShoppingCart className="w-4 h-4 mr-1" />
-              Buy Now
+              {ifStock ? 'Buy Now' : 'Out of Stock'}
             </button>
           </div>
         </div>

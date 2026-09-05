@@ -141,8 +141,8 @@ const MyCart = () => {
         <title>My Cart - Tahams</title>
       </Head>
       <section className="pt-20 lg:pt-56 min-h-screen pb-10">
-        <div className="container mx-auto px-4">
-          <h1 className="font-semibold text-xl m-5">
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="font-semibold text-xl my-5">
             Select cart items to checkout
           </h1>
           {isLoading ? (
@@ -187,7 +187,8 @@ const MyCart = () => {
                   <div className="flex justify-between w-full">
                     <span className="font-bold">{item.Quantity} pcs</span>
                     <span className="font-bold text-green-600">
-                      {item.product.sellingPrice -
+                      {(
+                        item.product.sellingPrice -
                         parseInt(
                           (item.product.sellingPrice *
                             item.product.discountPercentage) /
@@ -197,14 +198,16 @@ const MyCart = () => {
                           (item.product.sellingPrice *
                             item.product.vatPercentage) /
                             100,
-                        )}{' '}
+                        )
+                      ).toLocaleString()}{' '}
                       BDT
                     </span>
                   </div>
                   <div className="w-full flex justify-between items-center">
                     <span className="font-semibold text-lg">
                       Total:{' '}
-                      {item.Quantity *
+                      {(
+                        item.Quantity *
                         parseInt(
                           item.product.sellingPrice -
                             (item.product.sellingPrice *
@@ -215,7 +218,8 @@ const MyCart = () => {
                                 item.product.vatPercentage) /
                                 100,
                             ),
-                        )}{' '}
+                        )
+                      ).toLocaleString()}{' '}
                       BDT
                     </span>
                   </div>

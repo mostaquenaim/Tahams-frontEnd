@@ -1,11 +1,13 @@
 import Head from 'next/head';
 import React, { useState } from 'react';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const AddPaymentMethod = () => {
     const [methodName, setMethodName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const axiosSecure = useAxiosSecure();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -20,25 +22,14 @@ const AddPaymentMethod = () => {
         }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/add-payment-method`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ fabricName: methodName }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to add fabric');
-            }
+            await axiosSecure.post('/admin/add-payment-method', { name: methodName });
 
             setMethodName('');
             setSuccess('Fabric added successfully');
         } catch (error) {
-            console.error('Error adding fabric:', error.message);
-            setError(error.message);
+            const message = error.response?.data?.message || 'Failed to add fabric';
+            console.error('Error adding fabric:', message);
+            setError(message);
         } finally {
             setLoading(false);
         }

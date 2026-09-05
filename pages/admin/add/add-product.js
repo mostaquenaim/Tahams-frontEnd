@@ -4,7 +4,7 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from '../../../components/Product/ProductFormComp';
-import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import SelectionFormComp from '../../../components/Product/SelectionFormComp';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 import useLoadColors from '../../../Hooks/useLoadColors';
@@ -24,7 +24,7 @@ export default function AddProduct() {
   const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
   const [additionalImagesPreview, setAdditionalImagesPreview] = useState([]);
 
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const {
     register,
@@ -41,12 +41,7 @@ export default function AddProduct() {
   const fabrics = useLoadFabrics();
   const sizes = useLoadSizes();
 
-  const [token, setToken] = useState('');
-
   useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-
     // Check for duplicate product data in localStorage
     const duplicateProductData = localStorage.getItem('duplicate_product_data');
     if (duplicateProductData) {
@@ -270,10 +265,9 @@ export default function AddProduct() {
     formData.append('longDescription', data.longDescription);
 
     try {
-      const response = await axiosPublic.post('/admin/add-product', formData, {
+      const response = await axiosSecure.post('/admin/add-product', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -295,7 +289,7 @@ export default function AddProduct() {
     });
 
     try {
-      await axiosPublic.post('/admin/add-product-pictures', formData, {
+      await axiosSecure.post('/admin/add-product-pictures', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

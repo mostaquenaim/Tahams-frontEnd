@@ -3,6 +3,7 @@ import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 import SelectionFormComp from '../../../components/Product/SelectionFormComp';
 import { useForm } from 'react-hook-form';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import toast from 'react-hot-toast';
 import Head from 'next/head';
 
@@ -14,13 +15,7 @@ const AddProductType = () => {
     const [selectedCat, setSelectedCat] = useState('')
 
     const axiosPublic = useAxiosPublic()
-
-    const [token, setToken] = useState('')
-
-    useEffect(() => {
-        const at = localStorage.getItem('access_token');
-        setToken(at)
-    }, [])
+    const axiosSecure = useAxiosSecure()
 
     //load categories
     const loadCategories = async () => {
@@ -63,13 +58,7 @@ const AddProductType = () => {
         };
 
         try {
-            const response = await axiosPublic.post('/admin/add-sub-subCategory', formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const response = await axiosSecure.post('/admin/add-sub-subCategory', formData);
             setCategoryName('');
             setSelectedCat('');
             reset();
@@ -89,10 +78,10 @@ const AddProductType = () => {
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Category</h2>
+                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Subcategory</h2>
                     <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
                         <div>
-                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Category Name</label>
+                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Subcategory Name</label>
                             <input
                                 type="text"
                                 id="categoryName"
@@ -106,11 +95,11 @@ const AddProductType = () => {
                         {/* SelectionFormComp = ({selectedValue, setFunction, defaultShown, values, errors, register  }) */}
                         {
                             subCategories &&
-                            <SelectionFormComp label={'Select a series for this category'} name={'category'} valueIsId={true} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={subCategories} extraItem={true} errors={errors} register={register} />
+                            <SelectionFormComp label={'Select a category for this subcategory'} name={'category'} valueIsId={true} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={subCategories} extraItem={true} errors={errors} register={register} />
                         }
                         <button
                             type="submit"
-                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-5"
                         >
                             Add
                         </button>

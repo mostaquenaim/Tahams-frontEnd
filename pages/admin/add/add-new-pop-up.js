@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import useAxiosPublic from '/./Hooks/useAxiosPublic';
+import React, { useState } from 'react';
+import useAxiosSecure from '/./Hooks/useAxiosSecure';
 
 const AddNewPopUp = () => {
   const [formData, setFormData] = useState({
@@ -12,14 +11,7 @@ const AddNewPopUp = () => {
     file: null,
   });
 
-  const axiosPublic = useAxiosPublic()
-
-  const [token, setToken] = useState('')
-
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at)
-  }, [])
+  const axiosSecure = useAxiosSecure()
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -55,9 +47,8 @@ const AddNewPopUp = () => {
 
     // console.log('token is=',token, formData.startDate, formData.endDate);
     try {
-      const res = await axiosPublic.post('/admin/add-new-pop-up', data, {
+      const res = await axiosSecure.post('/admin/add-new-pop-up', data, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
