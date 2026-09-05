@@ -89,10 +89,10 @@ const AddProductType = () => {
             {/* <AdminDrawer /> */}
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Category</h2>
+                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Subcategory</h2>
                     <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
                         <div>
-                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Category Name</label>
+                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Subcategory Name</label>
                             <input
                                 type="text"
                                 id="categoryName"
@@ -106,11 +106,11 @@ const AddProductType = () => {
                         {/* SelectionFormComp = ({selectedValue, setFunction, defaultShown, values, errors, register  }) */}
                         {
                             subCategories &&
-                            <SelectionFormComp label={'Select a series for this category'} name={'category'} valueIsId={true} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={subCategories} extraItem={true} errors={errors} register={register} />
+                            <SelectionFormComp label={'Select a category for this subcategory'} name={'category'} valueIsId={true} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={subCategories} extraItem={true} errors={errors} register={register} />
                         }
                         <button
                             type="submit"
-                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-5"
                         >
                             Add
                         </button>
