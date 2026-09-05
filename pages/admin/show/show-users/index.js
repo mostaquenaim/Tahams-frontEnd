@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
 
 const USERS_PER_PAGE = 10;
 
 const ShowUsers = () => {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [search, setSearch] = useState('');
@@ -33,10 +33,7 @@ const ShowUsers = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const res = await axiosPublic.get('/admin/get-all-users', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosSecure.get('/admin/get-all-users');
         setUsers(res.data);
         setFilteredUsers(res.data);
       } catch (error) {
@@ -46,7 +43,7 @@ const ShowUsers = () => {
       }
     };
     fetchUsers();
-  }, [axiosPublic]);
+  }, [axiosSecure]);
 
   // Custom pagination rendering logic
   const renderPagination = () => {
