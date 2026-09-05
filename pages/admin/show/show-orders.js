@@ -47,18 +47,6 @@ const ShowOrders = (data) => {
   // are kept purely client-side in localStorage, keyed by order id. This page
   // only reads them for display — they're authored/edited on the order
   // details page, which writes to the same key/structure.
-  const ORDER_NOTES_STORAGE_KEY = 'admin_order_notes';
-  const [orderNotes, setOrderNotes] = useState({});
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
-      if (stored) setOrderNotes(JSON.parse(stored));
-    } catch (error) {
-      console.error('Failed to load order notes from localStorage:', error);
-    }
-  }, []);
-
   // Only one note popover is open at a time, tracked by order id.
   const [openNoteId, setOpenNoteId] = useState(null);
   const noteButtonRefs = useRef({});
@@ -294,7 +282,7 @@ const ShowOrders = (data) => {
       }),
 
       ...(columnConfig.notes && {
-        Notes: orderNotes[order.history.id] || '',
+        Notes: order.history?.adminNote || '',
       }),
     }));
 
@@ -928,7 +916,7 @@ const ShowOrders = (data) => {
                             {(() => {
                               const isNoteOpen =
                                 openNoteId === group.history.id;
-                              const noteText = orderNotes[group.history.id];
+                              const noteText = group.history?.adminNote;
                               return (
                                 <div
                                   className="relative inline-block"
