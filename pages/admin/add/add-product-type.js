@@ -3,6 +3,7 @@ import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 import SelectionFormComp from '../../../components/Product/SelectionFormComp';
 import { useForm } from 'react-hook-form';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import toast from 'react-hot-toast';
 import Head from 'next/head';
 
@@ -14,13 +15,7 @@ const AddProductType = () => {
     const [selectedCat, setSelectedCat] = useState('')
 
     const axiosPublic = useAxiosPublic()
-
-    const [token, setToken] = useState('')
-
-    useEffect(() => {
-        const at = localStorage.getItem('access_token');
-        setToken(at)
-    }, [])
+    const axiosSecure = useAxiosSecure()
 
     //load categories
     const loadCategories = async () => {
@@ -63,13 +58,7 @@ const AddProductType = () => {
         };
 
         try {
-            const response = await axiosPublic.post('/admin/add-sub-subCategory', formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const response = await axiosSecure.post('/admin/add-sub-subCategory', formData);
             setCategoryName('');
             setSelectedCat('');
             reset();

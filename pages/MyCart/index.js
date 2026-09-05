@@ -187,7 +187,8 @@ const MyCart = () => {
                   <div className="flex justify-between w-full">
                     <span className="font-bold">{item.Quantity} pcs</span>
                     <span className="font-bold text-green-600">
-                      {item.product.sellingPrice -
+                      {(
+                        item.product.sellingPrice -
                         parseInt(
                           (item.product.sellingPrice *
                             item.product.discountPercentage) /
@@ -197,14 +198,16 @@ const MyCart = () => {
                           (item.product.sellingPrice *
                             item.product.vatPercentage) /
                             100,
-                        )}{' '}
+                        )
+                      ).toLocaleString()}{' '}
                       BDT
                     </span>
                   </div>
                   <div className="w-full flex justify-between items-center">
                     <span className="font-semibold text-lg">
                       Total:{' '}
-                      {item.Quantity *
+                      {(
+                        item.Quantity *
                         parseInt(
                           item.product.sellingPrice -
                             (item.product.sellingPrice *
@@ -215,7 +218,8 @@ const MyCart = () => {
                                 item.product.vatPercentage) /
                                 100,
                             ),
-                        )}{' '}
+                        )
+                      ).toLocaleString()}{' '}
                       BDT
                     </span>
                   </div>

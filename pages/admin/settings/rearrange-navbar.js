@@ -1,4 +1,4 @@
-import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 import Loading from '/components/Loading';
 import useLoadCats from '/Hooks/useLoadCats';
 import React, { useEffect, useState } from 'react';
@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const RearrangeNavbar = () => {
     const [categories, , isPending] = useLoadCats();
     const [localCategories, setLocalCategories] = useState([]);
-    const axiosPublic = useAxiosPublic()
+    const axiosSecure = useAxiosSecure()
 
     // Initialize local state when categories are loaded
     useEffect(() => {
@@ -39,7 +39,7 @@ const RearrangeNavbar = () => {
         }));
 
         try {
-            const res = await axiosPublic.post('/admin/shuffle-category', updated);
+            const res = await axiosSecure.post('/admin/shuffle-category', updated);
           // console.log('Server response:', res.data);
             toast.success('Category order saved successfully!');
         } catch (err) {

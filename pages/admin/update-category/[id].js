@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 import Link from 'next/link';
 import Head from 'next/head';
 
 const UpdateCategory = ({ item }) => {
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const [updatedData, setUpdatedData] = useState({});
   const router = useRouter();
@@ -47,7 +49,7 @@ const UpdateCategory = ({ item }) => {
         setSuccess(`${updatedData.categoryName} already exists`);
       } else {
         setSuccessColor('text-green-500');
-        await axiosPublic.put(`/admin/updateCategory/${item.id}`, updatedData);
+        await axiosSecure.put(`/admin/updateCategory/${item.id}`, updatedData);
         setSuccess(' update successfully');
       }
     } catch (error) {
@@ -61,8 +63,8 @@ const UpdateCategory = ({ item }) => {
 
       if (confirmation) {
         // console.log(updatedData)
-        const response = await axiosPublic.delete(
-          `/admin/deleteCategory/${item.id}`,
+        const response = await axiosSecure.delete(
+          `/admin/delete-category/${item.id}`,
         );
         // console.log("response", response)
 

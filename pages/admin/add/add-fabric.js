@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import AdminDrawer from '../../../components/Drawers/AdminDrawer';
 import Head from 'next/head';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 
 const AddFabric = () => {
     const [fabricName, setFabricName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const axiosSecure = useAxiosSecure();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -21,25 +23,14 @@ const AddFabric = () => {
         }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/add-fabric`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name : fabricName }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to add fabric');
-            }
+            await axiosSecure.post('/admin/add-fabric', { name: fabricName });
 
             setFabricName('');
             setSuccess('Fabric added successfully');
         } catch (error) {
-            console.error('Error adding fabric:', error.message);
-            setError(error.message);
+            const message = error.response?.data?.message || 'Failed to add fabric';
+            console.error('Error adding fabric:', message);
+            setError(message);
         } finally {
             setLoading(false);
         }
