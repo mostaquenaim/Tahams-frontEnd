@@ -23,7 +23,7 @@ import {
   FaCreditCard,
   FaReceipt,
 } from 'react-icons/fa';
-import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
 import Modal from 'react-modal';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,7 +35,7 @@ const ShowOrderDetails = () => {
   const { user } = useContext(AuthContext);
   const { specificOrders: group, isPending } = useOrderGroup(id);
   const { loading } = useContext(AuthContext);
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isConfirmationMessageBoxOpen, setIsConfirmationMessageBoxOpen] =
     useState(false);
@@ -73,8 +73,8 @@ const ShowOrderDetails = () => {
   // Handle delete with confirmation
   const handleDelete = async () => {
     try {
-      const res = await axiosPublic.put(
-        `/admin/delete-history/${history?.trackingToken}?email=${user?.email}`,
+      const res = await axiosSecure.put(
+        `/admin/delete-history/${history?.trackingToken}`,
       );
       closeConfirmationModal();
       router.push('/admin/show/show-orders');

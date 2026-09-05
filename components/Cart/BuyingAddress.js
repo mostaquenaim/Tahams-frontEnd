@@ -107,11 +107,14 @@ const BuyingAddress = ({ data, notes }) => {
 
   const fetchUserData = async () => {
     try {
-      const email =
-        user?.email ||
-        JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
-      if (!email) return;
-      const result = await axiosPublic.get(`admin/get-user-by-email/${email}`);
+      // Saved-address prefill needs proof of who's asking, which only a
+      // logged-in Firebase user can give - guests just type it in fresh.
+      if (!user) return;
+      const idToken = await user.getIdToken();
+      const result = await axiosPublic.get(
+        `admin/get-user-by-email/${user.email}`,
+        { headers: { Authorization: `Bearer ${idToken}` } },
+      );
       setUserData(result.data);
       reset({
         fullName: result.data?.name || '',
@@ -198,13 +201,13 @@ const BuyingAddress = ({ data, notes }) => {
       region !== userData.region ||
       city !== userData.city ||
       address !== userData.address;
-    if (isAddressChanged && userData.id) {
-      await axiosPublic.put(`admin/update-user-address/${userData.id}`, {
-        name: formData.fullName,
-        region,
-        city,
-        address,
-      });
+    if (isAddressChanged && userData.id && user) {
+      const idToken = await user.getIdToken();
+      await axiosPublic.put(
+        `admin/update-user-address/${userData.id}`,
+        { name: formData.fullName, region, city, address },
+        { headers: { Authorization: `Bearer ${idToken}` } },
+      );
     }
   };
 
@@ -271,7 +274,7 @@ const BuyingAddress = ({ data, notes }) => {
         deliveryCity !== userData.city ||
         deliveryAddress !== userData.address;
 
-      if (isAddressChanged) {
+      if (isAddressChanged && userData.id && user) {
         localStorage.setItem(
           'userAddress',
           JSON.stringify({

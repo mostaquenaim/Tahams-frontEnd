@@ -3,6 +3,7 @@ import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Loading from '../../../components/Loading';
 import Link from 'next/link';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import { motion, AnimatePresence } from 'framer-motion';
 import useGroupOrders from '../../../Hooks/useGroupOrders';
 import Head from 'next/head';
@@ -39,6 +40,7 @@ const ShowOrders = (data) => {
     data ? data.data.module : [],
   );
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [fraudCheck, setFraudCheck] = useState(null);
   const [fraudLoad, setFraudLoad] = useState(false);
   const [page, setPage] = useState(1);
@@ -196,8 +198,8 @@ const ShowOrders = (data) => {
   };
 
   const handleCheck = async (history) => {
-    await axiosPublic.patch(
-      `admin/update-history/${history.trackingToken}?email=${user?.email}`,
+    await axiosSecure.patch(
+      `admin/update-history/${history.trackingToken}`,
       {
         isChecked: !history.isChecked,
         checkedDate: new Date().toISOString(),

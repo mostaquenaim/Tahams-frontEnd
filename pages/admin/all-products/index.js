@@ -4,7 +4,6 @@ import Loading from '../../../components/Loading';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import useProduct from '../../../Hooks/useProduct';
-import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import Modal from 'react-modal';
 import {
@@ -28,19 +27,12 @@ const ShowProducts = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editedProducts, setEditedProducts] = useState({});
-  const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
   const [syncing, setSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const router = useRouter();
-  const [token, setToken] = useState('');
-
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-  }, []);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -160,13 +152,8 @@ const ShowProducts = () => {
   const handleDelete = async () => {
     if (selectedProduct) {
       try {
-        await axiosPublic.delete(
+        await axiosSecure.delete(
           `/admin/delete-product/${selectedProduct}?email=${user?.email}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
         );
         refetch();
         closeDeleteModal();
@@ -201,7 +188,9 @@ const ShowProducts = () => {
   const handleSave = async (productId) => {
     const updates = editedProducts[productId];
     try {
-      await axiosPublic.put(`/admin/update-product-stock/${productId}`, {
+      // NOTE: this route does not exist on the backend yet - stock saves
+      // currently 404. Tracked as a pending backend feature.
+      await axiosSecure.put(`/admin/update-product-stock/${productId}`, {
         stockChanges: updates,
         email: user?.email,
       });

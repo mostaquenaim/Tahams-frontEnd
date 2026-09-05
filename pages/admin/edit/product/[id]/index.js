@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import Loading from '../../../../../components/Loading';
-import useAxiosPublic from '../../../../../Hooks/useAxiosPublic';
 import useAxiosSecure from '../../../../../Hooks/useAxiosSecure';
 import { FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -73,7 +72,6 @@ const EditProduct = ({ product }) => {
   const [isSizeApplicable, setIsSizeApplicable] = useState([]);
 
   const router = useRouter();
-  const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
@@ -104,13 +102,6 @@ const EditProduct = ({ product }) => {
     setSelectedCatsInfo([...tempCatsInfo.values()]);
     setIsSizeApplicable([...tempSizeApp]);
   }, [product.pscs]);
-
-  const [token, setToken] = useState('');
-
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-  }, []);
 
   const handleCategoryChange = (event, catID) => {
     const isChecked = event.target.checked;
@@ -232,13 +223,12 @@ const EditProduct = ({ product }) => {
     });
 
     try {
-      const response = await axiosPublic.put(
+      const response = await axiosSecure.put(
         `/admin/update-product/${product.id}`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
           },
         },
       );

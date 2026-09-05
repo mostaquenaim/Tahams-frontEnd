@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useAxiosPublic from '../../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
 import Loading from '../../../../components/Loading';
 import Head from 'next/head';
 import Swal from 'sweetalert2';
@@ -7,7 +7,7 @@ import useLoadSeries from '../../../../Hooks/useLoadSeries';
 import { handleUploadWithCloudinary } from '/components/Images/AddImageToCloudinary';
 
 const ShowAllSeries = () => {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [series, refetch, isPending] = useLoadSeries();
   // console.log(series, 'seriesss');
 
@@ -29,12 +29,7 @@ const ShowAllSeries = () => {
 
     if (confirm.isConfirmed) {
       try {
-        const token = localStorage.getItem('access_token');
-        await axiosPublic.delete(`/admin/delete-category/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axiosSecure.delete(`/admin/delete-category/${id}`);
 
         await Swal.fire('Deleted!', 'Category has been deleted.', 'success');
         refetch();
@@ -101,7 +96,6 @@ const ShowAllSeries = () => {
     }
 
     try {
-      const token = localStorage.getItem('access_token');
       const formData = new FormData();
 
       formData.append('name', newName);
@@ -117,16 +111,10 @@ const ShowAllSeries = () => {
 
       formData.append('filename', imageLink);
 
-      const res = await axiosPublic.put(
-        `/admin/updateCategory/${id}`,
-        {
-          name: newName,
-          filename: imageLink,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const res = await axiosSecure.put(`/admin/updateCategory/${id}`, {
+        name: newName,
+        filename: imageLink,
+      });
 
       await Swal.fire('Updated!', 'Category updated successfully.', 'success');
       setEditId(null);

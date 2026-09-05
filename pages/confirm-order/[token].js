@@ -41,16 +41,22 @@ const PaymentProcess = () => {
     try {
       const savedAddress = JSON.parse(localStorage.getItem('userAddress'));
 
-      if (!savedAddress) return;
+      // Only ever queued for a logged-in Firebase user - see BuyingAddress.js.
+      if (!savedAddress || !user) return;
 
       toast.loading('Updating your default address...', { id: 'addr-update' });
 
-      await axiosPublic.put(`admin/update-user-address/${savedAddress.id}`, {
-        name: savedAddress.fullName,
-        region: savedAddress.region,
-        city: savedAddress.city,
-        address: savedAddress.address,
-      });
+      const idToken = await user.getIdToken();
+      await axiosPublic.put(
+        `admin/update-user-address/${savedAddress.id}`,
+        {
+          name: savedAddress.fullName,
+          region: savedAddress.region,
+          city: savedAddress.city,
+          address: savedAddress.address,
+        },
+        { headers: { Authorization: `Bearer ${idToken}` } },
+      );
 
       localStorage.removeItem('userAddress');
 
