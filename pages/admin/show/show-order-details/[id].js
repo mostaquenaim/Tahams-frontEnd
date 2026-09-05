@@ -34,7 +34,7 @@ const ShowOrderDetails = () => {
   const router = useRouter();
   const { id } = router.query;
   const { user } = useContext(AuthContext);
-  const { specificOrders: group, isPending } = useOrderGroup(id);
+  const { specificOrders: group, refetch, isPending } = useOrderGroup(id);
   const { loading } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
@@ -44,23 +44,17 @@ const ShowOrderDetails = () => {
 
   // Per-order notes shared with the orders list page — same localStorage
   // key/structure (an object keyed by order id) so both pages stay in sync.
-  const ORDER_NOTES_STORAGE_KEY = 'admin_order_notes';
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
-  const [hasNote, setHasNote] = useState(false);
+  const [noteError, setNoteError] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
 
   const history = group?.[0]?.history;
+  const hasNote = Boolean(history?.adminNote?.trim());
 
   useEffect(() => {
-    if (!history?.id) return;
-    try {
-      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
-      const notes = stored ? JSON.parse(stored) : {};
-      setHasNote(Boolean(notes[history.id] && notes[history.id].trim()));
-    } catch (error) {
-      console.error('Failed to load order notes from localStorage:', error);
-    }
-  }, [history?.id]);
+    setNoteText(history?.adminNote || '');
+  }, [history?.adminNote]);
 
   // Filtered Order Details
   // const group = orders.filter((order) => order.history?.id == id);
@@ -92,29 +86,45 @@ const ShowOrderDetails = () => {
 
   // Note modal handlers
   const openNoteModal = () => {
-    try {
-      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
-      const notes = stored ? JSON.parse(stored) : {};
-      setNoteText(notes[history?.id] || '');
-    } catch (error) {
-      console.error('Failed to load order notes from localStorage:', error);
-      setNoteText('');
-    }
+    setNoteText(history?.adminNote || '');
+    setNoteError('');
     setIsNoteModalOpen(true);
   };
   const closeNoteModal = () => setIsNoteModalOpen(false);
 
-  const handleSaveNote = () => {
-    try {
-      const stored = localStorage.getItem(ORDER_NOTES_STORAGE_KEY);
-      const notes = stored ? JSON.parse(stored) : {};
-      notes[history?.id] = noteText;
-      localStorage.setItem(ORDER_NOTES_STORAGE_KEY, JSON.stringify(notes));
-      setHasNote(Boolean(noteText && noteText.trim()));
-    } catch (error) {
-      console.error('Failed to save order note to localStorage:', error);
+  const handleSaveNote = async () => {
+    const normalizedNote = noteText.trim();
+
+    if (!normalizedNote) {
+      setNoteError('Note is required.');
+      return;
     }
-    closeNoteModal();
+
+    if (normalizedNote.length > 250) {
+      setNoteError('Note cannot exceed 250 characters.');
+      return;
+    }
+
+    try {
+      setIsSavingNote(true);
+      await axiosPublic.patch(
+        `/admin/order-note/${history?.id}`,
+        { note: normalizedNote },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        },
+      );
+      setNoteText(normalizedNote);
+      await refetch();
+      closeNoteModal();
+    } catch (error) {
+      console.error('Failed to save order note:', error);
+      setNoteError(error.response?.data?.message || 'Failed to save note.');
+    } finally {
+      setIsSavingNote(false);
+    }
   };
 
   // Handle delete with confirmation
@@ -347,7 +357,7 @@ const ShowOrderDetails = () => {
                 {/* Order Component */}
                 {/* order status  */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <OrderComp orderDetails={history} admin={true} />
+                  <OrderComp orderDetails={history} admin={true} onUpdated={refetch} />
                 </div>
               </div>
 
@@ -618,9 +628,25 @@ const ShowOrderDetails = () => {
                       className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none text-gray-900"
                       placeholder="e.g. didn't answer call, cancelled - reason..."
                       rows="6"
+                      maxLength={250}
                       value={noteText}
-                      onChange={(e) => setNoteText(e.target.value)}
+                      onChange={(e) => {
+                        setNoteText(e.target.value);
+                        setNoteError('');
+                      }}
                     />
+                    <div className="mt-2 flex items-center justify-between text-xs">
+                      <span className="text-red-600">{noteError}</span>
+                      <span
+                        className={
+                          noteText.length > 240
+                            ? 'text-amber-700 font-semibold'
+                            : 'text-gray-500'
+                        }
+                      >
+                        {noteText.length}/250
+                      </span>
+                    </div>
                     <div className="flex gap-3 mt-6">
                       <button
                         onClick={closeNoteModal}
@@ -630,9 +656,10 @@ const ShowOrderDetails = () => {
                       </button>
                       <button
                         onClick={handleSaveNote}
+                        disabled={isSavingNote}
                         className="flex-1 px-4 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors"
                       >
-                        Save
+                        {isSavingNote ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   </motion.div>

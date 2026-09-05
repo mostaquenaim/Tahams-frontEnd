@@ -12,7 +12,7 @@ const useOrderGroup = (historyId) => {
   const { refetch, isPending, data: specificOrders = [] } = useQuery({
     queryKey: ['specificOrders', historyId],
     queryFn: fetchOrderData,
-    enabled: !!historyId,
+    enabled: !loading && !!user && !!historyId,
   });
 
   return {specificOrders, refetch, isPending};
