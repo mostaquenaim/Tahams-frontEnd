@@ -1,5 +1,5 @@
-import { useState, useMemo, useContext, useEffect } from 'react';
-import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import { useState, useMemo, useContext } from 'react';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import {
     createColumnHelper,
     flexRender,
@@ -13,7 +13,7 @@ import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Head from 'next/head';
 
 const Index = () => {
-    const axiosPublic = useAxiosPublic();
+    const axiosSecure = useAxiosSecure();
     const { user } = useContext(AuthContext)
 
     const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -21,13 +21,6 @@ const Index = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
 
     const [unpublishedProducts, refetch] = useLoadProducts();
-
-    const [token, setToken] = useState('')
-
-    useEffect(() => {
-        const at = localStorage.getItem('access_token');
-        setToken(at)
-    }, [])
 
     const openPublishModal = (product) => {
         setSelectedProduct(product);
@@ -52,14 +45,9 @@ const Index = () => {
     const handlePublish = async () => {
         if (selectedProduct) {
             try {
-                await axiosPublic.put(
+                await axiosSecure.put(
                     `/admin/publish-product/${selectedProduct.id}`,
                     { publishable: true }, // <-- this is the request body
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
                 );
                 refetch();
                 closePublishModal();
@@ -72,13 +60,7 @@ const Index = () => {
     const handleDelete = async () => {
         if (selectedProduct) {
             try {
-                await axiosPublic.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                await axiosSecure.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`);
                 refetch();
                 closeDeleteModal();
             } catch (error) {

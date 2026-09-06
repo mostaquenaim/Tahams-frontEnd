@@ -1,7 +1,12 @@
-import { Fragment, useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { FaCheckCircle, FaEye, FaShoppingCart } from 'react-icons/fa';
+import {
+  FaCheckCircle,
+  FaEye,
+  FaSearchPlus,
+  FaShoppingCart,
+} from 'react-icons/fa';
 import { FaHeart, FaRegHeart } from 'react-icons/fa6';
 import toast from 'react-hot-toast';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
@@ -249,6 +254,10 @@ const Product = ({ product }) => {
 
   // cart add handling
   const handleAddToCart = async () => {
+    if (!ifStock) {
+      return;
+    }
+
     if (
       product.pscs[0].category.category.category.name == 'Couples' &&
       (!selectedFemaleSize || !selectedSize)
@@ -301,9 +310,9 @@ const Product = ({ product }) => {
           setIsAddedToCart(false);
         }, 700);
 
-        setTimeout(() => {
+        goToCartTimeoutRef.current = setTimeout(() => {
           setShowGotoCart(false);
-        }, 3000);
+        }, 10000);
       }
     }
 
@@ -313,8 +322,26 @@ const Product = ({ product }) => {
     });
   };
 
+  const goToCartTimeoutRef = useRef(null);
+
+  const handleCartBarMouseEnter = () => {
+    if (goToCartTimeoutRef.current) {
+      clearTimeout(goToCartTimeoutRef.current);
+    }
+  };
+
+  const handleCartBarMouseLeave = () => {
+    goToCartTimeoutRef.current = setTimeout(() => {
+      setShowGotoCart(false);
+    }, 3000);
+  };
+
   // buy now handling
   const handleBuyNow = async () => {
+    if (!ifStock) {
+      return;
+    }
+
     if (
       product.pscs[0].category.category.category.name === 'Couples' &&
       (!selectedFemaleSize || !selectedSize)
@@ -378,12 +405,12 @@ const Product = ({ product }) => {
         <title>{product.name}</title>
       </Head>
       <div className="max-w-7xl mx-auto p-4 min-h-screen pt-48 lg:pt-56 pb-10">
-        <div className="flex flex-col md:flex-row gap-5 sm:gap-0">
+        <div className="flex flex-col md:flex-row gap-5 sm:gap-0 lg:gap-12 xl:gap-0">
           {/* Product Image */}
           <div className="md:w-1/2">
             <Swiper
               modules={[Zoom, Thumbs]}
-              zoom={{ maxRatio: 10 }}
+              zoom={{ maxRatio: 8 }}
               thumbs={{
                 swiper:
                   thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
@@ -403,7 +430,14 @@ const Product = ({ product }) => {
               ))}
             </Swiper>
 
-            <div className="relative mt-4 w-full md:w-80 lg:w-[480px]">
+            <div className="md:hidden flex justify-center mt-2">
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <FaSearchPlus className="w-3 h-3" />
+                Double tap to zoom
+              </span>
+            </div>
+
+            <div className="relative mt-3 w-full md:w-80 lg:w-[480px]">
               <Swiper
                 onSwiper={setThumbsSwiper}
                 modules={[Thumbs, Navigation]}
@@ -533,7 +567,7 @@ const Product = ({ product }) => {
               <div className="mb-4">
                 <p className="text-gray-600 font-semibold">Color:</p>
                 <div
-                  className="p-3 w-24 rounded-full text-center border-black border-1"
+                  className="p-3 w-32 mt-1 rounded-full text-center border-black border-1"
                   style={{ backgroundColor: color.colorCode }}
                 >
                   <span
@@ -614,23 +648,23 @@ const Product = ({ product }) => {
             <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
               <button
                 className={`btn btn-primary ${
-                  isAddedToCart || (userInfo && userInfo.role == 'admin')
+                  !ifStock || isAddedToCart || (userInfo && userInfo.role == 'admin')
                     ? 'btn-disabled'
                     : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'
                 }`}
                 onClick={handleAddToCart}
               >
-                <FaShoppingCart /> Add to Cart
+                <FaShoppingCart /> {ifStock ? 'Add to Cart' : 'Out of Stock'}
               </button>
               <button
                 className={`btn btn-accent ${
-                  userInfo && userInfo.role == 'admin'
+                  !ifStock || (userInfo && userInfo.role == 'admin')
                     ? 'btn-disabled'
                     : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'
                 }`}
                 onClick={handleBuyNow}
               >
-                🛍️ Buy Now
+                {ifStock ? '🛍️ Buy Now' : 'Out of Stock'}
               </button>
             </div>
 
@@ -667,6 +701,8 @@ const Product = ({ product }) => {
       {
         <Link
           href="/MyCart"
+          onMouseEnter={handleCartBarMouseEnter}
+          onMouseLeave={handleCartBarMouseLeave}
           className={`fixed bottom-0 left-0 w-full h-16 bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-3 transition-all duration-500 z-[60] shadow-2xl ${
             !showGotoCart
               ? 'translate-y-full opacity-0'

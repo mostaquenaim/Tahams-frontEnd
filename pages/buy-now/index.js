@@ -8,6 +8,7 @@ import Head from "next/head";
 const BuyNow = ({ data }) => {
   const router = useRouter();
   const [cartItems, setCartItems] = useState([])
+  const [memo, setMemo] = useState('')
 
   useEffect(() => {
     // Get the cart products from localStorage
@@ -24,8 +25,8 @@ const BuyNow = ({ data }) => {
       </Head>
       <div className="pt-40 lg:pt-56 flex flex-col md:flex-row justify-around items-start container mx-auto">
         <DeliveryFeeProvider>
-            <BuyingAddress data={data} />
-            <FinalCart cartItems={cartItems} />
+            <BuyingAddress data={data} notes={memo} />
+            <FinalCart cartItems={cartItems} onMemoChange={setMemo} />
         </DeliveryFeeProvider>
       </div>
     </div>

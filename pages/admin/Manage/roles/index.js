@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 import { Loader2, Pencil, Trash2, Check, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const ManageRoles = () => {
-    const axiosPublic = useAxiosPublic();
+    const axiosSecure = useAxiosSecure();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newRole, setNewRole] = useState('');
@@ -17,10 +17,7 @@ const ManageRoles = () => {
 
     const fetchRoles = async () => {
         try {
-            const token = localStorage.getItem('access_token');
-            const res = await axiosPublic.get('/admin/get-all-roles', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await axiosSecure.get('/admin/get-all-roles');
             setRoles(res.data);
         } catch (err) {
             console.error('Failed to fetch roles:', err);
@@ -32,12 +29,7 @@ const ManageRoles = () => {
     const handleAddRole = async () => {
         if (!newRole.trim()) return;
         try {
-            const token = localStorage.getItem('access_token');
-            await axiosPublic.post(
-                '/admin/create-role',
-                { name: newRole },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await axiosSecure.post('/admin/create-role', { name: newRole });
             setNewRole('');
             fetchRoles();
         } catch (err) {
@@ -47,12 +39,9 @@ const ManageRoles = () => {
 
     const handleEditRole = async (roleId) => {
         try {
-            const token = localStorage.getItem('access_token');
-            await axiosPublic.patch(
-                `/admin/update-role/${roleId}`,
-                { name: editingValue },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await axiosSecure.patch(`/admin/update-role/${roleId}`, {
+                name: editingValue,
+            });
             setEditingRoleId(null);
             fetchRoles();
         } catch (err) {
@@ -74,10 +63,7 @@ const ManageRoles = () => {
         if (!result.isConfirmed) return;
 
         try {
-            const token = localStorage.getItem('access_token');
-            await axiosPublic.delete(`/admin/delete-role/${roleId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await axiosSecure.delete(`/admin/delete-role/${roleId}`);
 
             await Swal.fire('Deleted!', 'The role has been deleted.', 'success');
             fetchRoles();

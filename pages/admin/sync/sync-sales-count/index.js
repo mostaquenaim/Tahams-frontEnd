@@ -1,13 +1,12 @@
 import toast from 'react-hot-toast';
-import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 import React from 'react';
 
 const SyncSalesCount = () => {
-    const axiosPublic = useAxiosPublic()
+    const axiosSecure = useAxiosSecure()
 
     const handleSyncSales = async () => {
-        const result = await axiosPublic.put(`admin/sync-sales-count`)
-      // console.log(result.data,'ss');
+        const result = await axiosSecure.put(`admin/sync-sales-count`)
         toast.success('synced sales count')
     }
     return (

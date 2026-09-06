@@ -1,5 +1,5 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import toast from 'react-hot-toast';
 import Modal from 'react-modal';
 import useRequests from '../../../Hooks/useRequests';
@@ -26,18 +26,13 @@ const ShowRequests = () => {
   const [requests, refetch, isPending] = useRequests();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [token, setToken] = useState('');
+  const axiosSecure = useAxiosSecure();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const router = useRouter();
-
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-  }, []);
 
   // Filter and sort requests
   const filteredRequests = requests.filter(request => {
@@ -104,10 +99,9 @@ const ShowRequests = () => {
 
   const confirmApproval = async () => {
     try {
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API}/admin/approve-request`,
+      const response = await axiosSecure.patch(
+        '/admin/approve-request',
         { id: parseInt(selectedRequest.id) },
-        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.isApproved) {

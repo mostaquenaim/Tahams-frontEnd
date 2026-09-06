@@ -3,6 +3,7 @@ import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import Loading from '../../../components/Loading';
 import Link from 'next/link';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import { motion, AnimatePresence } from 'framer-motion';
 import useGroupOrders from '../../../Hooks/useGroupOrders';
 import Head from 'next/head';
@@ -18,6 +19,7 @@ import {
   FiX,
   FiArrowUp,
   FiArrowDown,
+  FiFileText,
 } from 'react-icons/fi';
 import { useOnClickOutside } from 'usehooks-ts';
 import * as XLSX from 'xlsx';
@@ -38,6 +40,7 @@ const ShowOrders = (data) => {
     data ? data.data.module : [],
   );
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const [fraudCheck, setFraudCheck] = useState(null);
   const [fraudLoad, setFraudLoad] = useState(false);
   const [page, setPage] = useState(1);
@@ -238,8 +241,8 @@ const ShowOrders = (data) => {
   };
 
   const handleCheck = async (history) => {
-    await axiosPublic.patch(
-      `admin/update-history/${history.trackingToken}?email=${user?.email}`,
+    await axiosSecure.patch(
+      `admin/update-history/${history.trackingToken}`,
       {
         isChecked: !history.isChecked,
         checkedDate: new Date().toISOString(),
@@ -803,8 +806,15 @@ const ShowOrders = (data) => {
                         {/* ID */}
                         {columnConfig.id && (
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-bold text-gray-900">
+                            <span className="text-sm font-bold text-gray-900 inline-flex items-center gap-1.5">
                               #{group.history.id}
+                              {group.history?.notes && (
+                                <FiFileText
+                                  className="text-purple-500"
+                                  title={`Note: ${group.history.notes}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              )}
                             </span>
                           </td>
                         )}

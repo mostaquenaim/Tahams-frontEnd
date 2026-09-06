@@ -1,17 +1,14 @@
-import useAxiosPublic from '/Hooks/useAxiosPublic';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
 
 export const handleUploadWithCloudinary = async (file) => {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   if (!file) return;
 
   if (file.size > 2 * 1024 * 1024) {
     throw new Error('Image must be under 2MB');
   }
 
-  const sigRes = await axiosPublic.get('/admin/cloudinary-signature');
-  // console.log(sigRes.data, 'dataa');
-
-  // const { cloudName, upload_preset } = await sigRes.data;
+  const sigRes = await axiosSecure.get('/admin/cloudinary-signature');
 
   const { signature, timestamp, apiKey, cloudName, folder } = sigRes.data;
 

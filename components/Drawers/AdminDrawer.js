@@ -45,19 +45,21 @@ const AdminDrawer = () => {
       <div className="flex h-16 items-center justify-between px-6 border-b border-white/5">
         <AnimatePresence mode="wait">
           {isAdminOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="flex items-center gap-3"
-            >
-              <div className="p-2 bg-blue-600 rounded-lg text-white">
-                <FiActivity size={18} />
-              </div>
-              <span className="text-lg font-bold tracking-tight text-white uppercase">
-                Nexus Admin
-              </span>
-            </motion.div>
+            <Link href="/admin">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="flex items-center gap-3 cursor-pointer"
+              >
+                <div className="p-2 bg-blue-600 rounded-lg text-white">
+                  <FiActivity size={18} />
+                </div>
+                <span className="text-lg font-bold tracking-tight text-white uppercase">
+                  Nexus Admin
+                </span>
+              </motion.div>
+            </Link>
           )}
         </AnimatePresence>
 

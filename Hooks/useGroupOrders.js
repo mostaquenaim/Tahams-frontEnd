@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import useAxiosPublic from './useAxiosPublic';
+import useAxiosSecure from './useAxiosSecure';
 
 const EMPTY_RESULT = {
   sortedGroupedOrdersArray: [],
@@ -16,7 +16,7 @@ const EMPTY_RESULT = {
 // not just whatever page happens to be loaded.
 const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems = false, filters = {}) => {
   const { user, loading } = useContext(AuthContext);
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const { search = '', status = 'all', region = 'all', hideCancelled = false } = filters;
 
   const fetchGroupOrderData = async () => {
@@ -31,7 +31,7 @@ const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems = false
     if (status && status !== 'all') params.set('status', status);
     if (region && region !== 'all') params.set('region', region);
 
-    const res = await axiosPublic.get(
+    const res = await axiosSecure.get(
       `/admin/get-grouped-buying-history?${params.toString()}`,
       {
         headers: {

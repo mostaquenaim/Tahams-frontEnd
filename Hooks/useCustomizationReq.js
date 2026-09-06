@@ -1,25 +1,18 @@
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import useAxiosPublic from './useAxiosPublic';
+import useAxiosSecure from './useAxiosSecure';
 import { useQuery } from '@tanstack/react-query';
-import { useContext, useState, useEffect } from 'react';
-import { getGuestCustomerInfo } from '/utils/guestCustomer';
 
+// Admin-only (both call sites are under pages/admin) - sends the admin's
+// backend JWT so the server can verify "is this really an admin" itself,
+// rather than trusting an email in the query string.
 const useCustomizationReq = (id = 0, isEnabled=true) => {
-  const { user } = useContext(AuthContext);
-  const [customerEmail, setCustomerEmail] = useState('');
-
-  useEffect(() => {
-    setCustomerEmail(user?.email || getGuestCustomerInfo().email);
-  }, [user]);
-
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   const loadCustomizations = async () => {
     try {
-      const result = await axiosPublic.get(
+      const result = await axiosSecure.get(
         '/admin/get-all-customization-requests',
         {
-          params: { email: customerEmail, id: id },
+          params: { id },
         }
       );
 
@@ -49,9 +42,9 @@ const useCustomizationReq = (id = 0, isEnabled=true) => {
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ['customizations', customerEmail, id],
+    queryKey: ['customizations', id],
     queryFn: loadCustomizations,
-    enabled: !!customerEmail && isEnabled,
+    enabled: isEnabled,
   });
 
   return [customizations, refetch, isLoading || isFetching];

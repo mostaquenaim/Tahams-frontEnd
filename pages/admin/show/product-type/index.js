@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useLoadSubSubCategories from "../../../../Hooks/useLoadSubSubCategories";
-import useAxiosPublic from "../../../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
 import Loading from "../../../../components/Loading";
 import Head from "next/head";
 import { FaTrash } from "react-icons/fa";
@@ -16,7 +16,7 @@ const ProductType = () => {
     const [editNameItemId, setEditNameItemId] = useState(-1);
     const [nameEdits, setNameEdits] = useState({});
 
-    const axiosPublic = useAxiosPublic();
+    const axiosSecure = useAxiosSecure();
 
     const handleEditSizeChart = async (item) => {
         if (editItem === item.id) {
@@ -29,7 +29,7 @@ const ProductType = () => {
             formData.append('myFile', myfile);
 
             try {
-                const res = await axiosPublic.put(`/admin/update-sub-sub-category/${item.id}`, formData, {
+                const res = await axiosSecure.put(`/admin/update-sub-sub-category/${item.id}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -73,13 +73,7 @@ const ProductType = () => {
 
         if (result.isConfirmed) {
             try {
-                const token = localStorage.getItem('access_token');
-
-                const response = await axiosPublic.delete(`/admin/delete-product-type/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const response = await axiosSecure.delete(`/admin/delete-product-type/${id}`);
 
                 await Swal.fire(
                     'Deleted!',
@@ -114,7 +108,7 @@ const ProductType = () => {
             }
 
           // console.log('come here');
-            const res = await axiosPublic.put(`/admin/update-product-type-name/${id}`, {
+            const res = await axiosSecure.put(`/admin/update-product-type-name/${id}`, {
                 name: newName,
             });
 

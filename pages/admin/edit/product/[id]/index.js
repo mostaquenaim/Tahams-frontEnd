@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import Loading from '../../../../../components/Loading';
-import useAxiosPublic from '../../../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../../../Hooks/useAxiosSecure';
 import { FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useLoadColors from '../../../../../Hooks/useLoadColors';
@@ -71,8 +71,10 @@ const EditProduct = ({ product }) => {
   const [selectedCatsInfo, setSelectedCatsInfo] = useState([]);
   const [isSizeApplicable, setIsSizeApplicable] = useState([]);
 
+  const [imageLimitMessage, setImageLimitMessage] = useState('');
+
   const router = useRouter();
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
     const tempCats = new Set();
@@ -102,13 +104,6 @@ const EditProduct = ({ product }) => {
     setSelectedCatsInfo([...tempCatsInfo.values()]);
     setIsSizeApplicable([...tempSizeApp]);
   }, [product.pscs]);
-
-  const [token, setToken] = useState('');
-
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-  }, []);
 
   const handleCategoryChange = (event, catID) => {
     const isChecked = event.target.checked;
@@ -230,13 +225,12 @@ const EditProduct = ({ product }) => {
     });
 
     try {
-      const response = await axiosPublic.put(
+      const response = await axiosSecure.put(
         `/admin/update-product/${product.id}`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
           },
         },
       );
@@ -267,7 +261,7 @@ const EditProduct = ({ product }) => {
     formData.append('id', product.id);
 
     try {
-      const response = await axiosPublic.post(
+      const response = await axiosSecure.post(
         '/admin/update-product-pictures',
         formData,
         {
@@ -294,9 +288,29 @@ const EditProduct = ({ product }) => {
     }
   };
 
+  const MAX_TOTAL_IMAGES = 6;
+
   const handleAddNewImage = (e) => {
     const files = Array.from(e.target.files);
-    setNewImages([...newImages, ...files]);
+    const currentTotal = 1 + newImages.length;
+    const remainingSlots = MAX_TOTAL_IMAGES - currentTotal;
+
+    if (remainingSlots <= 0) {
+      setImageLimitMessage(`(Maximum ${MAX_TOTAL_IMAGES} images allowed.)`);
+      e.target.value = '';
+      return;
+    }
+
+    const filesToAdd = files.slice(0, remainingSlots);
+
+    if (files.length > remainingSlots) {
+      setImageLimitMessage(`(Maximum ${MAX_TOTAL_IMAGES} images allowed.)`);
+    } else {
+      setImageLimitMessage('');
+    }
+
+    setNewImages([...newImages, ...filesToAdd]);
+    e.target.value = '';
   };
 
   const validateFile = (files) => {
@@ -681,14 +695,6 @@ const EditProduct = ({ product }) => {
                             alt={`Product image ${index + 1}`}
                             className="h-24 w-24 object-cover rounded-lg border border-gray-300 shadow-sm"
                           />
-                          <button
-                            type="button"
-                            className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                            onClick={() => removeImage(index)}
-                            title="Remove image"
-                          >
-                            <FiTrash2 size={12} />
-                          </button>
                         </div>
                       ))}
                     </div>
@@ -724,11 +730,16 @@ const EditProduct = ({ product }) => {
                 </div>
 
                 {/* Preview New Images */}
-                {newImages.length > 0 && (
-                  <div>
-                    <h4 className="text-md font-medium text-gray-700 mb-3">
-                      New Images to Upload
-                    </h4>
+                <div>
+                  <h4 className="text-md font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    New Images to Upload
+                    {imageLimitMessage && (
+                      <span className="text-yellow-600 text-sm font-normal">
+                        {imageLimitMessage}
+                      </span>
+                    )}
+                  </h4>
+                  {newImages.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                       {newImages.map((file, index) => (
                         <div key={index} className="relative group">
@@ -743,8 +754,8 @@ const EditProduct = ({ product }) => {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 

@@ -1,19 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FaShoppingCart, FaRegStickyNote } from 'react-icons/fa';
-import { TiInputChecked } from 'react-icons/ti';
 import PropTypes from 'prop-types';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { DeliveryContext } from '../../Contexts/DeliveryFee';
 
-const FinalCart = ({ cartItems }) => {
-    const [couponCode, setCouponCode] = useState('');
+const FinalCart = ({ cartItems, onMemoChange }) => {
     const [totalPrice, setTotalPrice] = useState(0);
-    const [enableCoupon, setEnableCoupon] = useState(false)
-    const [error, setError] = useState('')
+    const [memo, setMemo] = useState('');
+
+    const handleMemoChange = (e) => {
+        setMemo(e.target.value);
+        onMemoChange?.(e.target.value);
+    };
 
     const { deliveryFee } = useContext(DeliveryContext)
-
-    const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
         // Calculate total price when cartItems change
@@ -49,11 +48,6 @@ const FinalCart = ({ cartItems }) => {
         })
     }, [cartItems, deliveryFee]);
 
-    const handleApplyCoupon = async () => {
-        const res = await axiosPublic.get(`/admin/get-coupons`)
-        setError('Coupon not valid')
-    };
-
     return (
         <div className="mt-8 p-8 bg-gray-100 border rounded-lg mb-10">
             <div className="flex justify-between items-center mb-4">
@@ -66,24 +60,16 @@ const FinalCart = ({ cartItems }) => {
                 {cartItems.map((item, index) => (
                     <div className='flex justify-between' key={index}>
                         <p className='w-2/3'>{item.ProductName} <span className='text-lg font-semibold'> x {item.Quantity}</span></p>
-                        <p>৳ {parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity} </p>
+                        <p>৳ {(parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity).toLocaleString()} </p>
                     </div>
                 ))}
                 <p className='flex justify-between'>
                     <span>Delivery fee</span>
-                    <span>৳ {deliveryFee && deliveryFee}</span>
+                    <span>৳ {deliveryFee && deliveryFee.toLocaleString()}</span>
                 </p>
             </div>
 
-            {/* Show Coupon */}
-            {enableCoupon && (
-                <div className="mb-2">
-                    <p className='mb-2'><span>Discount</span> <span></span> </p>
-                    <p>Coupon Applied: {couponCode}</p>
-                </div>
-            )}
-
-            <p className='text-end font-semibold'>৳ {totalPrice}</p>
+            <p className='text-end font-semibold'>৳ {totalPrice.toLocaleString()}</p>
 
             {/* Memo Details */}
             <div className="mb-4">
@@ -95,44 +81,18 @@ const FinalCart = ({ cartItems }) => {
                     rows="4"
                     placeholder="Add special instructions, personalization details, or notes here..."
                     className="w-full p-2 border rounded"
-                // Add state and onChange handler if you want to capture and store memo details
+                    value={memo}
+                    onChange={handleMemoChange}
                 />
             </div>
 
-            {/* Coupon Section */}
-            <div className="mb-4">
-                <div className="flex items-center">
-                    <TiInputChecked className="text-xl text-green-500 mr-2" />
-                    <span className="text-lg font-semibold">Coupon</span>
-                </div>
-                <div className="flex flex-col md:flex-row gap-3">
-                    <input
-                        type="text"
-                        placeholder="Enter coupon code"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        className="border p-2 mr-2"
-                        onFocus={() => setError('')}
-                    />
-                    <button
-                        onClick={handleApplyCoupon}
-                        className={`btn ${couponCode ? 'btn-primary' : 'btn-disabled'}`}
-                    >
-                        Apply
-                    </button>
-                </div>
-                <div>
-                    <span className={`text-error ${error ? 'opacity-70' : 'opacity-0'}`}>
-                        Error: {error}
-                    </span>
-                </div>
-            </div>
         </div>
     );
 };
 
 FinalCart.propTypes = {
     cartItems: PropTypes.array.isRequired,
+    onMemoChange: PropTypes.func,
 };
 
 export default FinalCart;

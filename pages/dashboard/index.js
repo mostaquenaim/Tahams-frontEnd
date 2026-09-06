@@ -241,6 +241,14 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
+                ) : !user ? (
+                  <div className="text-center py-8">
+                    <FaBox className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">Log in to see your order history</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Guest checkout? Use the tracking link from your order email or SMS.
+                    </p>
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <FaBox className="w-12 h-12 text-gray-300 mx-auto mb-3" />

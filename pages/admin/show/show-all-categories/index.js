@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import useAxiosPublic from "../../../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
 import useLoadSubCategories from "../../../../Hooks/useLoadSubCategories";
 import Swal from "sweetalert2";
 import Loading from "../../../../components/Loading";
 import Head from "next/head";
 
 const ShowAllCategories = () => {
-    const axiosPublic = useAxiosPublic();
+    const axiosSecure = useAxiosSecure();
     const [categories, refetch, isPending] = useLoadSubCategories();
 
     const [editId, setEditId] = useState(null);
@@ -28,13 +28,9 @@ const ShowAllCategories = () => {
         if (!confirm.isConfirmed) return;
 
         try {
-            const token = localStorage.getItem("access_token");
-
             await Promise.all(
                 ids.map((id) =>
-                    axiosPublic.delete(`/admin/delete-sub-category/${id}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    })
+                    axiosSecure.delete(`/admin/delete-sub-category/${id}`)
                 )
             );
 
@@ -59,13 +55,9 @@ const ShowAllCategories = () => {
         if (!confirm.isConfirmed) return;
 
         try {
-            const token = localStorage.getItem("access_token");
-
             await Promise.all(
                 ids.map((id) =>
-                    axiosPublic.put(`/admin/disable-or-enable-sub-category/${id}`, {}, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    })
+                    axiosSecure.put(`/admin/disable-or-enable-sub-category/${id}`, {})
                 )
             );
 
@@ -95,11 +87,8 @@ const ShowAllCategories = () => {
         }
 
         try {
-            const token = localStorage.getItem("access_token");
-            await axiosPublic.put(`/admin/updateSubCategory/${id}`, {
+            await axiosSecure.put(`/admin/updateSubCategory/${id}`, {
                 name: newName,
-            }, {
-                headers: { Authorization: `Bearer ${token}` },
             });
 
             await Swal.fire("Updated!", "Category name updated successfully.", "success");

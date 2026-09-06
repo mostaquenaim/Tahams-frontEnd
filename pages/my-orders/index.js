@@ -36,9 +36,9 @@ const ShowOrders = () => {
             <Head>
                 <title>My Orders - Tahams</title>
             </Head>
-            <div className='min-h-screen bg-gray-100 p-8 pt-60 lg:pt-60'>
+            <div className='min-h-screen bg-gray-100 p-8 pt-48 lg:pt-60'>
                 <h1 className='text-3xl font-bold text-center mb-4'>Orders</h1>
-                <div className='container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center'>
+                <div className='max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center'>
                     {loading ? (
                         <Loading />
                     ) : groupedOrdersArray.length > 0 ? (

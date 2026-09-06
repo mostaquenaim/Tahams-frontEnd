@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 import toast from 'react-hot-toast';
 import Head from 'next/head';
@@ -10,6 +11,7 @@ import Loading from '/components/Loading';
 const AddNewArrivals = () => {
   const [subSubCategories] = useLoadSubSubCategories();
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   // Initialize form data with existing arrivals and empty slots
   const [formData, setFormData] = useState([]);
@@ -17,14 +19,7 @@ const AddNewArrivals = () => {
   const [previousArrivals, setPreviousArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [token, setToken] = useState('');
   const [isUploading, setIsUploading] = useState({});
-
-  // access token
-  useEffect(() => {
-    const at = localStorage.getItem('access_token');
-    setToken(at);
-  }, []);
 
   // fetch new arrivals
   useEffect(() => {
@@ -158,13 +153,12 @@ const AddNewArrivals = () => {
         formDataToSend.append('filename', compressed);
       }
 
-      const response = await axiosPublic.post(
+      const response = await axiosSecure.post(
         'admin/add-new-arrivals',
         formDataToSend,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
           },
         },
       );
@@ -210,15 +204,7 @@ const AddNewArrivals = () => {
     if (!confirm) return;
 
     try {
-      await axiosPublic.patch(
-        `/admin/discontinue-new-arrival/${item.id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      await axiosSecure.patch(`/admin/discontinue-new-arrival/${item.id}`, {});
 
       toast.success('Arrival discontinued');
 

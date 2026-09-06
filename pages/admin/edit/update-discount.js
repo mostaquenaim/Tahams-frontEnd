@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 import ProductFormComp from "../../../components/Product/ProductFormComp";
-import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useLoadSubSubCategories from "../../../Hooks/useLoadSubSubCategories";
 import Head from "next/head";
 
 export default function UpdateDiscount() {
-    const axiosPublic = useAxiosPublic();
+    const axiosSecure = useAxiosSecure();
     const [selectedCats, setSelectedCats] = useState([]);
     const [subSubCategories] = useLoadSubSubCategories();
     const [searchTerm, setSearchTerm] = useState("");
@@ -53,7 +53,7 @@ export default function UpdateDiscount() {
         };
 
         try {
-            await axiosPublic.put("/admin/update-discount", payload);
+            await axiosSecure.put("/admin/update-discount", payload);
             toast.success("Discount updated successfully!");
             reset();
             setSelectedCats([]);

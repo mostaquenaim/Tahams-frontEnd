@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import useAxiosPublic from '/./Hooks/useAxiosPublic';
+import useAxiosSecure from '/./Hooks/useAxiosSecure';
 import useLoadPopUps from '/./Hooks/useLoadPopUps';
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
@@ -7,20 +7,13 @@ import Modal from 'react-modal';
 const UpdatePopUp = () => {
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
     const [selectedIndex, setSelectedIndex] = useState(null)
-    const axiosPublic = useAxiosPublic()
+    const axiosSecure = useAxiosSecure()
     const popUps = useLoadPopUps();
     // Initialize with the active popup's ID (if any exists)
     const [activePopupId, setActivePopupId] = useState(() => {
         const activePopup = popUps.find(popup => popup.isActive);
         return activePopup ? activePopup.id : null;
     });
-
-    const [token, setToken] = useState('')
-
-    useEffect(() => {
-        const at = localStorage.getItem('access_token');
-        setToken(at)
-    }, [])
 
     // Update state if popUps data changes
     useEffect(() => {
@@ -36,13 +29,7 @@ const UpdatePopUp = () => {
       // console.log('token');
         // console.log(token);
         try {
-            const res = await axiosPublic.put(`/admin/update-active-pop-up/${selectedIndex}`, {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            )
+            const res = await axiosSecure.put(`/admin/update-active-pop-up/${selectedIndex}`, {})
             // Here you would call your API to update which popup is active
           // console.log(`Updated active popup to ID: ${activePopupId}`);
             alert('Active popup updated successfully!');
