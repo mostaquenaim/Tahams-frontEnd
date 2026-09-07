@@ -173,10 +173,10 @@ const AdminDashboard = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button className="p-1 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100">
+            {/* <button className="p-1 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100">
               <BellIcon className="h-6 w-6" />
               <span className="sr-only">Notifications</span>
-            </button>
+            </button> */}
 
             <Menu as="div" className="relative">
               <Menu.Button className="flex items-center space-x-2 focus:outline-none">
@@ -197,7 +197,7 @@ const AdminDashboard = () => {
               >
                 <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
                   <div className="py-1">
-                    <Menu.Item>
+                    {/* <Menu.Item>
                       {({ active }) => (
                         <a
                           href="#"
@@ -209,7 +209,7 @@ const AdminDashboard = () => {
                           Settings
                         </a>
                       )}
-                    </Menu.Item>
+                    </Menu.Item> */}
                     <Menu.Item>
                       {({ active }) => (
                         <button
