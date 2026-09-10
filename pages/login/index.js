@@ -89,77 +89,35 @@ const Login = () => {
         }
     }
 
-    // Function to generate a random password
-    const generateRandomPassword = () => {
-        const length = 12;
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let password = "";
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * charset.length);
-            password += charset.charAt(randomIndex);
-        }
-        return password;
-    };
-
+    // Google login - the backend verifies our Firebase ID token itself and
+    // finds-or-creates the account from the VERIFIED email, so there's no
+    // client-supplied email/password step here at all (that used to be
+    // spoofable - any known email could be signed into via a leaked/public
+    // secret, with no real Google identity check on the backend side).
     const handleGoogleSignIn = async () => {
         try {
             const result = await signInWithPopup(auth, provider);
-            const loggedInUser = result.user;
-            const userEmail = loggedInUser.email;
-            const userName = loggedInUser.displayName;
-            const proPic = loggedInUser.photoURL;
+            const idToken = await result.user.getIdToken();
 
-            // Generate a random password
-            const generatedPassword = generateRandomPassword();
-            const currentDate = new Date();
+            const response = await axiosPublic.post(
+                '/admin/google-signin',
+                {},
+                { headers: { Authorization: `Bearer ${idToken}` } },
+            );
 
-            const dto = {
-                name: userName,
-                email: userEmail,
-                password: generatedPassword,
-                filename: proPic,
-                loggedInWith: 'Google',
-                created_at: currentDate.toISOString(),
-                updated_at: currentDate.toISOString(),
-                uniqueId: loggedInUser.uid
-            };
-
-            try {
-                // Check if the email is already registered
-                const emailCheckResponse = await axiosPublic.get(`/admin/check-email?email=${userEmail}`);
-              // console.log(emailCheckResponse);
-
-                if (emailCheckResponse.data.status !== 404) {
-                  // console.log("Email already registered");
-                    // You may want to sign out the user here
-                    const response = await axiosPublic.post('/admin/signin',
-                        { email: userEmail, password: process.env.NEXT_PUBLIC_GOOGLE_PASS }
-                    );
-                    // console.log(response.data, 'resp-dat');
-                    localStorage.setItem('access_token', response.data.access_token)
-                    localStorage.setItem('userInfo', JSON.stringify(response.data.data));
-                    localStorage.setItem('email', userEmail);
-                    setSuccess("Logged in")
-                    router.push('dashboard');
-                    return;
-                }
-                else {
-                    const result = await axiosPublic.post('/admin/create', dto);
-                    if (result.data.status >= 400 && result.data.status <= 500) {
-                        setError(result.data.message);
-                        toast.error(result.data.message);
-                    }
-                }
-            } catch (emailCheckError) {
-                if (emailCheckError.response && emailCheckError.response.status !== 404) {
-                    console.error("Email check failed:", emailCheckError.message);
-                    // Sign out the user if email check fails
-                    await logOut();
-                    return;
-                }
+            if (response.data.status >= 200 && response.data.status <= 205) {
+                localStorage.setItem('access_token', response.data.access_token)
+                localStorage.setItem('userInfo', JSON.stringify(response.data.data));
+                localStorage.setItem('email', response.data.data.email);
+                toast.success("Logged in");
+                router.push('dashboard');
+            } else {
+                toast.error(response.data.message || "Google sign-in failed");
+                await logOut();
             }
         } catch (error) {
             console.error("Error during Google sign-in:", error.message);
+            toast.error("Google sign-in failed. Please try again.");
         }
     }
 

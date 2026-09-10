@@ -14,6 +14,8 @@ import {
   FiX,
   FiSearch,
   FiPlus,
+  FiMinus,
+  FiPackage,
 } from 'react-icons/fi';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -27,6 +29,9 @@ const ShowProducts = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editedProducts, setEditedProducts] = useState({});
+  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [stockModalProduct, setStockModalProduct] = useState(null);
+  const [savingStock, setSavingStock] = useState(false);
   const axiosSecure = useAxiosSecure();
   const [syncing, setSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -187,12 +192,12 @@ const ShowProducts = () => {
 
   const handleSave = async (productId) => {
     const updates = editedProducts[productId];
+    if (!updates || Object.keys(updates).length === 0) return;
+
+    setSavingStock(true);
     try {
-      // NOTE: this route does not exist on the backend yet - stock saves
-      // currently 404. Tracked as a pending backend feature.
       await axiosSecure.put(`/admin/update-product-stock/${productId}`, {
         stockChanges: updates,
-        email: user?.email,
       });
       refetch();
       setEditedProducts((prev) => {
@@ -200,9 +205,24 @@ const ShowProducts = () => {
         delete updated[productId];
         return updated;
       });
+      setIsStockModalOpen(false);
+      setStockModalProduct(null);
     } catch (error) {
       console.error('Error updating product stock:', error);
+    } finally {
+      setSavingStock(false);
     }
+  };
+
+  const openStockModal = (product) => {
+    setStockModalProduct(product);
+    setIsStockModalOpen(true);
+  };
+
+  const closeStockModal = () => {
+    if (stockModalProduct) handleCancel(stockModalProduct.id);
+    setStockModalProduct(null);
+    setIsStockModalOpen(false);
   };
 
   const handleSyncViews = async () => {
@@ -469,6 +489,13 @@ const ShowProducts = () => {
                                 <FiCopy size={14} />
                                 Duplicate
                               </button>
+                              <button
+                                onClick={() => openStockModal(product)}
+                                className="text-emerald-600 hover:text-emerald-900 flex items-center gap-1"
+                              >
+                                <FiPackage size={14} />
+                                Stock
+                              </button>
                             </div>
                           </td>
                         </motion.tr>
@@ -581,6 +608,107 @@ const ShowProducts = () => {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Manage Stock Modal */}
+      <Modal
+        isOpen={isStockModalOpen}
+        onRequestClose={closeStockModal}
+        contentLabel="Manage Stock"
+        className="modal"
+        overlayClassName="modal-overlay"
+      >
+        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col">
+          <div className="p-6 pb-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-800">Manage Stock</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {stockModalProduct?.name}
+            </p>
+          </div>
+
+          <div className="p-6 overflow-y-auto flex-1 space-y-1">
+            {stockModalProduct?.pscs?.length ? (
+              stockModalProduct.pscs.map((psc) => {
+                const pendingChange =
+                  (editedProducts[stockModalProduct.id] || {})[psc.id] || 0;
+                const displayQty = psc.quantity + pendingChange;
+
+                return (
+                  <div
+                    key={psc.id}
+                    className="flex items-center justify-between gap-4 py-3 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="text-sm text-gray-700">
+                      <span className="font-medium">{psc.category?.name}</span>
+                      {psc.size?.name && (
+                        <span className="text-gray-400">
+                          {' '}
+                          &middot; {psc.size.name}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleQuantityChange(stockModalProduct.id, psc.id, -1)
+                        }
+                        disabled={displayQty <= 0}
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <FiMinus size={14} />
+                      </button>
+                      <span
+                        className={`w-8 text-center text-sm font-semibold ${
+                          pendingChange !== 0
+                            ? 'text-indigo-600'
+                            : 'text-gray-800'
+                        }`}
+                      >
+                        {displayQty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleQuantityChange(stockModalProduct.id, psc.id, 1)
+                        }
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        <FiPlus size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-gray-500">
+                No size/category rows for this product.
+              </p>
+            )}
+          </div>
+
+          <div className="p-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              onClick={closeStockModal}
+              disabled={savingStock}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-40"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleSave(stockModalProduct.id)}
+              disabled={
+                savingStock ||
+                !Object.keys(editedProducts[stockModalProduct?.id] || {})
+                  .length
+              }
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <FiSave size={14} />
+              {savingStock ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
         </div>
       </Modal>

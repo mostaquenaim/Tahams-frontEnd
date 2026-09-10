@@ -73,38 +73,39 @@ const Register = () => {
             if (response.data.success) {
                 setError('');
 
-                // Complete registration
-                const result = await axiosPublic.post('/admin/create', userData);
-                if (result.data.status >= 400 && result.data.status <= 500) {
-                    setError(result.data.message);
-                    toast.error(result.data.message);
-                } else {
-                    // Create user in Firebase
-                    try {
-                        const userCredential = await createUser(userData.email, userData.password);
-                      // console.log('Firebase user created:', userCredential.user);
-                        toast.success('Thank you for registering');
-                        await axiosPublic.post('/admin/signin', {
-                            email: userData.email,
-                            password: userData.password,
-                        });
+                // Complete registration - customer-login is the public,
+                // role-safe creation endpoint (/admin/create is admin-only)
+                try {
+                    await axiosPublic.post('/admin/customer-login', userData);
+                } catch (createError) {
+                    const msg = createError.response?.data?.message || 'Registration failed';
+                    setError(msg);
+                    toast.error(msg);
+                    return;
+                }
 
-                        // console.log(result.data,'breaak',result.data.data);
-                        localStorage.setItem('access_token', response.data.access_token)
+                // Create user in Firebase
+                try {
+                    const userCredential = await createUser(userData.email, userData.password);
+                  // console.log('Firebase user created:', userCredential.user);
+                    toast.success('Thank you for registering');
+                    const signInResponse = await axiosPublic.post('/admin/signin', {
+                        email: userData.email,
+                        password: userData.password,
+                    });
 
-                        localStorage.setItem('userInfo', JSON.stringify(result.data.data));
+                    localStorage.setItem('access_token', signInResponse.data.access_token)
+                    localStorage.setItem('userInfo', JSON.stringify(signInResponse.data.data));
 
-                        router.push('/login');
-                    } catch (firebaseError) {
-                        console.error('Firebase error:', firebaseError.message);
-                        setError(firebaseError.message);
-                        toast.error(firebaseError.message);
-                    }
-                    finally {
-                        localStorage.removeItem('userData')
-                      // console.log("Registration successful");
-                    }
-
+                    router.push('/login');
+                } catch (firebaseError) {
+                    console.error('Firebase error:', firebaseError.message);
+                    setError(firebaseError.message);
+                    toast.error(firebaseError.message);
+                }
+                finally {
+                    localStorage.removeItem('userData')
+                  // console.log("Registration successful");
                 }
             } else {
                 console.error("Invalid OTP");
