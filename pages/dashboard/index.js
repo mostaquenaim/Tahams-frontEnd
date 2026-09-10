@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 const Dashboard = () => {
   const { user, logOut, loading } = useContext(AuthContext);
   const [userData, setUserData] = useState('');
-  const [orders] = useOrder(1,100, true, true);
+  const [orders] = useOrder(1,10, true, true);
   const [isPending, wish] = useWish();
   const [isLoading, cart] = useCart();
 
