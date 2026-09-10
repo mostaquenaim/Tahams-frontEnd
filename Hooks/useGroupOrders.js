@@ -33,6 +33,11 @@ const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems = false
 
     const res = await axiosSecure.get(
       `/admin/get-grouped-buying-history?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      },
     );
 
     const {
