@@ -61,7 +61,6 @@ const Login = () => {
                     localStorage.setItem('email', response.data.data.email);
                 } catch (firebaseError) {
                     console.error('Firebase error:', firebaseError.message);
-                    setError(firebaseError.message);
                     toast.error(firebaseError.message);
                 }
 

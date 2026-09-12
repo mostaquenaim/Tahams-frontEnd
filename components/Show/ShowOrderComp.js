@@ -43,7 +43,7 @@ const ShowOrderComp = ({ group, idx }) => {
         <div className="flex items-center gap-4 text-xs text-gray-600">
           <div className="flex items-center gap-1.5">
             <FaCalendarAlt className="w-3 h-3" />
-            <span>{new Date(group.history.BuyingDate).toLocaleDateString('en-US', {
+            <span>{new Date(group.history?.BuyingDate).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'short',
               day: 'numeric',
@@ -51,7 +51,7 @@ const ShowOrderComp = ({ group, idx }) => {
           </div>
           <div className="flex items-center gap-1.5">
             <FaCreditCard className="w-3 h-3" />
-            <span>{group.history.paymentMethod.name}</span>
+            <span>{group.history?.paymentMethod?.name || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -60,27 +60,27 @@ const ShowOrderComp = ({ group, idx }) => {
       <div className="p-4">
         <div className="grid grid-cols-2 gap-3 mb-4">
           {group.orders.slice(0, 4).map((order, idx) => (
-            <Link key={idx} href={`/products/details/${order.product.productId}`}>
+            <Link key={idx} href={`/products/details/${order.product?.productId}`}>
               <span className="group block">
                 <div className="relative bg-gray-50 rounded-xl overflow-hidden border border-gray-200 hover:border-blue-400 transition-all">
                   <div className="aspect-square relative">
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
-                      alt={order.product.name}
+                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product?.filename}`}
+                      alt={order.product?.name || 'Product'}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <p className="text-white text-xs font-semibold line-clamp-2">
-                        {order.product.name}
+                        {order.product?.name || 'Unavailable product'}
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-2 px-1">
                   <h3 className="text-xs font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                    {order.product.name}
+                    {order.product?.name || 'Unavailable product'}
                   </h3>
                   <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                     <span>Size: {order.size}</span>
@@ -128,7 +128,7 @@ const ShowOrderComp = ({ group, idx }) => {
 
       {/* View Details Button */}
       <div className="px-4 pb-4">
-        <Link href={`my-orders/details/${group.history.trackingToken}`}>
+        <Link href={`my-orders/details/${group.history?.trackingToken}`}>
           <span className="block w-full">
             <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:shadow-gray-900/20 font-semibold text-sm">
               <FaEye className="w-4 h-4" />
