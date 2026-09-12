@@ -199,8 +199,8 @@ const ShowOrders = (data) => {
             bValue = new Date(b.history?.BuyingDate).getTime();
             break;
           case 'status':
-            aValue = a.history?.deliveryStatus.name.toLowerCase();
-            bValue = b.history?.deliveryStatus.name.toLowerCase();
+            aValue = (a.history?.deliveryStatus?.name || '').toLowerCase();
+            bValue = (b.history?.deliveryStatus?.name || '').toLowerCase();
             break;
           case 'payment':
             aValue = (a.history?.paymentMethod?.name || '').toLowerCase();
@@ -269,7 +269,7 @@ const ShowOrders = (data) => {
       }),
 
       ...(columnConfig.products && {
-        Products: order.orders.map((o) => o.product.name).join(', '),
+        Products: order.orders.map((o) => o.product?.name || 'Unavailable product').join(', '),
       }),
 
       ...(columnConfig.payment && {
@@ -281,7 +281,7 @@ const ShowOrders = (data) => {
       }),
 
       ...(columnConfig.status && {
-        Status: order.history?.deliveryStatus.name,
+        Status: order.history?.deliveryStatus?.name || 'N/A',
       }),
 
       ...(columnConfig.notes && {
@@ -789,15 +789,15 @@ const ShowOrders = (data) => {
                                 group.history.courierInfo.order_status_slug ===
                                   'Pickup_Cancelled'
                               ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
-                              : group.history.deliveryStatus.id === 6 ||
+                              : group.history?.deliveryStatus?.id === 6 ||
                                   (group.history?.courierInfo &&
                                     group.history.courierInfo
                                       .order_status_slug === 'Delivered')
                                 ? 'border-l-emerald-400 bg-emerald-50 hover:bg-emerald-100'
-                                : group.history.deliveryStatus.id > 6
+                                : group.history?.deliveryStatus?.id > 6
                                   ? 'border-l-red-400 bg-red-50 hover:bg-red-100/50'
                                   : group.history.isChecked
-                                    ? group.history.deliveryStatus.id !== 1
+                                    ? group.history?.deliveryStatus?.id !== 1
                                       ? 'border-l-amber-400 bg-amber-50 hover:bg-amber-100/60'
                                       : 'border-l-amber-300 bg-amber-50 hover:bg-amber-100/40'
                                     : 'border-l-blue-300 bg-white hover:bg-blue-50/50'
@@ -854,11 +854,11 @@ const ShowOrders = (data) => {
                               {group.orders.map((order, idx) => (
                                 <Link
                                   key={idx}
-                                  href={`/products/details/${order.product.productId}`}
+                                  href={`/products/details/${order.product?.productId}`}
                                   className="inline-flex items-center px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 hover:text-blue-800 transition-colors"
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  {order.product.name}
+                                  {order.product?.name || 'Unavailable product'}
                                 </Link>
                               ))}
                             </div>
@@ -915,7 +915,7 @@ const ShowOrders = (data) => {
                             >
                               {group.history?.courierInfo
                                 ? group.history.courierInfo.order_status
-                                : group.history.deliveryStatus.name}
+                                : group.history?.deliveryStatus?.name || 'Unknown'}
                             </span>
                           </td>
                         )}
