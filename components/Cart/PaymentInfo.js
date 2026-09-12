@@ -76,7 +76,14 @@ const PaymentInfo = ({ history }) => {
           duration: 3000,
           icon: '✅',
         });
-        setTimeout(() => router.push('/my-orders'), 2000);
+        // /my-orders only lists orders for a logged-in Firebase account (see
+        // Hooks/useOrder.js) - guests have no session to prove ownership by
+        // email, so send everyone to the per-order tracking-token page instead,
+        // which both guests and logged-in customers can load.
+        setTimeout(
+          () => router.push(`/my-orders/details/${history[0].history.trackingToken}`),
+          2000,
+        );
       } else {
         toast.error('Payment failed. Try again.');
       }
