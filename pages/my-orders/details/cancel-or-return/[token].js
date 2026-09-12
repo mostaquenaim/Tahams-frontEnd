@@ -11,20 +11,44 @@ const CancelOrReturn = () => {
     const [orderDetails, setOrderDetails] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // Same fallback as the order-details page: a guest who still has this
+    // link but lost the localStorage identity they checked out with can
+    // verify with their phone number instead (see
+    // AdminService.getBuyingHistoryByToken).
+    const [needsPhoneVerification, setNeedsPhoneVerification] = useState(false);
+    const [phoneInput, setPhoneInput] = useState('');
+    const [verifyingPhone, setVerifyingPhone] = useState(false);
 
     const router = useRouter();
     const { user } = useContext(AuthContext);
     const { token } = router.query;
     const axiosPublic = useAxiosPublic();
+    const [ownerEmail, setOwnerEmail] = useState(null);
+    const [ownerPhone, setOwnerPhone] = useState(null);
 
     useEffect(() => {
         const fetchOrderDetails = async () => {
             if (token) {
                 const userEmail = localStorage.getItem('email');
+                const guestEmail =
+                    typeof window !== 'undefined' &&
+                    JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
+                const email = user?.email || userEmail || guestEmail;
+
+                if (!email) {
+                    setNeedsPhoneVerification(true);
+                    setLoading(false);
+                    return;
+                }
+
                 try {
-                    const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${user?.email || userEmail}`);
-                    // console.log(response.data);
-                    setOrderDetails(response.data);
+                    const response = await axiosPublic.get(`/admin/get-buying-history-by-token/${token}?email=${email}`);
+                    if (response.data.length === 0) {
+                        setNeedsPhoneVerification(true);
+                    } else {
+                        setOrderDetails(response.data);
+                        setOwnerEmail(email);
+                    }
                 } catch (err) {
                     console.error(err);
                     setError('Failed to fetch order details. Please try again later.');
@@ -36,6 +60,30 @@ const CancelOrReturn = () => {
 
         fetchOrderDetails();
     }, [token, user?.email, axiosPublic]);
+
+    const handlePhoneVerify = async (e) => {
+        e.preventDefault();
+        if (!phoneInput.trim()) return;
+
+        setVerifyingPhone(true);
+        setError(null);
+        try {
+            const response = await axiosPublic.get(
+                `/admin/get-buying-history-by-token/${token}?phone=${encodeURIComponent(phoneInput.trim())}`,
+            );
+            if (response.data.length === 0) {
+                setError('No order found for that phone number on this link.');
+            } else {
+                setOrderDetails(response.data);
+                setOwnerPhone(phoneInput.trim());
+                setNeedsPhoneVerification(false);
+            }
+        } catch (err) {
+            setError('Failed to verify. Please try again later.');
+        } finally {
+            setVerifyingPhone(false);
+        }
+    };
 
     const handleQuantityChange = (itemId, quantity) => {
         setSelectedProducts(prev => {
@@ -55,6 +103,9 @@ const CancelOrReturn = () => {
             const res = await axiosPublic.post('/admin/confirm-return-or-cancellation', {
                 selectedProducts,
                 reason,
+                token,
+                email: ownerEmail,
+                phone: ownerPhone,
             });
 
             if (res.data.success === true) {
@@ -106,6 +157,60 @@ const CancelOrReturn = () => {
             </tr>
         ))
     );
+
+    if (loading) {
+        return (
+            <div className="pt-40 lg:pt-56 flex items-center justify-center min-h-screen">
+                <p className="text-gray-600">Loading...</p>
+            </div>
+        );
+    }
+
+    if (needsPhoneVerification) {
+        return (
+            <>
+                <Head>
+                    <title>Cancellation/Return - {token && token} </title>
+                </Head>
+                <div className="pt-40 lg:pt-56 flex items-center justify-center min-h-screen">
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                            Verify to continue
+                        </h2>
+                        <p className="text-gray-600 text-sm mb-4">
+                            We couldn&apos;t recognize this browser as the one used to place this order.
+                            Enter the phone number used at checkout to verify it&apos;s yours.
+                        </p>
+                        <form onSubmit={handlePhoneVerify} className="flex flex-col gap-3">
+                            <input
+                                type="tel"
+                                value={phoneInput}
+                                onChange={(e) => setPhoneInput(e.target.value)}
+                                placeholder="Phone number used at checkout"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {error && <p className="text-red-600 text-sm">{error}</p>}
+                            <button
+                                type="submit"
+                                disabled={verifyingPhone}
+                                className="bg-blue-600 text-white font-semibold rounded-lg py-2.5 hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            >
+                                {verifyingPhone ? 'Checking...' : 'Continue'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="pt-40 lg:pt-56 flex items-center justify-center min-h-screen">
+                <p className="text-red-600">{error}</p>
+            </div>
+        );
+    }
 
     return (
         <>

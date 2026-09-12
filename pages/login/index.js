@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { FcGoogle } from "react-icons/fc";
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '/firebase'
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { mergeGuestCartIntoAccount } from '../../utils/guestCustomer';
 import toast from 'react-hot-toast';
 import Head from 'next/head';
 
@@ -39,53 +40,79 @@ const Login = () => {
         }
     }, [user]);
 
-    const onsubmit = async (data) => {
-        // console.log(data);
+    const storeSession = async (sessionData) => {
+        toast.success('Logged in');
+        localStorage.setItem('access_token', sessionData.access_token)
+        localStorage.setItem('userInfo', JSON.stringify(sessionData.data));
+        localStorage.setItem('email', sessionData.data.email);
+        await mergeGuestCartIntoAccount(axiosPublic, sessionData.data.email);
+    };
 
+    const onsubmit = async (data) => {
+        // 1. Try this backend's own password check first. Admin accounts
+        // (created via scripts/seed-admin.ts) only ever exist here, never
+        // in Firebase, since the admin panel is gated purely by this
+        // backend's JWT - so this is the only path that can ever log them
+        // in at all.
         try {
-            // Sending a POST request to the sign-in endpoint
             const response = await axiosPublic.post('/admin/signin', {
                 email: data.email,
                 password: data.password,
             });
-            // console.log(response.data, 40);
 
             if (response.data.status >= 200 && response.data.status <= 205) {
-                try {
-                    const userCredential = await signIn(data.email, data.password);
-                  // console.log('Firebase user logged in:', userCredential.user);
-                    toast.success('Logged in');
-                    // console.log(JSON.stringify(response.data.data));
-                    localStorage.setItem('access_token', response.data.access_token)
-                    localStorage.setItem('userInfo', JSON.stringify(response.data.data));
-                    localStorage.setItem('email', response.data.data.email);
-                } catch (firebaseError) {
-                    console.error('Firebase error:', firebaseError.message);
-                    setError(firebaseError.message);
-                    toast.error(firebaseError.message);
+                const loggedInUser = response.data.data;
+
+                if (loggedInUser.role === 'admin') {
+                    await storeSession(response.data);
+                    return;
                 }
 
-              // console.log("Registration successful");
-            } else {
-                // console.log(response);
-                toast.error(response.data.error.message || "Invalid credentials");
+                // A customer account: also sign in to Firebase with the
+                // same password so the rest of the storefront (cart,
+                // wishlist, order ownership - all keyed off Firebase's auth
+                // state) recognizes this session too.
+                try {
+                    await signIn(data.email, data.password);
+                    await storeSession(response.data);
+                    return;
+                } catch (firebaseError) {
+                    // Backend password matched but Firebase didn't - most
+                    // likely this password was reset via Firebase's
+                    // forgot-password flow and this backend's copy is now
+                    // stale. Fall through to the Firebase-first path below
+                    // instead of failing the login outright.
+                    console.error('Firebase error after backend match:', firebaseError.message);
+                }
             }
         } catch (error) {
-            console.error("Error: " + error.message);
-            // Differentiating between different error types
-            if (error.response) {
-                // Server responded with a status other than 200 range
-                console.error("Error response: ", error.response.data);
-                toast.error(error.response.data.message || "An error occurred during login");
-            } else if (error.request) {
-                // Request was made but no response was received
-                console.error("Error request: ", error.request);
-                toast.error("No response from server. Please try again later.");
+            console.error('Backend sign-in error, trying Firebase next:', error.message);
+        }
+
+        // 2. Firebase-first fallback - covers a customer whose Firebase
+        // password no longer matches this backend's (stale) copy, e.g.
+        // after a Firebase forgot-password reset. Firebase is the actual
+        // password check here; this backend only exchanges the verified ID
+        // token for our JWT (see AdminService.firebaseSignIn) and never
+        // sees the password itself.
+        try {
+            const userCredential = await signIn(data.email, data.password);
+            const idToken = await userCredential.user.getIdToken();
+
+            const response = await axiosPublic.post(
+                '/admin/firebase-signin',
+                {},
+                { headers: { Authorization: `Bearer ${idToken}` } },
+            );
+
+            if (response.data.status >= 200 && response.data.status <= 205) {
+                await storeSession(response.data);
             } else {
-                // Something else happened while setting up the request
-                console.error("Error message: ", error.message);
-                toast.error("An unexpected error occurred. Please try again.");
+                toast.error(response.data.message || "Invalid email or password");
             }
+        } catch (error) {
+            console.error("Firebase sign-in failed:", error.message);
+            toast.error("Invalid email or password");
         }
     }
 
@@ -94,31 +121,49 @@ const Login = () => {
     // client-supplied email/password step here at all (that used to be
     // spoofable - any known email could be signed into via a leaked/public
     // secret, with no real Google identity check on the backend side).
-    const handleGoogleSignIn = async () => {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const idToken = await result.user.getIdToken();
+    //
+    // Uses a full-page redirect rather than a popup: signInWithPopup relies
+    // on the opener being able to inspect/close the popup window, which a
+    // Cross-Origin-Opener-Policy: same-origin response header blocks -
+    // Firebase then reports a spurious "popup-closed-by-user" error even
+    // though the user never closed anything. Redirect sidesteps that
+    // entirely and also works on mobile browsers that block popups outright.
+    const completeGoogleSignIn = async (idToken) => {
+        const response = await axiosPublic.post(
+            '/admin/google-signin',
+            {},
+            { headers: { Authorization: `Bearer ${idToken}` } },
+        );
 
-            const response = await axiosPublic.post(
-                '/admin/google-signin',
-                {},
-                { headers: { Authorization: `Bearer ${idToken}` } },
-            );
-
-            if (response.data.status >= 200 && response.data.status <= 205) {
-                localStorage.setItem('access_token', response.data.access_token)
-                localStorage.setItem('userInfo', JSON.stringify(response.data.data));
-                localStorage.setItem('email', response.data.data.email);
-                toast.success("Logged in");
-                router.push('dashboard');
-            } else {
-                toast.error(response.data.message || "Google sign-in failed");
-                await logOut();
-            }
-        } catch (error) {
-            console.error("Error during Google sign-in:", error.message);
-            toast.error("Google sign-in failed. Please try again.");
+        if (response.data.status >= 200 && response.data.status <= 205) {
+            await storeSession(response.data);
+            router.push('/dashboard');
+        } else {
+            toast.error(response.data.message || "Google sign-in failed");
+            await logOut();
         }
+    };
+
+    useEffect(() => {
+        const checkRedirectResult = async () => {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result?.user) {
+                    const idToken = await result.user.getIdToken();
+                    await completeGoogleSignIn(idToken);
+                }
+            } catch (error) {
+                console.error("Error completing Google sign-in:", error.message);
+                toast.error("Google sign-in failed. Please try again.");
+            }
+        };
+
+        checkRedirectResult();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleGoogleSignIn = () => {
+        signInWithRedirect(auth, provider);
     }
 
     // toggle password show 

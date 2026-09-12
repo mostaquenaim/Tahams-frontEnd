@@ -8,7 +8,7 @@ export default function SessionCheck () {
   useEffect(() => {
     const session = localStorage.getItem('email');
     if (!session) {
-      router.push('../../admin/Auth/sign-in');
+      router.push('/login');
     }
     
   }, []);

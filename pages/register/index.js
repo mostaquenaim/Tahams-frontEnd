@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useContext, useState } from 'react';
 import axios from 'axios';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { mergeGuestCartIntoAccount } from '../../utils/guestCustomer';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
@@ -89,13 +90,16 @@ const Register = () => {
                     const userCredential = await createUser(userData.email, userData.password);
                   // console.log('Firebase user created:', userCredential.user);
                     toast.success('Thank you for registering');
-                    const signInResponse = await axiosPublic.post('/admin/signin', {
-                        email: userData.email,
-                        password: userData.password,
-                    });
+                    const idToken = await userCredential.user.getIdToken();
+                    const signInResponse = await axiosPublic.post(
+                        '/admin/firebase-signin',
+                        {},
+                        { headers: { Authorization: `Bearer ${idToken}` } },
+                    );
 
                     localStorage.setItem('access_token', signInResponse.data.access_token)
                     localStorage.setItem('userInfo', JSON.stringify(signInResponse.data.data));
+                    await mergeGuestCartIntoAccount(axiosPublic, userData.email);
 
                     router.push('/login');
                 } catch (firebaseError) {

@@ -22,6 +22,14 @@ const OrderDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+  // Shown when the email this browser knows (or has none of) doesn't match
+  // the order - lets a guest who still has the link, but lost the
+  // localStorage identity they checked out with, verify with their phone
+  // number instead (the same proof-of-ownership the backend now accepts -
+  // see AdminService.getBuyingHistoryByToken).
+  const [needsPhoneVerification, setNeedsPhoneVerification] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
 
@@ -30,33 +38,62 @@ const OrderDetails = () => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      if (token) {
-        try {
-          const userEmail = localStorage.getItem('email');
-          const tmpEmail =
-            user?.email ||
-            userEmail ||
-            (typeof window !== 'undefined' &&
-              JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email);
+      if (!token) return;
 
-          if (!tmpEmail) {
-            throw new Error('No email found for the user or guest');
-          }
+      const userEmail = localStorage.getItem('email');
+      const tmpEmail =
+        user?.email ||
+        userEmail ||
+        (typeof window !== 'undefined' &&
+          JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email);
 
-          const response = await axiosPublic.get(
-            `/admin/get-buying-history-by-token/${token}?email=${tmpEmail}`,
-          );
+      if (!tmpEmail) {
+        setNeedsPhoneVerification(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axiosPublic.get(
+          `/admin/get-buying-history-by-token/${token}?email=${tmpEmail}`,
+        );
+        if (response.data.length === 0) {
+          setNeedsPhoneVerification(true);
+        } else {
           setOrderDetails(response.data);
-        } catch (err) {
-          setError('Failed to fetch order details. Please try again later.');
-        } finally {
-          setLoading(false);
         }
+      } catch (err) {
+        setError('Failed to fetch order details. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchOrderDetails();
   }, [router.query, user?.email]);
+
+  const handlePhoneVerify = async (e) => {
+    e.preventDefault();
+    if (!phoneInput.trim()) return;
+
+    setVerifyingPhone(true);
+    setError(null);
+    try {
+      const response = await axiosPublic.get(
+        `/admin/get-buying-history-by-token/${token}?phone=${encodeURIComponent(phoneInput.trim())}`,
+      );
+      if (response.data.length === 0) {
+        setError('No order found for that phone number on this link.');
+      } else {
+        setOrderDetails(response.data);
+        setNeedsPhoneVerification(false);
+      }
+    } catch (err) {
+      setError('Failed to verify. Please try again later.');
+    } finally {
+      setVerifyingPhone(false);
+    }
+  };
 
   const toggleOptions = () => {
     setShowOptions(!showOptions);
@@ -76,6 +113,38 @@ const OrderDetails = () => {
       <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md">
         <MdErrorOutline className="text-5xl text-red-500 mx-auto mb-4" />
         <p className="text-red-700 text-center text-lg font-medium">{error}</p>
+      </div>
+    </div>
+  );
+
+  const PhoneVerification = () => (
+    <div className="flex justify-center items-center h-96">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+        <MdPhone className="text-4xl text-blue-600 mx-auto mb-4" />
+        <h2 className="text-lg font-semibold text-gray-800 mb-2">
+          Verify to view this order
+        </h2>
+        <p className="text-gray-600 text-sm mb-4">
+          We couldn&apos;t recognize this browser as the one used to place this order.
+          Enter the phone number used at checkout to verify it&apos;s yours.
+        </p>
+        <form onSubmit={handlePhoneVerify} className="flex flex-col gap-3">
+          <input
+            type="tel"
+            value={phoneInput}
+            onChange={(e) => setPhoneInput(e.target.value)}
+            placeholder="Phone number used at checkout"
+            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={verifyingPhone}
+            className="bg-blue-600 text-white font-semibold rounded-lg py-2.5 hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {verifyingPhone ? 'Checking...' : 'View order'}
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -311,21 +380,23 @@ const OrderDetails = () => {
                       Name
                     </p>
                     <p className="text-gray-800 font-medium">
-                      {orderDetails[0].customer.name}
+                      {orderDetails[0].customer?.name || orderDetails[0].history?.fullName || 'N/A'}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start">
-                  <MdEmail className="text-blue-600 text-xl mr-3 mt-1" />
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">
-                      Email
-                    </p>
-                    <p className="text-gray-800 font-medium break-all">
-                      {orderDetails[0].customer.email}
-                    </p>
+                {orderDetails[0].customer?.email && (
+                  <div className="flex items-start">
+                    <MdEmail className="text-blue-600 text-xl mr-3 mt-1" />
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">
+                        Email
+                      </p>
+                      <p className="text-gray-800 font-medium break-all">
+                        {orderDetails[0].customer.email}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="flex items-start">
                   <MdPhone className="text-blue-600 text-xl mr-3 mt-1" />
                   <div>
@@ -365,10 +436,12 @@ const OrderDetails = () => {
       <div className="container mx-auto px-4 py-8 pt-24 md:pt-32 lg:pt-44">
         {loading ? (
           <LoadingIndicator />
-        ) : error ? (
-          <ErrorMessage />
         ) : orderDetails.length > 0 ? (
           <OrderInfo />
+        ) : needsPhoneVerification ? (
+          <PhoneVerification />
+        ) : error ? (
+          <ErrorMessage />
         ) : (
           <div className="flex justify-center items-center h-96">
             <div className="text-center">

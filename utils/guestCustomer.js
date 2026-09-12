@@ -37,3 +37,27 @@ export const addGuestOrderToken = (token) => {
 export const getGuestOrderTokens = () => {
     return JSON.parse(localStorage.getItem('guestOrderTokens')) || [];
 };
+
+// Reassigns whatever cart items/orders this browser's guest identity had
+// (still just this synthetic localStorage email, never anything the
+// account actually owns) over to the real account that just logged in or
+// registered - otherwise items added before signing in silently disappear
+// from the account's cart, since they stayed tied to the guest email.
+// Clears guestCustomerInfo afterward so a later logged-out guest session on
+// this browser starts a fresh identity instead of reusing an already-merged
+// one.
+export const mergeGuestCartIntoAccount = async (axiosClient, realEmail) => {
+    if (typeof window === 'undefined' || !realEmail) return;
+
+    const guestInfo = JSON.parse(localStorage.getItem('guestCustomerInfo') || 'null');
+    const guestEmail = guestInfo?.email;
+
+    if (!guestEmail || guestEmail === realEmail) return;
+
+    try {
+        await axiosClient.post('/admin/merge-guest-cart', { guestEmail, realEmail });
+        localStorage.removeItem('guestCustomerInfo');
+    } catch (error) {
+        console.error('Failed to merge guest cart:', error.message);
+    }
+};

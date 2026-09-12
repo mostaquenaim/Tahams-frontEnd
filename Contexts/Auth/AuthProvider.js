@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { GoogleAuthProvider, createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithRedirect, signOut } from "firebase/auth";
 import PropTypes from "prop-types"; // Import PropTypes
 import { auth } from '/firebase'
 
@@ -27,16 +27,13 @@ const AuthProvider = ({ children }) => {
         return signOut(auth);
     }
 
+    // Redirect instead of popup - signInWithPopup breaks under a
+    // Cross-Origin-Opener-Policy: same-origin response header (Firebase
+    // can't inspect/close the popup, and reports a spurious
+    // "popup-closed-by-user" error). onAuthStateChanged above picks up the
+    // signed-in user once Firebase completes the redirect back.
     const handleGoogleSignIn = () => {
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                setUser(result.user);
-                
-            }).catch((error) => {
-              // console.log(error.message)
-                // ...
-            });
-
+        signInWithRedirect(auth, provider);
     }
 
     useEffect(() => {
