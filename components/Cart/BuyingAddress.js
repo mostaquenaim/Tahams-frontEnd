@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { DeliveryContext } from '../../Contexts/DeliveryFee';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
+import { addGuestOrderToken } from '../../utils/guestCustomer';
 import { MapPin, Store, Truck, CheckCircle2 } from 'lucide-react';
 
 const DISPLAY_CENTERS = [
@@ -308,6 +309,10 @@ const BuyingAddress = ({ data, notes }) => {
       const tempItems = generateTempItems(cartItems);
 
       const response = await axiosPublic.post(`/admin/add-to-buy`, orderData);
+
+      if (!user && response.data?.trackingToken) {
+        addGuestOrderToken(response.data.trackingToken);
+      }
 
       const finalConfirm = await Swal.fire({
         title: 'Order Confirmed',

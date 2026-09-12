@@ -18,3 +18,22 @@ export const getGuestCustomerInfo = (user) => {
 
     return guestCustomerInfo;
 }
+
+// Remembers a tracking token this guest's browser has earned by placing an
+// order, so /my-orders can list them later without a login. This is the
+// same proof-of-ownership the per-order lookup already relies on (token +
+// matching email) - it never introduces a plain email-only lookup, which
+// would be an IDOR (see admin.service.ts's getAllBuyingHistories comments).
+export const addGuestOrderToken = (token) => {
+    if (!token) return;
+
+    const tokens = JSON.parse(localStorage.getItem('guestOrderTokens')) || [];
+    if (!tokens.includes(token)) {
+        tokens.push(token);
+        localStorage.setItem('guestOrderTokens', JSON.stringify(tokens));
+    }
+};
+
+export const getGuestOrderTokens = () => {
+    return JSON.parse(localStorage.getItem('guestOrderTokens')) || [];
+};
