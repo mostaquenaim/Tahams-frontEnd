@@ -61,11 +61,17 @@ const Login = () => {
             });
 
             if (response.data.status >= 200 && response.data.status <= 205) {
-                const loggedInUser = response.data.data;
-
-                if (loggedInUser.role === 'admin') {
-                    await storeSession(response.data);
-                    return;
+                try {
+                    const userCredential = await signIn(data.email, data.password);
+                  // console.log('Firebase user logged in:', userCredential.user);
+                    toast.success('Logged in');
+                    // console.log(JSON.stringify(response.data.data));
+                    localStorage.setItem('access_token', response.data.access_token)
+                    localStorage.setItem('userInfo', JSON.stringify(response.data.data));
+                    localStorage.setItem('email', response.data.data.email);
+                } catch (firebaseError) {
+                    console.error('Firebase error:', firebaseError.message);
+                    toast.error(firebaseError.message);
                 }
 
                 // A customer account: also sign in to Firebase with the
