@@ -156,7 +156,28 @@ const ShowOrderDetails = () => {
     );
   };
 
-  const getStatusColor = (statusId) => {
+  // The backend overwrites deliveryStatus.name with the courier's status
+  // when courier info exists (see getOrderGroupByHistoryId) but leaves
+  // deliveryStatus.id alone, so colouring by id while labelling by name
+  // produced badges like a green one reading "CANCELLED". Take both from
+  // the same source, with the same precedence the orders list uses.
+  const FAILED_COURIER_SLUGS = [
+    'cancelled',
+    'pickup_cancelled',
+    'returned',
+    'return',
+  ];
+
+  const getStatusColor = (history) => {
+    const slug = history?.courierInfo?.order_status_slug?.toLowerCase();
+
+    if (slug) {
+      if (FAILED_COURIER_SLUGS.includes(slug)) return 'bg-red-500';
+      if (slug === 'delivered') return 'bg-emerald-500';
+      return 'bg-amber-500';
+    }
+
+    const statusId = history?.deliveryStatus?.id;
     if (statusId > 6) return 'bg-red-500';
     if (statusId === 6) return 'bg-emerald-500';
     return 'bg-amber-500';
@@ -197,11 +218,13 @@ const ShowOrderDetails = () => {
                       </h1>
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg text-white ${getStatusColor(
-                          history?.deliveryStatus?.id,
+                          history,
                         )}`}
                       >
                         <FaClock className="w-3.5 h-3.5" />
-                        {history?.deliveryStatus?.name}
+                        {history?.courierInfo
+                          ? history.courierInfo.order_status
+                          : history?.deliveryStatus?.name}
                       </span>
                     </div>
                     <p className="text-gray-600">
