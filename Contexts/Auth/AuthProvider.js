@@ -12,14 +12,26 @@ const AuthProvider = ({ children }) => {
     const [showGotoCart, setShowGotoCart] = useState(false)
 
 
+    // onAuthStateChanged below is what normally flips loading back to
+    // false, but it only fires on an actual auth state change - a rejected
+    // sign-in/sign-up (wrong password, email already in use, etc.) never
+    // triggers it, so without the explicit reset here `loading` gets stuck
+    // true forever after any failed attempt, and every page that gates on
+    // it (e.g. /dashboard, /my-orders) shows a permanent spinner.
     const createUser = (email, password) => {
         setLoading(true);
-        return createUserWithEmailAndPassword(auth, email, password);
+        return createUserWithEmailAndPassword(auth, email, password).catch((error) => {
+            setLoading(false);
+            throw error;
+        });
     }
 
     const signIn = (email, password) => {
         setLoading(true);
-        return signInWithEmailAndPassword(auth, email, password);
+        return signInWithEmailAndPassword(auth, email, password).catch((error) => {
+            setLoading(false);
+            throw error;
+        });
     }
 
     const logOut = () => {

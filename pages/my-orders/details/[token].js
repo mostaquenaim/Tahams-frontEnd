@@ -117,38 +117,6 @@ const OrderDetails = () => {
     </div>
   );
 
-  const PhoneVerification = () => (
-    <div className="flex justify-center items-center h-96">
-      <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-        <MdPhone className="text-4xl text-blue-600 mx-auto mb-4" />
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">
-          Verify to view this order
-        </h2>
-        <p className="text-gray-600 text-sm mb-4">
-          We couldn&apos;t recognize this browser as the one used to place this order.
-          Enter the phone number used at checkout to verify it&apos;s yours.
-        </p>
-        <form onSubmit={handlePhoneVerify} className="flex flex-col gap-3">
-          <input
-            type="tel"
-            value={phoneInput}
-            onChange={(e) => setPhoneInput(e.target.value)}
-            placeholder="Phone number used at checkout"
-            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={verifyingPhone}
-            className="bg-blue-600 text-white font-semibold rounded-lg py-2.5 hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {verifyingPhone ? 'Checking...' : 'View order'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-
   const handleCancellation = () => {
     router.push(`cancel-or-return/${token}`);
   };
@@ -439,7 +407,35 @@ const OrderDetails = () => {
         ) : orderDetails.length > 0 ? (
           <OrderInfo />
         ) : needsPhoneVerification ? (
-          <PhoneVerification />
+          <div className="flex justify-center items-center h-96">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+              <MdPhone className="text-4xl text-blue-600 mx-auto mb-4" />
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                Verify to view this order
+              </h2>
+              <p className="text-gray-600 text-sm mb-4">
+                We couldn&apos;t recognize this browser as the one used to place this order.
+                Enter the phone number used at checkout to verify it&apos;s yours.
+              </p>
+              <form onSubmit={handlePhoneVerify} className="flex flex-col gap-3">
+                <input
+                  type="tel"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="Phone number used at checkout"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {error && <p className="text-red-600 text-sm">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={verifyingPhone}
+                  className="bg-blue-600 text-white font-semibold rounded-lg py-2.5 hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {verifyingPhone ? 'Checking...' : 'View order'}
+                </button>
+              </form>
+            </div>
+          </div>
         ) : error ? (
           <ErrorMessage />
         ) : (
