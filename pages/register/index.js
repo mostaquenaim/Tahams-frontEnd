@@ -35,31 +35,18 @@ const Register = () => {
 
     const password = watch("password");
 
-    const onRegisterSubmit = async (data) => {
-      // console.log(data);
+    // Go straight to the OTP screen and send the code in the background -
+    // the customer never waits on, or sees the outcome of, the send itself.
+    const onRegisterSubmit = (data) => {
         data.loggedInWith = 'Email-Pass'
-        try {
-            // Send OTP to the user's phone number or email
-            const response = await axiosPublic.post('/admin/send-otp', {
-                email: data.email
-            });
-            // console.log(response);
-            if (response.data.success) {
-                setOtpSent(true);
-                setError('')
-                setSuccess('[OTP sent to your email]')
-                localStorage.setItem('userData', JSON.stringify(data));
-            }
-            else {
-                setError(response.data.message)
-                toast.error(response.data.message)
-                setSuccess('')
-            }
-        } catch (error) {
-            setError('Error sending OTP')
-            setSuccess('')
-            console.error("Error sending OTP:", error.message);
-        }
+        localStorage.setItem('userData', JSON.stringify(data));
+        setError('')
+        setSuccess('')
+        setOtpSent(true);
+
+        axiosPublic
+            .post('/admin/send-otp', { email: data.email })
+            .catch((error) => console.error("Error sending OTP:", error.message));
     };
 
     const onOtpSubmit = async () => {

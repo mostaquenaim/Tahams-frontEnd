@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { FcGoogle } from "react-icons/fc";
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '/firebase'
 import { useRouter } from 'next/router';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
@@ -122,48 +122,32 @@ const Login = () => {
     // spoofable - any known email could be signed into via a leaked/public
     // secret, with no real Google identity check on the backend side).
     //
-    // Uses a full-page redirect rather than a popup: signInWithPopup relies
-    // on the opener being able to inspect/close the popup window, which a
-    // Cross-Origin-Opener-Policy: same-origin response header blocks -
-    // Firebase then reports a spurious "popup-closed-by-user" error even
-    // though the user never closed anything. Redirect sidesteps that
-    // entirely and also works on mobile browsers that block popups outright.
-    const completeGoogleSignIn = async (idToken) => {
-        const response = await axiosPublic.post(
-            '/admin/google-signin',
-            {},
-            { headers: { Authorization: `Bearer ${idToken}` } },
-        );
+    // Must stay a popup: signInWithRedirect silently returns no result when
+    // the site's origin differs from Firebase's authDomain
+    // (tahams-bd.firebaseapp.com), because browsers partition the storage
+    // the redirect hand-off depends on.
+    const handleGoogleSignIn = async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const idToken = await result.user.getIdToken();
 
-        if (response.data.status >= 200 && response.data.status <= 205) {
-            await storeSession(response.data);
-            router.push('/dashboard');
-        } else {
-            toast.error(response.data.message || "Google sign-in failed");
-            await logOut();
-        }
-    };
+            const response = await axiosPublic.post(
+                '/admin/google-signin',
+                {},
+                { headers: { Authorization: `Bearer ${idToken}` } },
+            );
 
-    useEffect(() => {
-        const checkRedirectResult = async () => {
-            try {
-                const result = await getRedirectResult(auth);
-                if (result?.user) {
-                    const idToken = await result.user.getIdToken();
-                    await completeGoogleSignIn(idToken);
-                }
-            } catch (error) {
-                console.error("Error completing Google sign-in:", error.message);
-                toast.error("Google sign-in failed. Please try again.");
+            if (response.data.status >= 200 && response.data.status <= 205) {
+                await storeSession(response.data);
+                router.push('/dashboard');
+            } else {
+                toast.error(response.data.message || "Google sign-in failed");
+                await logOut();
             }
-        };
-
-        checkRedirectResult();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const handleGoogleSignIn = () => {
-        signInWithRedirect(auth, provider);
+        } catch (error) {
+            console.error("Error during Google sign-in:", error.message);
+            toast.error("Google sign-in failed. Please try again.");
+        }
     }
 
     // toggle password show 
