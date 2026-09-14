@@ -16,9 +16,21 @@ import {
   FiFolder, // New icon for Categories
 } from 'react-icons/fi';
 
+// Sidebar section headings, in display order. Each NAV_CONFIG entry names
+// one of these in `Group`.
+export const NAV_GROUPS = [
+  'Overview',
+  'Sales',
+  'Catalog',
+  'Operations',
+  'People',
+  'System',
+];
+
 export const NAV_CONFIG = [
   {
     Name: 'Dashboard',
+    Group: 'Overview',
     Icon: <FiPieChart />,
     Tasks: [
       { href: '/admin/show/show-views', label: 'Statistics / Views' },
@@ -27,6 +39,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Inventory',
+    Group: 'Operations',
     Icon: <FiBox />,
     Tasks: [
       { href: '/admin/inventory/stock-status', label: 'Stock Status' },
@@ -36,6 +49,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Coupons',
+    Group: 'Sales',
     Icon: <FiTag />,
     Tasks: [
       { href: '/admin/promotions/create-coupon', label: 'Create Coupon' },
@@ -45,6 +59,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Reports',
+    Group: 'Overview',
     Icon: <FiBarChart2 />,
     Tasks: [
       { href: '/admin/reports/sales', label: 'Sales Report' },
@@ -55,6 +70,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Payments',
+    Group: 'Sales',
     Icon: <FiCreditCard />,
     Tasks: [
       { href: '/admin/payments/transactions', label: 'All Transactions' },
@@ -64,11 +80,13 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Role Management',
+    Group: 'People',
     Icon: <FiShield />,
     Tasks: [{ href: '/admin/Manage/roles', label: 'Manage Roles' }],
   },
   {
     Name: 'User Management',
+    Group: 'People',
     Icon: <FiUsers />,
     Tasks: [
       { href: '/admin/show/show-users', label: 'All Users / Customers' },
@@ -78,6 +96,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Products',
+    Group: 'Catalog',
     Icon: <FiLayers />,
     Tasks: [
       { href: '/admin/add/add-product', label: 'Add Product' },
@@ -88,6 +107,7 @@ export const NAV_CONFIG = [
   // --- NEW SECTIONS START ---
   {
     Name: 'Series',
+    Group: 'Catalog',
     Icon: <FiList />,
     Tasks: [
       { href: '/admin/add/add-series', label: 'Add Series' },
@@ -96,6 +116,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Categories',
+    Group: 'Catalog',
     Icon: <FiFolder />,
     Tasks: [
       { href: '/admin/add/add-category', label: 'Add Category (for Series)' },
@@ -104,6 +125,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Product Types',
+    Group: 'Catalog',
     Icon: <FiType />,
     Tasks: [
       { href: '/admin/add/add-product-type', label: 'Add Product Type' },
@@ -113,6 +135,7 @@ export const NAV_CONFIG = [
   // --- NEW SECTIONS END ---
   {
     Name: 'Orders',
+    Group: 'Sales',
     Icon: <FiFileText />,
     Tasks: [
       {
@@ -131,6 +154,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Promotions',
+    Group: 'Sales',
     Icon: <FiGift />,
     Tasks: [
       { href: '/admin/add/add-new-arrivals', label: 'New Arrivals' },
@@ -141,6 +165,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Attributes',
+    Group: 'Catalog',
     Icon: <FiGrid />,
     Tasks: [
       { href: '/admin/add/add-color', label: 'Add Color' },
@@ -150,6 +175,7 @@ export const NAV_CONFIG = [
   },
   {
     Name: 'Settings',
+    Group: 'System',
     Icon: <FiSettings />,
     Tasks: [
       {

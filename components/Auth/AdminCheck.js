@@ -72,11 +72,13 @@ const AdminCheck = ({ children }) => {
 
   if (isAdmin) {
     return (
-      <div className="flex bg-gray-100 min-h-screen font-inter text-gray-800">
+      <div className="flex bg-gray-50 min-h-screen font-inter text-gray-800">
         <AdminDrawer />
+        {/* Offsets must match the drawer widths (w-64 open / w-20 collapsed).
+            On mobile the open drawer overlays the content instead. */}
         <main
-          className={`flex-1  p-6 transition-all ${
-            isAdminOpen ? 'ml-64' : 'ml-10'
+          className={`flex-1 min-w-0 p-6 ml-20 transition-[margin] duration-300 ${
+            isAdminOpen ? 'md:ml-64' : 'md:ml-20'
           }`}
         >
           {children}
