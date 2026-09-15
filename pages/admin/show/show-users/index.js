@@ -1,9 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import useAxiosSecure from '/Hooks/useAxiosSecure';
-import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
+import {
+  FiEdit2,
+  FiEye,
+  FiFilter,
+  FiSlash,
+  FiTrendingUp,
+  FiUsers,
+} from 'react-icons/fi';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
+import {
+  AdminPage,
+  Badge,
+  Button,
+  IconButton,
+  Input,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  SkeletonRows,
+  StatCard,
+  StatGrid,
+  TBody,
+  THead,
+  Table,
+  TableCard,
+  TableEmpty,
+  Td,
+  Th,
+  Tr,
+} from '/components/Admin';
 
 const USERS_PER_PAGE = 10;
+
+const ROLE_TONES = {
+  admin: 'info',
+  employee: 'warning',
+  seller: 'success',
+  customer: 'neutral',
+};
+
+const getInitials = (name, email) => {
+  const source = name?.trim() || email || '?';
+  const parts = source.split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
 
 const ShowUsers = () => {
   const axiosSecure = useAxiosSecure();
@@ -45,59 +88,6 @@ const ShowUsers = () => {
     fetchUsers();
   }, [axiosSecure]);
 
-  // Custom pagination rendering logic
-  const renderPagination = () => {
-    const pages = [];
-    const maxPagesToShow = 3;
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      const startPages = [1, 2, 3];
-      const endPages = [totalPages - 2, totalPages - 1, totalPages];
-
-      if (currentPage <= 4) {
-        pages.push(...startPages, '...', ...endPages.slice(-3));
-      } else if (currentPage >= totalPages - 3) {
-        pages.push(...startPages.slice(0, 1), '...', ...endPages);
-      } else {
-        pages.push(
-          1,
-          '...',
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          '...',
-          totalPages,
-        );
-      }
-    }
-
-    return pages.map((page, index) => {
-      if (page === '...') {
-        return (
-          <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
-            ...
-          </span>
-        );
-      }
-
-      return (
-        <button
-          key={page}
-          className={`btn btn-sm ${
-            currentPage === page ? 'btn-primary' : 'btn-outline'
-          }`}
-          onClick={() => setCurrentPage(page)}
-        >
-          {page}
-        </button>
-      );
-    });
-  };
-
   // Filter logic
   useEffect(() => {
     let filtered = [...users];
@@ -138,7 +128,6 @@ const ShowUsers = () => {
       setDateStats({ total: 0, days: 0, average: 0 });
     }
 
-    console.log(filtered, 'filtered');
     setFilteredUsers(filtered);
     setCurrentPage(1);
   }, [search, roleFilter, startDate, endDate, users]);
@@ -150,187 +139,199 @@ const ShowUsers = () => {
     currentPage * USERS_PER_PAGE,
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-60">
-        <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
-      </div>
-    );
-  }
+  const hasDateRange = Boolean(startDate && endDate);
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4">All Users</h2>
+    <AdminPage title="Users">
+      <PageHeader
+        title="Users"
+        description="Browse customer and staff accounts."
+      />
 
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          className="input input-bordered w-full md:w-1/2"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+      <StatGrid cols={3}>
+        <StatCard
+          label="Total users"
+          value={loading ? '—' : users.length.toLocaleString()}
+          icon={<FiUsers />}
         />
-        <select
-          className="select select-bordered w-full md:w-1/4"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-        >
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="customer">Customer</option>
-          <option value="seller">Seller</option>
-          <option value="employee">Employee</option>
-        </select>
-
-        {/* Date-wise Filter */}
-        <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-          <div className="flex flex-col md:flex-row items-center gap-4">
-            <input
-              type="date"
-              className="input input-bordered"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-
-            <span className="text-sm text-gray-500">to</span>
-
-            <input
-              type="date"
-              className="input input-bordered"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-            {startDate && endDate && (
-              <div className="text-sm font-medium text-gray-700">
-                <div>
-                  Total users created:{' '}
-                  <span className="font-semibold">{dateStats.total}</span>
-                </div>
-                <div>
-                  Average per day:{' '}
-                  <span className="font-semibold">{dateStats.average}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {startDate && endDate && (
-            <button
-              className="btn btn-sm btn-outline"
-              onClick={() => {
-                setStartDate('');
-                setEndDate('');
-              }}
-            >
-              Clear
-            </button>
-          )}
-
-          {/* {dateFilter && (
-            <div className="text-sm font-medium text-gray-700">
-              Total users created on this date:{' '}
-              <span className="font-semibold">{dateCount}</span>
-            </div>
-          )} */}
-
-          {/* {dateFilter && (
-            <button
-              className="btn btn-sm btn-outline"
-              onClick={() => setDateFilter('')}
-            >
-              Clear
-            </button>
-          )} */}
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-gray-100 text-left">
-            <tr>
-              <th className="py-2 px-4">#</th>
-              <th className="py-2 px-4">Name</th>
-              <th className="py-2 px-4">Email</th>
-              <th className="py-2 px-4">Role</th>
-              <th className="py-2 px-4">Created At</th>
-              <th className="py-2 px-4">Action</th> {/* New Action Column */}
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedUsers.map((user, index) => (
-              <tr
-                key={user.id || user._id}
-                className="border-t hover:bg-gray-50"
-              >
-                <td className="py-2 px-4">
-                  {(currentPage - 1) * USERS_PER_PAGE + index + 1}
-                </td>
-                <td className="py-2 px-4">{user.name}</td>
-                <td className="py-2 px-4">{user.email}</td>
-                <td className="py-2 px-4 capitalize">{user.role}</td>
-                <td className="py-2 px-4 capitalize">
-                  {new Date(user.created_at).toLocaleString('en-GB', {
-                    timeZone: 'Asia/Dhaka',
-                  })}
-                </td>
-                <td className="py-2 px-4">
-                  <div className="flex gap-2">
-                    <button
-                      className="btn btn-xs btn-info"
-                      onClick={() => console.log('View', user)}
-                    >
-                      View
-                    </button>
-                    <button
-                      className="btn btn-xs btn-warning"
-                      onClick={() => console.log('Edit', user)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-xs btn-error"
-                      onClick={() => console.log('Disable', user)}
-                    >
-                      Disable
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {paginatedUsers.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center py-4 text-gray-500">
-                  No users found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="mt-6 flex justify-center items-center gap-2">
-        <button
-          className="btn btn-sm btn-outline"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Prev
-        </button>
-        {renderPagination()}
-        <button
-          className="btn btn-sm btn-outline"
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+        <StatCard
+          label="Matching filters"
+          value={loading ? '—' : filteredUsers.length.toLocaleString()}
+          icon={<FiFilter />}
+          tone="info"
+        />
+        <StatCard
+          label="New users per day"
+          value={hasDateRange ? dateStats.average : '—'}
+          hint={
+            hasDateRange
+              ? `${dateStats.total} joined over ${dateStats.days} ${
+                  dateStats.days === 1 ? 'day' : 'days'
+                }`
+              : 'Pick a date range to see the sign-up rate'
           }
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>
-    </div>
+          icon={<FiTrendingUp />}
+          tone="success"
+        />
+      </StatGrid>
+
+      <TableCard
+        toolbar={
+          <>
+            <SearchInput
+              value={search}
+              onValueChange={setSearch}
+              placeholder="Search by name or email..."
+            />
+            <Select
+              value={roleFilter}
+              onValueChange={setRoleFilter}
+              width="w-full sm:w-40"
+              aria-label="Role"
+            >
+              <option value="">All roles</option>
+              <option value="admin">Admin</option>
+              <option value="customer">Customer</option>
+              <option value="seller">Seller</option>
+              <option value="employee">Employee</option>
+            </Select>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <Input
+                type="date"
+                value={startDate}
+                max={endDate || undefined}
+                onChange={(e) => setStartDate(e.target.value)}
+                aria-label="Joined from"
+                className="w-full sm:w-40"
+              />
+              <span className="text-sm text-gray-400">to</span>
+              <Input
+                type="date"
+                value={endDate}
+                min={startDate || undefined}
+                onChange={(e) => setEndDate(e.target.value)}
+                aria-label="Joined until"
+                className="w-full sm:w-40"
+              />
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                  }}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </>
+        }
+        footer={
+          <Pagination
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredUsers.length}
+            pageSize={USERS_PER_PAGE}
+            onPageChange={setCurrentPage}
+            itemLabel="users"
+          />
+        }
+      >
+        <Table>
+          <THead>
+            <Th className="w-14">#</Th>
+            <Th>User</Th>
+            <Th>Role</Th>
+            <Th>Joined</Th>
+            <Th align="right">Actions</Th>
+          </THead>
+          <TBody>
+            {loading ? (
+              <SkeletonRows rows={8} cols={5} />
+            ) : paginatedUsers.length === 0 ? (
+              <TableEmpty
+                colSpan={5}
+                icon={<FiUsers />}
+                title="No users found"
+                description="Try a different search, role or date range."
+              />
+            ) : (
+              paginatedUsers.map((user, index) => {
+                const joined = new Date(user.created_at);
+                return (
+                  <Tr key={user.id || user._id}>
+                    <Td nowrap className="tabular-nums text-gray-500">
+                      {(currentPage - 1) * USERS_PER_PAGE + index + 1}
+                    </Td>
+                    <Td>
+                      <div className="flex min-w-[14rem] items-center gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
+                          {getInitials(user.name, user.email)}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-gray-900">
+                            {user.name || '—'}
+                          </p>
+                          <p className="truncate text-xs text-gray-500">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </Td>
+                    <Td nowrap>
+                      <Badge
+                        tone={ROLE_TONES[user.role] || 'neutral'}
+                        className="capitalize"
+                      >
+                        {user.role || 'unknown'}
+                      </Badge>
+                    </Td>
+                    <Td nowrap>
+                      <p className="text-gray-700">
+                        {joined.toLocaleDateString('en-GB', {
+                          timeZone: 'Asia/Dhaka',
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {joined.toLocaleTimeString('en-GB', {
+                          timeZone: 'Asia/Dhaka',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </Td>
+                    <Td nowrap align="right">
+                      <div className="flex justify-end gap-0.5">
+                        <IconButton
+                          label="View"
+                          icon={<FiEye />}
+                          onClick={() => console.log('View', user)}
+                        />
+                        <IconButton
+                          label="Edit"
+                          icon={<FiEdit2 />}
+                          onClick={() => console.log('Edit', user)}
+                        />
+                        <IconButton
+                          label="Disable"
+                          icon={<FiSlash />}
+                          variant="ghost-danger"
+                          onClick={() => console.log('Disable', user)}
+                        />
+                      </div>
+                    </Td>
+                  </Tr>
+                );
+              })
+            )}
+          </TBody>
+        </Table>
+      </TableCard>
+    </AdminPage>
   );
 };
 

@@ -1,7 +1,7 @@
 import '../styles/globals.css';
 import '/styles/custom.css';
 import '/styles/navStyle.css';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import AuthProvider from '/Contexts/Auth/AuthProvider';
@@ -21,8 +21,15 @@ const montserrat = Montserrat({
   weight: ['400', '500', '600', '700', '800'],
 });
 
-const queryClient = new QueryClient();
 export default function App({ Component, pageProps }) {
+  // One client per App instance, never one per module: a module-level client
+  // lives for the whole Node server process, so every visitor's server render
+  // shared one cache. react-query ignores `initialData` once a key is cached,
+  // so the server rendered an earlier request's product list while the
+  // browser rendered this request's fresh getServerSideProps data - a
+  // hydration mismatch whenever the two lists differed.
+  const [queryClient] = useState(() => new QueryClient());
+
   useEffect(() => {
     AOS.init();
   }, []);

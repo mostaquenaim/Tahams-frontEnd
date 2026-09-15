@@ -1,5 +1,6 @@
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../../Contexts/Auth/AuthProvider";
+import toast from "react-hot-toast";
 
 const HandleLogout = () => {
     const { logOut } = useContext(AuthContext)

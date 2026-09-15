@@ -1,16 +1,30 @@
 import { useState, useMemo, useContext } from 'react';
-import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import Link from 'next/link';
-import Modal from 'react-modal';
+import { FiExternalLink, FiImage, FiPlus, FiTrash2, FiUploadCloud } from 'react-icons/fi';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useLoadProducts from '../../../Hooks/useLoadProducts';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
-import Head from 'next/head';
+import {
+    AdminPage,
+    Button,
+    IconButton,
+    Modal,
+    PageHeader,
+    TBody,
+    THead,
+    Table,
+    TableCard,
+    TableEmpty,
+    TableFooter,
+    Td,
+    Th,
+    Tr,
+} from '../../../components/Admin';
 
 const Index = () => {
     const axiosSecure = useAxiosSecure();
@@ -19,6 +33,7 @@ const Index = () => {
     const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [busy, setBusy] = useState(false);
 
     const [unpublishedProducts, refetch] = useLoadProducts();
 
@@ -44,6 +59,7 @@ const Index = () => {
 
     const handlePublish = async () => {
         if (selectedProduct) {
+            setBusy(true);
             try {
                 await axiosSecure.put(
                     `/admin/publish-product/${selectedProduct.id}`,
@@ -53,18 +69,23 @@ const Index = () => {
                 closePublishModal();
             } catch (error) {
                 console.error('Error publishing product:', error);
+            } finally {
+                setBusy(false);
             }
         }
     };
 
     const handleDelete = async () => {
         if (selectedProduct) {
+            setBusy(true);
             try {
                 await axiosSecure.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`);
                 refetch();
                 closeDeleteModal();
             } catch (error) {
                 console.error('Error deleting product:', error);
+            } finally {
+                setBusy(false);
             }
         }
     };
@@ -72,39 +93,72 @@ const Index = () => {
     const columnHelper = createColumnHelper();
 
     const columns = useMemo(() => [
-        columnHelper.accessor('id', {
-            header: 'ID',
-            cell: info => info.getValue(),
-        }),
         columnHelper.accessor('name', {
-            header: 'Name',
-            cell: info => info.getValue(),
+            header: 'Product',
+            cell: info => {
+                const product = info.row.original;
+                return (
+                    <div className="flex min-w-[14rem] items-center gap-3">
+                        {product.filename ? (
+                            <img
+                                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`}
+                                alt={product.name}
+                                className="h-10 w-10 shrink-0 rounded-lg border border-gray-200 object-cover"
+                            />
+                        ) : (
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                                <FiImage className="h-4 w-4" />
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            <p className="truncate font-medium text-gray-900">{info.getValue()}</p>
+                            <p className="text-xs text-gray-500">#{product.id}</p>
+                        </div>
+                    </div>
+                );
+            },
         }),
         columnHelper.accessor('serialNo', {
-            header: 'Serial No',
-            cell: info => info.getValue(),
+            header: 'Serial no.',
+            cell: info => info.getValue() || '—',
+            meta: { nowrap: true },
         }),
         columnHelper.accessor('sellingPrice', {
             header: 'Price',
-            cell: info => `$${info.getValue()}`,
+            cell: info => (
+                <span className="font-medium tabular-nums text-gray-900">
+                    ৳{Number(info.getValue() || 0).toLocaleString()}
+                </span>
+            ),
+            meta: { align: 'right', nowrap: true },
         }),
         columnHelper.accessor('description', {
             header: 'Description',
             cell: info => {
-                const description = info.getValue();
-                return description.length > 50 ? `${description.substring(0, 50)}...` : description;
+                const description = info.getValue() || '';
+                return (
+                    <p className="max-w-xs truncate text-gray-600" title={description}>
+                        {description}
+                    </p>
+                );
             },
         }),
         columnHelper.accessor('createdAt', {
-            header: 'Created At',
+            header: 'Created',
             cell: info => {
                 const date = new Date(Date.parse(info.getValue()));
-                return date.toLocaleString();
+                return (
+                    <>
+                        <p className="text-gray-700">
+                            {date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            {date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    </>
+                );
             },
-        }),
-        columnHelper.accessor('filename', {
-            header: 'Image',
-            cell: info => <img src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${info.getValue()}`} alt="Product" className="w-16 h-16 object-cover inline-block" />,
+            meta: { nowrap: true },
         }),
         columnHelper.display({
             id: 'actions',
@@ -112,13 +166,25 @@ const Index = () => {
             cell: info => {
                 const product = info.row.original;
                 return (
-                    <div className='flex gap-5'>
-                        <Link href={`/products/details/${product.productId}`} className="text-blue-500 hover:underline">Details</Link>
-                        <button className="text-blue-500 hover:underline" onClick={() => openPublishModal(product)}>Publish</button>
-                        <button className="text-red-500 hover:underline" onClick={() => openDeleteModal(product)}>Delete</button>
+                    <div className="flex items-center justify-end gap-1">
+                        <IconButton
+                            label="View product page"
+                            icon={<FiExternalLink />}
+                            href={`/products/details/${product.productId}`}
+                        />
+                        <Button size="sm" variant="primary" icon={<FiUploadCloud />} onClick={() => openPublishModal(product)}>
+                            Publish
+                        </Button>
+                        <IconButton
+                            label="Delete"
+                            icon={<FiTrash2 />}
+                            variant="ghost-danger"
+                            onClick={() => openDeleteModal(product)}
+                        />
                     </div>
                 );
             },
+            meta: { align: 'right', nowrap: true },
         }),
     ], []);
 
@@ -129,111 +195,96 @@ const Index = () => {
     });
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <Head>
-                <title>Publish Product</title>
-            </Head>
-            <div className="flex flex-col items-center text-center mt-8">
-                <h1 className="text-3xl font-bold mb-4">Products</h1>
-                {unpublishedProducts.length > 0 ? (
-                    <div className="w-full max-w-6xl p-4">
-                        <h2 className="text-2xl font-semibold mb-4">Unpublished Products</h2>
-                        <table className="min-w-full bg-white border border-gray-300">
-                            <thead>
-                                {table.getHeaderGroups().map(headerGroup => (
-                                    <tr key={headerGroup.id}>
-                                        {headerGroup.headers.map(header => (
-                                            <th
-                                                key={header.id}
-                                                className="py-2 px-4 border-b border-gray-300 bg-gray-100 text-left text-sm font-semibold"
-                                            >
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                        header.column.columnDef.header,
-                                                        header.getContext()
-                                                    )}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </thead>
-                            <tbody>
-                                {table.getRowModel().rows.map(row => (
-                                    <tr key={row.id}>
-                                        {row.getVisibleCells().map(cell => (
-                                            <td
-                                                key={cell.id}
-                                                className="py-2 px-4 border-b border-gray-300 text-sm"
-                                            >
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                {table.getFooterGroups().map(footerGroup => (
-                                    <tr key={footerGroup.id}>
-                                        {footerGroup.headers.map(header => (
-                                            <th key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                        header.column.columnDef.footer,
-                                                        header.getContext()
-                                                    )}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tfoot>
-                        </table>
-                    </div>
-                ) : (
-                    <div className="w-full max-w-6xl p-4">
-                        <h2 className="text-2xl font-semibold mb-4">No Unpublished Products 🛒</h2>
-                        <p className="text-lg">All products are published. Great job! 🎉</p>
-                    </div>
-                )}
+        <AdminPage title="Unpublished products">
+            <PageHeader
+                title="Unpublished products"
+                description="Review draft products and publish them to the store."
+                actions={
+                    <Button variant="primary" icon={<FiPlus />} href="/admin/add/add-product">
+                        Add product
+                    </Button>
+                }
+            />
 
-                {/* Publish Confirmation Modal */}
-                <Modal
-                    isOpen={isPublishModalOpen}
-                    onRequestClose={closePublishModal}
-                    contentLabel="Confirm Publish"
-                    ariaHideApp={false}
-                    className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-                >
-                    <div className="bg-white p-8 rounded-lg shadow-lg">
-                        <h2 className="text-2xl font-bold mb-4">Confirm Publish</h2>
-                        <p>Are you sure you want to publish this product?</p>
-                        <div className="flex justify-end gap-4 mt-4">
-                            <button onClick={closePublishModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                            <button onClick={handlePublish} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Confirm</button>
-                        </div>
-                    </div>
-                </Modal>
+            <TableCard
+                footer={
+                    <TableFooter>
+                        {unpublishedProducts.length} unpublished {unpublishedProducts.length === 1 ? 'product' : 'products'}
+                    </TableFooter>
+                }
+            >
+                <Table>
+                    <THead>
+                        {table.getHeaderGroups()[0]?.headers.map(header => (
+                            <Th key={header.id} align={header.column.columnDef.meta?.align}>
+                                {header.isPlaceholder
+                                    ? null
+                                    : flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext()
+                                    )}
+                            </Th>
+                        ))}
+                    </THead>
+                    <TBody>
+                        {table.getRowModel().rows.length === 0 ? (
+                            <TableEmpty
+                                colSpan={columns.length}
+                                icon={<FiUploadCloud />}
+                                title="Nothing waiting to be published"
+                                description="All products are published."
+                            />
+                        ) : (
+                            table.getRowModel().rows.map(row => (
+                                <Tr key={row.id}>
+                                    {row.getVisibleCells().map(cell => (
+                                        <Td
+                                            key={cell.id}
+                                            align={cell.column.columnDef.meta?.align}
+                                            nowrap={cell.column.columnDef.meta?.nowrap}
+                                        >
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </Td>
+                                    ))}
+                                </Tr>
+                            ))
+                        )}
+                    </TBody>
+                </Table>
+            </TableCard>
 
-                {/* Delete Confirmation Modal */}
-                <Modal
-                    isOpen={isDeleteModalOpen}
-                    onRequestClose={closeDeleteModal}
-                    contentLabel="Confirm Delete"
-                    ariaHideApp={false}
-                    className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-                >
-                    <div className="bg-white p-8 rounded-lg shadow-lg">
-                        <h2 className="text-2xl font-bold mb-4">Confirm Delete</h2>
-                        <p>Are you sure you want to delete this product? This action cannot be undone.</p>
-                        <div className="flex justify-end gap-4 mt-4">
-                            <button onClick={closeDeleteModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                            <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
-                        </div>
-                    </div>
-                </Modal>
-            </div>
-        </div>
+            {/* Publish Confirmation Modal */}
+            <Modal
+                open={isPublishModalOpen}
+                onClose={closePublishModal}
+                icon={<FiUploadCloud />}
+                tone="info"
+                title="Publish this product?"
+                description={selectedProduct && `"${selectedProduct.name}" will become visible in the store.`}
+                footer={
+                    <>
+                        <Button onClick={closePublishModal}>Cancel</Button>
+                        <Button variant="primary" loading={busy} onClick={handlePublish}>Publish</Button>
+                    </>
+                }
+            />
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteModalOpen}
+                onClose={closeDeleteModal}
+                icon={<FiTrash2 />}
+                tone="danger"
+                title="Delete this product?"
+                description="This action cannot be undone."
+                footer={
+                    <>
+                        <Button onClick={closeDeleteModal}>Cancel</Button>
+                        <Button variant="danger" loading={busy} onClick={handleDelete}>Delete</Button>
+                    </>
+                }
+            />
+        </AdminPage>
     );
 };
 

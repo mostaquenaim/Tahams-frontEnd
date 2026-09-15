@@ -11,6 +11,7 @@ import useCart from '../../Hooks/useCart';
 import Head from 'next/head';
 import { getGuestCustomerInfo } from '../../utils/guestCustomer';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const { user, logOut, loading } = useContext(AuthContext);

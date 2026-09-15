@@ -1,18 +1,35 @@
 import { useState, useMemo } from 'react';
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Search,
-  Package,
-  ShoppingCart,
-} from 'lucide-react';
+  FiCheckCircle,
+  FiClock,
+  FiImage,
+  FiShoppingCart,
+} from 'react-icons/fi';
 import useCart from '/Hooks/useCart';
+import {
+  AdminPage,
+  Badge,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  SkeletonRows,
+  StatCard,
+  StatGrid,
+  TBody,
+  THead,
+  Table,
+  TableCard,
+  TableEmpty,
+  Td,
+  Th,
+  Tr,
+} from '/components/Admin';
+
+const COLUMN_COUNT = 9;
 
 const ShowAllCarts = () => {
   const [isLoading, cart, refetch] = useCart();
-//   console.log(cart);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,6 +103,11 @@ const ShowAllCarts = () => {
     return result;
   }, [cart, searchTerm, filterStatus, sortConfig]);
 
+  const boughtCount = useMemo(
+    () => cart.filter((item) => item.isBought).length,
+    [cart],
+  );
+
   // Pagination logic
   const totalPages = Math.ceil(filteredCarts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -106,6 +128,13 @@ const ShowAllCarts = () => {
     });
   };
 
+  const formatShortDate = (dateString) =>
+    new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -116,336 +145,202 @@ const ShowAllCarts = () => {
       .replace('BDT', '৳');
   };
 
+  const sortableTh = (key, label, align) => (
+    <Th
+      sortable
+      align={align}
+      active={sortConfig.key === key}
+      direction={sortConfig.direction}
+      onSort={() => handleSort(key)}
+    >
+      {label}
+    </Th>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <ShoppingCart className="w-8 h-8 text-blue-600" />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Cart Management
-            </h1>
-          </div>
+    <AdminPage title="Carts">
+      <PageHeader
+        title="Carts"
+        description="Items customers have added to their carts."
+      />
 
-          {/* Filters and Search */}
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by product name, cart ID..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
-            </div>
+      <StatGrid cols={3}>
+        <StatCard
+          label="Cart items"
+          value={cart.length.toLocaleString()}
+          icon={<FiShoppingCart />}
+        />
+        <StatCard
+          label="Bought"
+          value={boughtCount.toLocaleString()}
+          icon={<FiCheckCircle />}
+          tone="success"
+        />
+        <StatCard
+          label="Still in cart"
+          value={(cart.length - boughtCount).toLocaleString()}
+          icon={<FiClock />}
+          tone="warning"
+        />
+      </StatGrid>
 
-            <select
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
+      <TableCard
+        toolbar={
+          <>
+            <SearchInput
+              value={searchTerm}
+              onValueChange={(value) => {
+                setSearchTerm(value);
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Search by product, email or cart ID..."
+            />
+            <Select
+              value={filterStatus}
+              onValueChange={(value) => {
+                setFilterStatus(value);
+                setCurrentPage(1);
+              }}
+              width="w-full sm:w-40"
+              aria-label="Status"
             >
-              <option value="all">All Status</option>
+              <option value="all">All statuses</option>
               <option value="bought">Bought</option>
               <option value="pending">Pending</option>
-            </select>
-
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            >
-              <option value="5">5 per page</option>
-              <option value="10">10 per page</option>
-              <option value="25">25 per page</option>
-              <option value="50">50 per page</option>
-            </select>
-          </div>
-
-          {/* Stats */}
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              <span>
-                Total Carts: <strong>{filteredCarts.length}</strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>
-                Showing:{' '}
-                <strong>
-                  {startIndex + 1}-{Math.min(endIndex, filteredCarts.length)}
-                </strong>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Cart ID
-                  </th>
-                  <th
-                    onClick={() => handleSort('ProductName')}
-                    className="px-4 py-3 cursor-pointer select-none text-left text-xs font-semibold text-gray-600 uppercase"
-                  >
-                    Product{' '}
-                    {sortConfig.key === 'ProductName' &&
-                      (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Size
-                  </th>
-                  <th
-                    onClick={() => handleSort('quantity')}
-                    className="px-4 py-3 cursor-pointer select-none text-left text-xs font-semibold text-gray-600 uppercase"
-                  >
-                    Qty{' '}
-                    {sortConfig.key === 'quantity' &&
-                      (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-
-                  <th
-                    onClick={() => handleSort('price')}
-                    className="px-4 py-3 cursor-pointer select-none text-left text-xs font-semibold text-gray-600 uppercase"
-                  >
-                    Price{' '}
-                    {sortConfig.key === 'price' &&
-                      (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th
-                    onClick={() => handleSort('date')}
-                    className="px-4 py-3 cursor-pointer select-none text-left text-xs font-semibold text-gray-600 uppercase"
-                  >
-                    Date{' '}
-                    {sortConfig.key === 'date' &&
-                      (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Customer Created
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Customer
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {currentCarts.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan="8"
-                      className="px-4 py-12 text-center text-gray-500"
+            </Select>
+          </>
+        }
+        footer={
+          <Pagination
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredCarts.length}
+            pageSize={itemsPerPage}
+            onPageChange={goToPage}
+            pageSizeOptions={[5, 10, 25, 50]}
+            onPageSizeChange={(size) => {
+              setItemsPerPage(size);
+              setCurrentPage(1);
+            }}
+            itemLabel="cart items"
+          />
+        }
+      >
+        <Table>
+          <THead>
+            <Th>Cart</Th>
+            {sortableTh('ProductName', 'Product')}
+            <Th>Category</Th>
+            <Th>Size</Th>
+            {sortableTh('quantity', 'Qty', 'right')}
+            {sortableTh('price', 'Price', 'right')}
+            <Th>Status</Th>
+            {sortableTh('date', 'Added')}
+            <Th>Customer</Th>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <SkeletonRows rows={8} cols={COLUMN_COUNT} />
+            ) : currentCarts.length === 0 ? (
+              <TableEmpty
+                colSpan={COLUMN_COUNT}
+                icon={<FiShoppingCart />}
+                title="No carts found"
+                description="Try a different search or status."
+              />
+            ) : (
+              currentCarts.map((item) => (
+                <Tr key={item.id}>
+                  <Td nowrap>
+                    <p className="font-medium text-gray-900">#{item.id}</p>
+                    <p
+                      className="max-w-[7.5rem] truncate text-xs text-gray-500"
+                      title={item.uniqueId}
                     >
-                      <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No carts found</p>
-                    </td>
-                  </tr>
-                ) : (
-                  currentCarts.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-4 py-4">
-                        <div className="text-sm">
-                          <div className="font-medium text-gray-900">
-                            #{item.id}
-                          </div>
-                          <div
-                            className="text-xs text-gray-500 truncate max-w-[120px]"
-                            title={item.uniqueId}
-                          >
-                            {item.uniqueId?.substring(0, 13)}...
-                          </div>
+                      {item.uniqueId}
+                    </p>
+                  </Td>
+                  <Td>
+                    <div className="flex min-w-[14rem] items-center gap-3">
+                      {item.product?.thumbImage ? (
+                        <img
+                          src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.product.thumbImage}`}
+                          alt={item.product?.name}
+                          className="h-10 w-10 shrink-0 rounded-lg border border-gray-200 object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                          <FiImage className="h-4 w-4" />
                         </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={
-                              `${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.product?.thumbImage}` ||
-                              'https://via.placeholder.com/60'
-                            }
-                            alt={item.product?.name}
-                            className="w-12 h-12 rounded-lg object-cover border border-gray-200"
-                          />
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
-                              {item.ProductName || item.product?.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Serial: {item.product?.serialNo}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">
-                          {item.category?.category?.category?.name}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {item.category?.category?.name} →{' '}
-                          {item.category?.name}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {item.size ||
-                            item.maleSize ||
-                            item.femaleSize ||
-                            'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-sm font-semibold text-gray-900">
-                          {item.Quantity}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm">
-                          <div className="font-semibold text-gray-900">
-                            {formatPrice(
-                              item.totalPrice ||
-                                item.product?.sellingPrice * item.Quantity,
-                            )}
-                          </div>
-                          {item.product?.discountPercentage > 0 && (
-                            <div className="text-xs text-green-600">
-                              {item.product.discountPercentage}% off
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            item.isBought
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
-                          {item.isBought ? '✓ Bought' : '⏳ Pending'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-500">
-                        {formatDate(item.created_at)}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-500">
-                        {formatDate(item.customer.created_at)}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-500">
-                        {(item.customer.email)}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{startIndex + 1}</span>{' '}
-                  to{' '}
-                  <span className="font-medium">
-                    {Math.min(endIndex, filteredCarts.length)}
-                  </span>{' '}
-                  of <span className="font-medium">{filteredCarts.length}</span>{' '}
-                  results
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => goToPage(1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      )}
+                      <div className="min-w-0">
+                        <p className="max-w-[14rem] truncate font-medium text-gray-900">
+                          {item.ProductName || item.product?.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Serial: {item.product?.serialNo || '—'}
+                        </p>
+                      </div>
+                    </div>
+                  </Td>
+                  <Td nowrap>
+                    <p className="text-gray-900">
+                      {item.category?.category?.category?.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {item.category?.category?.name} → {item.category?.name}
+                    </p>
+                  </Td>
+                  <Td nowrap>
+                    <Badge>
+                      {item.size || item.maleSize || item.femaleSize || 'N/A'}
+                    </Badge>
+                  </Td>
+                  <Td
+                    nowrap
+                    align="right"
+                    className="font-medium tabular-nums text-gray-900"
                   >
-                    <ChevronsLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  <div className="flex gap-1">
-                    {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                      let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = idx + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = idx + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + idx;
-                      } else {
-                        pageNum = currentPage - 2 + idx;
-                      }
-
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => goToPage(pageNum)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                            currentPage === pageNum
-                              ? 'bg-blue-600 text-white'
-                              : 'border border-gray-300 hover:bg-gray-100'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => goToPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronsRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                    {item.Quantity}
+                  </Td>
+                  <Td nowrap align="right">
+                    <p className="font-medium tabular-nums text-gray-900">
+                      {formatPrice(
+                        item.totalPrice ||
+                          item.product?.sellingPrice * item.Quantity,
+                      )}
+                    </p>
+                    {item.product?.discountPercentage > 0 && (
+                      <p className="text-xs text-emerald-600">
+                        {item.product.discountPercentage}% off
+                      </p>
+                    )}
+                  </Td>
+                  <Td nowrap>
+                    <Badge tone={item.isBought ? 'success' : 'warning'} dot>
+                      {item.isBought ? 'Bought' : 'Pending'}
+                    </Badge>
+                  </Td>
+                  <Td nowrap className="text-gray-600">
+                    {formatDate(item.created_at)}
+                  </Td>
+                  <Td nowrap>
+                    <p className="max-w-[14rem] truncate text-gray-700">
+                      {item.customer?.email || '—'}
+                    </p>
+                    {item.customer?.created_at && (
+                      <p className="text-xs text-gray-500">
+                        Joined {formatShortDate(item.customer.created_at)}
+                      </p>
+                    )}
+                  </Td>
+                </Tr>
+              ))
+            )}
+          </TBody>
+        </Table>
+      </TableCard>
+    </AdminPage>
   );
 };
 

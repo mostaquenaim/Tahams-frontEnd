@@ -1,20 +1,39 @@
 import { useState } from "react";
+import Swal from "sweetalert2";
+import { FiCheck, FiEdit2, FiImage, FiPlus, FiTrash2, FiType, FiUpload, FiX } from "react-icons/fi";
 import useLoadSubSubCategories from "../../../../Hooks/useLoadSubSubCategories";
 import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
-import Loading from "../../../../components/Loading";
-import Head from "next/head";
-import { FaTrash } from "react-icons/fa";
-import Swal from "sweetalert2";
+import {
+    AdminPage,
+    Button,
+    FileInput,
+    IconButton,
+    Input,
+    Modal,
+    PageHeader,
+    SearchInput,
+    SkeletonRows,
+    TBody,
+    THead,
+    Table,
+    TableCard,
+    TableEmpty,
+    TableFooter,
+    Td,
+    Th,
+    Tr,
+} from "../../../../components/Admin";
 
 const ProductType = () => {
     const [subSubCategories, refetch, isPending] = useLoadSubSubCategories();
     const [myfile, setMyFile] = useState('');
-    const [editable, setEditable] = useState(false);
     const [editItem, setEditItem] = useState(-1);
+    const [savingChart, setSavingChart] = useState(false);
     const [isShowImage, setIsShowImage] = useState(false);
     const [imageToShow, setImageToShow] = useState('');
     const [editNameItemId, setEditNameItemId] = useState(-1);
     const [nameEdits, setNameEdits] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
 
     const axiosSecure = useAxiosSecure();
 
@@ -28,6 +47,7 @@ const ProductType = () => {
             const formData = new FormData();
             formData.append('myFile', myfile);
 
+            setSavingChart(true);
             try {
                 const res = await axiosSecure.put(`/admin/update-sub-sub-category/${item.id}`, formData, {
                     headers: {
@@ -35,19 +55,22 @@ const ProductType = () => {
                     },
                 });
                 // console.log(res.data);
+                handleCancelEdit();
                 refetch();
             } catch (error) {
                 console.error('Error uploading file:', error.response?.data || error.message);
+            } finally {
+                setSavingChart(false);
             }
         } else {
-            setEditable(editable);
+            setMyFile('');
             setEditItem(item.id);
         }
     };
 
     const handleCancelEdit = () => {
         setEditItem(-1);
-        setEditable(false);
+        setMyFile('');
     };
 
     const handleShowImage = (filename) => {
@@ -126,125 +149,167 @@ const ProductType = () => {
         setEditNameItemId(-1);
     };
 
+    const allTypes = subSubCategories || [];
+    const lowerSearch = searchTerm.toLowerCase();
+    const filteredTypes = allTypes.filter((item) =>
+        item.name?.toLowerCase().includes(lowerSearch) ||
+        item.category?.name?.toLowerCase().includes(lowerSearch) ||
+        item.category?.category?.name?.toLowerCase().includes(lowerSearch)
+    );
+
     return (
-        <div className="container mx-auto pt-20 lg:pt-40">
-            <Head>
-                <title>Product Type</title>
-            </Head>
-            <h1 className="text-2xl font-bold mb-6 text-center">Product Types</h1>
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border">
-                    <thead>
-                        <tr>
-                            <th className="py-2 px-4 border-b">ID</th>
-                            <th className="py-2 px-4 border-b">Category Name</th>
-                            <th className="py-2 px-4 border-b">Size Chart</th>
-                            <th className="py-2 px-4 border-b">Parent Categories</th>
-                            <th className="py-2 px-4 border-b">Action</th>
-                        </tr>
-                    </thead>
-                    {
-                        isPending ?
-                            <Loading />
-                            :
-                            <tbody>
-                                {subSubCategories.map((item) => (
-                                    <tr key={item.id} className="hover:bg-gray-100">
-                                        <td className="py-2 px-4 border-b text-center">{item.id}</td>
-                                        
-                                        {/* item name update / edit  */}
-                                        <td className="py-2 px-4 border-b text-center">
-                                            {editNameItemId === item.id ? (
-                                                <div className="flex items-center gap-2 justify-center">
-                                                    <input
-                                                        type="text"
-                                                        value={nameEdits[item.id] || ''}
-                                                        onChange={(e) =>
-                                                            setNameEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
-                                                        }
-                                                        className="input input-sm input-bordered w-32"
+        <AdminPage title="Product types">
+            <PageHeader
+                title="Product types"
+                description="Rename product types, update their size charts, or remove them."
+                actions={
+                    <Button variant="primary" icon={<FiPlus />} href="/admin/add/add-product-type">
+                        Add product type
+                    </Button>
+                }
+            />
+
+            <TableCard
+                toolbar={
+                    <SearchInput
+                        value={searchTerm}
+                        onValueChange={setSearchTerm}
+                        placeholder="Search by name or parent category..."
+                    />
+                }
+                footer={
+                    !isPending && (
+                        <TableFooter>
+                            {filteredTypes.length} of {allTypes.length} product types
+                        </TableFooter>
+                    )
+                }
+            >
+                <Table>
+                    <THead>
+                        <Th className="w-16">ID</Th>
+                        <Th>Name</Th>
+                        <Th>Size chart</Th>
+                        <Th>Parent categories</Th>
+                        <Th align="right">Actions</Th>
+                    </THead>
+                    <TBody>
+                        {isPending ? (
+                            <SkeletonRows rows={6} cols={5} />
+                        ) : filteredTypes.length === 0 ? (
+                            <TableEmpty
+                                colSpan={5}
+                                icon={<FiType />}
+                                title="No product types found"
+                                description={searchTerm ? 'Try a different search.' : 'Add a product type to get started.'}
+                            />
+                        ) : (
+                            filteredTypes.map((item) => (
+                                <Tr key={item.id}>
+                                    <Td nowrap className="tabular-nums text-gray-500">{item.id}</Td>
+
+                                    {/* item name update / edit  */}
+                                    <Td nowrap>
+                                        {editNameItemId === item.id ? (
+                                            <div className="flex items-center gap-1">
+                                                <Input
+                                                    size="sm"
+                                                    autoFocus
+                                                    value={nameEdits[item.id] || ''}
+                                                    onChange={(e) =>
+                                                        setNameEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
+                                                    }
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') handleSaveProductName(item.id);
+                                                        if (e.key === 'Escape') handleCancelNameEdit();
+                                                    }}
+                                                    aria-label="Product type name"
+                                                    className="w-44"
+                                                />
+                                                <IconButton label="Save name" icon={<FiCheck />} variant="ghost-success" onClick={() => handleSaveProductName(item.id)} />
+                                                <IconButton label="Cancel" icon={<FiX />} onClick={handleCancelNameEdit} />
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1">
+                                                <span className="font-medium text-gray-900">{item.name}</span>
+                                                <IconButton label="Rename" icon={<FiEdit2 />} size="sm" onClick={() => handleChangeProductName(item.id)} />
+                                            </div>
+                                        )}
+                                    </Td>
+
+                                    {/* size chart  */}
+                                    <Td>
+                                        <div className="flex min-w-[14rem] items-center gap-3">
+                                            {item.filename ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleShowImage(item.filename)}
+                                                    title="View size chart"
+                                                    className="shrink-0 overflow-hidden rounded-lg border border-gray-200 transition hover:border-gray-300 hover:shadow-sm"
+                                                >
+                                                    <img
+                                                        className="h-12 w-12 bg-white object-contain"
+                                                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
+                                                        alt="Size chart"
                                                     />
-                                                    <button onClick={() => handleSaveProductName(item.id)} className="btn btn-xs btn-success">Save</button>
-                                                    <button onClick={handleCancelNameEdit} className="btn btn-xs btn-warning">Cancel</button>
+                                                </button>
+                                            ) : (
+                                                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400">
+                                                    <FiImage className="h-4 w-4" />
+                                                </span>
+                                            )}
+
+                                            {editItem === item.id ? (
+                                                <div className="flex min-w-0 flex-col gap-2">
+                                                    <FileInput onChange={(e) => setMyFile(e.target.files[0])} />
+                                                    <div className="flex gap-1.5">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="primary"
+                                                            icon={<FiUpload />}
+                                                            loading={savingChart}
+                                                            disabled={!myfile}
+                                                            onClick={() => handleEditSizeChart(item)}
+                                                        >
+                                                            Save
+                                                        </Button>
+                                                        <Button size="sm" variant="ghost" onClick={handleCancelEdit}>
+                                                            Cancel
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-2 justify-center">
-                                                    <input
-                                                        type="text"
-                                                        value={item.name}
-                                                        disabled
-                                                        className="input input-sm input-bordered w-32"
-                                                    />
-                                                    <button onClick={() => handleChangeProductName(item.id)} className="btn btn-xs btn-primary">
-                                                        Change
-                                                    </button>
-                                                </div>
+                                                <Button size="sm" onClick={() => handleEditSizeChart(item)}>
+                                                    {item.filename ? 'Replace' : 'Upload'}
+                                                </Button>
                                             )}
-                                        </td>
+                                        </div>
+                                    </Td>
 
-                                        {/* size chart  */}
-                                        <td className="py-2 px-4 border-b text-center">
-                                            <div className="flex justify-center items-center gap-2">
-                                                {/* Show image if exists */}
-                                                {item.filename && (
-                                                    <button onClick={() => handleShowImage(item.filename)}>
-                                                        <img
-                                                            className="h-16 cursor-pointer"
-                                                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`}
-                                                            alt="Size Chart"
-                                                        />
-                                                    </button>
-                                                )}
-
-                                                {/* Show file input and buttons if editing */}
-                                                {editItem === item.id && (
-                                                    <input
-                                                        type="file"
-                                                        onChange={(e) => setMyFile(e.target.files[0])}
-                                                    />
-                                                )}
-
-                                                <div
-                                                    className="flex gap-2 mt-1">
-                                                    {editItem === item.id && (
-                                                        <button
-                                                            onClick={handleCancelEdit}
-                                                            className="btn btn-warning btn-xs"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleEditSizeChart(item)}
-                                                        className={`btn btn-xs ${editable ? editItem === item.id ? 'btn-success' : 'btn-accent' : 'btn-accent'}`}
-                                                    >
-                                                        {editItem === item.id ? 'Save' : 'Edit'}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        {/* parent categories  */}
-                                        <td className="py-2 px-4 border-b text-center">{item.category.name}, {item.category.category.name}</td>
-                                        <td>
-                                            <button onClick={() => handleDeleteCProductType(item.id)} className="btn btn-sm btn-error">
-                                                Delete <FaTrash></FaTrash>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                    }
-                </table>
-            </div>
+                                    {/* parent categories  */}
+                                    <Td nowrap className="text-gray-600">
+                                        {[item.category?.category?.name, item.category?.name].filter(Boolean).join(' › ') || '—'}
+                                    </Td>
+                                    <Td nowrap align="right">
+                                        <IconButton
+                                            label="Delete"
+                                            icon={<FiTrash2 />}
+                                            variant="ghost-danger"
+                                            onClick={() => handleDeleteCProductType(item.id)}
+                                        />
+                                    </Td>
+                                </Tr>
+                            ))
+                        )}
+                    </TBody>
+                </Table>
+            </TableCard>
 
             {/* Image Modal */}
-            {isShowImage && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50" onClick={closeImageModal}>
-                    <img src={imageToShow} alt="Enlarged" className="max-w-full max-h-full rounded shadow-lg" />
-                </div>
-            )}
-        </div>
+            <Modal open={isShowImage} onClose={closeImageModal} title="Size chart" size="xl">
+                <img src={imageToShow} alt="Size chart" className="mx-auto max-h-[70vh] w-auto rounded-lg object-contain" />
+            </Modal>
+        </AdminPage>
     );
 };
 

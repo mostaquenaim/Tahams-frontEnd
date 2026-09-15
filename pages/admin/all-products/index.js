@@ -1,33 +1,45 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
-import Loading from '../../../components/Loading';
+import React, { useContext, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import useProduct from '../../../Hooks/useProduct';
-import useAxiosSecure from '../../../Hooks/useAxiosSecure';
-import Modal from 'react-modal';
+import { useRouter } from 'next/router';
 import {
-  FiEdit2,
-  FiTrash2,
   FiCopy,
-  FiSave,
-  FiX,
-  FiSearch,
-  FiPlus,
+  FiEdit2,
+  FiImage,
   FiMinus,
   FiPackage,
+  FiPlus,
+  FiSave,
+  FiTrash2,
 } from 'react-icons/fi';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { FaSync } from 'react-icons/fa';
-
-Modal.setAppElement('#__next');
+import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
+import useProduct from '../../../Hooks/useProduct';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  AdminPage,
+  Badge,
+  Button,
+  IconButton,
+  Modal,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  SkeletonRows,
+  TBody,
+  THead,
+  Table,
+  TableCard,
+  TableEmpty,
+  Td,
+  Th,
+  Tr,
+} from '../../../components/Admin';
 
 const ShowProducts = () => {
   const { user, loading } = useContext(AuthContext);
   const [products, refetch] = useProduct({ publishable: true });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [editedProducts, setEditedProducts] = useState({});
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
   const [stockModalProduct, setStockModalProduct] = useState(null);
@@ -111,6 +123,11 @@ const ShowProducts = () => {
     }
   };
 
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
   const handleDuplicate = (productId) => {
     const product = products.find((p) => p.id === productId);
     if (!product) {
@@ -156,6 +173,7 @@ const ShowProducts = () => {
 
   const handleDelete = async () => {
     if (selectedProduct) {
+      setDeleting(true);
       try {
         await axiosSecure.delete(
           `/admin/delete-product/${selectedProduct}?email=${user?.email}`,
@@ -164,6 +182,8 @@ const ShowProducts = () => {
         closeDeleteModal();
       } catch (error) {
         console.error('Error deleting product:', error);
+      } finally {
+        setDeleting(false);
       }
     }
   };
@@ -237,503 +257,297 @@ const ShowProducts = () => {
     }
   };
 
+  const sortableTh = (key, label, align) => (
+    <Th
+      sortable
+      align={align}
+      active={sortConfig.key === key}
+      direction={sortConfig.direction}
+      onSort={() => requestSort(key)}
+    >
+      {label}
+    </Th>
+  );
+
+  const pendingStockChanges = Object.keys(
+    editedProducts[stockModalProduct?.id] || {},
+  ).length;
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <Head>
-        <title>Product Management | Admin Panel</title>
-      </Head>
-
-      <div className="max-w-7xl mx-auto">
-        {/* Header and Search */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Product Management
-            </h1>
-            <p className="text-sm text-gray-500">
-              Manage your product inventory and details
-            </p>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-            <div className="relative flex-grow md:w-64">
-              <FiSearch className="absolute left-3 top-3 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Link
-              href="/admin/add/add-product"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <FiPlus size={16} />
-              Add Product
-            </Link>
-          </div>
-        </div>
-
-        {/* Sync Button */}
-        <div className="mb-4 flex justify-end">
-          {/* <button
-            onClick={handleSyncViews}
-            disabled={syncing}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${syncing ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white transition-colors`}
+    <AdminPage title="Products">
+      <PageHeader
+        title="Products"
+        description="Manage your product inventory and details."
+        actions={
+          <Button
+            variant="primary"
+            icon={<FiPlus />}
+            href="/admin/add/add-product"
           >
-            {syncing ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Syncing...
-              </>
+            Add product
+          </Button>
+        }
+      />
+
+      <TableCard
+        toolbar={
+          <SearchInput
+            value={searchTerm}
+            onValueChange={handleSearch}
+            placeholder="Search products..."
+          />
+        }
+        footer={
+          <Pagination
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredProducts.length}
+            pageSize={itemsPerPage}
+            onPageChange={handlePageChange}
+            itemLabel="products"
+          />
+        }
+      >
+        <Table>
+          <THead>
+            {sortableTh('id', 'ID')}
+            {sortableTh('name', 'Product')}
+            {sortableTh('views', 'Views', 'right')}
+            <Th>Details</Th>
+            {sortableTh('price', 'Price', 'right')}
+            {sortableTh('stock', 'Stock')}
+            <Th align="right">Actions</Th>
+          </THead>
+          <TBody>
+            {loading ? (
+              <SkeletonRows rows={8} cols={7} />
+            ) : currentProducts.length === 0 ? (
+              <TableEmpty
+                colSpan={7}
+                icon={<FiPackage />}
+                title="No products found"
+                description="No products match your search."
+              />
             ) : (
-              <>
-                <FaSync size={14} />
-                Sync Views
-              </>
-            )}
-          </button> */}
-        </div>
+              currentProducts.map((product) => {
+                const totalStock = product.pscs.reduce(
+                  (acc, psc) => acc + psc.quantity,
+                  0,
+                );
+                const details = [
+                  product.pscs[0]?.category?.name,
+                  product.pscs[0]?.size?.name,
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
 
-        {/* Products Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {loading ? (
-            <div className="p-8 flex justify-center">
-              <Loading />
-            </div>
-          ) : currentProducts.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => requestSort('id')}
-                      >
-                        <div className="flex items-center">
-                          ID
-                          {sortConfig.key === 'id' && (
-                            <span className="ml-1">
-                              {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => requestSort('name')}
-                      >
-                        <div className="flex items-center">
-                          Product
-                          {sortConfig.key === 'name' && (
-                            <span className="ml-1">
-                              {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => requestSort('views')}
-                      >
-                        <div className="flex items-center">
-                          Views
-                          {sortConfig.key === 'views' && (
-                            <span className="ml-1">
-                              {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Details
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => requestSort('price')}
-                      >
-                        <div className="flex items-center">
-                          Price
-                          {sortConfig.key === 'price' && (
-                            <span className="ml-1">
-                              {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                        onClick={() => requestSort('stock')}
-                      >
-                        <div className="flex items-center">
-                          Stock
-                          {sortConfig.key === 'stock' && (
-                            <span className="ml-1">
-                              {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentProducts.map((product, index) => {
-                      const totalStock = product.pscs.reduce(
-                        (acc, psc) => acc + psc.quantity,
-                        0,
-                      );
-                      const productChanges = editedProducts[product.id] || {};
-
-                      return (
-                        <motion.tr
-                          key={index}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className={
-                            totalStock > 0
-                              ? 'hover:bg-gray-50'
-                              : 'bg-red-50 hover:bg-red-100'
-                          }
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            #{product.id}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                {product.filename ? (
-                                  <img
-                                    className="h-10 w-10 rounded"
-                                    src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`}
-                                    alt={product.name}
-                                  />
-                                ) : (
-                                  <div className="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
-                                    <span className="text-xs text-gray-500">
-                                      No Image
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="ml-4">
-                                <Link
-                                  href={`/products/details/${product.productId}`}
-                                  className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                                >
-                                  {product.name}
-                                </Link>
-                                <div className="text-sm text-gray-500">
-                                  {product.color?.name}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {product?.totalViews || 0}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            <div className="flex flex-wrap gap-1">
-                              {product.pscs[0]?.category?.name},{' '}
-                              {product.pscs[0]?.size?.name}
-                              {product.pscs.length > 1 && (
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                  +{product.pscs.length - 1} more
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ৳{product.sellingPrice.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {totalStock > 0 ? (
-                              <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                {totalStock} in stock
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                                Out of stock
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center gap-3">
-                              <Link
-                                href={`/admin/edit/product/${product.productId}`}
-                                className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1"
-                              >
-                                <FiEdit2 size={14} />
-                                Edit
-                              </Link>
-                              <button
-                                onClick={() => openDeleteModal(product.id)}
-                                className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                              >
-                                <FiTrash2 size={14} />
-                                Delete
-                              </button>
-                              <button
-                                onClick={() => handleDuplicate(product.id)}
-                                className="text-amber-600 hover:text-amber-800 flex items-center gap-1"
-                              >
-                                <FiCopy size={14} />
-                                Duplicate
-                              </button>
-                              <button
-                                onClick={() => openStockModal(product)}
-                                className="text-emerald-600 hover:text-emerald-900 flex items-center gap-1"
-                              >
-                                <FiPackage size={14} />
-                                Stock
-                              </button>
-                            </div>
-                          </td>
-                        </motion.tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-b-lg">
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing{' '}
-                      <span className="font-medium">
-                        {(currentPage - 1) * itemsPerPage + 1}
-                      </span>{' '}
-                      to{' '}
-                      <span className="font-medium">
-                        {Math.min(
-                          currentPage * itemsPerPage,
-                          filteredProducts.length,
+                return (
+                  <Tr key={product.id}>
+                    <Td nowrap className="font-medium text-gray-900">
+                      #{product.id}
+                    </Td>
+                    <Td>
+                      <div className="flex min-w-[14rem] items-center gap-3">
+                        {product.filename ? (
+                          <img
+                            className="h-10 w-10 shrink-0 rounded-lg border border-gray-200 object-cover"
+                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`}
+                            alt={product.name}
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                            <FiImage className="h-4 w-4" />
+                          </div>
                         )}
-                      </span>{' '}
-                      of{' '}
-                      <span className="font-medium">
-                        {filteredProducts.length}
-                      </span>{' '}
-                      products
-                    </p>
-                  </div>
-                  <div>
-                    <nav
-                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
-                    >
-                      <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                          currentPage === 1
-                            ? 'text-gray-300 cursor-not-allowed'
-                            : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="sr-only">Previous</span>
-                        Previous
-                      </button>
-                      <div className="flex items-center px-4">
-                        <span className="text-sm text-gray-700">
-                          Page {currentPage} of {totalPages}
-                        </span>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/products/details/${product.productId}`}
+                            className="block truncate font-medium text-gray-900 hover:underline"
+                          >
+                            {product.name}
+                          </Link>
+                          {product.color?.name && (
+                            <p className="truncate text-xs text-gray-500">
+                              {product.color.name}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                          currentPage === totalPages
-                            ? 'text-gray-300 cursor-not-allowed'
-                            : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="sr-only">Next</span>
-                        Next
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="p-8 text-center">
-              <p className="text-gray-500">
-                No products found matching your criteria.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+                    </Td>
+                    <Td nowrap align="right" className="tabular-nums">
+                      {(product?.totalViews || 0).toLocaleString()}
+                    </Td>
+                    <Td nowrap className="text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <span>{details || '—'}</span>
+                        {product.pscs.length > 1 && (
+                          <Badge>+{product.pscs.length - 1} more</Badge>
+                        )}
+                      </div>
+                    </Td>
+                    <Td
+                      nowrap
+                      align="right"
+                      className="font-medium tabular-nums text-gray-900"
+                    >
+                      ৳{product.sellingPrice.toFixed(2)}
+                    </Td>
+                    <Td nowrap>
+                      {totalStock > 0 ? (
+                        <Badge tone="success" dot>
+                          {totalStock} in stock
+                        </Badge>
+                      ) : (
+                        <Badge tone="danger" dot>
+                          Out of stock
+                        </Badge>
+                      )}
+                    </Td>
+                    <Td nowrap align="right">
+                      <div className="flex items-center justify-end gap-0.5">
+                        <IconButton
+                          label="Edit"
+                          icon={<FiEdit2 />}
+                          href={`/admin/edit/product/${product.productId}`}
+                        />
+                        <IconButton
+                          label="Manage stock"
+                          icon={<FiPackage />}
+                          onClick={() => openStockModal(product)}
+                        />
+                        <IconButton
+                          label="Duplicate"
+                          icon={<FiCopy />}
+                          onClick={() => handleDuplicate(product.id)}
+                        />
+                        <IconButton
+                          label="Delete"
+                          icon={<FiTrash2 />}
+                          variant="ghost-danger"
+                          onClick={() => openDeleteModal(product.id)}
+                        />
+                      </div>
+                    </Td>
+                  </Tr>
+                );
+              })
+            )}
+          </TBody>
+        </Table>
+      </TableCard>
+
+      {/* Sync Button */}
+      {/* <button
+        onClick={handleSyncViews}
+        disabled={syncing}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${syncing ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white transition-colors`}
+      >
+        {syncing ? 'Syncing...' : 'Sync Views'}
+      </button> */}
 
       {/* Delete Confirmation Modal */}
       <Modal
-        isOpen={isDeleteModalOpen}
-        onRequestClose={closeDeleteModal}
-        contentLabel="Confirm Delete"
-        className="modal"
-        overlayClassName="modal-overlay"
-      >
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-          <div className="p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-2">
-              Confirm Deletion
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this product? This action cannot
-              be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={closeDeleteModal}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+        open={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        icon={<FiTrash2 />}
+        tone="danger"
+        title="Delete this product?"
+        description="This action cannot be undone."
+        size="sm"
+        footer={
+          <>
+            <Button onClick={closeDeleteModal}>Cancel</Button>
+            <Button variant="danger" loading={deleting} onClick={handleDelete}>
+              Delete
+            </Button>
+          </>
+        }
+      />
 
       {/* Manage Stock Modal */}
       <Modal
-        isOpen={isStockModalOpen}
-        onRequestClose={closeStockModal}
-        contentLabel="Manage Stock"
-        className="modal"
-        overlayClassName="modal-overlay"
-      >
-        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col">
-          <div className="p-6 pb-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800">Manage Stock</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {stockModalProduct?.name}
-            </p>
-          </div>
-
-          <div className="p-6 overflow-y-auto flex-1 space-y-1">
-            {stockModalProduct?.pscs?.length ? (
-              stockModalProduct.pscs.map((psc) => {
-                const pendingChange =
-                  (editedProducts[stockModalProduct.id] || {})[psc.id] || 0;
-                const displayQty = psc.quantity + pendingChange;
-
-                return (
-                  <div
-                    key={psc.id}
-                    className="flex items-center justify-between gap-4 py-3 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="text-sm text-gray-700">
-                      <span className="font-medium">{psc.category?.name}</span>
-                      {psc.size?.name && (
-                        <span className="text-gray-400">
-                          {' '}
-                          &middot; {psc.size.name}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleQuantityChange(stockModalProduct.id, psc.id, -1)
-                        }
-                        disabled={displayQty <= 0}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <FiMinus size={14} />
-                      </button>
-                      <span
-                        className={`w-8 text-center text-sm font-semibold ${
-                          pendingChange !== 0
-                            ? 'text-indigo-600'
-                            : 'text-gray-800'
-                        }`}
-                      >
-                        {displayQty}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleQuantityChange(stockModalProduct.id, psc.id, 1)
-                        }
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        <FiPlus size={14} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-sm text-gray-500">
-                No size/category rows for this product.
-              </p>
-            )}
-          </div>
-
-          <div className="p-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
-            <button
-              onClick={closeStockModal}
-              disabled={savingStock}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-40"
-            >
+        open={isStockModalOpen}
+        onClose={closeStockModal}
+        title="Manage stock"
+        description={stockModalProduct?.name}
+        size="lg"
+        footer={
+          <>
+            <Button onClick={closeStockModal} disabled={savingStock}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              icon={<FiSave />}
+              loading={savingStock}
+              disabled={!pendingStockChanges}
               onClick={() => handleSave(stockModalProduct.id)}
-              disabled={
-                savingStock ||
-                !Object.keys(editedProducts[stockModalProduct?.id] || {})
-                  .length
-              }
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              <FiSave size={14} />
-              {savingStock ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+              Save changes
+            </Button>
+          </>
+        }
+      >
+        {stockModalProduct?.pscs?.length ? (
+          <ul className="-my-1 divide-y divide-gray-100">
+            {stockModalProduct.pscs.map((psc) => {
+              const pendingChange =
+                (editedProducts[stockModalProduct.id] || {})[psc.id] || 0;
+              const displayQty = psc.quantity + pendingChange;
 
-      <style jsx global>{`
-        .modal {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: transparent;
-          border: none;
-          outline: none;
-        }
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0, 0, 0, 0.5);
-          z-index: 1000;
-        }
-      `}</style>
-    </div>
+              return (
+                <li
+                  key={psc.id}
+                  className="flex items-center justify-between gap-4 py-3"
+                >
+                  <div className="min-w-0 text-sm">
+                    <p className="truncate font-medium text-gray-900">
+                      {psc.category?.name}
+                    </p>
+                    {psc.size?.name && (
+                      <p className="text-xs text-gray-500">{psc.size.name}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {pendingChange !== 0 && (
+                      <Badge tone="info">
+                        {pendingChange > 0 ? `+${pendingChange}` : pendingChange}
+                      </Badge>
+                    )}
+                    <IconButton
+                      label="Decrease"
+                      icon={<FiMinus />}
+                      variant="secondary"
+                      size="sm"
+                      disabled={displayQty <= 0}
+                      onClick={() =>
+                        handleQuantityChange(stockModalProduct.id, psc.id, -1)
+                      }
+                    />
+                    <span className="w-8 text-center text-sm font-semibold tabular-nums text-gray-900">
+                      {displayQty}
+                    </span>
+                    <IconButton
+                      label="Increase"
+                      icon={<FiPlus />}
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        handleQuantityChange(stockModalProduct.id, psc.id, 1)
+                      }
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-500">
+            No size/category rows for this product.
+          </p>
+        )}
+      </Modal>
+    </AdminPage>
   );
 };
 

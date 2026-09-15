@@ -1,20 +1,46 @@
 import { useState } from 'react';
-import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
-import Loading from '../../../../components/Loading';
-import Head from 'next/head';
 import Swal from 'sweetalert2';
+import { FiEdit2, FiImage, FiList, FiPlus, FiTrash2 } from 'react-icons/fi';
+import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
 import useLoadSeries from '../../../../Hooks/useLoadSeries';
 import { handleUploadWithCloudinary } from '/components/Images/AddImageToCloudinary';
+import {
+  AdminPage,
+  Badge,
+  Button,
+  FileInput,
+  IconButton,
+  Input,
+  PageHeader,
+  SearchInput,
+  SkeletonRows,
+  TBody,
+  THead,
+  Table,
+  TableCard,
+  TableEmpty,
+  TableFooter,
+  Td,
+  Th,
+  Tr,
+} from '../../../../components/Admin';
+
+const getAudience = (series) => {
+  if (series.isForMen && !series.isForWomen) return 'Men';
+  if (!series.isForMen && series.isForWomen) return 'Women';
+  return null;
+};
 
 const ShowAllSeries = () => {
   const axiosSecure = useAxiosSecure();
   const [series, refetch, isPending] = useLoadSeries();
-  // console.log(series, 'seriesss');
 
   const [editId, setEditId] = useState(null);
+  const [savingId, setSavingId] = useState(null);
   const [nameEdits, setNameEdits] = useState({});
   const [imageEdits, setImageEdits] = useState({});
   const [imagePreview, setImagePreview] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleDeleteCategory = async (id) => {
     const confirm = await Swal.fire({
@@ -95,6 +121,7 @@ const ShowAllSeries = () => {
       );
     }
 
+    setSavingId(id);
     try {
       const formData = new FormData();
 
@@ -130,71 +157,116 @@ const ShowAllSeries = () => {
     } catch (err) {
       console.error(err);
       Swal.fire('Error', 'Failed to update category.', 'error');
+    } finally {
+      setSavingId(null);
     }
   };
 
+  const allSeries = series || [];
+  const filteredSeries = allSeries.filter((item) =>
+    item.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   return (
-    <div className="container mx-auto pt-20 lg:pt-40">
-      <Head>
-        <title>Series</title>
-      </Head>
-      <h1 className="text-2xl font-bold mb-6 text-center">All Series</h1>
+    <AdminPage title="Series">
+      <PageHeader
+        title="Series"
+        description="Rename series, change their cover image, or remove them."
+        actions={
+          <Button
+            variant="primary"
+            icon={<FiPlus />}
+            href="/admin/add/add-series"
+          >
+            Add series
+          </Button>
+        }
+      />
 
-      {isPending ? (
-        <Loading />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b text-left">ID</th>
-                <th className="py-2 px-4 border-b text-left">Image</th>
-                {/* <th className="py-2 px-4 border-b text-left">Filename</th> */}
-                <th className="py-2 px-4 border-b text-left">Name</th>
-                <th className="py-2 px-4 border-b text-left">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {series.map((cat) => (
-                <tr key={cat.id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border-b">{cat.id}</td>
+      <TableCard
+        toolbar={
+          <SearchInput
+            value={searchTerm}
+            onValueChange={setSearchTerm}
+            placeholder="Search series..."
+          />
+        }
+        footer={
+          !isPending && (
+            <TableFooter>
+              {filteredSeries.length} of {allSeries.length} series
+            </TableFooter>
+          )
+        }
+      >
+        <Table>
+          <THead>
+            <Th className="w-16">ID</Th>
+            <Th>Image</Th>
+            <Th>Name</Th>
+            <Th align="right">Actions</Th>
+          </THead>
+          <TBody>
+            {isPending ? (
+              <SkeletonRows rows={6} cols={4} />
+            ) : filteredSeries.length === 0 ? (
+              <TableEmpty
+                colSpan={4}
+                icon={<FiList />}
+                title="No series found"
+                description={
+                  searchTerm
+                    ? 'Try a different search.'
+                    : 'Add a series to get started.'
+                }
+              />
+            ) : (
+              filteredSeries.map((cat) => {
+                const isEditing = editId === cat.id;
+                const previewSrc =
+                  isEditing && imagePreview[cat.id]?.startsWith('blob:')
+                    ? imagePreview[cat.id]
+                    : cat?.filename;
+                const audience = getAudience(cat);
 
-                  {/* Image Column */}
-                  <td className="py-2 px-4 border-b">
-                    <div
-                      className={`flex ${
-                        editId === cat.id && 'flex-col'
-                      } items-center gap-2`}
-                    >
-                      {cat?.filename && (
-                        <img
-                          src={`${cat.filename}`}
-                          alt={cat.name}
-                          className="w-16 h-16 object-cover rounded border"
-                        />
-                      )}
-                      {editId === cat.id && (
-                        <label>
-                          {/* <FiUpload className='text-5xl'></FiUpload> */}
-                          <input
-                            type="file"
+                return (
+                  <Tr key={cat.id}>
+                    <Td nowrap className="tabular-nums text-gray-500">
+                      {cat.id}
+                    </Td>
+
+                    {/* Image Column */}
+                    <Td>
+                      <div className="flex items-center gap-3">
+                        {previewSrc ? (
+                          <img
+                            src={previewSrc}
+                            alt={cat.name}
+                            className="h-12 w-12 shrink-0 rounded-lg border border-gray-200 object-cover"
+                          />
+                        ) : (
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400">
+                            <FiImage className="h-4 w-4" />
+                          </span>
+                        )}
+                        {isEditing && (
+                          <FileInput
                             accept="image/*"
                             onChange={(e) =>
                               handleImageChange(cat.id, e.target.files[0])
                             }
-                            className=" file-input file-input-xs file-input-bordered max-w-xs"
+                            className="max-w-[14rem]"
                           />
-                        </label>
-                      )}
-                    </div>
-                  </td>
+                        )}
+                      </div>
+                    </Td>
 
-                  {/* Name Column */}
-                  <td className="py-2 px-4 border-b">
-                    {editId === cat.id ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
+                    {/* Name Column */}
+                    <Td nowrap>
+                      {isEditing ? (
+                        <Input
+                          size="sm"
+                          autoFocus
                           value={nameEdits[cat.id] || ''}
                           onChange={(e) =>
                             setNameEdits((prev) => ({
@@ -202,67 +274,73 @@ const ShowAllSeries = () => {
                               [cat.id]: e.target.value,
                             }))
                           }
-                          className="input input-sm input-bordered"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveEdit(cat.id);
+                            if (e.key === 'Escape') handleCancelEdit();
+                          }}
+                          aria-label="Series name"
+                          className="w-56"
                         />
-                        <button
-                          onClick={() => handleSaveEdit(cat.id)}
-                          className="btn btn-xs btn-success"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="btn btn-xs btn-warning"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={`${cat.name}${
-                            cat.isForMen && !cat.isForWomen
-                              ? ' (Men)'
-                              : !cat.isForMen && cat.isForWomen
-                              ? ' (Women)'
-                              : ''
-                          }`}
-                          disabled
-                          className="input input-sm input-bordered"
-                        />
-                        <button
-                          onClick={() =>
-                            handleStartEdit(
-                              cat.id,
-                              cat.name,
-                              cat.image || cat.imageUrl,
-                            )
-                          }
-                          className="btn btn-xs btn-primary"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    )}
-                  </td>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">
+                            {cat.name}
+                          </span>
+                          {audience && <Badge tone="info">{audience}</Badge>}
+                        </div>
+                      )}
+                    </Td>
 
-                  {/* Action Column */}
-                  <td className="py-2 px-4 border-b">
-                    <button
-                      onClick={() => handleDeleteCategory(cat.id)}
-                      className="btn btn-xs btn-error"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+                    {/* Action Column */}
+                    <Td nowrap align="right">
+                      {isEditing ? (
+                        <div className="flex justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            loading={savingId === cat.id}
+                            onClick={() => handleSaveEdit(cat.id)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end gap-0.5">
+                          <IconButton
+                            label="Edit"
+                            icon={<FiEdit2 />}
+                            onClick={() =>
+                              handleStartEdit(
+                                cat.id,
+                                cat.name,
+                                cat.image || cat.imageUrl,
+                              )
+                            }
+                          />
+                          <IconButton
+                            label="Delete"
+                            icon={<FiTrash2 />}
+                            variant="ghost-danger"
+                            onClick={() => handleDeleteCategory(cat.id)}
+                          />
+                        </div>
+                      )}
+                    </Td>
+                  </Tr>
+                );
+              })
+            )}
+          </TBody>
+        </Table>
+      </TableCard>
+    </AdminPage>
   );
 };
 

@@ -1,81 +1,131 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Loading from '../../../../components/Loading';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import {
+  FiActivity,
+  FiArrowLeft,
+  FiCheck,
+  FiCopy,
+  FiEdit2,
+  FiExternalLink,
+  FiFileText,
+  FiImage,
+  FiMail,
+  FiMessageSquare,
+  FiMoreHorizontal,
+  FiPackage,
+  FiPlus,
+  FiSend,
+  FiShoppingBag,
+  FiTrash2,
+  FiTruck,
+  FiUser,
+  FiXCircle,
+} from 'react-icons/fi';
 import { AuthContext } from '../../../../Contexts/Auth/AuthProvider';
 import OrderComp from '../../../../components/orderComp';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
-import Link from 'next/link';
-import {
-  FaEnvelope,
-  FaTrash,
-  FaTimes,
-  FaBox,
-  FaUser,
-  FaTruck,
-  FaShoppingBag,
-  FaArrowLeft,
-  FaCheck,
-  FaClock,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaCreditCard,
-  FaReceipt,
-  FaStickyNote,
-} from 'react-icons/fa';
 import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
-import Modal from 'react-modal';
-import Head from 'next/head';
-import { motion, AnimatePresence } from 'framer-motion';
 import useOrderGroup from '/Hooks/useOrderGroup';
+import { getOrderStatus } from '../../../../utils/orderStatus';
+import {
+  AdminPage,
+  Badge,
+  Button,
+  DetailItem,
+  DetailList,
+  Dropdown,
+  DropdownItem,
+  EmptyState,
+  IconButton,
+  Modal,
+  PageHeader,
+  Section,
+  Textarea,
+  cx,
+} from '../../../../components/Admin';
+
+const NOTE_MAX_LENGTH = 250;
+
+const formatDateTime = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const getCategoryPath = (category) =>
+  [category?.category?.category?.name, category?.category?.name, category?.name]
+    .filter(Boolean)
+    .join(' › ');
+
+function DetailsSkeleton() {
+  const bar = 'animate-pulse rounded bg-gray-200/70';
+  const card = (lines, height) => (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className={cx(bar, 'h-4 w-32')} />
+      <div className="mt-5 space-y-3">
+        {Array.from({ length: lines }, (_, i) => (
+          <div key={i} className={cx(bar, 'w-full', height)} />
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="mb-6 space-y-3">
+        <div className={cx(bar, 'h-4 w-28')} />
+        <div className={cx(bar, 'h-7 w-56')} />
+        <div className={cx(bar, 'h-4 w-44')} />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          {card(3, 'h-16')}
+          {card(4, 'h-8')}
+        </div>
+        <div className="space-y-6">
+          {card(3, 'h-4')}
+          {card(3, 'h-4')}
+        </div>
+      </div>
+    </>
+  );
+}
 
 const ShowOrderDetails = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { user } = useContext(AuthContext);
-  const { specificOrders: group, refetch, isPending } = useOrderGroup(id);
   const { loading } = useContext(AuthContext);
+  const { specificOrders: group, refetch, isPending } = useOrderGroup(id);
   const axiosSecure = useAxiosSecure();
+
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmationMessageBoxOpen, setIsConfirmationMessageBoxOpen] =
     useState(false);
   const [message, setMessage] = useState('');
+  const [phoneCopied, setPhoneCopied] = useState(false);
 
-  // Per-order notes shared with the orders list page — same localStorage
-  // key/structure (an object keyed by order id) so both pages stay in sync.
+  // Admin note for this order, stored on the order history (adminNote) and
+  // also shown on the orders list.
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [noteError, setNoteError] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
 
   const history = group?.[0]?.history;
+  const customer = group?.[0]?.customer;
   const hasNote = Boolean(history?.adminNote?.trim());
 
   useEffect(() => {
     setNoteText(history?.adminNote || '');
   }, [history?.adminNote]);
-
-  // Filtered Order Details
-  // const group = orders.filter((order) => order.history?.id == id);
-  if (!isPending && group.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
-        <div className="text-center">
-          {loading ? (
-            <Loading />
-          ) : (
-            <>
-              <FaBox className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-xl text-gray-600">No order details found</p>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  const customer = group && group[0]?.customer;
 
   // Modal handlers
   const openMessageBox = () => setIsConfirmationMessageBoxOpen(true);
@@ -100,22 +150,18 @@ const ShowOrderDetails = () => {
       return;
     }
 
-    if (normalizedNote.length > 250) {
-      setNoteError('Note cannot exceed 250 characters.');
+    if (normalizedNote.length > NOTE_MAX_LENGTH) {
+      setNoteError(`Note cannot exceed ${NOTE_MAX_LENGTH} characters.`);
       return;
     }
 
     try {
       setIsSavingNote(true);
-      await axiosPublic.patch(
-        `/admin/order-note/${history?.id}`,
-        { note: normalizedNote },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        },
-      );
+      // axiosSecure attaches the admin access_token itself - order-note is
+      // guarded by the admin JWT.
+      await axiosSecure.patch(`/admin/order-note/${history?.id}`, {
+        note: normalizedNote,
+      });
       setNoteText(normalizedNote);
       await refetch();
       closeNoteModal();
@@ -129,14 +175,15 @@ const ShowOrderDetails = () => {
 
   // Handle delete with confirmation
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
-      const res = await axiosSecure.put(
-        `/admin/delete-history/${history?.trackingToken}`,
-      );
+      await axiosSecure.put(`/admin/delete-history/${history?.trackingToken}`);
       closeConfirmationModal();
       router.push('/admin/show/show-orders');
     } catch (error) {
       console.error('Failed to delete order history:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -156,543 +203,429 @@ const ShowOrderDetails = () => {
     );
   };
 
-  // The backend overwrites deliveryStatus.name with the courier's status
-  // when courier info exists (see getOrderGroupByHistoryId) but leaves
-  // deliveryStatus.id alone, so colouring by id while labelling by name
-  // produced badges like a green one reading "CANCELLED". Take both from
-  // the same source, with the same precedence the orders list uses.
-  const FAILED_COURIER_SLUGS = [
-    'cancelled',
-    'pickup_cancelled',
-    'returned',
-    'return',
-  ];
-
-  const getStatusColor = (history) => {
-    const slug = history?.courierInfo?.order_status_slug?.toLowerCase();
-
-    if (slug) {
-      if (FAILED_COURIER_SLUGS.includes(slug)) return 'bg-red-500';
-      if (slug === 'delivered') return 'bg-emerald-500';
-      return 'bg-amber-500';
-    }
-
-    const statusId = history?.deliveryStatus?.id;
-    if (statusId > 6) return 'bg-red-500';
-    if (statusId === 6) return 'bg-emerald-500';
-    return 'bg-amber-500';
+  // Opened in a new tab there is no page to go back to.
+  const goBackToOrders = () => {
+    if (window.history.length > 1) router.back();
+    else router.push('/admin/show/show-orders');
   };
 
-  const totalPrice =
-    group && group.reduce((acc, order) => acc + order.totalPrice, 0) +
-    (history?.deliveryFee || 0);
+  const phone = history?.phone_no || customer?.mbl_no;
+
+  const copyPhone = async () => {
+    try {
+      await navigator.clipboard.writeText(String(phone));
+      setPhoneCopied(true);
+      setTimeout(() => setPhoneCopied(false), 1500);
+    } catch (error) {
+      console.error('Could not copy phone number:', error);
+    }
+  };
+
+  const isLoading = loading || isPending;
+  const notFound = !isLoading && group.length === 0;
+
+  const subtotal = group.reduce((acc, order) => acc + (order.totalPrice || 0), 0);
+  const deliveryFee = history?.deliveryFee || 0;
+  const status = getOrderStatus(history);
+  const customerName = customer?.name || history?.fullName;
+  const paymentProofSrc =
+    history?.screenshot &&
+    `${process.env.NEXT_PUBLIC_API}/admin/getimage/${history.screenshot}`;
 
   return (
-    <>
-      <Head>
-        <title>Order #{id} - Order Details</title>
-      </Head>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 p-4 lg:p-8">
-        {loading ? (
-          <div className="flex justify-center items-center min-h-screen">
-            <Loading />
-          </div>
-        ) : (
-          <div className="max-w-7xl mx-auto">
-            {/* Header Section */}
-            <div className="mb-6">
+    <AdminPage
+      title={history?.id ? `Order #${history.id}` : 'Order details'}
+      width="narrow"
+    >
+      {isLoading ? (
+        <DetailsSkeleton />
+      ) : notFound ? (
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <EmptyState
+            icon={<FiPackage />}
+            title="Order not found"
+            description="This order may have been deleted, or the link is wrong."
+            action={
+              <Button icon={<FiArrowLeft />} href="/admin/show/show-orders">
+                Back to orders
+              </Button>
+            }
+          />
+        </div>
+      ) : (
+        <>
+          <PageHeader
+            eyebrow={
               <button
-                onClick={() => router.back()}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors mb-4"
+                type="button"
+                onClick={goBackToOrders}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
               >
-                <FaArrowLeft className="w-3.5 h-3.5" />
-                Back to Orders
+                <FiArrowLeft className="h-4 w-4" />
+                Back to orders
               </button>
+            }
+            title={`Order #${history?.id}`}
+            badge={
+              <>
+                <Badge tone={status.tone} dot>
+                  {status.label}
+                </Badge>
+                {history?.isChecked ? (
+                  <Badge tone="success">
+                    <FiCheck className="h-3 w-3" />
+                    Checked
+                  </Badge>
+                ) : (
+                  <Badge>Not checked</Badge>
+                )}
+              </>
+            }
+            description={`Placed on ${formatDateTime(history?.BuyingDate)}`}
+            actions={
+              <>
+                <Button icon={<FiMail />} onClick={openMessageBox}>
+                  Send message
+                </Button>
+                <Dropdown label="More" icon={<FiMoreHorizontal />} width="w-48">
+                  <DropdownItem
+                    icon={<FiXCircle />}
+                    onClick={handleCancellation}
+                  >
+                    Cancel order
+                  </DropdownItem>
+                  <DropdownItem
+                    icon={<FiTrash2 />}
+                    tone="danger"
+                    onClick={openConfirmationModal}
+                  >
+                    Delete order
+                  </DropdownItem>
+                </Dropdown>
+              </>
+            }
+          />
 
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold text-gray-900">
-                        Order #{history?.id}
-                      </h1>
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg text-white ${getStatusColor(
-                          history,
-                        )}`}
-                      >
-                        <FaClock className="w-3.5 h-3.5" />
-                        {history?.courierInfo
-                          ? history.courierInfo.order_status
-                          : history?.deliveryStatus?.name}
-                      </span>
-                    </div>
-                    <p className="text-gray-600">
-                      Placed on{' '}
-                      {new Date(history?.BuyingDate).toLocaleDateString(
-                        'en-US',
-                        {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        },
-                      )}
-                    </p>
-                  </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Main column */}
+            <div className="min-w-0 space-y-6 lg:col-span-2">
+              <Section
+                title="Items"
+                icon={<FiShoppingBag />}
+                actions={
+                  <span className="text-xs text-gray-500">
+                    {group.length} {group.length === 1 ? 'item' : 'items'}
+                  </span>
+                }
+              >
+                <ul className="divide-y divide-gray-100">
+                  {group.map((order) => {
+                    const productHref = `/products/details/${order.product?.productId}`;
+                    const isCouples =
+                      order.category?.category?.category?.name === 'Couples';
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={handleCancellation}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                    >
-                      <FaTimes className="w-4 h-4" />
-                      Cancel Order
-                    </button>
-                    <button
-                      onClick={openMessageBox}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                    >
-                      <FaEnvelope className="w-4 h-4" />
-                      Send Message
-                    </button>
-                    <button
-                      onClick={openNoteModal}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
-                    >
-                      <FaStickyNote className="w-4 h-4" />
-                      {hasNote ? 'Edit Note' : 'Add Note'}
-                    </button>
-                    <button
-                      onClick={openConfirmationModal}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      <FaTrash className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* main content  */}
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Products Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <FaShoppingBag className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <h2 className="text-lg font-bold text-gray-900">
-                        Order Items
-                      </h2>
-                    </div>
-                  </div>
-                  {/* ordered items  */}
-                  <div className="p-6 space-y-4">
-                     { group && group.map((order, index) => (
-                      <motion.div
+                    return (
+                      <li
                         key={order.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                        className="flex gap-4 py-4 first:pt-0 last:pb-0"
                       >
                         <Link
-                          href={`/products/details/${order.product.productId}`}
-                          className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors"
+                          href={productHref}
+                          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition hover:border-gray-300"
                         >
-                          <Image
-                            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product?.filename}`}
-                            alt={order.product?.name || 'Product Image'}
-                            layout="fill"
-                            objectFit="cover"
-                          />
+                          {order.product?.filename ? (
+                            <Image
+                              src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${order.product.filename}`}
+                              alt={order.product?.name || 'Product image'}
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center text-gray-400">
+                              <FiImage className="h-5 w-5" />
+                            </span>
+                          )}
                         </Link>
-                        <div className="flex-1 min-w-0">
-                          <Link
-                            href={`/products/details/${order.product.productId}`}
-                            className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
-                          >
-                            {order.product?.name}
-                          </Link>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {order.category.name} •{' '}
-                            {order.category.category.name} •{' '}
-                            {order.category.category.category.name}
-                          </p>
-                          <div className="flex flex-wrap gap-3 mt-2">
-                            <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-white border border-gray-200 rounded-lg">
-                              {order.category.category.category.name ===
-                                'Couples' && 'Male '}
-                              Size: {order.size}
-                            </span>
-                            {order.category.category.category.name ===
-                              'Couples' && (
-                              <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-white border border-gray-200 rounded-lg">
-                                Female Size: {order.femaleSize}
-                              </span>
+                        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:justify-between sm:gap-4">
+                          <div className="min-w-0">
+                            <Link
+                              href={productHref}
+                              className="font-medium text-gray-900 hover:underline"
+                            >
+                              {order.product?.name || 'Unavailable product'}
+                            </Link>
+                            {getCategoryPath(order.category) && (
+                              <p className="mt-0.5 text-xs text-gray-500">
+                                {getCategoryPath(order.category)}
+                              </p>
                             )}
-                            <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-white border border-gray-200 rounded-lg">
-                              Qty: {order.Quantity}
-                            </span>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              <Badge>
+                                {isCouples ? 'Male size' : 'Size'}: {order.size}
+                              </Badge>
+                              {isCouples && (
+                                <Badge>Female size: {order.femaleSize}</Badge>
+                              )}
+                              <Badge>Qty: {order.Quantity}</Badge>
+                            </div>
                           </div>
-                          <p className="text-lg font-bold text-gray-900 mt-2">
-                            ৳{order.totalPrice.toLocaleString()}
+                          <p className="shrink-0 font-semibold tabular-nums text-gray-900">
+                            ৳{(order.totalPrice || 0).toLocaleString()}
                           </p>
                         </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Section>
 
-                {/* Payment Proof */}
-                {history?.screenshot && (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4 border-b border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-100 rounded-lg">
-                          <FaReceipt className="w-4 h-4 text-emerald-600" />
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900">
-                          Payment Proof
-                        </h3>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <div className="relative w-full h-96 rounded-xl overflow-hidden border-2 border-gray-200">
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${history.screenshot}`}
-                          alt="Payment Proof"
-                          layout="fill"
-                          objectFit="contain"
-                          className="bg-gray-50"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
+              <Section
+                title="Order progress"
+                icon={<FiActivity />}
+                bodyClassName="px-5 py-2"
+              >
+                <OrderComp
+                  orderDetails={history}
+                  admin={true}
+                  onUpdated={refetch}
+                />
+              </Section>
 
-                {/* Order Component */}
-                {/* order status  */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <OrderComp orderDetails={history} admin={true} onUpdated={refetch} />
-                </div>
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6">
-                {/* Order Summary */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <FaReceipt className="w-4 h-4 text-purple-600" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Order Summary
-                      </h3>
-                    </div>
+              {paymentProofSrc && (
+                <Section
+                  title="Payment proof"
+                  icon={<FiImage />}
+                  actions={
+                    <IconButton
+                      label="Open full size"
+                      icon={<FiExternalLink />}
+                      href={paymentProofSrc}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
+                >
+                  <div className="relative h-96 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                    <Image
+                      src={paymentProofSrc}
+                      alt="Payment proof"
+                      fill
+                      sizes="(min-width: 1024px) 66vw, 100vw"
+                      className="object-contain"
+                    />
                   </div>
-                  <div className="p-6 space-y-3">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Subtotal</span>
-                      <span className="font-semibold">
-                        ৳
-                        {group && group
-                          .reduce((acc, order) => acc + order.totalPrice, 0)
-                          .toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-gray-600">
-                      <span>Delivery Fee</span>
-                      <span className="font-semibold">
-                        ৳{(history?.deliveryFee || 0).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="pt-3 border-t border-gray-200">
-                      <div className="flex justify-between text-lg font-bold text-gray-900">
-                        <span>Total</span>
-                        <span className="text-blue-600">
-                          ৳{totalPrice.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Customer Info */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <FaUser className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Customer Info
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                        Name
-                      </p>
-                      <p className="text-gray-900 font-medium">
-                        {customer?.name || history?.fullName || 'N/A'}
-                      </p>
-                    </div>
-                    {customer?.email && (
-                      <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                          Email
-                        </p>
-                        <p className="text-gray-900 font-medium">
-                          {customer.email}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                        Phone
-                      </p>
-                      <p className="text-gray-900 font-medium">
-                        {history?.phone_no || customer?.mbl_no || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Delivery Details */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-emerald-100 rounded-lg">
-                        <FaTruck className="w-4 h-4 text-emerald-600" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Delivery Details
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                        <FaMapMarkerAlt className="inline w-3 h-3 mr-1" />
-                        Address
-                      </p>
-                      <p className="text-gray-900 font-medium">
-                        {history?.address || 'N/A'}
-                      </p>
-                    </div>
-                    {history?.city && (
-                      <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                          City
-                        </p>
-                        <p className="text-gray-900 font-medium">
-                          {history.city}
-                        </p>
-                      </div>
-                    )}
-                    {history?.region && (
-                      <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                          Region
-                        </p>
-                        <p className="text-gray-900 font-medium">
-                          {history.region}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                        <FaCreditCard className="inline w-3 h-3 mr-1" />
-                        Payment Method
-                      </p>
-                      <p className="text-gray-900 font-medium">
-                        {history?.paymentMethod?.name || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </Section>
+              )}
             </div>
 
-            {/* Delete Confirmation Modal */}
-            <AnimatePresence>
-              {isConfirmationModalOpen && (
-                <Modal
-                  isOpen={isConfirmationModalOpen}
-                  onRequestClose={closeConfirmationModal}
-                  contentLabel="Confirm Deletion"
-                  ariaHideApp={false}
-                  className="fixed inset-0 flex items-center justify-center p-4 z-50"
-                  overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8"
-                  >
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-                        <FaTrash className="w-8 h-8 text-red-600" />
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                        Delete Order
-                      </h2>
-                      <p className="text-gray-600 mb-6">
-                        Are you sure you want to delete this order? This action
-                        cannot be undone.
-                      </p>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={closeConfirmationModal}
-                          className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleDelete}
-                          className="flex-1 px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Modal>
-              )}
-            </AnimatePresence>
+            {/* Sidebar */}
+            <div className="min-w-0 space-y-6">
+              <Section title="Summary" icon={<FiFileText />}>
+                <DetailList>
+                  <DetailItem label="Subtotal">
+                    <span className="tabular-nums">
+                      ৳{subtotal.toLocaleString()}
+                    </span>
+                  </DetailItem>
+                  <DetailItem label="Delivery fee">
+                    <span className="tabular-nums">
+                      ৳{deliveryFee.toLocaleString()}
+                    </span>
+                  </DetailItem>
+                </DetailList>
+                <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
+                  <span className="text-sm font-semibold text-gray-900">
+                    Total
+                  </span>
+                  <span className="text-lg font-semibold tabular-nums text-gray-900">
+                    ৳{(subtotal + deliveryFee).toLocaleString()}
+                  </span>
+                </div>
+              </Section>
 
-            {/* Message Modal */}
-            <AnimatePresence>
-              {isConfirmationMessageBoxOpen && (
-                <Modal
-                  isOpen={isConfirmationMessageBoxOpen}
-                  onRequestClose={closeMessageBox}
-                  contentLabel="Send Message"
-                  ariaHideApp={false}
-                  className="fixed inset-0 flex items-center justify-center p-4 z-50"
-                  overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8"
-                  >
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2.5 bg-blue-100 rounded-lg">
-                        <FaEnvelope className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        Send Message
-                      </h2>
-                    </div>
-                    <textarea
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-900"
-                      placeholder="Type your message here..."
-                      rows="6"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                    />
-                    <div className="flex gap-3 mt-6">
-                      <button
-                        onClick={closeMessageBox}
-                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              <Section title="Customer" icon={<FiUser />}>
+                <DetailList>
+                  <DetailItem label="Name">{customerName || 'N/A'}</DetailItem>
+                  {customer?.email && (
+                    <DetailItem label="Email">
+                      <a
+                        href={`mailto:${customer.email}`}
+                        className="break-all hover:underline"
                       >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSendMessage}
-                        className="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Send Message
-                      </button>
-                    </div>
-                  </motion.div>
-                </Modal>
-              )}
-            </AnimatePresence>
-
-            {/* Note Modal */}
-            <AnimatePresence>
-              {isNoteModalOpen && (
-                <Modal
-                  isOpen={isNoteModalOpen}
-                  onRequestClose={closeNoteModal}
-                  contentLabel={hasNote ? 'Edit Note' : 'Add Note'}
-                  ariaHideApp={false}
-                  className="fixed inset-0 flex items-center justify-center p-4 z-50"
-                  overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8"
-                  >
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2.5 bg-amber-100 rounded-lg">
-                        <FaStickyNote className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        {hasNote ? 'Edit Note' : 'Add Note'}
-                      </h2>
-                    </div>
-                    <textarea
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none text-gray-900"
-                      placeholder="e.g. didn't answer call, cancelled - reason..."
-                      rows="6"
-                      maxLength={250}
-                      value={noteText}
-                      onChange={(e) => {
-                        setNoteText(e.target.value);
-                        setNoteError('');
-                      }}
-                    />
-                    <div className="mt-2 flex items-center justify-between text-xs">
-                      <span className="text-red-600">{noteError}</span>
-                      <span
-                        className={
-                          noteText.length > 240
-                            ? 'text-amber-700 font-semibold'
-                            : 'text-gray-500'
-                        }
-                      >
-                        {noteText.length}/250
+                        {customer.email}
+                      </a>
+                    </DetailItem>
+                  )}
+                  <DetailItem label="Phone">
+                    {phone ? (
+                      <span className="inline-flex items-center gap-1">
+                        <a
+                          href={`tel:${phone}`}
+                          className="tabular-nums hover:underline"
+                        >
+                          {phone}
+                        </a>
+                        <IconButton
+                          size="sm"
+                          label={phoneCopied ? 'Copied' : 'Copy phone'}
+                          icon={
+                            phoneCopied ? (
+                              <FiCheck className="text-emerald-600" />
+                            ) : (
+                              <FiCopy />
+                            )
+                          }
+                          onClick={copyPhone}
+                          className="-my-1 text-gray-400"
+                        />
                       </span>
-                    </div>
-                    <div className="flex gap-3 mt-6">
-                      <button
-                        onClick={closeNoteModal}
-                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSaveNote}
-                        disabled={isSavingNote}
-                        className="flex-1 px-4 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors"
-                      >
-                        {isSavingNote ? 'Saving...' : 'Save'}
-                      </button>
-                    </div>
-                  </motion.div>
-                </Modal>
-              )}
-            </AnimatePresence>
+                    ) : (
+                      'N/A'
+                    )}
+                  </DetailItem>
+                </DetailList>
+              </Section>
+
+              <Section
+                title="Admin note"
+                icon={<FiMessageSquare />}
+                actions={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    icon={hasNote ? <FiEdit2 /> : <FiPlus />}
+                    onClick={openNoteModal}
+                  >
+                    {hasNote ? 'Edit' : 'Add'}
+                  </Button>
+                }
+              >
+                {hasNote ? (
+                  <p className="whitespace-pre-wrap break-words rounded-lg border border-amber-100 bg-amber-50/60 p-3 text-sm text-gray-800">
+                    {history.adminNote}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-400">
+                    No note yet. Use it to record calls, delays or
+                    cancellation reasons.
+                  </p>
+                )}
+              </Section>
+
+              <Section title="Delivery" icon={<FiTruck />}>
+                <DetailList>
+                  <DetailItem label="Address" stacked>
+                    {history?.address || 'N/A'}
+                  </DetailItem>
+                  {history?.city && (
+                    <DetailItem label="City">{history.city}</DetailItem>
+                  )}
+                  {history?.region && (
+                    <DetailItem label="Region">{history.region}</DetailItem>
+                  )}
+                  <DetailItem label="Payment method">
+                    {history?.paymentMethod?.name || 'N/A'}
+                  </DetailItem>
+                </DetailList>
+              </Section>
+            </div>
           </div>
-        )}
-      </div>
-    </>
+        </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isConfirmationModalOpen}
+        onClose={closeConfirmationModal}
+        icon={<FiTrash2 />}
+        tone="danger"
+        title="Delete this order?"
+        description="This action cannot be undone."
+        size="sm"
+        footer={
+          <>
+            <Button onClick={closeConfirmationModal}>Cancel</Button>
+            <Button variant="danger" loading={isDeleting} onClick={handleDelete}>
+              Delete order
+            </Button>
+          </>
+        }
+      />
+
+      {/* Message Modal */}
+      <Modal
+        open={isConfirmationMessageBoxOpen}
+        onClose={closeMessageBox}
+        title="Send message"
+        description={customerName && `To ${customerName}`}
+        footer={
+          <>
+            <Button onClick={closeMessageBox}>Cancel</Button>
+            <Button variant="primary" icon={<FiSend />} onClick={handleSendMessage}>
+              Send message
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          rows={6}
+          placeholder="Type your message here..."
+          aria-label="Message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </Modal>
+
+      {/* Note Modal */}
+      <Modal
+        open={isNoteModalOpen}
+        onClose={closeNoteModal}
+        title={hasNote ? 'Edit note' : 'Add note'}
+        description="Shown on the orders list next to this order."
+        footer={
+          <>
+            <Button onClick={closeNoteModal}>Cancel</Button>
+            <Button
+              variant="primary"
+              loading={isSavingNote}
+              onClick={handleSaveNote}
+            >
+              Save note
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          rows={5}
+          autoFocus
+          maxLength={NOTE_MAX_LENGTH}
+          placeholder="e.g. didn't answer call, cancelled - reason..."
+          aria-label="Note"
+          value={noteText}
+          onChange={(e) => {
+            setNoteText(e.target.value);
+            setNoteError('');
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSaveNote();
+          }}
+        />
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+          <span className="text-red-600">{noteError}</span>
+          <span
+            className={cx(
+              'tabular-nums',
+              noteText.length > NOTE_MAX_LENGTH - 10
+                ? 'font-semibold text-amber-700'
+                : 'text-gray-500',
+            )}
+          >
+            {noteText.length}/{NOTE_MAX_LENGTH}
+          </span>
+        </div>
+      </Modal>
+    </AdminPage>
   );
 };
 

@@ -6,7 +6,7 @@ import { styled } from '@mui/material/styles';
 import useAxiosPublic from '../Hooks/useAxiosPublic';
 import { AuthContext } from '../Contexts/Auth/AuthProvider';
 import toast from 'react-hot-toast';
-import Modal from 'react-modal';
+import { Button, Modal } from './Admin';
 
 const CustomTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -348,36 +348,34 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
       </div>
 
       <Modal
-        isOpen={isConfirmationModalOpen}
-        onRequestClose={closeConfirmationModal}
-        contentLabel="Confirm step"
-        ariaHideApp={false}
-        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-      >
-        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-4">Confirm Step</h2>
-          <p>
+        open={isConfirmationModalOpen}
+        onClose={closeConfirmationModal}
+        title="Confirm step"
+        description={
+          <>
             Mark this order as{' '}
-            <strong>{selectedStep?.label || 'the selected step'}</strong>?
-          </p>
-          <div className="flex justify-end gap-4 mt-4">
-            <button
-              onClick={closeConfirmationModal}
-              disabled={isUpdating}
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-60"
-            >
+            <strong className="font-semibold text-gray-900">
+              {selectedStep?.label || 'the selected step'}
+            </strong>
+            ?
+          </>
+        }
+        size="sm"
+        footer={
+          <>
+            <Button onClick={closeConfirmationModal} disabled={isUpdating}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              loading={isUpdating}
               onClick={handleStepClick}
-              disabled={isUpdating}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-60"
             >
-              {isUpdating ? 'Updating...' : 'Confirm'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+              Confirm
+            </Button>
+          </>
+        }
+      />
     </div>
   );
 };

@@ -1,31 +1,57 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { FiSearch, FiDownload, FiChevronDown, FiFilter } from 'react-icons/fi';
-import { useOnClickOutside } from 'usehooks-ts';
+import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import useCustomizationReq from '/Hooks/useCustomizationReq';
-import Loading from '/components/Loading';
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import { getGuestCustomerInfo } from '/utils/guestCustomer';
-import useAxiosSecure from '/Hooks/useAxiosSecure';
 import Swal from 'sweetalert2';
 import _ from 'lodash'; // install lodash if not already: npm i lodash
-import { FaCheck } from 'react-icons/fa';
+import {
+  FiDownload,
+  FiEye,
+  FiFileText,
+  FiGrid,
+  FiLayers,
+} from 'react-icons/fi';
+import useCustomizationReq from '/Hooks/useCustomizationReq';
+import useAxiosSecure from '/Hooks/useAxiosSecure';
+import {
+  AdminPage,
+  Badge,
+  CheckToggle,
+  Dropdown,
+  DropdownItem,
+  IconButton,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  SkeletonRows,
+  TBody,
+  THead,
+  Table,
+  TableCard,
+  TableEmpty,
+  Td,
+  Th,
+  Tr,
+  cx,
+} from '/components/Admin';
+
+const STATUS_TONES = { approved: 'success', rejected: 'danger' };
+
+const statusOptions = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'rejected', label: 'Rejected' },
+];
 
 const ShowCustomizationRequests = () => {
   const [customizations, refetch, isPending] = useCustomizationReq();
-  console.log(customizations, 'customizationscustomizations');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
-  const exportRef = useRef(null);
-  const [hoveredId, setHoveredId] = useState(0);
-
-  // Handle click outside export dropdown to close it
-  useOnClickOutside(exportRef, () => setExportDropdownOpen(false));
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [checkingId, setCheckingId] = useState(null);
 
   // Filter customizations based on search term and status filter
   const filteredCustomizations = customizations.filter((customization) => {
@@ -40,23 +66,8 @@ const ShowCustomizationRequests = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // console.log(filteredCustomizations,'filteredCustomizationsfilteredCustomizations');
-
-  // Filter first
-  const filtered = customizations.filter((customization) => {
-    const matchesSearch =
-      customization.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customization.phone?.includes(searchTerm);
-
-    const matchesStatus =
-      statusFilter === 'all' ||
-      customization.status.toLowerCase() === statusFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus;
-  });
-
   // Group by groupId
-  const groupedCustomizations = _(filtered)
+  const groupedCustomizations = _(filteredCustomizations)
     .groupBy('groupId')
     .map((items) => {
       const base = items[0]; // take common info
@@ -74,8 +85,16 @@ const ShowCustomizationRequests = () => {
     })
     .value();
 
+  const totalPages = Math.ceil(groupedCustomizations.length / pageSize);
+  const currentGroups = groupedCustomizations.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   // Handle export functionality for CSV and Excel
   const handleExport = (type) => {
+    if (!filteredCustomizations.length) return;
+
     const exportData = filteredCustomizations.map((customization) => ({
       'Customization ID': customization.id,
       Customer: customization.name || customization.phone,
@@ -93,7 +112,6 @@ const ShowCustomizationRequests = () => {
     } else {
       exportToExcel(exportData);
     }
-    setExportDropdownOpen(false);
   };
 
   // Export to CSV
@@ -101,7 +119,7 @@ const ShowCustomizationRequests = () => {
     const headers = Object.keys(data[0]).join(',');
     const rows = data.map((obj) =>
       Object.values(obj)
-        .map((v) => `"${v}"`)
+        .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`)
         .join(','),
     );
     const csv = [headers, ...rows].join('\n');
@@ -127,13 +145,6 @@ const ShowCustomizationRequests = () => {
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, filename);
   };
-
-  const statusOptions = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' },
-  ];
 
   const axiosSecure = useAxiosSecure();
 
@@ -171,222 +182,204 @@ const ShowCustomizationRequests = () => {
   };
 
   const handleCheckRequest = async (customization) => {
+    setCheckingId(customization.groupId);
     try {
-      const res = await axiosSecure.put(
+      await axiosSecure.put(
         `/admin/update-customization-request/${customization.groupId}`,
         {
           isChecked: !customization.isChecked,
         },
       );
 
-      // Swal.fire(
-      //   'Deleted!',
-      //   res.data?.message || 'Request deleted successfully.',
-      //   'success',
-      // );
-
-      refetch();
+      await refetch();
     } catch (error) {
       Swal.fire(
         'Error!',
         error.response?.data?.message || 'Something went wrong.',
         'error',
       );
+    } finally {
+      setCheckingId(null);
     }
   };
 
+  const renderSideText = (label, side) => {
+    if (!side) return null;
+    const text = side.customTexts.map((t) => t.content).join(', ');
+    return (
+      <p className="truncate" title={text}>
+        <span className="text-gray-500">{label}:</span>{' '}
+        {text || <span className="text-gray-400">No text</span>}
+      </p>
+    );
+  };
+
   return (
-    <>
-      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Customization Requests
-            </h1>
+    <AdminPage title="Customization requests">
+      <PageHeader
+        title="Customization requests"
+        description="Review custom design requests and mark them as checked."
+        actions={
+          <Dropdown
+            label="Export"
+            icon={<FiDownload />}
+            disabled={!filteredCustomizations.length}
+          >
+            <DropdownItem
+              icon={<FiFileText />}
+              onClick={() => handleExport('csv')}
+            >
+              Export as CSV
+            </DropdownItem>
+            <DropdownItem icon={<FiGrid />} onClick={() => handleExport('excel')}>
+              Export as Excel
+            </DropdownItem>
+          </Dropdown>
+        }
+      />
 
-            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-              <div className="relative flex-grow md:w-64">
-                <FiSearch className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search customizations..."
-                  className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <select
-                className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <div className="relative" ref={exportRef}>
-                <button
-                  onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <FiDownload size={16} />
-                  Export
-                  <FiChevronDown
-                    size={16}
-                    className={`transition-transform ${
-                      exportDropdownOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                {exportDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                    <div className="py-1">
-                      <button
-                        onClick={() => handleExport('csv')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Export as CSV
-                      </button>
-                      <button
-                        onClick={() => handleExport('excel')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Export as Excel
-                      </button>
+      <TableCard
+        toolbar={
+          <>
+            <SearchInput
+              value={searchTerm}
+              onValueChange={(value) => {
+                setSearchTerm(value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search by customer name or phone..."
+            />
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => {
+                setStatusFilter(value);
+                setCurrentPage(1);
+              }}
+              width="w-full sm:w-40"
+              aria-label="Status"
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </>
+        }
+        footer={
+          <Pagination
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={groupedCustomizations.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            pageSizeOptions={[10, 25, 50]}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            itemLabel="requests"
+          />
+        }
+      >
+        <Table>
+          <THead>
+            <Th>Request</Th>
+            <Th>Customer</Th>
+            <Th>Color</Th>
+            <Th>Custom text</Th>
+            <Th>Status</Th>
+            <Th align="right">Actions</Th>
+          </THead>
+          <TBody>
+            {isPending ? (
+              <SkeletonRows rows={6} cols={6} />
+            ) : currentGroups.length === 0 ? (
+              <TableEmpty
+                colSpan={6}
+                icon={<FiLayers />}
+                title="No customization requests found"
+                description="Try a different search or status."
+              />
+            ) : (
+              currentGroups.map((customization) => (
+                <Tr key={customization.groupId}>
+                  <Td nowrap>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cx(
+                          'h-2 w-2 shrink-0 rounded-full',
+                          customization.isChecked
+                            ? 'bg-transparent'
+                            : 'bg-sky-500',
+                        )}
+                        title={
+                          customization.isChecked ? undefined : 'Not checked yet'
+                        }
+                      />
+                      <span className="font-semibold text-gray-900">
+                        #{customization.id}
+                      </span>
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {isPending ? (
-            <Loading />
-          ) : filteredCustomizations.length > 0 ? (
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Customization ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Customer
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Color
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Side
-                      </th>
-                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Custom Texts
-                      </th> */}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {groupedCustomizations.map((customization) => (
-                      <motion.tr
-                        key={customization.groupId}
-                        className={customization.isChecked && 'bg-green-300'}
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          #{customization.id}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {customization.name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {customization.color}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {/* Show both sides */}
-                          {customization.sides.front && (
-                            <div>
-                              Front:{' '}
-                              {customization.sides.front.customTexts
-                                .map((t) => t.content)
-                                .join(', ')}
-                            </div>
-                          )}
-                          {customization.sides.back && (
-                            <div>
-                              Back:{' '}
-                              {customization.sides.back.customTexts
-                                .map((t) => t.content)
-                                .join(', ')}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              customization.status === 'approved'
-                                ? 'bg-green-100 text-green-800'
-                                : customization.status === 'rejected'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {customization.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium flex gap-2 items-center text-center">
-                          <Link
-                            href={`customization-details/${customization.groupId}`}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            View
-                          </Link>
-                          <button
-                            onClick={() => handleCheckRequest(customization)}
-                          >
-                            {customization.isChecked ? (
-                              <span
-                                className="flex items-center justify-center text-center w-16 text-green-600 hover:text-red-800 cursor-pointer"
-                                onMouseEnter={() =>
-                                  setHoveredId(customization.groupId)
-                                }
-                                onMouseLeave={() => setHoveredId(0)}
-                              >
-                                {hoveredId === customization.groupId ? (
-                                  'Uncheck'
-                                ) : (
-                                  <FaCheck />
-                                )}
-                              </span>
-                            ) : (
-                              <span className="text-yellow-600 hover:text-yellow-800">
-                                Check
-                              </span>
-                            )}
-                          </button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-              <p className="text-gray-500">
-                No customization requests found matching your criteria.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+                  </Td>
+                  <Td nowrap>
+                    <p className="font-medium text-gray-900">
+                      {customization.name || '—'}
+                    </p>
+                    {customization.phone && (
+                      <p className="text-xs tabular-nums text-gray-500">
+                        {customization.phone}
+                      </p>
+                    )}
+                  </Td>
+                  <Td nowrap>
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className="h-3.5 w-3.5 shrink-0 rounded-full border border-gray-200"
+                        style={{ backgroundColor: customization.color }}
+                      />
+                      {customization.color || '—'}
+                    </span>
+                  </Td>
+                  <Td className="min-w-[14rem] max-w-md">
+                    <div className="space-y-0.5">
+                      {renderSideText('Front', customization.sides.front)}
+                      {renderSideText('Back', customization.sides.back)}
+                    </div>
+                  </Td>
+                  <Td nowrap>
+                    <Badge
+                      tone={
+                        STATUS_TONES[customization.status?.toLowerCase()] ||
+                        'warning'
+                      }
+                      dot
+                      className="capitalize"
+                    >
+                      {customization.status}
+                    </Badge>
+                  </Td>
+                  <Td nowrap align="right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <CheckToggle
+                        checked={customization.isChecked}
+                        loading={checkingId === customization.groupId}
+                        onClick={() => handleCheckRequest(customization)}
+                      />
+                      <IconButton
+                        label="View details"
+                        icon={<FiEye />}
+                        href={`/admin/show/customization-details/${customization.groupId}`}
+                      />
+                    </div>
+                  </Td>
+                </Tr>
+              ))
+            )}
+          </TBody>
+        </Table>
+      </TableCard>
+    </AdminPage>
   );
 };
 

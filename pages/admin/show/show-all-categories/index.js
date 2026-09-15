@@ -1,9 +1,31 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Swal from "sweetalert2";
+import { FiCheck, FiEdit2, FiEye, FiEyeOff, FiFolder, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
 import useLoadSubCategories from "../../../../Hooks/useLoadSubCategories";
-import Swal from "sweetalert2";
-import Loading from "../../../../components/Loading";
-import Head from "next/head";
+import {
+    AdminPage,
+    Badge,
+    Button,
+    Checkbox,
+    IconButton,
+    Input,
+    PageHeader,
+    SearchInput,
+    Select,
+    SelectionBar,
+    SkeletonRows,
+    TBody,
+    THead,
+    Table,
+    TableCard,
+    TableEmpty,
+    TableFooter,
+    Td,
+    Th,
+    Tr,
+    cx,
+} from "../../../../components/Admin";
 
 const ShowAllCategories = () => {
     const axiosSecure = useAxiosSecure();
@@ -43,13 +65,15 @@ const ShowAllCategories = () => {
         }
     };
 
-    const handleDisableOrEnable = async (ids) => {
+    // The endpoint toggles each category; `action` only picks the wording.
+    const handleDisableOrEnable = async (ids, action = 'disable') => {
+        const verb = action === 'enable' ? 'Enable' : 'Disable';
         const confirm = await Swal.fire({
-            title: `Disable ${ids.length > 1 ? 'these categories' : 'this category'}?`,
+            title: `${verb} ${ids.length > 1 ? 'these categories' : 'this category'}?`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
-            confirmButtonText: "Yes, disable",
+            confirmButtonText: `Yes, ${verb.toLowerCase()}`,
         });
 
         if (!confirm.isConfirmed) return;
@@ -61,12 +85,12 @@ const ShowAllCategories = () => {
                 )
             );
 
-            Swal.fire("Disabled!", "Selected categories disabled.", "success");
+            Swal.fire(`${verb}d!`, `Selected categories ${verb.toLowerCase()}d.`, "success");
             setSelectedIds([]);
             refetch();
         } catch (error) {
             console.error(error);
-            Swal.fire("Error", "Failed to disable.", "error");
+            Swal.fire("Error", `Failed to ${verb.toLowerCase()}.`, "error");
         }
     };
 
@@ -113,172 +137,188 @@ const ShowAllCategories = () => {
         new Set(categories.map(cat => cat.category?.name).filter(Boolean))
     );
 
+    const allFilteredSelected =
+        filteredCategories.length > 0 &&
+        selectedIds.length === filteredCategories.length;
+
     return (
-        <div className="container mx-auto pt-20 lg:pt-40">
-            <Head>
-                <title>All Categories</title>
-            </Head>
+        <AdminPage title="Categories">
+            <PageHeader
+                title="Categories"
+                description="Rename, enable or disable, and remove categories."
+                actions={
+                    <Button variant="primary" icon={<FiPlus />} href="/admin/add/add-category">
+                        Add category
+                    </Button>
+                }
+            />
 
-            <h1 className="text-2xl font-bold mb-6 text-center">All Categories</h1>
-
-            {/* 🔍 Search + Filter */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6 items-center justify-between">
-                <input
-                    type="text"
-                    placeholder="Search by category or parent..."
-                    className="input input-bordered w-full lg:max-w-xs"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <select
-                    className="select select-bordered w-full lg:max-w-xs"
-                    value={selectedParent}
-                    onChange={(e) => setSelectedParent(e.target.value)}
-                >
-                    <option value="">All Parent Categories</option>
-                    {parentOptions.map((parent) => (
-                        <option key={parent} value={parent}>
-                            {parent}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* 🧹 Bulk Actions */}
-            {selectedIds.length > 0 && (
-                <div className="mb-4 flex gap-2">
-                    <button
-                        onClick={() => handleDisableOrEnable(selectedIds)}
-                        className="btn btn-sm btn-warning"
-
-                    >
-                        Disable Selected ({selectedIds.length})
-                    </button>
-                    <button
-                        onClick={() => handleDelete(selectedIds)}
-                        className="btn btn-sm btn-error"
-                    >
-                        Delete Selected ({selectedIds.length})
-                    </button>
-                </div>
-            )}
-
-            {isPending ? (
-                <Loading />
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border">
-                        <thead>
-                            <tr>
-                                <th className="py-2 px-4 border-b text-left">
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            filteredCategories.length > 0 &&
-                                            selectedIds.length === filteredCategories.length
-                                        }
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                setSelectedIds(filteredCategories.map((cat) => cat.id));
-                                            } else {
-                                                setSelectedIds([]);
-                                            }
-                                        }}
-                                    />
-                                </th>
-                                <th className="py-2 px-4 border-b text-left">ID</th>
-                                <th className="py-2 px-4 border-b text-left">Name</th>
-                                <th className="py-2 px-4 border-b text-left">Parent</th>
-                                <th className="py-2 px-4 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredCategories.map((cat) => (
-                                <tr key={cat.id} className="hover:bg-gray-50">
-                                    <td className="py-2 px-4 border-b">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.includes(cat.id)}
-                                            onChange={(e) => {
-                                                const updated = e.target.checked
-                                                    ? [...selectedIds, cat.id]
-                                                    : selectedIds.filter((id) => id !== cat.id);
-                                                setSelectedIds(updated);
-                                            }}
-                                        />
-                                    </td>
-                                    <td className="py-2 px-4 border-b">{cat.id}</td>
-                                    <td className="py-2 px-4 border-b">
-                                        {editId === cat.id ? (
-                                            <div className="flex gap-2 items-center">
-                                                <input
-                                                    type="text"
-                                                    className="input input-sm input-bordered"
-                                                    value={nameEdits[cat.id]}
-                                                    onChange={(e) =>
-                                                        setNameEdits({
-                                                            ...nameEdits,
-                                                            [cat.id]: e.target.value,
-                                                        })
-                                                    }
-                                                />
-                                                <button
-                                                    onClick={() => handleSaveEdit(cat.id)}
-                                                    className="btn btn-xs btn-success"
-                                                >
-                                                    Save
-                                                </button>
-                                                <button
-                                                    onClick={handleCancelEdit}
-                                                    className="btn btn-xs btn-warning"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex gap-2 items-center">
-                                                <span>{cat.name}</span>
-                                                <button
-                                                    onClick={() => handleStartEdit(cat.id, cat.name)}
-                                                    className="btn btn-xs btn-primary"
-                                                >
-                                                    Edit
-                                                </button>
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="py-2 px-4 border-b">{cat.category?.name || "—"}</td>
-                                    <td className="py-2 px-4 border-b space-x-2">
-                                        {cat.isDisabled == false ? (
-                                            <button
-                                                onClick={() => handleDisableOrEnable([cat.id])}
-                                                className="btn btn-xs btn-warning"
-                                            >
-                                                Disable
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleDisableOrEnable([cat.id])}
-                                                className="btn btn-xs btn-success"
-                                            >
-                                                Enable
-                                            </button>
-                                        )}
-
-                                        <button
-                                            onClick={() => handleDelete([cat.id])}
-                                            className="btn btn-xs btn-error"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
+            <TableCard
+                toolbar={
+                    <>
+                        <SearchInput
+                            value={searchTerm}
+                            onValueChange={setSearchTerm}
+                            placeholder="Search by category or parent..."
+                        />
+                        <Select
+                            value={selectedParent}
+                            onValueChange={setSelectedParent}
+                            width="w-full sm:w-56"
+                            aria-label="Parent category"
+                        >
+                            <option value="">All parent categories</option>
+                            {parentOptions.map((parent) => (
+                                <option key={parent} value={parent}>
+                                    {parent}
+                                </option>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
+                        </Select>
+                    </>
+                }
+                selectionBar={
+                    selectedIds.length > 0 && (
+                        <SelectionBar count={selectedIds.length} onClear={() => setSelectedIds([])}>
+                            <Button size="sm" icon={<FiEyeOff />} onClick={() => handleDisableOrEnable(selectedIds)}>
+                                Disable
+                            </Button>
+                            <Button size="sm" variant="ghost-danger" icon={<FiTrash2 />} onClick={() => handleDelete(selectedIds)}>
+                                Delete
+                            </Button>
+                        </SelectionBar>
+                    )
+                }
+                footer={
+                    !isPending && (
+                        <TableFooter>
+                            {filteredCategories.length} of {categories.length} categories
+                        </TableFooter>
+                    )
+                }
+            >
+                <Table>
+                    <THead>
+                        <Th className="w-10">
+                            <Checkbox
+                                aria-label="Select all categories"
+                                checked={allFilteredSelected}
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        setSelectedIds(filteredCategories.map((cat) => cat.id));
+                                    } else {
+                                        setSelectedIds([]);
+                                    }
+                                }}
+                            />
+                        </Th>
+                        <Th className="w-16">ID</Th>
+                        <Th>Name</Th>
+                        <Th>Parent</Th>
+                        <Th>Status</Th>
+                        <Th align="right">Actions</Th>
+                    </THead>
+                    <TBody>
+                        {isPending ? (
+                            <SkeletonRows rows={8} cols={6} />
+                        ) : filteredCategories.length === 0 ? (
+                            <TableEmpty
+                                colSpan={6}
+                                icon={<FiFolder />}
+                                title="No categories found"
+                                description="Try a different search or parent category."
+                            />
+                        ) : (
+                            filteredCategories.map((cat) => {
+                                const isSelected = selectedIds.includes(cat.id);
+                                const isActive = cat.isDisabled == false;
+
+                                return (
+                                    <Tr key={cat.id} className={cx(isSelected && 'bg-gray-50')}>
+                                        <Td>
+                                            <Checkbox
+                                                aria-label={`Select ${cat.name}`}
+                                                checked={isSelected}
+                                                onChange={(e) => {
+                                                    const updated = e.target.checked
+                                                        ? [...selectedIds, cat.id]
+                                                        : selectedIds.filter((id) => id !== cat.id);
+                                                    setSelectedIds(updated);
+                                                }}
+                                            />
+                                        </Td>
+                                        <Td nowrap className="tabular-nums text-gray-500">{cat.id}</Td>
+                                        <Td nowrap>
+                                            {editId === cat.id ? (
+                                                <div className="flex items-center gap-1">
+                                                    <Input
+                                                        size="sm"
+                                                        autoFocus
+                                                        value={nameEdits[cat.id]}
+                                                        onChange={(e) =>
+                                                            setNameEdits({
+                                                                ...nameEdits,
+                                                                [cat.id]: e.target.value,
+                                                            })
+                                                        }
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleSaveEdit(cat.id);
+                                                            if (e.key === 'Escape') handleCancelEdit();
+                                                        }}
+                                                        aria-label="Category name"
+                                                        className="w-48"
+                                                    />
+                                                    <IconButton label="Save" icon={<FiCheck />} variant="ghost-success" onClick={() => handleSaveEdit(cat.id)} />
+                                                    <IconButton label="Cancel" icon={<FiX />} onClick={handleCancelEdit} />
+                                                </div>
+                                            ) : (
+                                                <span className="font-medium text-gray-900">{cat.name}</span>
+                                            )}
+                                        </Td>
+                                        <Td nowrap className="text-gray-600">{cat.category?.name || "—"}</Td>
+                                        <Td nowrap>
+                                            {isActive ? (
+                                                <Badge tone="success" dot>Active</Badge>
+                                            ) : (
+                                                <Badge dot>Disabled</Badge>
+                                            )}
+                                        </Td>
+                                        <Td nowrap align="right">
+                                            <div className="flex justify-end gap-0.5">
+                                                <IconButton
+                                                    label="Rename"
+                                                    icon={<FiEdit2 />}
+                                                    onClick={() => handleStartEdit(cat.id, cat.name)}
+                                                />
+                                                {isActive ? (
+                                                    <IconButton
+                                                        label="Disable"
+                                                        icon={<FiEyeOff />}
+                                                        onClick={() => handleDisableOrEnable([cat.id], 'disable')}
+                                                    />
+                                                ) : (
+                                                    <IconButton
+                                                        label="Enable"
+                                                        icon={<FiEye />}
+                                                        variant="ghost-success"
+                                                        onClick={() => handleDisableOrEnable([cat.id], 'enable')}
+                                                    />
+                                                )}
+                                                <IconButton
+                                                    label="Delete"
+                                                    icon={<FiTrash2 />}
+                                                    variant="ghost-danger"
+                                                    onClick={() => handleDelete([cat.id])}
+                                                />
+                                            </div>
+                                        </Td>
+                                    </Tr>
+                                );
+                            })
+                        )}
+                    </TBody>
+                </Table>
+            </TableCard>
+        </AdminPage>
     );
 
 };

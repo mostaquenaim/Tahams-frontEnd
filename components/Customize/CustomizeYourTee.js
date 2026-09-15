@@ -536,7 +536,7 @@ const CustomizeYourTee = () => {
       clientX: touch.clientX,
       clientY: touch.clientY,
     });
-    handleMouseDownEnhanced(mouseEvent, element);
+    handleMouseDown(mouseEvent, element);
   };
 
   const handleTouchMove = (e) => {
@@ -549,7 +549,7 @@ const CustomizeYourTee = () => {
   };
 
   const handleTouchEnd = () => {
-    handleMouseUpEnhanced();
+    handleEnd();
   };
 
   // Mouse event handlers
