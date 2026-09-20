@@ -35,18 +35,37 @@ const Register = () => {
 
     const password = watch("password");
 
-    // Go straight to the OTP screen and send the code in the background -
-    // the customer never waits on, or sees the outcome of, the send itself.
-    const onRegisterSubmit = (data) => {
+    // Returns true only when the backend confirms the OTP email was sent
+    const sendOtp = async (email) => {
+        try {
+            const res = await axiosPublic.post('/admin/send-otp', { email });
+            if (res.data?.success) return true;
+            // e.g. "Email already exists" comes back as a 200 with status 400
+            toast.error(res.data?.message || 'Could not send OTP');
+        } catch (err) {
+            console.error("Error sending OTP:", err.message);
+            toast.error(err.response?.data?.message || 'Could not send OTP. Please try again.');
+        }
+        return false;
+    };
+
+    const onRegisterSubmit = async (data) => {
         data.loggedInWith = 'Email-Pass'
         localStorage.setItem('userData', JSON.stringify(data));
         setError('')
         setSuccess('')
-        setOtpSent(true);
 
-        axiosPublic
-            .post('/admin/send-otp', { email: data.email })
-            .catch((error) => console.error("Error sending OTP:", error.message));
+        if (await sendOtp(data.email)) {
+            setOtpSent(true);
+        }
+    };
+
+    const onResendOtp = async () => {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (await sendOtp(userData.email)) {
+            setError('');
+            toast.success('OTP sent again');
+        }
     };
 
     const onOtpSubmit = async () => {
@@ -274,6 +293,11 @@ const Register = () => {
                                 Verify OTP
                             </button>
                         </div>
+
+                        <p className="mt-2 text-sm">
+                            Didn&apos;t get the code?{' '}
+                            <span onClick={onResendOtp} className="text-blue-500 hover:underline cursor-pointer">Resend OTP</span>
+                        </p>
                     </form>
                 )}
             </div>
