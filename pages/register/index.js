@@ -41,10 +41,13 @@ const Register = () => {
             const res = await axiosPublic.post('/admin/send-otp', { email });
             if (res.data?.success) return true;
             // e.g. "Email already exists" comes back as a 200 with status 400
-            toast.error(res.data?.message || 'Could not send OTP');
+            toast.error(res.data?.message || 'We could not send your verification code. Please try again.');
         } catch (err) {
             console.error("Error sending OTP:", err.message);
-            toast.error(err.response?.data?.message || 'Could not send OTP. Please try again.');
+            toast.error(
+                err.response?.data?.message
+                || 'We could not reach the server. Please check your connection and try again.'
+            );
         }
         return false;
     };
@@ -110,23 +113,32 @@ const Register = () => {
                     router.push('/login');
                 } catch (firebaseError) {
                     console.error('Firebase error:', firebaseError.message);
-                    setError(firebaseError.message);
-                    toast.error(firebaseError.message);
+                    const firebaseMessages = {
+                        'auth/email-already-in-use': 'This email is already registered. Please log in instead.',
+                        'auth/weak-password': 'Your password is too weak. Please use at least 6 characters.',
+                        'auth/invalid-email': 'That email address is not valid.',
+                        'auth/network-request-failed': 'Network problem. Please check your connection and try again.',
+                    };
+                    const msg = firebaseMessages[firebaseError.code]
+                        || 'We could not finish creating your account. Please try again.';
+                    setError(msg);
+                    toast.error(msg);
                 }
                 finally {
                     localStorage.removeItem('userData')
                   // console.log("Registration successful");
                 }
             } else {
-                console.error("Invalid OTP");
-                setError('Invalid OTP');
-                toast.error('Invalid OTP');
+                setError('The code you entered is incorrect. Please try again.');
+                toast.error('The code you entered is incorrect. Please try again.');
             }
         } catch (error) {
-            setError('OTP verification error');
-            setSuccess('');
             console.error('Error:', error.message);
-            toast.error('OTP verification error');
+            const msg = error.response?.data?.message
+                || 'We could not verify your code. Please check your connection and try again.';
+            setError(msg);
+            setSuccess('');
+            toast.error(msg);
         }
     }
 
