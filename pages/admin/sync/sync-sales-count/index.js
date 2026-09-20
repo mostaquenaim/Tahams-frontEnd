@@ -1,21 +1,42 @@
-import toast from 'react-hot-toast';
-import useAxiosSecure from '/Hooks/useAxiosSecure';
-import React from 'react';
+import { useState } from 'react';
+import { FiRefreshCw } from 'react-icons/fi';
+import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
+import { ActionPage, getErrorMessage } from '../../../../components/Admin';
 
 const SyncSalesCount = () => {
-    const axiosSecure = useAxiosSecure()
+  const axiosSecure = useAxiosSecure();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const handleSyncSales = async () => {
-        const result = await axiosSecure.put(`admin/sync-sales-count`)
-        toast.success('synced sales count')
+  const handleSync = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      await axiosSecure.put('/admin/sync-sales-count');
+      setSuccess(`Sales counts synced at ${new Date().toLocaleTimeString()}.`);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to sync sales counts.'));
+    } finally {
+      setLoading(false);
     }
-    return (
-        <div className='flex items-center justify-center text-center w-full min-h-screen'>
-            <button onClick={handleSyncSales} className='btn btn-success btn-lg'>
-                sync sales count
-            </button>
-        </div>
-    );
+  };
+
+  return (
+    <ActionPage
+      title="Sync sales count"
+      description="Recalculate how many times each product has been sold."
+      sectionTitle="Sales counts"
+      icon={<FiRefreshCw />}
+      sectionText="Counts every purchased cart item and updates each product's sales total. Run this if the sales numbers shown on products look out of date."
+      buttonLabel="Sync sales count"
+      loading={loading}
+      onRun={handleSync}
+      error={error}
+      success={success}
+    />
+  );
 };
 
 export default SyncSalesCount;

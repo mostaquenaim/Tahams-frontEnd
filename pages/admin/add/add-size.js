@@ -1,82 +1,64 @@
-import React, { useState } from 'react';
-import AdminDrawer from '../../../components/Drawers/AdminDrawer';
-import Head from 'next/head';
+import { useState } from 'react';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  Field,
+  Input,
+  SimpleCreateForm,
+  getErrorMessage,
+} from '../../../components/Admin';
 
 const AddSize = () => {
-    const [sizeName, setSizeName] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(false);
-    const axiosSecure = useAxiosSecure();
+  const axiosSecure = useAxiosSecure();
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setError('');
-        setSuccess('');
-        setLoading(true);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
 
-        if (!sizeName) {
-            setError('Size name is required');
-            setLoading(false);
-            return;
-        }
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError('Size name is required.');
+      return;
+    }
 
-        try {
-            await axiosSecure.post('/admin/add-size', { name: sizeName });
+    setLoading(true);
+    try {
+      await axiosSecure.post('/admin/add-size', { name: trimmed });
+      setName('');
+      setSuccess('"' + trimmed + '" was added.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to add size.'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            setSizeName('');
-            setSuccess('Size added successfully');
-        } catch (error) {
-            const message = error.response?.data?.message || 'Failed to add size';
-            console.error('Error adding size:', message);
-            setError(message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleNameChange = (event) => {
-        setSizeName(event.target.value);
-    };
-
-    return (
-        <>
-            <Head>
-                <title>Add Size - Admin</title>
-            </Head>
-            {/* <AdminDrawer /> */}
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Size</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="sizeName" className="block text-sm font-medium text-gray-700">Size Name</label>
-                            <input
-                                type="text"
-                                id="sizeName"
-                                name="sizeName"
-                                value={sizeName}
-                                onChange={handleNameChange}
-                                className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="Enter size name"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            disabled={loading}
-                        >
-                            {loading ? 'Adding...' : 'Add'}
-                        </button>
-                    </form>
-                    {error && <p className="mt-4 text-sm text-center text-red-600">{error}</p>}
-                    {success && <p className="mt-4 text-sm text-center text-green-600">{success}</p>}
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <SimpleCreateForm
+      title="Add size"
+      description="Add a size option that products can be stocked in."
+      submitLabel="Add size"
+      loading={loading}
+      onSubmit={handleSubmit}
+      error={error}
+      success={success}
+    >
+      <Field label="Size name" htmlFor="name" required>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. XL"
+          autoFocus
+          className="w-full"
+        />
+      </Field>
+    </SimpleCreateForm>
+  );
 };
 
 export default AddSize;

@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiDollarSign } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const Transaction = () => {
-    return (
-        <div>
-            <UnderConstruction />
-        </div>
-    );
-};
+const Transactions = () => (
+  <ComingSoon
+    title="All transactions"
+    description="Every payment received across the store."
+    icon={<FiDollarSign />}
+  />
+);
 
-export default Transaction; <UnderConstruction />
+export default Transactions;

@@ -1,148 +1,232 @@
-import { useEffect, useState } from "react";
-import { useForm } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
-import ProductFormComp from "../../../components/Product/ProductFormComp";
+import { useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { FiTag } from 'react-icons/fi';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
-import useLoadSubSubCategories from "../../../Hooks/useLoadSubSubCategories";
-import Head from "next/head";
+import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
+import {
+  AdminPage,
+  Alert,
+  Badge,
+  Button,
+  Checkbox,
+  EmptyState,
+  Field,
+  FormActions,
+  Input,
+  PageHeader,
+  SearchInput,
+  cx,
+  getErrorMessage,
+} from '../../../components/Admin';
 
-export default function UpdateDiscount() {
-    const axiosSecure = useAxiosSecure();
-    const [selectedCats, setSelectedCats] = useState([]);
-    const [subSubCategories] = useLoadSubSubCategories();
-    const [searchTerm, setSearchTerm] = useState("");
+const pathOf = (item) =>
+  [item.category?.name, item.category?.category?.name]
+    .filter(Boolean)
+    .join(' · ');
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-    } = useForm();
+const UpdateDiscount = () => {
+  const axiosSecure = useAxiosSecure();
+  const [productTypes, , isPending] = useLoadSubSubCategories();
 
-    const handleCategoryChange = (event, catID) => {
-        const isChecked = event.target.checked;
+  const [discount, setDiscount] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-        if (isChecked) {
-            setSelectedCats(prev => [...prev, catID]);
-        } else {
-            setSelectedCats(prev => prev.filter(id => id !== catID));
-        }
-    };
-
-    const handleSelectAll = (event) => {
-        const isChecked = event.target.checked;
-        const filteredIds = filteredCategories.map(cat => cat.id);
-        if (isChecked) {
-            const newSelection = [...new Set([...selectedCats, ...filteredIds])];
-            setSelectedCats(newSelection);
-        } else {
-            const remaining = selectedCats.filter(id => !filteredIds.includes(id));
-            setSelectedCats(remaining);
-        }
-    };
-
-    const onSubmit = async (data) => {
-        if (selectedCats.length === 0) {
-            toast.error("Select at least one category");
-            return;
-        }
-
-        const payload = {
-            categoryIds: selectedCats,
-            discountPercentage: parseFloat(data.discountPercentage),
-        };
-
-        try {
-            await axiosSecure.put("/admin/update-discount", payload);
-            toast.success("Discount updated successfully!");
-            reset();
-            setSelectedCats([]);
-        } catch (error) {
-            console.error(error.response?.data?.message || error.message);
-            toast.error("Failed to update discount");
-        }
-    };
-
-    const filteredCategories = subSubCategories.filter(cat =>
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-        || cat.category.name.toLowerCase().includes(searchTerm.toLowerCase())
-        || cat.category.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return productTypes;
+    return productTypes.filter((item) =>
+      `${item.name} ${pathOf(item)}`.toLowerCase().includes(term),
     );
+  }, [productTypes, searchTerm]);
 
-    const allFilteredSelected = filteredCategories.every(cat => selectedCats.includes(cat.id));
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((item) => selectedSet.has(item.id));
 
-    return (
-        <>
-            <Head>
-                <title>Update Discount - Admin</title>
-            </Head>
+  const toggleOne = (id) => {
+    setErrors((prev) => ({ ...prev, categories: undefined }));
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((value) => value !== id) : [...prev, id],
+    );
+  };
 
-            <div className="container mx-auto p-4 flex justify-center items-center">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        {/* Discount Percentage */}
-                        <ProductFormComp
-                            type="number"
-                            name="discountPercentage"
-                            label="Discount Percentage"
-                            register={register}
-                            errors={errors}
-                        />
+  const toggleAllFiltered = () => {
+    setErrors((prev) => ({ ...prev, categories: undefined }));
+    const filteredIds = filtered.map((item) => item.id);
+    setSelectedIds((prev) =>
+      allFilteredSelected
+        ? prev.filter((id) => !filteredIds.includes(id))
+        : [...new Set([...prev, ...filteredIds])],
+    );
+  };
 
-                        {/* Categories */}
-                        <div className="mt-4">
-                            <label className="text-sm font-semibold mb-2 block">Search Categories:</label>
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full p-2 mb-2 border rounded"
-                            />
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFormError('');
 
-                            <div className="flex items-center mb-2">
-                                <input
-                                    type="checkbox"
-                                    id="select_all"
-                                    onChange={handleSelectAll}
-                                    checked={filteredCategories.length > 0 && allFilteredSelected}
-                                    className="h-4 w-4 text-blue-500"
-                                />
-                                <label htmlFor="select_all" className="ml-2 text-sm font-medium">Select All</label>
-                            </div>
+    const next = {};
+    const percentage = Number(discount);
+    if (discount === '' || Number.isNaN(percentage)) {
+      next.discount = 'Enter a discount percentage.';
+    } else if (percentage < 0 || percentage > 100) {
+      next.discount = 'Discount must be between 0 and 100.';
+    }
+    if (selectedIds.length === 0) {
+      next.categories = 'Select at least one product type.';
+    }
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
 
-                            <div className="space-y-1 max-h-60 overflow-y-auto border rounded p-2">
-                                {filteredCategories.map((category) => (
-                                    <div key={category.id} className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id={`cat_${category.id}`}
-                                            onChange={(e) => handleCategoryChange(e, category.id)}
-                                            checked={selectedCats.includes(category.id)}
-                                            className="h-4 w-4 text-blue-500"
-                                        />
-                                        <label htmlFor={`cat_${category.id}`} className="ml-2 text-sm">
-                                            {category.name} ({category.category.name}, {category.category.category.name})
-                                        </label>
-                                    </div>
-                                ))}
-                                {filteredCategories.length === 0 && (
-                                    <div className="text-gray-500 text-sm italic">No categories found</div>
-                                )}
-                            </div>
-                        </div>
+    setSaving(true);
+    try {
+      await axiosSecure.put('/admin/update-discount', {
+        categoryIds: selectedIds,
+        discountPercentage: percentage,
+      });
+      toast.success(
+        `Discount set to ${percentage}% for ${selectedIds.length} product type${
+          selectedIds.length === 1 ? '' : 's'
+        }`,
+      );
+      setDiscount('');
+      setSelectedIds([]);
+    } catch (err) {
+      console.error(err);
+      setFormError(getErrorMessage(err, 'Could not update the discount.'));
+    } finally {
+      setSaving(false);
+    }
+  };
 
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition"
-                        >
-                            Submit
-                        </button>
-                    </form>
-                </div>
+  return (
+    <AdminPage title="Update discount" width="form">
+      <PageHeader
+        title="Update discount"
+        description="Set one discount percentage on every product in the product types you select."
+      />
+
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="rounded-xl border border-gray-200 bg-white shadow-sm"
+      >
+        <div className="space-y-5 p-5">
+          <Field
+            label="Discount percentage"
+            htmlFor="discount"
+            required
+            hint="Replaces the current discount on every product in the selected types. Use 0 to remove discounts."
+            error={errors.discount}
+          >
+            <div className="relative w-40">
+              <Input
+                id="discount"
+                type="number"
+                min={0}
+                max={100}
+                step="any"
+                value={discount}
+                onChange={(e) => {
+                  setDiscount(e.target.value);
+                  setErrors((prev) => ({ ...prev, discount: undefined }));
+                }}
+                placeholder="0"
+                className="w-full pr-8"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                %
+              </span>
             </div>
-            <Toaster />
-        </>
-    );
-}
+          </Field>
+
+          <Field
+            label="Product types"
+            required
+            error={errors.categories}
+          >
+            <div
+              className={cx(
+                'rounded-lg border bg-white',
+                errors.categories ? 'border-red-300' : 'border-gray-200',
+              )}
+            >
+              <div className="flex flex-wrap items-center gap-3 border-b border-gray-200 p-3">
+                <SearchInput
+                  value={searchTerm}
+                  onValueChange={setSearchTerm}
+                  placeholder="Search product types..."
+                />
+                <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
+                  <Checkbox
+                    checked={allFilteredSelected}
+                    onChange={toggleAllFiltered}
+                    disabled={filtered.length === 0}
+                  />
+                  {searchTerm ? 'Select results' : 'Select all'}
+                </label>
+                <Badge tone={selectedIds.length ? 'info' : 'neutral'}>
+                  {selectedIds.length} selected
+                </Badge>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto">
+                {isPending ? (
+                  <ul className="divide-y divide-gray-100" aria-busy="true">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <li key={index} className="px-4 py-3">
+                        <div className="h-3.5 w-48 animate-pulse rounded bg-gray-100" />
+                      </li>
+                    ))}
+                  </ul>
+                ) : filtered.length === 0 ? (
+                  <EmptyState
+                    icon={<FiTag />}
+                    title="No product types found"
+                    description={
+                      searchTerm
+                        ? 'Try a different search.'
+                        : 'Add a product type first.'
+                    }
+                  />
+                ) : (
+                  <ul className="divide-y divide-gray-100">
+                    {filtered.map((item) => (
+                      <li key={item.id}>
+                        <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-gray-50">
+                          <Checkbox
+                            checked={selectedSet.has(item.id)}
+                            onChange={() => toggleOne(item.id)}
+                          />
+                          <span className="font-medium text-gray-900">
+                            {item.name}
+                          </span>
+                          <span className="truncate text-xs text-gray-500">
+                            {pathOf(item)}
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </Field>
+
+          <Alert tone="danger">{formError}</Alert>
+        </div>
+
+        <FormActions>
+          <Button type="submit" variant="primary" loading={saving}>
+            {saving ? 'Applying...' : 'Apply discount'}
+          </Button>
+        </FormActions>
+      </form>
+    </AdminPage>
+  );
+};
+
+export default UpdateDiscount;

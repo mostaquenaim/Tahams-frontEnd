@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiTag } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const CreateCoupon = () => {
-    return (
-        <div>
-            <UnderConstruction/>
-        </div>
-    );
-};
+const CreateCoupon = () => (
+  <ComingSoon
+    title="Create coupon"
+    description="Set up a new discount coupon."
+    icon={<FiTag />}
+  />
+);
 
 export default CreateCoupon;

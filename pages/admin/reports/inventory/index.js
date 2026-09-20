@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiBox } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const InventoryReport = () => {
-    return (
-        <div>
-            <UnderConstruction></UnderConstruction>
-        </div>
-    );
-};
+const InventoryReport = () => (
+  <ComingSoon
+    title="Inventory report"
+    description="Stock valuation and movement summary."
+    icon={<FiBox />}
+  />
+);
 
 export default InventoryReport;

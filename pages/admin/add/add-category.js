@@ -1,115 +1,109 @@
-import React, { useEffect, useState } from 'react';
-import AdminDrawer from '../../../components/Drawers/AdminDrawer';
-import SelectionFormComp from '../../../components/Product/SelectionFormComp';
-import { useForm } from 'react-hook-form';
-import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import { useState } from 'react';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
-import toast from 'react-hot-toast';
-import Head from 'next/head';
+import useLoadCats from '../../../Hooks/useLoadCats';
+import {
+  Alert,
+  Field,
+  Input,
+  Select,
+  SimpleCreateForm,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const genderSuffix = (item) => {
+  if (!item?.isGenderVaried) return '';
+  if (item.isForMen) return ' (Men)';
+  if (item.isForWomen) return ' (Women)';
+  return '';
+};
 
 const AddCategory = () => {
-    const [categoryName, setCategoryName] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+  const axiosSecure = useAxiosSecure();
+  const [series, , isLoadingSeries] = useLoadCats();
 
-    const [categories, setCategories] = useState([])
-    const [selectedCat, setSelectedCat] = useState('')
+  const [name, setName] = useState('');
+  const [seriesId, setSeriesId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const axiosPublic = useAxiosPublic()
-    const axiosSecure = useAxiosSecure()
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
 
-    //load categories
-    const loadCategories = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-product-categories');
-            // console.log(result.data);
-            setCategories(result.data);
-        } catch (error) {
-            console.error('Error loading Categories:', error);
-        }
-    };
+    const trimmed = name.trim();
+    const selectedSeries = series.find((item) => String(item.id) === seriesId);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-        control
-    } = useForm();
+    if (!selectedSeries) {
+      setError('Choose the series this category belongs to.');
+      return;
+    }
+    if (!trimmed) {
+      setError('Category name is required.');
+      return;
+    }
 
-    useEffect(() => {
-        loadCategories()
-    }, [])
+    setLoading(true);
+    try {
+      await axiosSecure.post('/admin/add-subCategory', {
+        name: trimmed,
+        categoryName: selectedSeries.name,
+      });
+      setName('');
+      setSuccess(`"${trimmed}" was added to ${selectedSeries.name}.`);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to add category.'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleChange = (event) => {
-        setCategoryName(event.target.value);
-    };
-
-    const onSubmit = async (data) => {
-        // Validate inputs
-        if (!categoryName || !selectedCat) {
-            toast.error('Please provide all the required information.');
-            return;
-        }
-
-        const formData = {
-            name: categoryName,
-            categoryName: selectedCat,
-        };
-
-        try {
-            const response = await axiosSecure.post('/admin/add-subCategory', formData);
-            setCategoryName('');
-            setSelectedCat('');
-            reset();
-            setSuccess('Category added successfully!');
-            toast.success('Category added successfully!');
-        } catch (error) {
-            setError('Error adding category: ' + error.response.data.message)
-            toast.error('Error adding category: ' + error.response.data.message);
-        }
-    };
-
-    return (
-        <>
-            <Head>
-                <title>Add Category - Admin</title>
-            </Head>
-            {/* <AdminDrawer /> */}
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Category</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
-                        <div>
-                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Category Name</label>
-                            <input
-                                type="text"
-                                id="categoryName"
-                                name="categoryName"
-                                value={categoryName}
-                                onChange={handleChange}
-                                className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="Enter Category name"
-                            />
-                        </div>
-                        {/* SelectionFormComp = ({selectedValue, setFunction, defaultShown, values, errors, register  }) */}
-                        {
-                            categories &&
-                            <SelectionFormComp label={'Select a series for this category'} name={'category'} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={categories} errors={errors} register={register} />
-                        }
-                        <button
-                            type="submit"
-                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-5"
-                        >
-                            Add
-                        </button>
-                    </form>
-                    {error && <p className="mt-4 text-sm text-center text-red-600">{error}</p>}
-                    {success && <p className="mt-4 text-sm text-center text-green-600">{success}</p>}
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <SimpleCreateForm
+      title="Add category"
+      description="Create a category inside an existing series."
+      submitLabel="Add category"
+      loading={loading}
+      onSubmit={handleSubmit}
+      error={error}
+      success={success}
+    >
+      <Field label="Series" htmlFor="series" required>
+        <Select
+          id="series"
+          value={seriesId}
+          onValueChange={setSeriesId}
+          width="w-full"
+          disabled={isLoadingSeries}
+        >
+          <option value="">
+            {isLoadingSeries ? 'Loading series...' : 'Select a series'}
+          </option>
+          {series.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+              {genderSuffix(item)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {!isLoadingSeries && series.length === 0 && (
+        <Alert tone="warning">
+          There are no series yet. Add a series first, then come back.
+        </Alert>
+      )}
+      <Field label="Category name" htmlFor="name" required>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. T-Shirts"
+          className="w-full"
+        />
+      </Field>
+    </SimpleCreateForm>
+  );
 };
 
 export default AddCategory;

@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiAlertTriangle } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const LowStock = () => {
-    return (
-        <div>
-            <UnderConstruction/>
-        </div>
-    );
-};
+const LowStock = () => (
+  <ComingSoon
+    title="Low stock alerts"
+    description="Products that are running low and need restocking."
+    icon={<FiAlertTriangle />}
+  />
+);
 
 export default LowStock;

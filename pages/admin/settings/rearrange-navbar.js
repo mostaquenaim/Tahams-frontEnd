@@ -1,114 +1,183 @@
-import useAxiosSecure from '/Hooks/useAxiosSecure';
-import Loading from '/components/Loading';
-import useLoadCats from '/Hooks/useLoadCats';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import toast from 'react-hot-toast';
+import { FiMenu, FiSave } from 'react-icons/fi';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import useLoadCats from '../../../Hooks/useLoadCats';
+import {
+  AdminPage,
+  Badge,
+  Button,
+  EmptyState,
+  PageHeader,
+  Section,
+  cx,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const getAudience = (category) => {
+  if (!category?.isGenderVaried) return null;
+  if (category.isForWomen) return 'Women';
+  if (category.isForMen) return 'Men';
+  return null;
+};
 
 const RearrangeNavbar = () => {
-    const [categories, , isPending] = useLoadCats();
-    const [localCategories, setLocalCategories] = useState([]);
-    const axiosSecure = useAxiosSecure()
+  const axiosSecure = useAxiosSecure();
+  const [categories, refetch, isPending] = useLoadCats();
+  const [orderedIds, setOrderedIds] = useState([]);
+  const [saving, setSaving] = useState(false);
 
-    // Initialize local state when categories are loaded
-    useEffect(() => {
-        if (categories && categories.length > 0) {
-            const minimalData = categories.map(cat => ({
-                id: cat.id,
-                serial: cat.serial,
-            }));
-            setLocalCategories(minimalData);
-        }
-    }, [categories]);
+  // Start from the server order whenever it (re)loads.
+  // (Skipped while pending: the hook's `[]` default is a new array each render.)
+  useEffect(() => {
+    if (isPending) return;
+    setOrderedIds(categories.map((category) => category.id));
+  }, [categories, isPending]);
 
+  const categoriesById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
+  );
 
-    const handleOnDragEnd = (result) => {
-        if (!result.destination) return;
+  const isDirty =
+    orderedIds.length === categories.length &&
+    orderedIds.some((id, index) => id !== categories[index]?.id);
 
-        const items = Array.from(localCategories);
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    if (result.destination.index === result.source.index) return;
 
-        setLocalCategories(items);
-    };
+    setOrderedIds((current) => {
+      const next = [...current];
+      const [moved] = next.splice(result.source.index, 1);
+      next.splice(result.destination.index, 0, moved);
+      return next;
+    });
+  };
 
-    const saveChanges = async () => {
-        const updated = localCategories.map((item, index) => ({
-            id: item.id,
-            serial: index + 1,
-        }));
+  const handleReset = () => setOrderedIds(categories.map((c) => c.id));
 
-        try {
-            const res = await axiosSecure.post('/admin/shuffle-category', updated);
-          // console.log('Server response:', res.data);
-            toast.success('Category order saved successfully!');
-        } catch (err) {
-            console.error('Failed to save category order:', err);
-            toast.error('Error saving category order. Please try again.');
-        }
-    };
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axiosSecure.post(
+        '/admin/shuffle-category',
+        orderedIds.map((id, index) => ({ id, serial: index + 1 })),
+      );
+      toast.success('Navbar order saved');
+      await refetch();
+    } catch (err) {
+      console.error('Failed to save category order:', err);
+      toast.error(getErrorMessage(err, 'Could not save the navbar order.'));
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    if (isPending) return <Loading />
-    if (!localCategories.length) return <div>No categories found</div>;
-
-    return (
-        <div className="p-4 max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Rearrange Navigation Categories</h1>
-
-            <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable droppableId="categories">
-                    {(provided) => (
-                        <ul
-                            className="bg-gray-100 rounded-lg p-4"
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                        >
-                            {localCategories.map((category, index) => {
-                                const fullCategory = categories.find(cat => cat.id === category.id);
-                                return (
-                                    <Draggable
-                                        key={`category-${category.id}`}
-                                        draggableId={`category-${category.id}`}
-                                        index={index}
-                                    >
-                                        {(provided) => (
-                                            <li
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                {...provided.dragHandleProps}
-                                                className="bg-white p-3 mb-2 rounded shadow hover:shadow-md transition-shadow flex items-center"
-                                            >
-                                                <span className="mr-2 text-gray-500">≡</span>
-                                                {
-                                                    fullCategory?.name || 'Unnamed'} {
-                                                    fullCategory.isGenderVaried
-                                                    &&
-                                                    (
-                                                        fullCategory.isForWomen ? '(Women)'
-                                                            :
-                                                            fullCategory.isForMen && '(Men)'
-                                                    )
-                                                }
-                                            </li>
-                                        )}
-                                    </Draggable>
-                                );
-                            })}
-
-                            {provided.placeholder}
-                        </ul>
-                    )}
-                </Droppable>
-            </DragDropContext>
-
-            <button
-                onClick={saveChanges}
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors"
+  return (
+    <AdminPage title="Rearrange navbar" width="form">
+      <PageHeader
+        title="Rearrange navbar"
+        description="Drag series into the order they should appear in the storefront navigation."
+        actions={
+          <>
+            {isDirty && (
+              <Button variant="ghost" onClick={handleReset} disabled={saving}>
+                Reset
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              icon={<FiSave />}
+              loading={saving}
+              disabled={!isDirty}
+              onClick={handleSave}
             >
-                Save Changes
-            </button>
-        </div>
-    );
+              Save order
+            </Button>
+          </>
+        }
+      />
+
+      <Section
+        title="Navigation order"
+        actions={isDirty && <Badge tone="warning">Unsaved changes</Badge>}
+        bodyClassName="p-2"
+      >
+        {isPending ? (
+          <ul className="space-y-1.5 p-1" aria-busy="true">
+            {Array.from({ length: 6 }, (_, index) => (
+              <li
+                key={index}
+                className="h-11 animate-pulse rounded-lg bg-gray-100"
+              />
+            ))}
+          </ul>
+        ) : orderedIds.length === 0 ? (
+          <EmptyState
+            icon={<FiMenu />}
+            title="No series found"
+            description="Add a series and it will show up here."
+            action={
+              <Button href="/admin/add/add-series" variant="secondary">
+                Add series
+              </Button>
+            }
+          />
+        ) : (
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="categories">
+              {(provided) => (
+                <ul
+                  className="space-y-1.5 p-1"
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                >
+                  {orderedIds.map((id, index) => {
+                    const category = categoriesById.get(id);
+                    const audience = getAudience(category);
+
+                    return (
+                      <Draggable
+                        key={`category-${id}`}
+                        draggableId={`category-${id}`}
+                        index={index}
+                      >
+                        {(dragProvided, snapshot) => (
+                          <li
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            {...dragProvided.dragHandleProps}
+                            className={cx(
+                              'flex select-none items-center gap-3 rounded-lg border bg-white px-3 py-2.5 text-sm transition-shadow',
+                              snapshot.isDragging
+                                ? 'border-gray-300 shadow-lg'
+                                : 'border-gray-200 hover:border-gray-300',
+                            )}
+                          >
+                            <FiMenu className="h-4 w-4 shrink-0 text-gray-400" />
+                            <span className="w-6 shrink-0 text-xs tabular-nums text-gray-400">
+                              {index + 1}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate font-medium text-gray-900">
+                              {category?.name || 'Unnamed'}
+                            </span>
+                            {audience && <Badge tone="info">{audience}</Badge>}
+                          </li>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          </DragDropContext>
+        )}
+      </Section>
+    </AdminPage>
+  );
 };
 
 export default RearrangeNavbar;

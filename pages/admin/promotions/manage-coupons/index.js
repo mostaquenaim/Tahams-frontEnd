@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiTag } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const ManageCoupon = () => {
-    return (
-        <div>
-            <UnderConstruction/>
-        </div>
-    );
-};
+const ManageCoupons = () => (
+  <ComingSoon
+    title="Manage coupons"
+    description="View, edit and deactivate existing coupons."
+    icon={<FiTag />}
+  />
+);
 
-export default ManageCoupon;<UnderConstruction/>
+export default ManageCoupons;

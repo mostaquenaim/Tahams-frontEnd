@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiRotateCcw } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const Refunds = () => {
-    return (
-        <div>
-            <UnderConstruction/>
-        </div>
-    );
-};
+const Refunds = () => (
+  <ComingSoon
+    title="Refund requests"
+    description="Review and process customer refund requests."
+    icon={<FiRotateCcw />}
+  />
+);
 
 export default Refunds;

@@ -1,147 +1,195 @@
-import React, { useState } from 'react';
-import useAxiosSecure from '/./Hooks/useAxiosSecure';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  AdminPage,
+  Alert,
+  Button,
+  CheckboxField,
+  Field,
+  FormActions,
+  ImageDropzone,
+  Input,
+  PageHeader,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const INITIAL_FORM = {
+  title: '',
+  url: '',
+  startDate: '',
+  endDate: '',
+  isActive: true,
+};
 
 const AddNewPopUp = () => {
-  const [formData, setFormData] = useState({
-    title: '',
-    url: '',
-    startDate: '',
-    endDate: '',
-    isActive: true,
-    file: null,
-  });
+  const axiosSecure = useAxiosSecure();
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [files, setFiles] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const axiosSecure = useAxiosSecure()
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    if (type === 'checkbox') {
-      setFormData({ ...formData, [name]: checked });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+  const setField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setFormError('');
   };
 
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, file: e.target.files[0] });
+  const validate = () => {
+    const next = {};
+    if (!form.title.trim()) next.title = 'Title is required.';
+    else if (/\s/.test(form.title)) next.title = 'Title cannot contain spaces.';
+    if (!form.startDate) next.startDate = 'Choose a start date.';
+    if (!form.endDate) next.endDate = 'Choose an end date.';
+    if (
+      form.startDate &&
+      form.endDate &&
+      new Date(form.endDate) <= new Date(form.startDate)
+    ) {
+      next.endDate = 'End date must be after the start date.';
+    }
+    if (files.length === 0) next.image = 'Choose an image for the pop-up.';
+    return next;
   };
 
-  const handleSubmit = async (e) => {
-  // console.log('token in');
-    e.preventDefault();
-
-    // Validate title (no spaces allowed)
-    if (/\s/.test(formData.title)) {
-      alert('Title cannot contain spaces!');
-      return;
-    }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const found = validate();
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
 
     const data = new FormData();
-    data.append('filename', formData.file);
-    data.append('title', formData.title || '');
-    data.append('url', formData.url || '');
-    data.append('startDate', formData.startDate || '');
-    data.append('endDate', formData.endDate || '');
-    data.append('isActive', formData.isActive);
+    data.append('filename', files[0]);
+    data.append('title', form.title.trim());
+    data.append('url', form.url.trim());
+    data.append('startDate', form.startDate);
+    data.append('endDate', form.endDate);
+    data.append('isActive', form.isActive);
 
-    // console.log('token is=',token, formData.startDate, formData.endDate);
+    setSaving(true);
+    setFormError('');
     try {
-      const res = await axiosSecure.post('/admin/add-new-pop-up', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await axiosSecure.post('/admin/add-new-pop-up', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      alert('Pop-up created successfully!');
-      // console.log(res.data);
+      toast.success('Pop-up created');
+      setForm(INITIAL_FORM);
+      setFiles([]);
     } catch (err) {
       console.error(err);
-      alert('Error creating pop-up');
+      setFormError(getErrorMessage(err, 'Could not create the pop-up.'));
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
-      <h2 className="text-2xl font-semibold mb-4">Add New Pop-Up</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={(e) => {
-              if (/\s/.test(e.target.value)) {
-                alert('Spaces are not allowed in the title!');
-                return;
+    <AdminPage title="Add pop-up" width="form">
+      <PageHeader
+        title="Add pop-up"
+        description="Create a promotional pop-up to show on the storefront."
+      />
+
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="rounded-xl border border-gray-200 bg-white shadow-sm"
+      >
+        <div className="space-y-5 p-5">
+          <Field
+            label="Title"
+            htmlFor="title"
+            required
+            hint="Used as the pop-up's identifier, so it can't contain spaces."
+            error={errors.title}
+          >
+            <Input
+              id="title"
+              value={form.title}
+              onChange={(e) => setField('title', e.target.value)}
+              placeholder="e.g. Eid-Sale"
+              className="w-full"
+            />
+          </Field>
+
+          <Field
+            label="Link URL"
+            htmlFor="url"
+            optional
+            hint="Where the pop-up sends visitors when clicked."
+          >
+            <Input
+              id="url"
+              value={form.url}
+              onChange={(e) => setField('url', e.target.value)}
+              placeholder="https://"
+              className="w-full"
+            />
+          </Field>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              label="Start"
+              htmlFor="startDate"
+              required
+              error={errors.startDate}
+            >
+              <Input
+                id="startDate"
+                type="datetime-local"
+                value={form.startDate}
+                onChange={(e) => setField('startDate', e.target.value)}
+                className="w-full"
+              />
+            </Field>
+            <Field
+              label="End"
+              htmlFor="endDate"
+              required
+              error={errors.endDate}
+            >
+              <Input
+                id="endDate"
+                type="datetime-local"
+                value={form.endDate}
+                onChange={(e) => setField('endDate', e.target.value)}
+                className="w-full"
+              />
+            </Field>
+          </div>
+
+          <Field label="Image" htmlFor="image" required error={errors.image}>
+            <ImageDropzone
+              id="image"
+              files={files}
+              onChange={(next) => {
+                setFiles(next);
+                setErrors((prev) => ({ ...prev, image: undefined }));
+              }}
+              onInvalid={(message) =>
+                setErrors((prev) => ({ ...prev, image: message }))
               }
-              handleChange(e);
-            }}
-            className="w-full border p-2 rounded"
-            placeholder="NO SPACE"
-            pattern="^\S+$" // HTML5 pattern to prevent spaces
-            required
+              error={errors.image}
+            />
+          </Field>
+
+          <CheckboxField
+            label="Active"
+            checked={form.isActive}
+            onChange={(e) => setField('isActive', e.target.checked)}
           />
+
+          <Alert tone="danger">{formError}</Alert>
         </div>
-        <div>
-          <label className="block font-medium mb-1">URL</label>
-          <input
-            type="text"
-            name="url"
-            value={formData.url}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            placeholder="Optional"
-          />
-        </div>
-        <div>
-          <label className="block font-medium mb-1">Start Date *</label>
-          <input
-            type="datetime-local"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-medium mb-1">End Date *</label>
-          <input
-            type="datetime-local"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block font-medium mb-1">Image File *</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full"
-            required
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            name="isActive"
-            checked={formData.isActive}
-            onChange={handleChange}
-          />
-          <label className="text-sm font-medium">Is Active</label>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Create Pop-Up
-        </button>
+
+        <FormActions>
+          <Button type="submit" variant="primary" loading={saving}>
+            {saving ? 'Creating...' : 'Create pop-up'}
+          </Button>
+        </FormActions>
       </form>
-    </div>
+    </AdminPage>
   );
 };
 

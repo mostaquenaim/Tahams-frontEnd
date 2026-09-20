@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiList } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const UsageLogs = () => {
-    return (
-        <div>
-            <UnderConstruction></UnderConstruction>
-        </div>
-    );
-};
+const CouponUsageLogs = () => (
+  <ComingSoon
+    title="Coupon usage logs"
+    description="See when and by whom coupons were redeemed."
+    icon={<FiList />}
+  />
+);
 
-export default UsageLogs;
+export default CouponUsageLogs;

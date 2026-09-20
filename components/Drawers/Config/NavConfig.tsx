@@ -82,7 +82,7 @@ export const NAV_CONFIG = [
     Name: 'Role Management',
     Group: 'People',
     Icon: <FiShield />,
-    Tasks: [{ href: '/admin/Manage/roles', label: 'Manage Roles' }],
+    Tasks: [{ href: '/admin/manage/roles', label: 'Manage Roles' }],
   },
   {
     Name: 'User Management',
@@ -91,7 +91,7 @@ export const NAV_CONFIG = [
     Tasks: [
       { href: '/admin/show/show-users', label: 'All Users / Customers' },
       { href: '/admin/show/user-details', label: 'View User Details' },
-      { href: '/admin/Analytics/user-insights', label: 'User Analytics' },
+      { href: '/admin/analytics/user-insights', label: 'User Analytics' },
     ],
   },
   {

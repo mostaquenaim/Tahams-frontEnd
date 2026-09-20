@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiBox } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const StockStatus = () => {
-    return (
-        <div>
-            <UnderConstruction/>
-        </div>
-    );
-};
+const StockStatus = () => (
+  <ComingSoon
+    title="Stock status"
+    description="Current stock levels across all products."
+    icon={<FiBox />}
+  />
+);
 
 export default StockStatus;

@@ -42,6 +42,7 @@ const ICON_TONES = {
 const PAGE_WIDTHS = {
   default: 'max-w-[1600px]',
   narrow: 'max-w-6xl',
+  form: 'max-w-2xl',
 };
 
 export function AdminPage({ title, width = 'default', children }) {

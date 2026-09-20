@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiHome } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const Warehouse = () => {
-    return (
-        <div>
-            <UnderConstruction/>
-        </div>
-    );
-};
+const Warehouse = () => (
+  <ComingSoon
+    title="Warehouse management"
+    description="Manage warehouse locations and stock transfers."
+    icon={<FiHome />}
+  />
+);
 
 export default Warehouse;

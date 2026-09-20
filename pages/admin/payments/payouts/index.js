@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiCreditCard } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const Payouts = () => {
-  return (
-    <div>
-      <UnderConstruction />
-    </div>
-  );
-};
+const Payouts = () => (
+  <ComingSoon
+    title="Vendor payouts"
+    description="Track and settle payouts to vendors."
+    icon={<FiCreditCard />}
+  />
+);
 
 export default Payouts;

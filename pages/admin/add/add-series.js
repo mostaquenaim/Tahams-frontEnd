@@ -1,70 +1,64 @@
-import React, { useState } from 'react';
-import AdminDrawer from '../../../components/Drawers/AdminDrawer';
-import Head from 'next/head';
+import { useState } from 'react';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  Field,
+  Input,
+  SimpleCreateForm,
+  getErrorMessage,
+} from '../../../components/Admin';
 
-const AddCategory = () => {
-    const [categoryName, setCategoryName] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const axiosSecure = useAxiosSecure();
+const AddSeries = () => {
+  const axiosSecure = useAxiosSecure();
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setError('');
-        setSuccess('');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
 
-        try {
-            await axiosSecure.post('/admin/add-category', { name: categoryName });
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError('Series name is required.');
+      return;
+    }
 
-            setCategoryName('');
-            setSuccess('Category added successfully');
-        } catch (error) {
-            const message = error.response?.data?.message || 'Failed to add category';
-            console.error('Error adding category:', message);
-            setError(message);
-        }
-    };
+    setLoading(true);
+    try {
+      await axiosSecure.post('/admin/add-category', { name: trimmed });
+      setName('');
+      setSuccess('"' + trimmed + '" was added.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to add series.'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleChange = (event) => {
-        setCategoryName(event.target.value);
-    };
-
-    return (
-        <>
-            <Head>
-                <title>Add Series - Admin</title>
-            </Head>
-            {/* <AdminDrawer /> */}
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Series</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Series Name</label>
-                            <input
-                                type="text"
-                                id="categoryName"
-                                name="categoryName"
-                                value={categoryName}
-                                onChange={handleChange}
-                                className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="Enter Series name"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Add
-                        </button>
-                    </form>
-                    {error && <p className="mt-4 text-sm text-center text-red-600">{error}</p>}
-                    {success && <p className="mt-4 text-sm text-center text-green-600">{success}</p>}
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <SimpleCreateForm
+      title="Add series"
+      description="Create a top-level series that categories are grouped under."
+      submitLabel="Add series"
+      loading={loading}
+      onSubmit={handleSubmit}
+      error={error}
+      success={success}
+    >
+      <Field label="Series name" htmlFor="name" required>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Summer Collection"
+          autoFocus
+          className="w-full"
+        />
+      </Field>
+    </SimpleCreateForm>
+  );
 };
 
-export default AddCategory;
+export default AddSeries;

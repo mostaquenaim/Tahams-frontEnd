@@ -1,112 +1,98 @@
-import React, { useState } from 'react';
-import AdminDrawer from '../../../components/Drawers/AdminDrawer';
-import Head from 'next/head';
+import { useState } from 'react';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  Field,
+  Input,
+  SimpleCreateForm,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const DEFAULT_CODE = '#000000';
+const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 const AddColor = () => {
-    const [colorName, setColorName] = useState('');
-    const [colorCode, setColorCode] = useState('#000000'); // Default color code to black
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(false);
-    const axiosSecure = useAxiosSecure();
+  const axiosSecure = useAxiosSecure();
+  const [name, setName] = useState('');
+  const [code, setCode] = useState(DEFAULT_CODE);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setError('');
-        setSuccess('');
-        setLoading(true);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
 
-        if (!colorName || !colorCode) {
-            setError('Color name and code are required');
-            setLoading(false);
-            return;
-        }
+    const trimmed = name.trim();
+    const colorCode = code.trim();
+    if (!trimmed) {
+      setError('Color name is required.');
+      return;
+    }
+    if (!HEX_PATTERN.test(colorCode)) {
+      setError('Enter the color code as a hex value, like #1a2b3c.');
+      return;
+    }
 
-        try {
-            await axiosSecure.post('/admin/add-color', { name: colorName, colorCode });
+    setLoading(true);
+    try {
+      await axiosSecure.post('/admin/add-color', { name: trimmed, colorCode });
+      setName('');
+      setCode(DEFAULT_CODE);
+      setSuccess(`"${trimmed}" was added.`);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to add color.'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            setColorName('');
-            setColorCode('#000000'); // Reset to default color code
-            setSuccess('Color added successfully');
-        } catch (error) {
-            const message = error.response?.data?.message || 'Failed to add color';
-            console.error('Error adding color:', message);
-            setError(message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleNameChange = (event) => {
-        setColorName(event.target.value);
-    };
-
-    const handleCodeChange = (event) => {
-        setColorCode(event.target.value);
-    };
-
-    const handleColorChange = (event) => {
-        setColorCode(event.target.value);
-    };
-
-    return (
-        <>
-        <Head>
-            <title>Add Color - Admin</title>
-        </Head>
-        {/* <AdminDrawer/> */}
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-center text-gray-700">Add Color</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label htmlFor="colorName" className="block text-sm font-medium text-gray-700">Color Name</label>
-                        <input
-                            type="text"
-                            id="colorName"
-                            name="colorName"
-                            value={colorName}
-                            onChange={handleNameChange}
-                            className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                            placeholder="Enter color name"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="colorCode" className="block text-sm font-medium text-gray-700">Color Code</label>
-                        <input
-                            type="color"
-                            id="colorCode"
-                            name="colorCode"
-                            value={colorCode}
-                            onChange={handleColorChange}
-                            className="block w-full h-10 mt-2 border border-gray-300 rounded-md cursor-pointer focus:border-indigo-500 focus:ring-indigo-500"
-                            required
-                        />
-                        <input
-                            type="text"
-                            value={colorCode}
-                            onChange={handleCodeChange}
-                            className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                            placeholder="Enter color code"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        disabled={loading}
-                    >
-                        {loading ? 'Adding...' : 'Add'}
-                    </button>
-                </form>
-                {error && <p className="mt-4 text-sm text-center text-red-600">{error}</p>}
-                {success && <p className="mt-4 text-sm text-center text-green-600">{success}</p>}
-            </div>
+  return (
+    <SimpleCreateForm
+      title="Add color"
+      description="Add a color option that products can be listed in."
+      submitLabel="Add color"
+      loading={loading}
+      onSubmit={handleSubmit}
+      error={error}
+      success={success}
+    >
+      <Field label="Color name" htmlFor="name" required>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Navy Blue"
+          autoFocus
+          className="w-full"
+        />
+      </Field>
+      <Field
+        label="Color code"
+        htmlFor="colorCode"
+        required
+        hint="Pick a color or type a hex value."
+      >
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            aria-label="Pick a color"
+            value={HEX_PATTERN.test(code) ? code : DEFAULT_CODE}
+            onChange={(e) => setCode(e.target.value)}
+            className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-gray-200 bg-white p-1 shadow-sm"
+          />
+          <Input
+            id="colorCode"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="#000000"
+            maxLength={7}
+            className="w-full font-mono"
+          />
         </div>
-        </>
-    );
+      </Field>
+    </SimpleCreateForm>
+  );
 };
 
 export default AddColor;

@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiBarChart2 } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const SalesReport = () => {
-    return (
-        <div>
-            <UnderConstruction></UnderConstruction>
-        </div>
-    );
-};
+const SalesReport = () => (
+  <ComingSoon
+    title="Sales report"
+    description="Revenue and order performance over time."
+    icon={<FiBarChart2 />}
+  />
+);
 
 export default SalesReport;

@@ -1,142 +1,231 @@
-import Image from 'next/image';
-import useAxiosSecure from '/./Hooks/useAxiosSecure';
-import useLoadPopUps from '/./Hooks/useLoadPopUps';
-import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal';
+import { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { FiPlus, FiSquare } from 'react-icons/fi';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  AdminPage,
+  Badge,
+  Button,
+  EmptyState,
+  Modal,
+  PageHeader,
+  Section,
+  Thumb,
+  cx,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const formatDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+};
 
 const UpdatePopUp = () => {
-    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
-    const [selectedIndex, setSelectedIndex] = useState(null)
-    const axiosSecure = useAxiosSecure()
-    const popUps = useLoadPopUps();
-    // Initialize with the active popup's ID (if any exists)
-    const [activePopupId, setActivePopupId] = useState(() => {
-        const activePopup = popUps.find(popup => popup.isActive);
-        return activePopup ? activePopup.id : null;
-    });
+  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
-    // Update state if popUps data changes
-    useEffect(() => {
-        const activePopup = popUps.find(popup => popup.isActive);
-        setActivePopupId(activePopup ? activePopup.id : null);
-    }, [popUps]);
+  const [popUps, setPopUps] = useState([]);
+  const [isPending, setIsPending] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-    const handleActiveChange = (popupId) => {
-        setActivePopupId(popupId);
-    };
+  const loadPopUps = useCallback(async () => {
+    try {
+      const result = await axiosPublic.get('/admin/view-all-pop-up');
+      const list = Array.isArray(result.data) ? result.data : [];
+      setPopUps(list);
+      setSelectedId(list.find((popUp) => popUp.isActive)?.id ?? null);
+      setLoadError('');
+    } catch (err) {
+      console.error('Error loading pop-ups:', err);
+      setLoadError(getErrorMessage(err, 'Could not load pop-ups.'));
+    } finally {
+      setIsPending(false);
+    }
+  }, [axiosPublic]);
 
-    const handleSubmit = async () => {
-      // console.log('token');
-        // console.log(token);
-        try {
-            const res = await axiosSecure.put(`/admin/update-active-pop-up/${selectedIndex}`, {})
-            // Here you would call your API to update which popup is active
-          // console.log(`Updated active popup to ID: ${activePopupId}`);
-            alert('Active popup updated successfully!');
-        } catch (error) {
-            console.error('Error updating active popup:', error);
-            alert('Failed to update active popup');
+  useEffect(() => {
+    loadPopUps();
+  }, [loadPopUps]);
+
+  const activeId = popUps.find((popUp) => popUp.isActive)?.id ?? null;
+  const selected = popUps.find((popUp) => popUp.id === selectedId);
+  const hasChange = selectedId !== null && selectedId !== activeId;
+
+  const handleConfirm = async () => {
+    setSaving(true);
+    try {
+      await axiosSecure.put(`/admin/update-active-pop-up/${selectedId}`, {});
+      toast.success('Active pop-up updated');
+      setConfirmOpen(false);
+      await loadPopUps();
+    } catch (err) {
+      console.error('Error updating active pop-up:', err);
+      toast.error(getErrorMessage(err, 'Could not update the active pop-up.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <AdminPage title="Update pop-up" width="form">
+      <PageHeader
+        title="Update pop-up"
+        description="Choose which pop-up is shown on the storefront."
+        actions={
+          <Button href="/admin/add/add-new-pop-up" icon={<FiPlus />}>
+            Add pop-up
+          </Button>
         }
-        finally {
-            closeConfirmationModal();
+      />
 
+      <Section
+        title="Pop-ups"
+        bodyClassName="p-0"
+        actions={
+          popUps.length > 0 && (
+            <span className="pr-1 text-xs text-gray-500">
+              {popUps.length} total
+            </span>
+          )
         }
-    };
+      >
+        {isPending ? (
+          <ul className="divide-y divide-gray-100" aria-busy="true">
+            {Array.from({ length: 3 }, (_, index) => (
+              <li key={index} className="flex items-center gap-4 p-4">
+                <div className="h-12 w-12 animate-pulse rounded-lg bg-gray-100" />
+                <div className="h-4 w-40 animate-pulse rounded bg-gray-100" />
+              </li>
+            ))}
+          </ul>
+        ) : loadError ? (
+          <EmptyState
+            icon={<FiSquare />}
+            title="Could not load pop-ups"
+            description={loadError}
+            action={
+              <Button
+                onClick={() => {
+                  setIsPending(true);
+                  loadPopUps();
+                }}
+              >
+                Try again
+              </Button>
+            }
+          />
+        ) : popUps.length === 0 ? (
+          <EmptyState
+            icon={<FiSquare />}
+            title="No pop-ups yet"
+            description="Create a pop-up first, then pick which one is active here."
+            action={
+              <Button href="/admin/add/add-new-pop-up" variant="primary">
+                Add pop-up
+              </Button>
+            }
+          />
+        ) : (
+          <ul className="divide-y divide-gray-100" role="radiogroup">
+            {popUps.map((popUp) => {
+              const isSelected = selectedId === popUp.id;
 
-    // modal close
-    const closeConfirmationModal = () => {
-        setIsConfirmationModalOpen(false);
-        setSelectedIndex(null);
-    };
-
-    return (
-        <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Manage Active Popup</h2>
-
-            <div className="space-y-4 mb-8">
-                {popUps.map(popup => (
-                    <div
-                        onClick={() => setSelectedIndex(popup.id)}
-                        key={popup.id}
-                        className={`flex items-start p-4 border rounded-lg transition-colors ${activePopupId === popup.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:bg-gray-50'
-                            }`}
-                    >
-                        <input
-                            type="radio"
-                            id={`popup-${popup.id}`}
-                            name="activePopup"
-                            checked={activePopupId === popup.id}
-                            onChange={() => handleActiveChange(popup.id)}
-                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                        />
-                        <label htmlFor={`popup-${popup.id}`} className="ml-3 block flex-1">
-                            <div className="flex justify-between">
-                                <span className="font-medium text-gray-900">
-                                    {/* {popup.filename} */}
-                                    <Image
-                                        alt={popup.title}
-                                        width={50}
-                                        height={50}
-                                        src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${popup?.filename}`} />
-                                </span>
-                                <span>{popup?.title}</span>
-                                {popup.isActive && (
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Currently Active
-                                    </span>
-                                )}
-                            </div>
-                            <div className="mt-1 text-sm text-gray-600">
-                                <div>
-                                    Dates: {new Date(popup.startDate).toLocaleDateString()}
-                                    {" → "}
-                                    {new Date(popup.endDate).toLocaleDateString()}
-                                </div>
-                                {popup.url && (
-                                    <div className="mt-1">
-                                        URL: <a href={popup.url} className="text-blue-600 hover:underline">{popup.url}</a>
-                                    </div>
-                                )}
-                            </div>
-                        </label>
+              return (
+                <li key={popUp.id}>
+                  <label
+                    className={cx(
+                      'flex cursor-pointer items-center gap-4 px-5 py-4 transition-colors',
+                      isSelected ? 'bg-gray-50' : 'hover:bg-gray-50/60',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="activePopUp"
+                      checked={isSelected}
+                      onChange={() => setSelectedId(popUp.id)}
+                      className="h-4 w-4 shrink-0 cursor-pointer accent-gray-900"
+                    />
+                    <Thumb
+                      src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${popUp.filename}`}
+                      alt={popUp.title}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="truncate text-sm font-medium text-gray-900">
+                          {popUp.title}
+                        </span>
+                        {popUp.isActive && (
+                          <Badge tone="success" dot>
+                            Currently active
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-gray-500">
+                        {formatDate(popUp.startDate)} –{' '}
+                        {formatDate(popUp.endDate)}
+                      </p>
+                      {popUp.url && (
+                        <a
+                          href={popUp.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-0.5 block max-w-full truncate text-xs text-sky-700 hover:underline"
+                        >
+                          {popUp.url}
+                        </a>
+                      )}
                     </div>
-                ))}
-            </div>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Section>
 
-            <div className="flex justify-end">
-                <button
-                    onClick={() => setIsConfirmationModalOpen(true)}
-                    disabled={!activePopupId}
-                    className={`px-6 py-2 rounded-md text-white font-medium ${activePopupId
-                        ? 'bg-blue-600 hover:bg-blue-700'
-                        : 'bg-gray-400 cursor-not-allowed'
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                >
-                    Save Changes
-                </button>
-            </div>
-
-            {/* step confirmation modal  */}
-            <Modal
-                isOpen={isConfirmationModalOpen}
-                onRequestClose={closeConfirmationModal}
-                contentLabel="Confirm step"
-                ariaHideApp={false}
-                className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-            >
-                <div className="bg-white p-8 rounded-lg shadow-lg">
-                    <h2 className="text-2xl font-bold mb-4">Confirm </h2>
-                    {/* <p>This action cannot be undone.</p> */}
-                    <div className="flex justify-end gap-4 mt-4">
-                        <button onClick={closeConfirmationModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                        <button onClick={handleSubmit} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirm</button>
-                    </div>
-                </div>
-            </Modal>
+      {popUps.length > 0 && (
+        <div className="mt-4 flex justify-end">
+          <Button
+            variant="primary"
+            disabled={!hasChange}
+            onClick={() => setConfirmOpen(true)}
+          >
+            Save changes
+          </Button>
         </div>
-    );
+      )}
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => !saving && setConfirmOpen(false)}
+        title="Change active pop-up?"
+        description={
+          selected
+            ? `"${selected.title}" will replace the current pop-up on the storefront.`
+            : undefined
+        }
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" loading={saving} onClick={handleConfirm}>
+              Confirm
+            </Button>
+          </>
+        }
+      />
+    </AdminPage>
+  );
 };
 
 export default UpdatePopUp;

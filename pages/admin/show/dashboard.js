@@ -1,12 +1,15 @@
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
+// The dashboard lives at /admin.
 const Dashboard = () => {
+  const router = useRouter();
 
-    return(
-        <>
-        
-            
-        </>
-    )
-}
+  useEffect(() => {
+    router.replace('/admin');
+  }, [router]);
 
-export default Dashboard
+  return null;
+};
+
+export default Dashboard;

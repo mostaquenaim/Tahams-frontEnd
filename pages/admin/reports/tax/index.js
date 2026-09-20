@@ -1,12 +1,12 @@
-import UnderConstruction from '/components/UnderConstruction/UnderConstruction';
-import React from 'react';
+import { FiFileText } from 'react-icons/fi';
+import { ComingSoon } from '../../../../components/Admin';
 
-const TaxReport = () => {
-    return (
-        <div>
-            <UnderConstruction></UnderConstruction>
-        </div>
-    );
-};
+const TaxReport = () => (
+  <ComingSoon
+    title="Tax report"
+    description="VAT collected across orders."
+    icon={<FiFileText />}
+  />
+);
 
 export default TaxReport;

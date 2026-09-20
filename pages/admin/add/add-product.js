@@ -1,801 +1,778 @@
-import { useEffect, useState } from 'react';
-import { TagsInput } from 'react-tag-input-component';
-import 'react-datetime-picker/dist/DateTimePicker.css';
-import { useForm } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
-import ProductFormComp from '../../../components/Product/ProductFormComp';
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { FiPackage, FiRotateCcw, FiX } from 'react-icons/fi';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
-import SelectionFormComp from '../../../components/Product/SelectionFormComp';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
 import useLoadColors from '../../../Hooks/useLoadColors';
-import useLoadFabrics from '../../../Hooks/useLoadFabrics';
 import useLoadSizes from '../../../Hooks/useLoadSizes';
-import Head from 'next/head';
+import {
+  AdminPage,
+  Alert,
+  Badge,
+  Button,
+  Checkbox,
+  EmptyState,
+  Field,
+  ImageDropzone,
+  Input,
+  PageHeader,
+  SearchInput,
+  Section,
+  Select,
+  Textarea,
+  cx,
+  getErrorMessage,
+} from '../../../components/Admin';
 
-export default function AddProduct() {
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedFabric, setSelectedFabric] = useState('');
-  const [selectedCats, setSelectedCats] = useState([]);
-  const [selectedCatsInfo, setSelectedCatsInfo] = useState([]);
-  const [selectedTags, setSelectedTags] = useState(['cloth']);
-  const [success, setSuccess] = useState('');
-  const [isSizeApplicable, setIsSizeApplicable] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
-  const [additionalImagesPreview, setAdditionalImagesPreview] = useState([]);
+const MAX_ADDITIONAL_IMAGES = 10;
+const MAX_IMAGE_MB = 10;
 
-  const axiosSecure = useAxiosSecure();
+const INITIAL_FORM = {
+  name: '',
+  serialNo: '',
+  note: '',
+  vatPercentage: '',
+  discountPercentage: '',
+  buyingPrice: '',
+  sellingPrice: '',
+  description: '',
+  longDescription: '',
+};
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    control,
-    setValue,
-  } = useForm();
+const DEFAULT_TAGS = ['cloth'];
 
-  // load hooks
-  const [subSubCategories] = useLoadSubSubCategories();
-  const colors = useLoadColors();
-  const fabrics = useLoadFabrics();
-  const sizes = useLoadSizes();
+const WHOLE_NUMBER = /^\d+$/;
 
-  useEffect(() => {
-    // Check for duplicate product data in localStorage
-    const duplicateProductData = localStorage.getItem('duplicate_product_data');
-    if (duplicateProductData) {
-      try {
-        const productData = JSON.parse(duplicateProductData);
-        populateFormWithDuplicateData(productData);
-        // Remove the data from localStorage after using it
-        localStorage.removeItem('duplicate_product_data');
-      } catch (error) {
-        console.error('Error parsing duplicate product data:', error);
-      }
+// Order in which errors are focused when a submit fails.
+const FIELD_ORDER = [
+  'name',
+  'serialNo',
+  'vatPercentage',
+  'discountPercentage',
+  'buyingPrice',
+  'sellingPrice',
+  'description',
+  'featured',
+  'categories',
+];
+
+const genderSuffix = (series) => {
+  if (!series?.isGenderVaried) return '';
+  return series.isForMen ? ' (Men)' : ' (Women)';
+};
+
+const describeType = (item) =>
+  [item.category?.name, item.category?.category?.name]
+    .filter(Boolean)
+    .join(', ') + genderSuffix(item.category?.category);
+
+// Turns a product record (from the products list) into the form's state.
+const fromProduct = (product) => {
+  const form = { ...INITIAL_FORM };
+  Object.keys(INITIAL_FORM).forEach((key) => {
+    if (product[key] !== undefined && product[key] !== null) {
+      form[key] = String(product[key]);
     }
-  }, []);
+  });
 
-  const handleFeaturedImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFeaturedImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAdditionalImagesChange = (e) => {
-    const files = Array.from(e.target.files);
-    const previews = [];
-
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        previews.push(reader.result);
-        if (previews.length === files.length) {
-          setAdditionalImagesPreview(previews);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const populateFormWithDuplicateData = (productData) => {
-    // Set basic fields
-    setValue('name', productData.name);
-    setValue('serialNo', productData.serialNo);
-    setValue('note', productData.note);
-    setValue('vatPercentage', productData.vatPercentage);
-    setValue('discountPercentage', productData.discountPercentage);
-    setValue('buyingPrice', productData.buyingPrice);
-    setValue('sellingPrice', productData.sellingPrice);
-    setValue('description', productData.description);
-    setValue('longDescription', productData.longDescription);
-
-    // Set color if available
-    if (productData.color) {
-      setSelectedColor(productData.color.id);
-    }
-
-    // Set tags if available
-    if (productData.tags) {
-      setSelectedTags(productData.tags.split(',').map((tag) => tag.trim()));
-    }
-
-    // Process categories and sizes
-    if (productData.pscs && productData.pscs.length > 0) {
-      const uniqueCategories = new Set();
-      const categoriesInfo = [];
-      const sizeApplicableCategories = [];
-
-      productData.pscs.forEach((item) => {
-        const categoryId = item.category.id;
-        uniqueCategories.add(categoryId);
-
-        // Check if this category is size applicable
-        if (item.size) {
-          if (!sizeApplicableCategories.includes(categoryId)) {
-            sizeApplicableCategories.push(categoryId);
-          }
-
-          // Find or create category info
-          let categoryInfo = categoriesInfo.find(
-            (ci) => ci.category === categoryId,
-          );
-          if (!categoryInfo) {
-            categoryInfo = { category: categoryId, sizes: [] };
-            categoriesInfo.push(categoryInfo);
-          }
-
-          // Add size info
-          categoryInfo.sizes.push({
-            id: item.size.id,
-            quantity: item.quantity,
-          });
-        } else {
-          // For non-size categories
-          let categoryInfo = categoriesInfo.find(
-            (ci) => ci.category === categoryId,
-          );
-          if (!categoryInfo) {
-            categoriesInfo.push({
-              category: categoryId,
-              sizes: [{ quantity: item.quantity }],
-            });
-          }
-        }
-      });
-
-      setSelectedCats(Array.from(uniqueCategories));
-      setSelectedCatsInfo(categoriesInfo);
-      setIsSizeApplicable(sizeApplicableCategories);
-    }
-  };
-
-  const validateFile = (value) => {
-    if (value.length > 0) {
-      const file = value[0];
-      const allowedtypes = [
-        'image/jpg',
-        'image/png',
-        'image/jpeg',
-        'image/gif',
-      ];
-      if (!allowedtypes.includes(file.type)) {
-        return false;
-      }
-    }
-  };
-
-  const handleCategoryChange = (event, catID) => {
-    const isChecked = event.target.checked;
-
-    if (isChecked) {
-      setSelectedCats([...selectedCats, catID]);
-      setSelectedCatsInfo([
-        ...selectedCatsInfo,
-        {
-          category: catID,
-          sizes: [],
-        },
-      ]);
-      return;
-    }
-
-    const res = selectedCats.filter((cat) => cat !== catID);
-    setSelectedCats([...res]);
-
-    const infoRes = selectedCatsInfo.filter((cat) => cat.category !== catID);
-    setSelectedCatsInfo([...infoRes]);
-  };
-
-  const handleSizeAndQuantityChange = (event, catID, sizeId) => {
-    const categoryWiseItem = selectedCatsInfo.find(
-      (cat) => cat.category == catID,
-    );
-
-    if (!sizeId) {
-      categoryWiseItem.sizes = [
-        {
-          quantity: event.target.value,
-        },
-      ];
+  const selection = {};
+  (product.pscs || []).forEach((item) => {
+    const categoryId = item.category?.id;
+    if (!categoryId) return;
+    const entry = selection[categoryId] || { hasSizes: false, quantities: {} };
+    if (item.size) {
+      entry.hasSizes = true;
+      entry.quantities[item.size.id] = String(item.quantity ?? 0);
     } else {
-      let sizeNotAvailable = true;
-      categoryWiseItem.sizes.forEach((item) => {
-        if (item.id == sizeId) {
-          sizeNotAvailable = false;
-          item.quantity = event.target.value;
-          return;
-        }
-      });
-
-      if (sizeNotAvailable) {
-        const newSize = {
-          id: sizeId,
-          quantity: event.target.value,
-        };
-        categoryWiseItem.sizes = [...categoryWiseItem.sizes, newSize];
-      }
+      entry.quantities.none = String(item.quantity ?? 0);
     }
+    selection[categoryId] = entry;
+  });
 
-    const result = selectedCatsInfo.filter((item) => item.category != catID);
-    setSelectedCatsInfo([...result, categoryWiseItem]);
+  return {
+    form,
+    selection,
+    color: product.color?.name || '',
+    tags: product.tags
+      ? product.tags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+      : DEFAULT_TAGS,
+  };
+};
+
+function TagInput({ id, tags, onChange }) {
+  const [draft, setDraft] = useState('');
+
+  const addTag = (raw) => {
+    const tag = raw.trim();
+    if (!tag) return;
+    if (!tags.some((existing) => existing.toLowerCase() === tag.toLowerCase())) {
+      onChange([...tags, tag]);
+    }
+    setDraft('');
   };
 
-  const handleSizeApplicableChange = (event, catID) => {
-    const isChecked = event.target.checked;
-    if (isChecked) {
-      setIsSizeApplicable([...isSizeApplicable, catID]);
-      return;
-    }
-    const res = isSizeApplicable.filter((category) => category !== catID);
-    setIsSizeApplicable([...res]);
-  };
-
-  const onSubmit = async (data) => {
-    // console.log('hereedd');
-    setIsSubmitting(true);
-    const formData = new FormData();
-
-    let catsInfo = [];
-    selectedCatsInfo.forEach((info) => {
-      catsInfo.push(info.category);
-      info.sizes.forEach((item) => {
-        catsInfo.push([item.id, parseInt(item.quantity)]);
-      });
-    });
-
-    formData.append('subCategories', selectedCats);
-    formData.append('catsInfo', JSON.stringify(catsInfo));
-    formData.append('name', data.name);
-    formData.append('serialNo', data.serialNo);
-    formData.append('note', data.note);
-    formData.append('vatPercentage', data.vatPercentage);
-    formData.append('discountPercentage', data.discountPercentage);
-    formData.append('buyingPrice', data.buyingPrice);
-    formData.append('sellingPrice', data.sellingPrice);
-    formData.append('tags', selectedTags);
-    formData.append('description', data.description);
-    data.myfile && data.myfile[0] && formData.append('myfile', data.myfile[0]);
-    formData.append('color', selectedColor);
-    formData.append('longDescription', data.longDescription);
-
-    try {
-      const response = await axiosSecure.post('/admin/add-product', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      toast.success('Product added successfully');
-      data.myfiles?.length > 0 && (await onSubmitPictures(data));
-      // reset();
-    } catch (error) {
-      console.error(error.response?.data?.message);
-      toast.error(error.response?.data?.message || 'Failed to add product');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const onSubmitPictures = async (data) => {
-    const formData = new FormData();
-    Array.from(data.myfiles).forEach((file) => {
-      formData.append('myfiles', file);
-    });
-
-    try {
-      await axiosSecure.post('/admin/add-product-pictures', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      toast.success('Product pictures uploaded successfully');
-    } catch (error) {
-      console.error(error.message);
-      toast.error('Failed to upload product pictures');
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+      addTag(draft);
+    } else if (event.key === 'Backspace' && !draft && tags.length) {
+      onChange(tags.slice(0, -1));
     }
   };
 
   return (
-    <>
-      <Head>
-        <title>Add Product - Admin</title>
-      </Head>
+    <div className="flex min-h-[2.25rem] flex-wrap items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1.5 shadow-sm transition-colors focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-900/10">
+      {tags.map((tag) => (
+        <span
+          key={tag}
+          className="inline-flex items-center gap-1 rounded-full bg-gray-100 py-0.5 pl-2.5 pr-1 text-xs font-medium text-gray-700"
+        >
+          {tag}
+          <button
+            type="button"
+            onClick={() => onChange(tags.filter((item) => item !== tag))}
+            aria-label={`Remove tag ${tag}`}
+            className="flex h-4 w-4 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-900"
+          >
+            <FiX className="h-3 w-3" />
+          </button>
+        </span>
+      ))}
+      <input
+        id={id}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => addTag(draft)}
+        placeholder={tags.length ? '' : 'Add tags...'}
+        className="min-w-[8rem] flex-1 border-0 bg-transparent p-0.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+      />
+    </div>
+  );
+}
 
-      <div className="p-8 bg-gray-50 min-h-screen">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Add New Product
-            </h1>
-            <p className="text-gray-600">
-              Fill in the details below to add a new product to your inventory
-            </p>
+export default function AddProduct() {
+  const axiosSecure = useAxiosSecure();
+  const [productTypes, , isLoadingTypes] = useLoadSubSubCategories();
+  const colors = useLoadColors();
+  const sizes = useLoadSizes();
+
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [color, setColor] = useState('');
+  const [tags, setTags] = useState(DEFAULT_TAGS);
+  const [featured, setFeatured] = useState([]);
+  const [additional, setAdditional] = useState([]);
+  // categoryId -> { hasSizes, quantities: { [sizeId | 'none']: string } }
+  const [selection, setSelection] = useState({});
+  const [typeSearch, setTypeSearch] = useState('');
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [duplicated, setDuplicated] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // "Duplicate" on the products list stashes a product for this page.
+  useEffect(() => {
+    let stored;
+    try {
+      stored = localStorage.getItem('duplicate_product_data');
+      if (stored) localStorage.removeItem('duplicate_product_data');
+    } catch (error) {
+      return;
+    }
+    if (!stored) return;
+
+    try {
+      const data = fromProduct(JSON.parse(stored));
+      setForm(data.form);
+      setSelection(data.selection);
+      setColor(data.color);
+      setTags(data.tags);
+      setDuplicated(true);
+    } catch (error) {
+      console.error('Error parsing duplicate product data:', error);
+    }
+  }, []);
+
+  const setField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setFormError('');
+  };
+
+  const clearError = (name) =>
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+
+  const filteredTypes = useMemo(() => {
+    const term = typeSearch.trim().toLowerCase();
+    if (!term) return productTypes;
+    return productTypes.filter((item) =>
+      `${item.name} ${describeType(item)}`.toLowerCase().includes(term),
+    );
+  }, [productTypes, typeSearch]);
+
+  const selectedColor = colors.find((item) => item.name === color);
+  const selectedCount = Object.keys(selection).length;
+
+  const toggleType = (id, checked) => {
+    clearError('categories');
+    setSelection((prev) => {
+      if (!checked) {
+        const { [id]: removed, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [id]: { hasSizes: false, quantities: {} } };
+    });
+  };
+
+  const setHasSizes = (id, hasSizes) =>
+    setSelection((prev) => ({
+      ...prev,
+      [id]: { hasSizes, quantities: {} },
+    }));
+
+  const setQuantity = (id, key, value) => {
+    clearError('categories');
+    setSelection((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        quantities: { ...prev[id].quantities, [key]: value },
+      },
+    }));
+  };
+
+  const handleAdditionalChange = (files) => {
+    if (files.length > MAX_ADDITIONAL_IMAGES) {
+      toast.error(`You can add up to ${MAX_ADDITIONAL_IMAGES} extra images.`);
+      return;
+    }
+    setAdditional(files);
+  };
+
+  const validate = () => {
+    const next = {};
+    if (!form.name.trim()) next.name = 'Product name is required.';
+    if (!form.serialNo.trim()) next.serialNo = 'Serial number is required.';
+
+    const checkNumber = (key, label, max) => {
+      const value = form[key].trim();
+      if (value === '') next[key] = `${label} is required.`;
+      else if (!WHOLE_NUMBER.test(value)) {
+        next[key] = `${label} must be a whole number.`;
+      } else if (max !== undefined && Number(value) > max) {
+        next[key] = `${label} can't be more than ${max}.`;
+      }
+    };
+    checkNumber('vatPercentage', 'VAT', 100);
+    checkNumber('discountPercentage', 'Discount', 100);
+    checkNumber('buyingPrice', 'Buying price');
+    checkNumber('sellingPrice', 'Selling price');
+
+    if (!form.description.trim()) {
+      next.description = 'Short description is required.';
+    }
+    if (featured.length === 0) next.featured = 'A featured image is required.';
+
+    if (selectedCount === 0) {
+      next.categories = 'Select at least one product type.';
+    } else {
+      for (const entry of Object.values(selection)) {
+        const values = entry.hasSizes
+          ? sizes.map((size) => entry.quantities[size.id])
+          : [entry.quantities.none];
+        const entered = values.filter((value) => value !== undefined && value !== '');
+        if (entry.hasSizes && entered.length === 0) {
+          next.categories = 'Enter a quantity for at least one size in each product type with sizes.';
+          break;
+        }
+        if (entered.some((value) => !WHOLE_NUMBER.test(value))) {
+          next.categories = 'Quantities must be whole numbers, 0 or more.';
+          break;
+        }
+      }
+    }
+
+    return next;
+  };
+
+  const resetForm = () => {
+    setForm(INITIAL_FORM);
+    setColor('');
+    setTags(DEFAULT_TAGS);
+    setFeatured([]);
+    setAdditional([]);
+    setSelection({});
+    setTypeSearch('');
+    setErrors({});
+    setFormError('');
+    setDuplicated(false);
+  };
+
+  const focusFirstError = (found) => {
+    const first = FIELD_ORDER.find((key) => found[key]);
+    if (!first) return;
+    const target = document.getElementById(`field-${first}`);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target?.focus?.({ preventScroll: true });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFormError('');
+
+    const found = validate();
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      focusFirstError(found);
+      return;
+    }
+
+    const catsInfo = [];
+    Object.entries(selection).forEach(([id, entry]) => {
+      catsInfo.push(Number(id));
+      if (entry.hasSizes) {
+        sizes.forEach((size) => {
+          const quantity = entry.quantities[size.id];
+          if (quantity !== undefined && quantity !== '') {
+            catsInfo.push([size.id, parseInt(quantity, 10)]);
+          }
+        });
+      } else {
+        catsInfo.push([null, parseInt(entry.quantities.none || '0', 10)]);
+      }
+    });
+
+    const body = new FormData();
+    body.append('subCategories', Object.keys(selection).join(','));
+    body.append('catsInfo', JSON.stringify(catsInfo));
+    body.append('name', form.name.trim());
+    body.append('serialNo', form.serialNo.trim());
+    body.append('note', form.note.trim());
+    body.append('vatPercentage', form.vatPercentage.trim());
+    body.append('discountPercentage', form.discountPercentage.trim());
+    body.append('buyingPrice', form.buyingPrice.trim());
+    body.append('sellingPrice', form.sellingPrice.trim());
+    body.append('tags', tags.join(','));
+    body.append('description', form.description.trim());
+    body.append('myfile', featured[0]);
+    body.append('color', color);
+    body.append('longDescription', form.longDescription.trim());
+
+    setSubmitting(true);
+    try {
+      await axiosSecure.post('/admin/add-product', body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    } catch (err) {
+      console.error(err);
+      setFormError(getErrorMessage(err, 'Failed to add the product.'));
+      setSubmitting(false);
+      return;
+    }
+
+    toast.success('Product added');
+
+    if (additional.length > 0) {
+      const pictures = new FormData();
+      additional.forEach((file) => pictures.append('myfiles', file));
+      try {
+        await axiosSecure.post('/admin/add-product-pictures', pictures, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        toast.success('Extra images uploaded');
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          'The product was saved, but the extra images could not be uploaded. Add them from the product page.',
+          { duration: 8000 },
+        );
+      }
+    }
+
+    resetForm();
+    setSubmitting(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <AdminPage title="Add product" width="narrow">
+      <PageHeader
+        title="Add product"
+        description="Fill in the details to add a new product to the catalog."
+      />
+
+      {duplicated && (
+        <Alert tone="info" title="Started from an existing product" className="mb-5">
+          Details were copied over. Add a featured image and check the stock
+          quantities before saving.
+        </Alert>
+      )}
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <Section title="Basic information">
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field
+              label="Product name"
+              htmlFor="field-name"
+              required
+              error={errors.name}
+            >
+              <Input
+                id="field-name"
+                value={form.name}
+                onChange={(e) => setField('name', e.target.value)}
+                className="w-full"
+              />
+            </Field>
+            <Field
+              label="Serial number"
+              htmlFor="field-serialNo"
+              required
+              error={errors.serialNo}
+            >
+              <Input
+                id="field-serialNo"
+                value={form.serialNo}
+                onChange={(e) => setField('serialNo', e.target.value)}
+                className="w-full"
+              />
+            </Field>
+            <Field
+              label="Note"
+              htmlFor="field-note"
+              optional
+              hint="Internal note, not shown to customers."
+              className="md:col-span-2"
+            >
+              <Input
+                id="field-note"
+                value={form.note}
+                onChange={(e) => setField('note', e.target.value)}
+                className="w-full"
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section title="Pricing">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['buyingPrice', 'Buying price', '৳'],
+              ['sellingPrice', 'Selling price', '৳'],
+              ['vatPercentage', 'VAT', '%'],
+              ['discountPercentage', 'Discount', '%'],
+            ].map(([key, label, unit]) => (
+              <Field
+                key={key}
+                label={label}
+                htmlFor={`field-${key}`}
+                required
+                error={errors[key]}
+              >
+                <div className="relative">
+                  <Input
+                    id={`field-${key}`}
+                    type="number"
+                    min={0}
+                    step={1}
+                    inputMode="numeric"
+                    value={form[key]}
+                    onChange={(e) => setField(key, e.target.value)}
+                    placeholder="0"
+                    className="w-full pr-8"
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                    {unit}
+                  </span>
+                </div>
+              </Field>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Descriptions">
+          <div className="space-y-5">
+            <Field
+              label="Short description"
+              htmlFor="field-description"
+              required
+              hint="Shown on product cards."
+              error={errors.description}
+            >
+              <Textarea
+                id="field-description"
+                rows={3}
+                value={form.description}
+                onChange={(e) => setField('description', e.target.value)}
+              />
+            </Field>
+            <Field
+              label="Full description"
+              htmlFor="field-longDescription"
+              optional
+              hint="Shown on the product page."
+            >
+              <Textarea
+                id="field-longDescription"
+                rows={6}
+                value={form.longDescription}
+                onChange={(e) => setField('longDescription', e.target.value)}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section title="Attributes">
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field label="Color" htmlFor="field-color" optional>
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-9 w-9 shrink-0 rounded-lg border border-gray-200"
+                  style={{
+                    backgroundColor: selectedColor?.colorCode || 'transparent',
+                  }}
+                  aria-hidden="true"
+                />
+                <Select
+                  id="field-color"
+                  value={color}
+                  onValueChange={setColor}
+                  width="w-full"
+                >
+                  <option value="">No color</option>
+                  {colors.map((item) => (
+                    <option key={item.id} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </Field>
+            <Field
+              label="Tags"
+              htmlFor="field-tags"
+              hint="Press Enter or comma to add a tag. Tags help customers find the product."
+            >
+              <TagInput id="field-tags" tags={tags} onChange={setTags} />
+            </Field>
+          </div>
+        </Section>
+
+        <Section title="Images">
+          <div className="space-y-5">
+            <Field
+              label="Featured image"
+              htmlFor="field-featured"
+              required
+              error={errors.featured}
+            >
+              <ImageDropzone
+                id="field-featured"
+                files={featured}
+                maxMb={MAX_IMAGE_MB}
+                error={errors.featured}
+                onChange={(files) => {
+                  setFeatured(files);
+                  clearError('featured');
+                }}
+                onInvalid={(message) =>
+                  setErrors((prev) => ({ ...prev, featured: message }))
+                }
+              />
+            </Field>
+            <Field
+              label="Additional images"
+              htmlFor="field-additional"
+              optional
+              hint={`Up to ${MAX_ADDITIONAL_IMAGES} images.`}
+            >
+              <ImageDropzone
+                id="field-additional"
+                multiple
+                files={additional}
+                maxMb={MAX_IMAGE_MB}
+                label="Click to add images"
+                onChange={handleAdditionalChange}
+                onInvalid={(message) => toast.error(message)}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section
+          title="Categories & stock"
+          actions={
+            <Badge tone={selectedCount ? 'info' : 'neutral'}>
+              {selectedCount} selected
+            </Badge>
+          }
+          bodyClassName="p-0"
+        >
+          <div className="border-b border-gray-200 p-4">
+            <SearchInput
+              value={typeSearch}
+              onValueChange={setTypeSearch}
+              placeholder="Search product types..."
+            />
           </div>
 
-          {/* Success Message */}
-          {success && (
-            <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg">
-              {success}
-            </div>
-          )}
+          <div
+            id="field-categories"
+            tabIndex={-1}
+            className="p-4 focus:outline-none"
+          >
+            {errors.categories && (
+              <Alert tone="danger" className="mb-4">
+                {errors.categories}
+              </Alert>
+            )}
 
-          {/* Main Form */}
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              encType="multipart/form-data"
-              className="p-6"
-            >
-              {/* Basic Information Section */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Basic Information
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ProductFormComp
-                    type="text"
-                    name="name"
-                    label="Product Name"
-                    register={register}
-                    errors={errors}
+            {isLoadingTypes ? (
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="h-16 animate-pulse rounded-lg bg-gray-100"
                   />
-                  <ProductFormComp
-                    type="text"
-                    name="serialNo"
-                    label="Serial No"
-                    register={register}
-                    errors={errors}
-                  />
-                  <ProductFormComp
-                    type="text"
-                    name="note"
-                    label="Note"
-                    register={register}
-                    errors={errors}
-                  />
-                </div>
+                ))}
               </div>
+            ) : filteredTypes.length === 0 ? (
+              <EmptyState
+                icon={<FiPackage />}
+                title="No product types found"
+                description={
+                  typeSearch
+                    ? 'Try a different search.'
+                    : 'Add a product type first.'
+                }
+              />
+            ) : (
+              <div className="grid items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {filteredTypes.map((item) => {
+                  const entry = selection[item.id];
+                  const isSelected = Boolean(entry);
 
-              {/* Pricing Section */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Pricing Information
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <ProductFormComp
-                    type="number"
-                    name="vatPercentage"
-                    label="VAT %"
-                    register={register}
-                    errors={errors}
-                  />
-                  <ProductFormComp
-                    type="number"
-                    name="discountPercentage"
-                    label="Discount %"
-                    register={register}
-                    errors={errors}
-                  />
-                  <ProductFormComp
-                    type="number"
-                    name="buyingPrice"
-                    label="Buying Price"
-                    register={register}
-                    errors={errors}
-                  />
-                  <ProductFormComp
-                    type="number"
-                    name="sellingPrice"
-                    label="Selling Price"
-                    register={register}
-                    errors={errors}
-                  />
-                </div>
-              </div>
+                  return (
+                    <div
+                      key={item.id}
+                      className={cx(
+                        'rounded-lg border p-3 transition-colors',
+                        isSelected
+                          ? 'border-gray-900/30 bg-gray-50'
+                          : 'border-gray-200 hover:border-gray-300',
+                      )}
+                    >
+                      <label className="flex cursor-pointer items-start gap-3">
+                        <Checkbox
+                          className="mt-0.5"
+                          checked={isSelected}
+                          onChange={(e) => toggleType(item.id, e.target.checked)}
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium text-gray-900">
+                            {item.name}
+                          </span>
+                          <span className="block text-xs text-gray-500">
+                            {describeType(item)}
+                          </span>
+                        </span>
+                      </label>
 
-              {/* Descriptions Section */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Product Descriptions
-                </h2>
-                <div className="space-y-6">
-                  <ProductFormComp
-                    isDesc={true}
-                    name="description"
-                    label="Short Description"
-                    placeholder={'Brief description shown on product cards'}
-                    register={register}
-                    errors={errors}
-                  />
-                  <ProductFormComp
-                    isDesc={true}
-                    name="longDescription"
-                    label="Full Description"
-                    placeholder={'Detailed description shown on product page'}
-                    register={register}
-                    errors={errors}
-                  />
-                </div>
-              </div>
-
-              {/* Attributes Section */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Product Attributes
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <SelectionFormComp
-                    label={'Color'}
-                    name={'color'}
-                    selectedValue={selectedColor}
-                    setFunction={setSelectedColor}
-                    defaultShown={'Select color'}
-                    values={colors}
-                    errors={errors}
-                    register={register}
-                  />
-                  <SelectionFormComp
-                    label={'Fabric'}
-                    name={'fabric'}
-                    selectedValue={selectedFabric}
-                    setFunction={setSelectedFabric}
-                    defaultShown={'Select fabric'}
-                    values={fabrics}
-                    errors={errors}
-                    register={register}
-                  />
-                </div>
-              </div>
-
-              {/* Tags Section */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Product Tags
-                </h2>
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">
-                    Tags (Press enter to add)
-                  </label>
-                  <TagsInput
-                    value={selectedTags}
-                    onChange={setSelectedTags}
-                    name="tags"
-                    placeHolder="Add tags..."
-                    classNames={{
-                      input: 'p-2 border rounded-lg w-full',
-                      tag: 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center',
-                      remove: 'ml-2 text-blue-500 hover:text-blue-700',
-                    }}
-                  />
-                  <p className="mt-2 text-xs text-gray-500">
-                    Tags help customers find your product
-                  </p>
-                </div>
-              </div>
-
-              {/* Featured Image */}
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Featured Image
-                </label>
-                <div className="flex items-center justify-center ">
-                  <label className="flex flex-col items-center justify-center  h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 overflow-hidden">
-                    {featuredImagePreview ? (
-                      <img
-                        src={featuredImagePreview}
-                        alt="Featured preview"
-                        className="w-auto h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg
-                          className="w-8 h-8 mb-4 text-gray-500"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 20 16"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                          />
-                        </svg>
-                        <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span>{' '}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, GIF (MAX. 5MB)
-                        </p>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      id="myfile"
-                      className="hidden"
-                      {...register('myfile', {
-                        required: true,
-                        validate: validateFile,
-                        onChange: handleFeaturedImageChange,
-                      })}
-                    />
-                  </label>
-                </div>
-                {errors.myfile && (
-                  <p className="mt-2 text-sm text-red-600">
-                    {errors.myfile.type === 'required'
-                      ? 'Featured image is required'
-                      : 'Please upload a valid image file (PNG, JPG, GIF)'}
-                  </p>
-                )}
-              </div>
-
-              {/* Additional Images */}
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Additional Images
-                </label>
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 overflow-hidden">
-                    {additionalImagesPreview.length > 0 ? (
-                      <div className="flex w-full h-full overflow-x-auto p-2">
-                        {additionalImagesPreview.map((preview, index) => (
-                          <div key={index} className="flex-shrink-0 mr-2">
-                            <img
-                              src={preview}
-                              alt={`Additional preview ${index}`}
-                              className="h-full w-auto object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg
-                          className="w-8 h-8 mb-4 text-gray-500"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 20 16"
-                        >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                          />
-                        </svg>
-                        <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span>{' '}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          PNG, JPG, GIF (MAX. 5MB each)
-                        </p>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      id="file_input"
-                      className="hidden"
-                      multiple
-                      {...register('myfiles', {
-                        validate: validateFile,
-                        onChange: handleAdditionalImagesChange,
-                      })}
-                    />
-                  </label>
-                </div>
-                {errors.myfiles && (
-                  <p className="mt-2 text-sm text-red-600">
-                    Please upload valid image files (PNG, JPG, GIF)
-                  </p>
-                )}
-              </div>
-
-              {/* Categories & Inventory Section */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Categories & Inventory
-                </h2>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-700 mb-3">
-                      Select Categories
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {subSubCategories.map((category) => (
-                        <div
-                          key={category.id}
-                          className="bg-gray-50 p-4 rounded-lg"
-                        >
-                          <div className="flex items-start">
-                            <input
-                              type="checkbox"
-                              id={`cat-${category.id}`}
+                      {isSelected && (
+                        <div className="mt-3 border-t border-gray-200 pt-3">
+                          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+                            <Checkbox
+                              checked={entry.hasSizes}
                               onChange={(e) =>
-                                handleCategoryChange(e, category.id)
+                                setHasSizes(item.id, e.target.checked)
                               }
-                              checked={selectedCats.includes(category.id)}
-                              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
-                            <label
-                              htmlFor={`cat-${category.id}`}
-                              className="ml-3 block"
-                            >
-                              <span className="font-medium text-gray-700">
-                                {category.name}
-                              </span>
-                              <p className="text-sm text-gray-500">
-                                {category.category.name},{' '}
-                                {category.category.category.name}
-                                {category.category.category.isGenderVaried &&
-                                  (category.category.category.isForMen
-                                    ? ' (Men)'
-                                    : ' (Women)')}
-                              </p>
-                            </label>
-                          </div>
+                            This product has sizes
+                          </label>
 
-                          {selectedCats.includes(category.id) && (
-                            <div className="mt-3 ml-7 pl-2 border-l-2 border-gray-200">
-                              <div className="flex items-center mb-2">
-                                <input
-                                  type="checkbox"
-                                  id={`size-applicable-${category.id}`}
-                                  checked={isSizeApplicable.includes(
-                                    category.id,
-                                  )}
-                                  onChange={(e) =>
-                                    handleSizeApplicableChange(e, category.id)
-                                  }
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label
-                                  htmlFor={`size-applicable-${category.id}`}
-                                  className="ml-2 text-sm text-gray-700"
+                          <div className="mt-3 space-y-2">
+                            {entry.hasSizes ? (
+                              sizes.map((size) => (
+                                <div
+                                  key={size.id}
+                                  className="flex items-center justify-between gap-3"
                                 >
-                                  This product has sizes
-                                </label>
-                              </div>
-
-                              {isSizeApplicable.includes(category.id) ? (
-                                <div className="space-y-2">
-                                  {sizes.map((size) => (
-                                    <div
-                                      key={size.id}
-                                      className="flex items-center"
-                                    >
-                                      <label className="w-20 text-sm text-gray-700">
-                                        {size.name}
-                                      </label>
-                                      <input
-                                        type="number"
-                                        min={0}
-                                        className="block w-24 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        placeholder="Qty"
-                                        onInput={(e) =>
-                                          handleSizeAndQuantityChange(
-                                            e,
-                                            category.id,
-                                            size.id,
-                                          )
-                                        }
-                                      />
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="flex items-center">
-                                  <label className="w-20 text-sm text-gray-700">
-                                    Quantity
+                                  <label
+                                    htmlFor={`qty-${item.id}-${size.id}`}
+                                    className="text-sm text-gray-700"
+                                  >
+                                    {size.name}
                                   </label>
-                                  <input
+                                  <Input
+                                    id={`qty-${item.id}-${size.id}`}
+                                    size="sm"
                                     type="number"
                                     min={0}
-                                    className="block w-24 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                    placeholder="Qty"
-                                    onInput={(e) =>
-                                      handleSizeAndQuantityChange(
-                                        e,
-                                        category.id,
-                                      )
+                                    step={1}
+                                    inputMode="numeric"
+                                    value={entry.quantities[size.id] ?? ''}
+                                    onChange={(e) =>
+                                      setQuantity(item.id, size.id, e.target.value)
                                     }
+                                    placeholder="Qty"
+                                    className="w-24"
                                   />
                                 </div>
-                              )}
-                            </div>
-                          )}
+                              ))
+                            ) : (
+                              <div className="flex items-center justify-between gap-3">
+                                <label
+                                  htmlFor={`qty-${item.id}`}
+                                  className="text-sm text-gray-700"
+                                >
+                                  Quantity
+                                </label>
+                                <Input
+                                  id={`qty-${item.id}`}
+                                  size="sm"
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  inputMode="numeric"
+                                  value={entry.quantities.none ?? ''}
+                                  onChange={(e) =>
+                                    setQuantity(item.id, 'none', e.target.value)
+                                  }
+                                  placeholder="Qty"
+                                  className="w-24"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-
-              {/* Form Actions */}
-              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => reset()}
-                  className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Reset
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                    isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : (
-                    'Save Product'
-                  )}
-                </button>
-              </div>
-            </form>
+            )}
           </div>
-        </div>
-        <div className="fixed bottom-5 right-5 flex flex-col space-y-3">
-          {/* Scroll to Top Button */}
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-            className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
-          >
-            ↑
-          </button>
+        </Section>
 
-          {/* Scroll to Bottom Button */}
-          <button
-            onClick={() =>
-              window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'instant',
-              })
-            }
-            className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-lg"
+        <Alert tone="danger">{formError}</Alert>
+
+        <div className="sticky bottom-0 z-10 -mx-1 flex items-center justify-end gap-2 rounded-xl border border-gray-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+          <Button
+            variant="ghost"
+            icon={<FiRotateCcw />}
+            onClick={resetForm}
+            disabled={submitting}
           >
-            ↓
-          </button>
+            Clear form
+          </Button>
+          <Button type="submit" variant="primary" loading={submitting}>
+            {submitting ? 'Saving...' : 'Save product'}
+          </Button>
         </div>
-      </div>
-      {/* <Toaster position="top-right" /> */}
-    </>
+      </form>
+    </AdminPage>
   );
 }

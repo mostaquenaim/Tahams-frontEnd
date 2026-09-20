@@ -1,115 +1,143 @@
-import React, { useEffect, useState } from 'react';
-import AdminDrawer from '../../../components/Drawers/AdminDrawer';
-import SelectionFormComp from '../../../components/Product/SelectionFormComp';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
-import toast from 'react-hot-toast';
-import Head from 'next/head';
+import {
+  Alert,
+  Field,
+  Input,
+  Select,
+  SimpleCreateForm,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const genderSuffix = (item) => {
+  if (!item?.isGenderVaried) return '';
+  if (item.isForMen) return ' (Men)';
+  if (item.isForWomen) return ' (Women)';
+  return '';
+};
+
+const describeCategory = (category) =>
+  `${category.name}${
+    category.category
+      ? ` - ${category.category.name}${genderSuffix(category.category)}`
+      : ''
+  }`;
 
 const AddProductType = () => {
-    const [categoryName, setCategoryName] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [subCategories, setSubCategories] = useState([])
-    const [selectedCat, setSelectedCat] = useState('')
+  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
-    const axiosPublic = useAxiosPublic()
-    const axiosSecure = useAxiosSecure()
+  const [categories, setCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [name, setName] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    //load categories
+  useEffect(() => {
+    let cancelled = false;
+
     const loadCategories = async () => {
-        try {
-            const result = await axiosPublic.get('/admin/view-product-sub-categories');
-            const sortedSubCategories = result.data.sort((a, b) => a.name.localeCompare(b.name));
-
-            setSubCategories(sortedSubCategories);
-        } catch (error) {
-            console.error('Error loading Categories:', error);
+      try {
+        const result = await axiosPublic.get(
+          '/admin/view-product-sub-categories',
+        );
+        if (!cancelled) {
+          setCategories(
+            [...result.data].sort((a, b) => a.name.localeCompare(b.name)),
+          );
         }
+      } catch (err) {
+        if (!cancelled) {
+          setError(getErrorMessage(err, 'Could not load categories.'));
+        }
+      } finally {
+        if (!cancelled) setIsLoadingCategories(false);
+      }
     };
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-        control
-    } = useForm();
-
-    useEffect(() => {
-        loadCategories()
-    }, [])
-
-    const handleChange = (event) => {
-        setCategoryName(event.target.value);
+    loadCategories();
+    return () => {
+      cancelled = true;
     };
+  }, [axiosPublic]);
 
-    const onSubmit = async (data) => {
-        // Validate inputs
-        if (!categoryName || !selectedCat) {
-            toast.error('Please provide all the required information.');
-            return;
-        }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
 
-        const formData = {
-            name: categoryName,
-            categoryId: selectedCat,
-        };
+    const trimmed = name.trim();
+    if (!categoryId) {
+      setError('Choose the category this product type belongs to.');
+      return;
+    }
+    if (!trimmed) {
+      setError('Product type name is required.');
+      return;
+    }
 
-        try {
-            const response = await axiosSecure.post('/admin/add-sub-subCategory', formData);
-            setCategoryName('');
-            setSelectedCat('');
-            reset();
-            setSuccess('Category added successfully!');
-            toast.success('Category added successfully!');
-        } catch (error) {
-            setError('Error adding category: ' + error.response.data.message)
-            toast.error('Error adding category: ' + error.response.data.message);
-        }
-    };
+    setLoading(true);
+    try {
+      await axiosSecure.post('/admin/add-sub-subCategory', {
+        name: trimmed,
+        categoryId: Number(categoryId),
+      });
+      setName('');
+      setSuccess(`"${trimmed}" was added.`);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to add product type.'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <>
-            <Head>
-                <title>Add Product Type - Admin</title>
-            </Head>
-            {/* <AdminDrawer /> */}
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-center text-gray-700">Add Subcategory</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
-                        <div>
-                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">Subcategory Name</label>
-                            <input
-                                type="text"
-                                id="categoryName"
-                                name="categoryName"
-                                value={categoryName}
-                                onChange={handleChange}
-                                className="block w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="Enter Category name"
-                            />
-                        </div>
-                        {/* SelectionFormComp = ({selectedValue, setFunction, defaultShown, values, errors, register  }) */}
-                        {
-                            subCategories &&
-                            <SelectionFormComp label={'Select a category for this subcategory'} name={'category'} valueIsId={true} selectedValue={selectedCat} setFunction={setSelectedCat} defaultShown={'Select a series'} values={subCategories} extraItem={true} errors={errors} register={register} />
-                        }
-                        <button
-                            type="submit"
-                            className="w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-5"
-                        >
-                            Add
-                        </button>
-                    </form>
-                    {error && <p className="mt-4 text-sm text-center text-red-600">{error}</p>}
-                    {success && <p className="mt-4 text-sm text-center text-green-600">{success}</p>}
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <SimpleCreateForm
+      title="Add product type"
+      description="Create a product type inside an existing category."
+      submitLabel="Add product type"
+      loading={loading}
+      onSubmit={handleSubmit}
+      error={error}
+      success={success}
+    >
+      <Field label="Category" htmlFor="category" required>
+        <Select
+          id="category"
+          value={categoryId}
+          onValueChange={setCategoryId}
+          width="w-full"
+          disabled={isLoadingCategories}
+        >
+          <option value="">
+            {isLoadingCategories ? 'Loading categories...' : 'Select a category'}
+          </option>
+          {categories.map((item) => (
+            <option key={item.id} value={item.id}>
+              {describeCategory(item)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {!isLoadingCategories && categories.length === 0 && (
+        <Alert tone="warning">
+          There are no categories yet. Add a category first, then come back.
+        </Alert>
+      )}
+      <Field label="Product type name" htmlFor="name" required>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Polo Shirt"
+          className="w-full"
+        />
+      </Field>
+    </SimpleCreateForm>
+  );
 };
 
 export default AddProductType;

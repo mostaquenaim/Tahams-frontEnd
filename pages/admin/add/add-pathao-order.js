@@ -1,504 +1,450 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Package,
-  User,
-  Phone,
-  MapPin,
-  Truck,
-  Weight,
-  Hash,
-  FileText,
-  DollarSign,
-  ShirtIcon,
-} from 'lucide-react';
-import { FaBangladeshiTakaSign } from 'react-icons/fa6';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import useAxiosPublic from '/Hooks/useAxiosPublic';
-import useAxiosSecure from '/Hooks/useAxiosSecure';
+import { FiPackage, FiTruck, FiUser } from 'react-icons/fi';
+import useAxiosPublic from '../../../Hooks/useAxiosPublic';
+import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import {
+  AdminPage,
+  Alert,
+  Button,
+  Field,
+  Input,
+  PageHeader,
+  Section,
+  Select,
+  Textarea,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+const STORE_ID = 31663;
+
+const INITIAL_FORM = {
+  merchant_order_id: '',
+  recipient_name: '',
+  recipient_phone: '',
+  recipient_address: '',
+  delivery_type: '48',
+  item_type: '2',
+  special_instruction: '',
+  item_quantity: '1',
+  item_weight: '0.5',
+  item_description: '',
+  amount_to_collect: '0',
+};
+
+const PHONE_PATTERN = /^(?:\+?88)?01\d{9}$/;
+
+const describeItems = (orders) =>
+  orders
+    .map(
+      (order) =>
+        `${order.ProductName || 'Product'} - Size: ${
+          order.size || 'N/A'
+        } - Qty: ${order.Quantity || 1}`,
+    )
+    .join(', ');
+
+// The orders list stashes the chosen order in localStorage before navigating
+// here so the form can be pre-filled.
+const readPathaoHistory = () => {
+  try {
+    const raw = localStorage.getItem('pathaoHistory');
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.error('Error parsing pathaoHistory:', error);
+    return null;
+  }
+};
+
+const buildInitialForm = (data) => {
+  const history = data.history;
+  const orders = data.orders || [];
+  const totalQuantity = orders.reduce(
+    (sum, order) => sum + (order.Quantity || 1),
+    0,
+  );
+  const amount = (Number(data.totalPrice) || 0) + (Number(data.deliveryFee) || 0);
+
+  return {
+    ...INITIAL_FORM,
+    recipient_name: history?.fullName || '',
+    recipient_phone: history?.phone_no || '',
+    recipient_address: [history?.address, history?.city, history?.region]
+      .filter(Boolean)
+      .join(', '),
+    amount_to_collect: String(amount),
+    item_description: describeItems(orders) || `Order #${history?.id ?? ''}`,
+    merchant_order_id: history?.id
+      ? `ORDER-${history.id}`
+      : `ORDER-${Date.now()}`,
+    item_quantity: String(totalQuantity || 1),
+  };
+};
 
 const AddPathaoOrder = () => {
-  const [formData, setFormData] = useState({
-    store_id: 31663,
-    merchant_order_id: '',
-    recipient_name: '',
-    recipient_phone: '',
-    recipient_address: '',
-    delivery_type: 48,
-    item_type: 2,
-    special_instruction: '',
-    item_quantity: 1,
-    item_weight: '0.5',
-    item_description: '',
-    amount_to_collect: 0,
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [orderData, setOrderData] = useState(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const pathaoHistory = localStorage.getItem('pathaoHistory');
-      if (pathaoHistory) {
-        try {
-          const parsedData = JSON.parse(pathaoHistory);
-          // console.log('Parsed data:', parsedData);
-          setOrderData(parsedData);
-
-          // Extract data from the nested structure
-          const history = parsedData.history;
-          const orders = parsedData.orders || [];
-
-          // Calculate total quantity from all orders
-          const totalQuantity = orders.reduce(
-            (sum, order) => sum + (order.Quantity || 1),
-            0,
-          );
-
-          // Create item description from order details
-          const itemDescription = orders
-            .map(
-              (order) =>
-                `${order.ProductName || 'Product'} - Size: ${
-                  order.size || 'N/A'
-                } - Qty: ${order.Quantity || 1}`,
-            )
-            .join(', ');
-
-          // Calculate total weight (estimate based on quantity)
-          // You might want to adjust this logic based on your actual weight calculation
-          const estimatedWeight = (totalQuantity * 0.3).toFixed(1); // Assuming 0.3kg per item
-
-          // Auto-fill form data from localStorage
-          setFormData((prev) => ({
-            ...prev,
-            recipient_name: history?.fullName || '',
-            recipient_phone: history?.phone_no || '',
-            recipient_address: `${history?.address || ''}, ${
-              history?.city || ''
-            }, ${history?.region || ''}`.trim(),
-            amount_to_collect:
-              parsedData.totalPrice + parsedData.deliveryFee || 0,
-            item_description: itemDescription || `Order #${history?.id}`,
-            merchant_order_id: history?.id
-              ? `ORDER-${history.id}`
-              : `ORDER-${Date.now()}`,
-            item_quantity: totalQuantity || 1,
-            item_weight: 0.5, // Minimum 0.5kg
-          }));
-        } catch (error) {
-          console.error('Error parsing pathaoHistory:', error);
-        }
-      }
-    }
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [orderData, setOrderData] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [warning, setWarning] = useState('');
+  const [loading, setLoading] = useState(false);
+  // Set once Pathao has accepted the order, to block accidental duplicates.
+  const [created, setCreated] = useState(false);
 
-    const orderPayload = {
-      ...formData,
-      merchant_order_id: formData.merchant_order_id || `ORDER-${Date.now()}`,
-      item_quantity: Number(formData.item_quantity),
-      amount_to_collect: Number(formData.amount_to_collect),
-      item_weight: formData.item_weight.toString(),
-      delivery_type: Number(formData.delivery_type),
-      item_type: Number(formData.item_type),
+  useEffect(() => {
+    const data = readPathaoHistory();
+    if (!data) return;
+    setOrderData(data);
+    setForm(buildInitialForm(data));
+  }, []);
+
+  const set = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setFormError('');
+  };
+
+  const validate = () => {
+    const next = {};
+    if (!form.recipient_name.trim()) next.recipient_name = 'Name is required.';
+    const phone = form.recipient_phone.replace(/\s|-/g, '');
+    if (!phone) next.recipient_phone = 'Phone is required.';
+    else if (!PHONE_PATTERN.test(phone)) {
+      next.recipient_phone = 'Enter an 11-digit number like 01XXXXXXXXX.';
+    }
+    if (!form.recipient_address.trim()) {
+      next.recipient_address = 'Address is required.';
+    }
+    if (!(Number(form.item_quantity) >= 1)) {
+      next.item_quantity = 'Quantity must be at least 1.';
+    }
+    if (!(Number(form.item_weight) > 0)) {
+      next.item_weight = 'Weight must be greater than 0.';
+    }
+    if (!form.item_description.trim()) {
+      next.item_description = 'Describe the items.';
+    }
+    if (form.amount_to_collect === '' || Number(form.amount_to_collect) < 0) {
+      next.amount_to_collect = 'Enter 0 or more.';
+    }
+    return next;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFormError('');
+    setWarning('');
+
+    const found = validate();
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
+    const payload = {
+      store_id: STORE_ID,
+      merchant_order_id:
+        form.merchant_order_id.trim() || `ORDER-${Date.now()}`,
+      recipient_name: form.recipient_name.trim(),
+      recipient_phone: form.recipient_phone.replace(/\s|-/g, ''),
+      recipient_address: form.recipient_address.trim(),
+      delivery_type: Number(form.delivery_type),
+      item_type: Number(form.item_type),
+      special_instruction: form.special_instruction.trim(),
+      item_quantity: Number(form.item_quantity),
+      item_weight: String(form.item_weight),
+      item_description: form.item_description.trim(),
+      amount_to_collect: Number(form.amount_to_collect),
     };
 
+    setLoading(true);
+    let pathaoData;
     try {
-      const res = await axiosSecure.post(
-        '/admin/create-pathao-order',
-        orderPayload,
-      );
-
-      const pathaoOrderData = res.data;
-
-      toast.success('Order placed successfully!');
-
-      // Build courier details payload
-      const courierDetails = {
-        consignment_id: pathaoOrderData?.data?.consignment_id || null,
-        merchant_order_id: pathaoOrderData?.data.merchant_order_id,
-        order_status: pathaoOrderData?.data?.status || 'pending',
-        delivery_fee: pathaoOrderData?.data?.delivery_fee || 0,
-        courier_name: 'Pathao',
-        tracking_number: orderData.history.trackingToken || null,
-        recipient_name: orderPayload.recipient_name,
-        recipient_phone: orderPayload.recipient_phone,
-        delivery_address: orderPayload.recipient_address,
-      };
-
-      // Save courier info in DB
-      await axiosPublic.post(
-        `/admin/add-courier/${orderData?.history?.trackingToken}`,
-        courierDetails,
-        { headers: { 'Content-Type': 'application/json' } },
-      );
-
-      setFormData({
-        store_id: 31663,
-        merchant_order_id: '',
-        recipient_name: '',
-        recipient_phone: '',
-        recipient_address: '',
-        delivery_type: 48,
-        item_type: 2,
-        special_instruction: '',
-        item_quantity: 1,
-        item_weight: '0.5',
-        item_description: '',
-        amount_to_collect: 0,
-      });
-      // Clear localStorage after successful submission
-      localStorage.removeItem('pathaoHistory');
-      window.open(
-        'https://merchant.pathao.com/courier/orders/list',
-        '_blank',
-      );
+      const res = await axiosSecure.post('/admin/create-pathao-order', payload);
+      pathaoData = res.data;
     } catch (err) {
       console.error(err);
-      alert(
-        'Failed to place order: ' +
-          (err.response?.data?.message || 'Please try again.'),
-      );
-    } finally {
+      setFormError(getErrorMessage(err, 'Failed to place the Pathao order.'));
       setLoading(false);
+      return;
     }
+
+    toast.success('Pathao order placed');
+
+    // Save the courier details against the order. The Pathao order already
+    // exists at this point, so a failure here must not look like a total failure.
+    const trackingToken = orderData?.history?.trackingToken;
+    if (trackingToken) {
+      try {
+        await axiosPublic.post(
+          `/admin/add-courier/${trackingToken}`,
+          {
+            consignment_id: pathaoData?.data?.consignment_id || null,
+            merchant_order_id:
+              pathaoData?.data?.merchant_order_id || payload.merchant_order_id,
+            order_status: pathaoData?.data?.status || 'pending',
+            delivery_fee: pathaoData?.data?.delivery_fee || 0,
+            courier_name: 'Pathao',
+            tracking_number: trackingToken,
+            recipient_name: payload.recipient_name,
+            recipient_phone: payload.recipient_phone,
+            delivery_address: payload.recipient_address,
+          },
+          { headers: { 'Content-Type': 'application/json' } },
+        );
+      } catch (err) {
+        console.error(err);
+        setWarning(
+          `The Pathao order was created (${
+            pathaoData?.data?.consignment_id
+              ? `consignment ${pathaoData.data.consignment_id}`
+              : payload.merchant_order_id
+          }) but its courier details could not be saved to the order: ${getErrorMessage(
+            err,
+            'unknown error',
+          )}. Do not submit again - it would create a duplicate.`,
+        );
+        setCreated(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    localStorage.removeItem('pathaoHistory');
+    setOrderData(null);
+    setForm(INITIAL_FORM);
+    setLoading(false);
+    window.open('https://merchant.pathao.com/courier/orders/list', '_blank');
   };
 
-  // useEffect(()=>{
-  // console.log(orderData,'orderData');
-
-  // },[orderData])
-
-  // Function to get product details from the orders array
-  const getProductDetails = () => {
-    if (!orderData || !orderData.orders) return '';
-
-    return orderData.orders
-      .map(
-        (order) =>
-          `${order.ProductName || 'Product'} - Size: ${
-            order.size || 'N/A'
-          } - Qty: ${order.Quantity || 1}`,
-      )
-      .join(', ');
-  };
+  const history = orderData?.history;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Package className="w-8 h-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-800">
-              Create New Order
-            </h1>
-          </div>
-          <p className="text-gray-600">
-            Fill in the details to create a new delivery order
-          </p>
+    <AdminPage title="Create Pathao order" width="narrow">
+      <PageHeader
+        eyebrow={
+          <Button
+            href="/admin/show/show-orders"
+            variant="ghost"
+            size="sm"
+            className="-ml-2"
+          >
+            ← Back to orders
+          </Button>
+        }
+        title="Create Pathao order"
+        description="Book a courier delivery for an order."
+      />
 
-          {/* Auto-fill Notification */}
-          {orderData && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <div className="flex items-center gap-2 text-blue-700">
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm font-medium">
-                  Order data auto-filled from previous selection
-                </span>
-              </div>
-              {orderData.history && (
-                <div className="mt-2 text-sm text-blue-600">
-                  <p>
-                    Order #{orderData.history.id} - {orderData.history.fullName}
-                  </p>
-                  <p>
-                    {orderData.orders?.length || 0} item(s) - Total: ৳
-                    {orderData.totalPrice || 0}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Form Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6">
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Column 1: Order Information */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">
-                    Order Information
-                  </h3>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Store ID
-                    </label>
-                    <input
-                      type="text"
-                      name="store_id"
-                      value={formData.store_id}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-500 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Merchant Order ID{' '}
-                      <span className="text-gray-400 text-xs">(Optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="merchant_order_id"
-                      placeholder="Auto-generated if empty"
-                      value={formData.merchant_order_id}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Delivery Type
-                    </label>
-                    <select
-                      name="delivery_type"
-                      value={formData.delivery_type}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                    >
-                      <option value={48}>Normal Delivery</option>
-                      <option value={12}>On Demand Delivery</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Item Type
-                    </label>
-                    <select
-                      name="item_type"
-                      value={formData.item_type}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                    >
-                      <option value={2}>Parcel</option>
-                      <option value={1}>Document</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Column 2: Recipient Details */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">
-                    Recipient Details
-                  </h3>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Recipient Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="recipient_name"
-                      placeholder="Enter recipient's full name"
-                      value={formData.recipient_name}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Recipient Phone <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="recipient_phone"
-                      placeholder="01XXXXXXXXX"
-                      value={formData.recipient_phone}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Recipient Address <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      name="recipient_address"
-                      placeholder="Enter complete delivery address with landmarks"
-                      value={formData.recipient_address}
-                      onChange={handleChange}
-                      rows="4"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Special Instructions{' '}
-                      <span className="text-gray-400 text-xs">(Optional)</span>
-                    </label>
-                    <textarea
-                      name="special_instruction"
-                      placeholder="Any special delivery instructions..."
-                      value={formData.special_instruction}
-                      onChange={handleChange}
-                      rows="3"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Column 3: Item Details */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">
-                    Item Details
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Item Quantity
-                      </label>
-                      <input
-                        type="number"
-                        name="item_quantity"
-                        placeholder="1"
-                        value={formData.item_quantity}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                        min="1"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Item Weight (kg)
-                      </label>
-                      <input
-                        type="text"
-                        name="item_weight"
-                        placeholder="0.5"
-                        value={formData.item_weight}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Item Description
-                    </label>
-                    <textarea
-                      name="item_description"
-                      placeholder="Describe the items being delivered"
-                      value={formData.item_description}
-                      onChange={handleChange}
-                      rows="3"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Amount to Collect (৳)
-                    </label>
-                    <input
-                      type="number"
-                      name="amount_to_collect"
-                      placeholder="0.00"
-                      value={formData.amount_to_collect}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-blue-600 text-white font-medium py-3 px-8 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg
-                          className="animate-spin h-5 w-5"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Creating Order...
-                      </span>
-                    ) : (
-                      'Create Order'
-                    )}
-                  </button>
-                </div>
-                <p className="text-right text-sm text-gray-500 mt-2">
-                  Fields marked with <span className="text-red-500">*</span> are
-                  required
-                </p>
-              </div>
-            </form>
-          </div>
-        </div>
+      <div className="mb-5 space-y-3">
+        {history ? (
+          <Alert tone="info" title="Filled in from the selected order">
+            Order #{history.id} · {history.fullName} ·{' '}
+            {orderData.orders?.length || 0} item(s) · Total ৳
+            {(Number(orderData.totalPrice) || 0) +
+              (Number(orderData.deliveryFee) || 0)}
+          </Alert>
+        ) : (
+          <Alert tone="info">
+            No order is selected, so the form starts empty. To pre-fill it,
+            start from the orders list.
+          </Alert>
+        )}
+        <Alert tone="warning">{warning}</Alert>
       </div>
-    </div>
+
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Section title="Delivery" icon={<FiTruck />}>
+            <div className="space-y-4">
+              <Field label="Store ID" htmlFor="store_id">
+                <Input id="store_id" value={STORE_ID} disabled className="w-full" />
+              </Field>
+              <Field
+                label="Merchant order ID"
+                htmlFor="merchant_order_id"
+                optional
+                hint="Generated automatically if left empty."
+              >
+                <Input
+                  id="merchant_order_id"
+                  value={form.merchant_order_id}
+                  onChange={(e) => set('merchant_order_id', e.target.value)}
+                  className="w-full"
+                />
+              </Field>
+              <Field label="Delivery type" htmlFor="delivery_type">
+                <Select
+                  id="delivery_type"
+                  value={form.delivery_type}
+                  onValueChange={(value) => set('delivery_type', value)}
+                  width="w-full"
+                >
+                  <option value="48">Normal delivery</option>
+                  <option value="12">On-demand delivery</option>
+                </Select>
+              </Field>
+              <Field label="Item type" htmlFor="item_type">
+                <Select
+                  id="item_type"
+                  value={form.item_type}
+                  onValueChange={(value) => set('item_type', value)}
+                  width="w-full"
+                >
+                  <option value="2">Parcel</option>
+                  <option value="1">Document</option>
+                </Select>
+              </Field>
+            </div>
+          </Section>
+
+          <Section title="Recipient" icon={<FiUser />}>
+            <div className="space-y-4">
+              <Field
+                label="Name"
+                htmlFor="recipient_name"
+                required
+                error={errors.recipient_name}
+              >
+                <Input
+                  id="recipient_name"
+                  value={form.recipient_name}
+                  onChange={(e) => set('recipient_name', e.target.value)}
+                  placeholder="Full name"
+                  className="w-full"
+                />
+              </Field>
+              <Field
+                label="Phone"
+                htmlFor="recipient_phone"
+                required
+                error={errors.recipient_phone}
+              >
+                <Input
+                  id="recipient_phone"
+                  type="tel"
+                  value={form.recipient_phone}
+                  onChange={(e) => set('recipient_phone', e.target.value)}
+                  placeholder="01XXXXXXXXX"
+                  className="w-full"
+                />
+              </Field>
+              <Field
+                label="Address"
+                htmlFor="recipient_address"
+                required
+                error={errors.recipient_address}
+              >
+                <Textarea
+                  id="recipient_address"
+                  rows={3}
+                  value={form.recipient_address}
+                  onChange={(e) => set('recipient_address', e.target.value)}
+                  placeholder="Full delivery address with landmarks"
+                />
+              </Field>
+              <Field
+                label="Special instructions"
+                htmlFor="special_instruction"
+                optional
+              >
+                <Textarea
+                  id="special_instruction"
+                  rows={2}
+                  value={form.special_instruction}
+                  onChange={(e) => set('special_instruction', e.target.value)}
+                  placeholder="Anything the courier should know"
+                />
+              </Field>
+            </div>
+          </Section>
+
+          <Section title="Parcel" icon={<FiPackage />}>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Field
+                  label="Quantity"
+                  htmlFor="item_quantity"
+                  required
+                  error={errors.item_quantity}
+                >
+                  <Input
+                    id="item_quantity"
+                    type="number"
+                    min={1}
+                    value={form.item_quantity}
+                    onChange={(e) => set('item_quantity', e.target.value)}
+                    className="w-full"
+                  />
+                </Field>
+                <Field
+                  label="Weight (kg)"
+                  htmlFor="item_weight"
+                  required
+                  error={errors.item_weight}
+                >
+                  <Input
+                    id="item_weight"
+                    type="number"
+                    min={0.1}
+                    step="0.1"
+                    value={form.item_weight}
+                    onChange={(e) => set('item_weight', e.target.value)}
+                    className="w-full"
+                  />
+                </Field>
+              </div>
+              <Field
+                label="Item description"
+                htmlFor="item_description"
+                required
+                error={errors.item_description}
+              >
+                <Textarea
+                  id="item_description"
+                  rows={3}
+                  value={form.item_description}
+                  onChange={(e) => set('item_description', e.target.value)}
+                  placeholder="What is being delivered"
+                />
+              </Field>
+              <Field
+                label="Amount to collect (৳)"
+                htmlFor="amount_to_collect"
+                required
+                hint="Cash the courier collects on delivery. Use 0 if already paid."
+                error={errors.amount_to_collect}
+              >
+                <Input
+                  id="amount_to_collect"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={form.amount_to_collect}
+                  onChange={(e) => set('amount_to_collect', e.target.value)}
+                  className="w-full"
+                />
+              </Field>
+            </div>
+          </Section>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          <Alert tone="danger">{formError}</Alert>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              variant="primary"
+              loading={loading}
+              disabled={created}
+            >
+              {loading ? 'Creating order...' : 'Create order'}
+            </Button>
+          </div>
+        </div>
+      </form>
+    </AdminPage>
   );
 };
 

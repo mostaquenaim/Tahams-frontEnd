@@ -1,460 +1,442 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { FiPlus } from 'react-icons/fi';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useLoadSubSubCategories from '../../../Hooks/useLoadSubSubCategories';
-import toast from 'react-hot-toast';
-import Head from 'next/head';
-import Image from 'next/image';
 import { compressImage } from '../edit/product/[id]';
-import Loading from '/components/Loading';
+import {
+  AdminPage,
+  Alert,
+  Badge,
+  Button,
+  Field,
+  ImageDropzone,
+  Input,
+  Modal,
+  PageHeader,
+  Section,
+  Select,
+  Textarea,
+  Thumb,
+  getErrorMessage,
+} from '../../../components/Admin';
+
+// The storefront has a fixed number of "new arrival" slots. Saving a slot
+// creates a new arrival at that position and retires whatever was there.
+const MAX_SLOTS = 8;
+
+const EMPTY_DRAFT = { name: '', description: '', category: '', file: null };
+
+const describeType = (item) =>
+  [item.name, item.category?.name, item.category?.category?.name]
+    .filter(Boolean)
+    .join(' › ');
 
 const AddNewArrivals = () => {
-  const [subSubCategories] = useLoadSubSubCategories();
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
+  const [productTypes, , isLoadingTypes] = useLoadSubSubCategories();
 
-  // Initialize form data with existing arrivals and empty slots
-  const [formData, setFormData] = useState([]);
-  const [isEditing, setIsEditing] = useState([]);
-  const [previousArrivals, setPreviousArrivals] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Active arrivals keyed by slot number.
+  const [live, setLive] = useState({});
+  const [isPending, setIsPending] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  // Unsaved edits keyed by slot number.
+  const [drafts, setDrafts] = useState({});
+  const [errors, setErrors] = useState({});
+  const [extraSlots, setExtraSlots] = useState(1);
+  const [savingSlot, setSavingSlot] = useState(null);
+  const [discontinueSlot, setDiscontinueSlot] = useState(null);
+  const [discontinuing, setDiscontinuing] = useState(false);
 
-  const [isUploading, setIsUploading] = useState({});
-
-  // fetch new arrivals
-  useEffect(() => {
-    const fetchArrivals = async () => {
-      try {
-        const res = await axiosPublic.get('/admin/view-new-arrivals');
-
-        const sortedArrivals = res.data
-          .filter((item) => item.isActive)
-          .sort((a, b) => a.serial - b.serial);
-
-        setPreviousArrivals(sortedArrivals);
-      } catch (error) {
-        console.error('Error fetching previous arrivals:', error);
-        toast.error('Failed to load arrivals');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArrivals();
-  }, []);
-
-  // set formdata
-  useEffect(() => {
-    if (!previousArrivals.length) return;
-
-    const existingArrivals = previousArrivals.map((item) => ({
-      ...item,
-      subSubCategory: item.subsub?.id || '',
-      filename: item.filename || null,
-      preview: item.filename
-        ? `${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`
-        : null,
-    }));
-
-    const emptySlots = Array(Math.max(0, 4 - existingArrivals.length)).fill({
-      name: '',
-      description: '',
-      category: '',
-      subSubCategory: '',
-      filename: null,
-      preview: null,
-    });
-
-    const finalData = [...existingArrivals, ...emptySlots];
-
-    setFormData(finalData);
-    setIsEditing(Array(finalData.length).fill(false));
-  }, [previousArrivals]);
-
-  // Clean up object URLs on unmount
-  useEffect(() => {
-    return () => {
-      formData.forEach((item) => {
-        if (item.preview && item.preview.startsWith('blob:')) {
-          URL.revokeObjectURL(item.preview);
-        }
-      });
-    };
-  }, []);
-
-  const handleAddNewArrival = () => {
-    setFormData((prev) => [
-      ...prev,
-      {
-        name: '',
-        description: '',
-        category: '',
-        subSubCategory: '',
-        filename: null,
-        preview: null,
-      },
-    ]);
-
-    setIsEditing((prev) => [...prev, false]);
-  };
-
-  const handleChange = (index, e) => {
-    const { name, value, files } = e.target;
-
-    setFormData((prevState) => {
-      const updatedFormData = [...prevState];
-      const currentItem = updatedFormData[index];
-
-      // Clean up previous blob URL if exists
-      if (
-        name === 'filename' &&
-        currentItem.preview &&
-        currentItem.preview.startsWith('blob:')
-      ) {
-        URL.revokeObjectURL(currentItem.preview);
-      }
-
-      updatedFormData[index] = {
-        ...currentItem,
-        [name]: name === 'filename' ? files[0] : value,
-        preview:
-          name === 'filename'
-            ? files[0]
-              ? URL.createObjectURL(files[0])
-              : null
-            : currentItem.preview,
-      };
-
-      return updatedFormData;
-    });
-  };
-
-  const handleUpload = async (index) => {
-    const item = formData[index];
-
-    // Validation
-    if (!item.name.trim() || !item.description.trim() || !item.subSubCategory) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setIsUploading((prev) => ({ ...prev, [index]: true }));
-
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', item.name.trim());
-    formDataToSend.append('serial', index + 1);
-    formDataToSend.append('description', item.description.trim());
-    formDataToSend.append('category', item.subSubCategory);
-
+  const loadArrivals = useCallback(async () => {
     try {
-      // Compress image if present
-      if (item.filename) {
-        const compressed = await compressImage(item.filename);
-        formDataToSend.append('filename', compressed);
-      }
-
-      const response = await axiosSecure.post(
-        'admin/add-new-arrivals',
-        formDataToSend,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
-      );
-
-      if (response.status >= 200 && response.status <= 205) {
-        toast.success('New Arrival added successfully');
-
-        // Update the form data with server response if needed
-        if (response.data.filename) {
-          setFormData((prev) => {
-            const newData = [...prev];
-            newData[index] = {
-              ...newData[index],
-              filename: response.data.filename,
-              preview: `${process.env.NEXT_PUBLIC_API}/admin/getimage/${response.data.filename}`,
-            };
-            return newData;
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error(
-        error.response?.data?.message || 'Failed to upload new arrival',
-      );
+      const res = await axiosPublic.get('/admin/view-new-arrivals');
+      const bySlot = {};
+      (Array.isArray(res.data) ? res.data : [])
+        .filter((item) => item.isActive)
+        .forEach((item) => {
+          const slot = parseInt(item.serial, 10);
+          if (slot >= 1 && slot <= MAX_SLOTS && !bySlot[slot]) {
+            bySlot[slot] = item;
+          }
+        });
+      setLive(bySlot);
+      setLoadError('');
+    } catch (err) {
+      console.error('Error fetching arrivals:', err);
+      setLoadError(getErrorMessage(err, 'Could not load new arrivals.'));
     } finally {
-      setIsUploading((prev) => ({ ...prev, [index]: false }));
+      setIsPending(false);
     }
+  }, [axiosPublic]);
+
+  useEffect(() => {
+    loadArrivals();
+  }, [loadArrivals]);
+
+  const liveSlots = useMemo(
+    () => Object.keys(live).map(Number).sort((a, b) => a - b),
+    [live],
+  );
+
+  // Occupied slots, plus the requested number of empty ones (lowest first).
+  const visibleSlots = useMemo(() => {
+    const empty = [];
+    for (let slot = 1; slot <= MAX_SLOTS; slot += 1) {
+      if (!live[slot]) empty.push(slot);
+    }
+    return [...liveSlots, ...empty.slice(0, extraSlots)].sort((a, b) => a - b);
+  }, [live, liveSlots, extraSlots]);
+
+  const emptyCount = MAX_SLOTS - liveSlots.length;
+  const canAddSlot = extraSlots < emptyCount;
+
+  const getValues = (slot) => {
+    const current = live[slot];
+    const base = current
+      ? {
+          name: current.name || '',
+          description: current.description || '',
+          category: current.subsub?.id ? String(current.subsub.id) : '',
+          file: null,
+        }
+      : EMPTY_DRAFT;
+    return { ...base, ...drafts[slot] };
   };
 
-  const handleDiscontinue = async (index) => {
-    const item = formData[index];
+  const setValue = (slot, name, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      [slot]: { ...prev[slot], [name]: value },
+    }));
+    setErrors((prev) => ({ ...prev, [slot]: { ...prev[slot], [name]: '' } }));
+  };
 
-    if (!item.id) {
-      toast.error('This item is not saved yet');
+  const clearSlot = (slot) => {
+    setDrafts((prev) => {
+      const { [slot]: removed, ...rest } = prev;
+      return rest;
+    });
+    setErrors((prev) => {
+      const { [slot]: removed, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  const handleSave = async (slot) => {
+    const values = getValues(slot);
+    const found = {};
+    if (!values.name.trim()) found.name = 'Name is required.';
+    if (!values.description.trim()) {
+      found.description = 'Description is required.';
+    }
+    if (!values.category) found.category = 'Choose a product type.';
+    if (!values.file) {
+      found.file = live[slot]
+        ? 'Choose an image to save changes - saving replaces this arrival.'
+        : 'Choose an image.';
+    }
+    if (Object.keys(found).length > 0) {
+      setErrors((prev) => ({ ...prev, [slot]: found }));
       return;
     }
 
-    const confirm = window.confirm(
-      'Are you sure you want to discontinue this arrival?',
-    );
-
-    if (!confirm) return;
-
+    setSavingSlot(slot);
     try {
-      await axiosSecure.patch(`/admin/discontinue-new-arrival/${item.id}`, {});
+      const body = new FormData();
+      body.append('name', values.name.trim());
+      body.append('description', values.description.trim());
+      body.append('serial', slot);
+      body.append('category', values.category);
+      body.append('filename', await compressImage(values.file));
 
-      toast.success('Arrival discontinued');
+      await axiosSecure.post('/admin/add-new-arrivals', body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
-      // Remove from UI immediately
-      setFormData((prev) => prev.filter((_, i) => i !== index));
-
-      setIsEditing((prev) => prev.filter((_, i) => i !== index));
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error.response?.data?.message || 'Failed to discontinue arrival',
-      );
+      toast.success(`Slot ${slot} saved`);
+      clearSlot(slot);
+      await loadArrivals();
+    } catch (err) {
+      console.error('Upload failed:', err);
+      toast.error(getErrorMessage(err, 'Could not save the new arrival.'));
+    } finally {
+      setSavingSlot(null);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loading></Loading>
-      </div>
-    );
-  }
+  const handleDiscontinue = async () => {
+    const arrival = live[discontinueSlot];
+    if (!arrival) {
+      setDiscontinueSlot(null);
+      return;
+    }
+
+    setDiscontinuing(true);
+    try {
+      await axiosSecure.patch(
+        `/admin/discontinue-new-arrival/${arrival.id}`,
+        {},
+      );
+      toast.success('Arrival discontinued');
+      clearSlot(discontinueSlot);
+      setDiscontinueSlot(null);
+      await loadArrivals();
+    } catch (err) {
+      console.error(err);
+      toast.error(getErrorMessage(err, 'Could not discontinue the arrival.'));
+    } finally {
+      setDiscontinuing(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <Head>
-        <title>Add New Arrivals - Admin Dashboard</title>
-        <meta
-          name="description"
-          content="Manage new arrivals on the platform"
-        />
-      </Head>
+    <AdminPage title="New arrivals" width="narrow">
+      <PageHeader
+        title="New arrivals"
+        description={`Manage the ${MAX_SLOTS} featured slots shown as new arrivals on the storefront.`}
+        badge={
+          !isPending &&
+          !loadError && (
+            <Badge tone="neutral">
+              {liveSlots.length} of {MAX_SLOTS} slots used
+            </Badge>
+          )
+        }
+      />
 
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">
-            New Arrivals Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Add and manage new arrival products
-          </p>
+      {loadError ? (
+        <Section bodyClassName="p-5">
+          <Alert tone="danger">{loadError}</Alert>
+          <Button
+            className="mt-3"
+            onClick={() => {
+              setIsPending(true);
+              loadArrivals();
+            }}
+          >
+            Try again
+          </Button>
+        </Section>
+      ) : isPending ? (
+        <div className="space-y-4" aria-busy="true">
+          {[0, 1].map((key) => (
+            <div
+              key={key}
+              className="h-64 animate-pulse rounded-xl border border-gray-200 bg-gray-50"
+            />
+          ))}
         </div>
+      ) : (
+        <div className="space-y-4">
+          {visibleSlots.map((slot) => {
+            const arrival = live[slot];
+            const values = getValues(slot);
+            const slotErrors = errors[slot] || {};
+            const isSaving = savingSlot === slot;
+            const isEdited = Boolean(drafts[slot]);
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold text-gray-700">
-              Current Arrivals
-            </h2>
-          </div>
+            return (
+              <Section
+                key={slot}
+                title={`Slot ${slot}`}
+                actions={
+                  arrival ? (
+                    <Badge tone="success" dot>
+                      Live
+                    </Badge>
+                  ) : (
+                    <Badge tone="neutral">Empty</Badge>
+                  )
+                }
+                bodyClassName="p-0"
+              >
+                <div className="grid gap-5 p-5 lg:grid-cols-2">
+                  <div className="space-y-4">
+                    <Field
+                      label="Name"
+                      htmlFor={`name-${slot}`}
+                      required
+                      error={slotErrors.name}
+                    >
+                      <Input
+                        id={`name-${slot}`}
+                        value={values.name}
+                        maxLength={100}
+                        onChange={(e) => setValue(slot, 'name', e.target.value)}
+                        placeholder="Product name"
+                        className="w-full"
+                      />
+                    </Field>
+                    <Field
+                      label="Description"
+                      htmlFor={`description-${slot}`}
+                      required
+                      error={slotErrors.description}
+                    >
+                      <Textarea
+                        id={`description-${slot}`}
+                        rows={3}
+                        maxLength={500}
+                        value={values.description}
+                        onChange={(e) =>
+                          setValue(slot, 'description', e.target.value)
+                        }
+                        placeholder="Short description"
+                      />
+                    </Field>
+                    <Field
+                      label="Product type"
+                      htmlFor={`category-${slot}`}
+                      required
+                      error={slotErrors.category}
+                    >
+                      <Select
+                        id={`category-${slot}`}
+                        value={values.category}
+                        onValueChange={(value) =>
+                          setValue(slot, 'category', value)
+                        }
+                        width="w-full"
+                        disabled={isLoadingTypes}
+                      >
+                        <option value="">
+                          {isLoadingTypes
+                            ? 'Loading product types...'
+                            : 'Select a product type'}
+                        </option>
+                        {productTypes.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {describeType(item)}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
 
-          <div className="p-6">
-            {formData.map(
-              (item, index) =>
-                item.isActive && (
-                  <div
-                    key={index}
-                    className="mb-6 p-5 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-50 transition-colors duration-200"
+                  <Field
+                    label="Image"
+                    htmlFor={`image-${slot}`}
+                    required
+                    error={slotErrors.file}
+                    hint={
+                      arrival && !values.file
+                        ? 'Current image shown below. Upload a new one to replace it.'
+                        : undefined
+                    }
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                      {/* Serial Number */}
-                      <div className="flex-shrink-0">
-                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                          #{item.serial || index + 1}
+                    <ImageDropzone
+                      id={`image-${slot}`}
+                      files={values.file ? [values.file] : []}
+                      onChange={(files) => setValue(slot, 'file', files[0] || null)}
+                      onInvalid={(message) =>
+                        setErrors((prev) => ({
+                          ...prev,
+                          [slot]: { ...prev[slot], file: message },
+                        }))
+                      }
+                      error={slotErrors.file}
+                    />
+                    {arrival?.filename && !values.file && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <Thumb
+                          src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${arrival.filename}`}
+                          alt={arrival.name}
+                          className="h-16 w-16"
+                        />
+                        <span className="text-xs text-gray-500">
+                          Current image
                         </span>
                       </div>
+                    )}
+                  </Field>
+                </div>
 
-                      {/* Product Details */}
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* Name Input */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Product Name
-                          </label>
-                          <input
-                            type="text"
-                            name="name"
-                            value={item.name}
-                            onChange={(e) => handleChange(index, e)}
-                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                            placeholder="Enter product name"
-                            required
-                          />
-                        </div>
-
-                        {/* Description Input */}
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
-                          </label>
-                          <textarea
-                            name="description"
-                            value={item.description}
-                            onChange={(e) => handleChange(index, e)}
-                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                            placeholder="Enter product description"
-                            rows="2"
-                            required
-                          />
-                        </div>
-
-                        {/* Category Selection */}
-                        <div className="lg:col-span-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Category
-                          </label>
-                          {!isEditing[index] ? (
-                            <div className="flex items-center justify-between p-2.5 border border-gray-300 rounded-lg bg-white">
-                              <span className="text-gray-700">
-                                {item?.subsub?.name || 'Select category'}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  const editState = [...isEditing];
-                                  editState[index] = true;
-                                  setIsEditing(editState);
-                                }}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium ml-2 transition-colors"
-                              >
-                                Change
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <select
-                                name="subSubCategory"
-                                value={item.subSubCategory}
-                                onChange={(e) => handleChange(index, e)}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                required
-                              >
-                                <option value="" disabled>
-                                  Select Sub-Subcategory
-                                </option>
-                                {subSubCategories.map((subSubCategory) => (
-                                  <option
-                                    key={subSubCategory.id}
-                                    value={subSubCategory.id}
-                                  >
-                                    {subSubCategory.name} ›{' '}
-                                    {subSubCategory.category.name} ›{' '}
-                                    {subSubCategory.category.category.name}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                onClick={() => {
-                                  const editState = [...isEditing];
-                                  editState[index] = false;
-                                  setIsEditing(editState);
-                                }}
-                                className="text-sm text-red-600 hover:text-red-800 font-medium transition-colors"
-                              >
-                                Cancel Selection
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Image Upload */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Product Image
-                          </label>
-                          <div className="flex items-center gap-4">
-                            <input
-                              type="file"
-                              name="filename"
-                              onChange={(e) => handleChange(index, e)}
-                              accept="image/*"
-                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors"
-                            />
-
-                            {/* Image Preview */}
-                            {(item.preview || item.filename) && (
-                              <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                                <Image
-                                  src={
-                                    item.preview ||
-                                    `${process.env.NEXT_PUBLIC_API}/admin/getimage/${item.filename}`
-                                  }
-                                  alt="Product preview"
-                                  fill
-                                  sizes="80px"
-                                  className="object-cover"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                  }}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Upload Button */}
-                      <div className="flex-shrink-0 flex flex-col gap-2">
-                        {/* Save */}
-                        <button
-                          onClick={() => handleUpload(index)}
-                          disabled={isUploading[index]}
-                          className={`px-5 py-2.5 rounded-lg font-medium transition-colors ${
-                            isUploading[index]
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : 'bg-green-600 hover:bg-green-700 text-white'
-                          }`}
-                        >
-                          {isUploading[index] ? 'Uploading...' : 'Save Arrival'}
-                        </button>
-
-                        {/* Discontinue */}
-                        {item.id && (
-                          <button
-                            onClick={() => handleDiscontinue(index)}
-                            className="px-5 py-2.5 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-colors"
-                          >
-                            Discontinue
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-b-xl border-t border-gray-200 bg-gray-50/60 px-5 py-3">
+                  <div>
+                    {arrival && (
+                      <Button
+                        variant="ghost-danger"
+                        disabled={isSaving}
+                        onClick={() => setDiscontinueSlot(slot)}
+                      >
+                        Discontinue
+                      </Button>
+                    )}
                   </div>
-                ),
-            )}
+                  <div className="flex items-center gap-2">
+                    {isEdited && (
+                      <Button
+                        variant="ghost"
+                        disabled={isSaving}
+                        onClick={() => clearSlot(slot)}
+                      >
+                        Discard changes
+                      </Button>
+                    )}
+                    <Button
+                      variant="primary"
+                      loading={isSaving}
+                      disabled={!isEdited}
+                      onClick={() => handleSave(slot)}
+                    >
+                      {isSaving
+                        ? 'Saving...'
+                        : arrival
+                          ? 'Save changes'
+                          : 'Save arrival'}
+                    </Button>
+                  </div>
+                </div>
+              </Section>
+            );
+          })}
 
-            {/* Add More Button */}
-            <div className="flex justify-center mt-8 pt-6 border-t border-gray-200">
-              <button
-                onClick={handleAddNewArrival}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center"
+          {canAddSlot && (
+            <div className="flex justify-center pt-2">
+              <Button
+                icon={<FiPlus />}
+                onClick={() => setExtraSlots((count) => count + 1)}
               >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Add New Arrival
-              </button>
+                Add another slot
+              </Button>
             </div>
-          </div>
+          )}
         </div>
-      </div>
-    </div>
+      )}
+
+      <Modal
+        open={discontinueSlot !== null}
+        onClose={() => !discontinuing && setDiscontinueSlot(null)}
+        tone="danger"
+        title="Discontinue this arrival?"
+        description={
+          discontinueSlot !== null && live[discontinueSlot]
+            ? `"${live[discontinueSlot].name}" will be removed from the storefront and slot ${discontinueSlot} will be freed.`
+            : undefined
+        }
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              disabled={discontinuing}
+              onClick={() => setDiscontinueSlot(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              loading={discontinuing}
+              onClick={handleDiscontinue}
+            >
+              Discontinue
+            </Button>
+          </>
+        }
+      />
+    </AdminPage>
   );
 };
 
