@@ -1,6 +1,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiPhone } from 'react-icons/fi';
-import Footer from '/components/Footer/Footer';
+import AuthCard from '/components/Auth/AuthCard';
+import { Field, inputClass, buttonPrimary } from '/components/Storefront/StorefrontUI';
 import Link from 'next/link';
 import { useContext, useState } from 'react';
 import axios from 'axios';
@@ -22,7 +23,7 @@ const Register = () => {
     const router = useRouter()
     const { createUser } = useContext(AuthContext)
 
-    const { control, handleSubmit, formState: { errors }, watch } = useForm();
+    const { control, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm();
     const axiosPublic = useAxiosPublic();
 
     const togglePasswordVisibility = () => {
@@ -142,178 +143,155 @@ const Register = () => {
         }
     }
 
+    const passwordToggle = (visible, onToggle) => (
+        <button
+            type="button"
+            onClick={onToggle}
+            aria-label={visible ? 'Hide password' : 'Show password'}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+        >
+            {visible ? <FiEyeOff /> : <FiEye />}
+        </button>
+    );
+
     return (
         <>
             <Head>
                 <title>Register - Tahams </title>
             </Head>
-            <div className='pt-56 pb-10'>
-                {!otpSent ? (
-                    <form onSubmit={handleSubmit(onRegisterSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
-                        <Link className='' href='/'>
-                            <img src='/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2' alt="logo" />
-                        </Link>
-
-                        {/* name */}
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                <FiUser className="inline-block mr-2" />
-                                Name:
-                            </label>
+            {!otpSent ? (
+                <AuthCard
+                    title="Create your account"
+                    subtitle="Save your details, track orders and check out faster."
+                    footer={
+                        <>
+                            Already have an account?{' '}
+                            <Link href="/login" className="font-semibold text-black underline-offset-2 hover:underline">
+                                Log in
+                            </Link>
+                        </>
+                    }
+                >
+                    <form onSubmit={handleSubmit(onRegisterSubmit)} className="space-y-4" noValidate>
+                        <Field label="Name" icon={FiUser} error={errors.name?.message}>
                             <Controller
                                 name="name"
                                 control={control}
                                 rules={{ required: 'Name is required' }}
-                                render={({ field }) => <input {...field} type="text" className="w-full p-2 border rounded" />}
+                                render={({ field }) => <input {...field} type="text" autoComplete="name" className={inputClass} />}
                             />
-                            {errors.name && <p className="text-red-500 text-xs italic">{errors.name.message}</p>}
-                        </div>
+                        </Field>
 
-                        {/* email */}
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                <FiMail className="inline-block mr-2" />
-                                Email:
-                            </label>
+                        <Field label="Email" icon={FiMail} error={errors.email?.message}>
                             <Controller
                                 name="email"
                                 control={control}
                                 rules={{ required: 'Email is required' }}
-                                render={({ field }) => <input {...field} type="email" className="w-full p-2 border rounded" />}
+                                render={({ field }) => <input {...field} type="email" autoComplete="email" placeholder="you@example.com" className={inputClass} />}
                             />
-                            {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
-                        </div>
+                        </Field>
 
-                        {/* phone */}
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                <FiPhone className="inline-block mr-2" />
-                                Phone <span className='text-gray-400'>[optional]</span> :
-                            </label>
+                        <Field label="Phone" hint="(optional)" icon={FiPhone} error={errors.mbl_no?.message}>
                             <Controller
                                 name="mbl_no"
                                 control={control}
                                 rules={{
                                     pattern: {
                                         value: /^(\+8801|01)\d{9}$/,
-                                        message: 'Invalid phone number format',
+                                        message: 'Enter a valid number, e.g. 01XXXXXXXXX',
                                     },
                                 }}
-                                render={({ field }) => <input {...field} type="tel" className="w-full p-2 border rounded" />}
+                                render={({ field }) => <input {...field} type="tel" autoComplete="tel" placeholder="01XXXXXXXXX" className={inputClass} />}
                             />
-                            {errors.mbl_no && <p className="text-red-500 text-xs italic">{errors.mbl_no.message}</p>}
-                        </div>
+                        </Field>
 
-                        {/* password */}
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                <FiLock className="inline-block mr-2" />
-                                Password:
-                            </label>
-                            <div className="relative">
-                                <Controller
-                                    name="password"
-                                    control={control}
-                                    rules={{ required: 'Password is required' }}
-                                    render={({ field }) =>
-                                        <input
-                                            {...field}
-                                            type={showPassword ? "text" : "password"}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    }
-                                />
-                                <span
-                                    className="absolute right-2 top-2 text-xl cursor-pointer"
-                                    onClick={togglePasswordVisibility}
-                                >
-                                    {showPassword ? <FiEyeOff /> : <FiEye />}
-                                </span>
-                            </div>
-                            {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
-                        </div>
+                        <Field
+                            label="Password"
+                            icon={FiLock}
+                            error={errors.password?.message}
+                            right={passwordToggle(showPassword, togglePasswordVisibility)}
+                        >
+                            <Controller
+                                name="password"
+                                control={control}
+                                rules={{ required: 'Password is required' }}
+                                render={({ field }) => (
+                                    <input
+                                        {...field}
+                                        type={showPassword ? 'text' : 'password'}
+                                        autoComplete="new-password"
+                                        className={inputClass + ' pr-10'}
+                                    />
+                                )}
+                            />
+                        </Field>
 
-                        {/* confirm password */}
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                <FiLock className="inline-block mr-2" />
-                                Confirm Password:
-                            </label>
-                            <div className="relative">
-                                <Controller
-                                    name="confirmPassword"
-                                    control={control}
-                                    rules={{
-                                        required: 'Confirm Password is required',
-                                        validate: value => value === password || 'Passwords do not match'
-                                    }}
-                                    render={({ field }) =>
-                                        <input
-                                            {...field}
-                                            type={showConfirmPassword ? "text" : "password"}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    }
-                                />
-                                <span
-                                    className="absolute right-2 top-2 text-xl cursor-pointer"
-                                    onClick={toggleConfirmPasswordVisibility}
-                                >
-                                    {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-                                </span>
-                            </div>
-                            {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword.message}</p>}
-                        </div>
+                        <Field
+                            label="Confirm password"
+                            icon={FiLock}
+                            error={errors.confirmPassword?.message}
+                            right={passwordToggle(showConfirmPassword, toggleConfirmPasswordVisibility)}
+                        >
+                            <Controller
+                                name="confirmPassword"
+                                control={control}
+                                rules={{
+                                    required: 'Confirm Password is required',
+                                    validate: value => value === password || 'Passwords do not match'
+                                }}
+                                render={({ field }) => (
+                                    <input
+                                        {...field}
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        autoComplete="new-password"
+                                        className={inputClass + ' pr-10'}
+                                    />
+                                )}
+                            />
+                        </Field>
 
-                        <div className="text-center mt-4">
-                            <button type="submit" className="btn btn-primary bg-black hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-black">
-                                Register
-                            </button>
-                        </div>
-
-                        <p className="mt-4">
-                            Already have an account?{' '}
-                            <Link href="/login">
-                                <span className="text-blue-500 hover:underline cursor-pointer">Login here</span>
-                            </Link>
-                        </p>
+                        <button type="submit" disabled={isSubmitting} className={buttonPrimary + ' w-full'}>
+                            {isSubmitting ? 'Sending code...' : 'Create account'}
+                        </button>
                     </form>
-                ) : (
-                    <form onSubmit={handleSubmit(onOtpSubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
-                        <Link className='' href='/'>
-                            <img src='/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2' alt="logo" />
-                        </Link>
-
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                <FiLock className="inline-block mr-2" />
-                                OTP:
-                            </label>
+                </AuthCard>
+            ) : (
+                <AuthCard
+                    title="Verify your email"
+                    subtitle="Enter the code we just emailed you to finish creating your account."
+                    footer={
+                        <>
+                            Didn&apos;t get the code?{' '}
+                            <button type="button" onClick={onResendOtp} className="font-semibold text-black underline-offset-2 hover:underline">
+                                Resend OTP
+                            </button>
+                        </>
+                    }
+                >
+                    <form onSubmit={handleSubmit(onOtpSubmit)} className="space-y-4">
+                        <Field label="Verification code" icon={FiLock}>
                             <input
                                 type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
-                                className="w-full p-2 border rounded"
+                                className={inputClass + ' text-center text-lg tracking-[0.4em]'}
                                 required
                             />
-                            <p className=''>{success && success}</p>
-                            <p className='text-red-500 font-bold'>{error && error}</p>
-                        </div>
-
-                        <div className="text-center mt-4">
-                            <button type="submit" className="btn btn-primary bg-black hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-black">
-                                Verify OTP
-                            </button>
-                        </div>
-
-                        <p className="mt-2 text-sm">
-                            Didn&apos;t get the code?{' '}
-                            <span onClick={onResendOtp} className="text-blue-500 hover:underline cursor-pointer">Resend OTP</span>
-                        </p>
+                        </Field>
+                        {success && <p className="text-sm text-green-700">{success}</p>}
+                        {error && (
+                            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                                {error}
+                            </p>
+                        )}
+                        <button type="submit" disabled={isSubmitting} className={buttonPrimary + ' w-full'}>
+                            {isSubmitting ? 'Verifying...' : 'Verify and create account'}
+                        </button>
                     </form>
-                )}
-            </div>
-            {/* <Footer /> */}
+                </AuthCard>
+            )}
         </>
     );
 };

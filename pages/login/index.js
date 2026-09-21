@@ -12,13 +12,15 @@ import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { mergeGuestCartIntoAccount } from '../../utils/guestCustomer';
 import toast from 'react-hot-toast';
 import Head from 'next/head';
+import AuthCard from '/components/Auth/AuthCard';
+import { Field, inputClass, buttonPrimary, buttonSecondary } from '/components/Storefront/StorefrontUI';
 
 const provider = new GoogleAuthProvider();
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const { control, handleSubmit, formState: { errors } } = useForm();
+    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm();
     const { user, signIn, logOut } = useContext(AuthContext)
     // console.log(user, "17");
     const router = useRouter()
@@ -160,81 +162,85 @@ const Login = () => {
             <Head>
                 <title>Login - Tahams</title>
             </Head>
-            <div className='pt-56 pb-10'>
-                <form onSubmit={handleSubmit(onsubmit)} className="max-w-md mx-auto p-8 bg-white shadow-lg rounded flex flex-col text-center items-center justify-center gap-3 border-black border-2">
-                    <Link className='' href='/'>
-                        <img src='/logo-removebg.png' className='h-20 w-20 rounded-full p-3 bg-black border-white border-2'></img>
-                    </Link>
+            <AuthCard
+                title="Welcome back"
+                subtitle="Log in to track orders and check out faster."
+                footer={
+                    <>
+                        New to Tahams?{' '}
+                        <Link href="/register" className="font-semibold text-black underline-offset-2 hover:underline">
+                            Create an account
+                        </Link>
+                    </>
+                }
+            >
+                <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    className={buttonSecondary + ' w-full'}
+                >
+                    <FcGoogle className="text-xl" /> Continue with Google
+                </button>
 
-                    {/* google */}
-                    <span className="btn bg-black text-white" onClick={handleGoogleSignIn}>
-                        <FcGoogle className="text-xl" /> Login with Google
-                    </span>
+                <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-gray-400">
+                    <span className="h-px flex-1 bg-gray-200" />
+                    or
+                    <span className="h-px flex-1 bg-gray-200" />
+                </div>
 
-                    <div className="divider">OR</div>
-
-                    <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            <FiMail className="inline-block mr-2" />
-                            Email:
-                        </label>
+                <form onSubmit={handleSubmit(onsubmit)} className="space-y-4" noValidate>
+                    <Field label="Email" icon={FiMail} error={errors.email?.message}>
                         <Controller
                             name="email"
                             control={control}
                             rules={{ required: 'Email is required' }}
-                            render={({ field }) => <input {...field} type="email" className="w-full p-2 border rounded" />}
+                            render={({ field }) => (
+                                <input {...field} type="email" autoComplete="email" placeholder="you@example.com" className={inputClass} />
+                            )}
                         />
-                        {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
-                    </div>
+                    </Field>
 
-                    <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            <FiLock className="inline-block mr-2" />
-                            Password:
-                        </label>
-                        <div className="relative">
-                            <Controller
-                                name="password"
-                                control={control}
-                                rules={{ required: 'Password is required' }}
-                                render={({ field }) =>
-                                    <input
-                                        {...field}
-                                        type={showPassword ? "text" : "password"}
-                                        className="w-full p-2 border rounded"
-                                    />
-                                }
-                            />
-                            <span
-                                className="absolute right-2 top-2 text-xl cursor-pointer"
+                    <Field
+                        label="Password"
+                        icon={FiLock}
+                        error={errors.password?.message}
+                        right={
+                            <button
+                                type="button"
                                 onClick={togglePasswordVisibility}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
                             >
                                 {showPassword ? <FiEyeOff /> : <FiEye />}
-                            </span>
-                        </div>
-                        {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
-                    </div>
+                            </button>
+                        }
+                    >
+                        <Controller
+                            name="password"
+                            control={control}
+                            rules={{ required: 'Password is required' }}
+                            render={({ field }) => (
+                                <input
+                                    {...field}
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="current-password"
+                                    className={inputClass + ' pr-10'}
+                                />
+                            )}
+                        />
+                    </Field>
 
-                    {/* Forgot Password */}
-                    <Link href="/forgot-password">
-                        <span className="text-blue-500 hover:underline cursor-pointer">Forgot Password?</span>
-                    </Link>
-
-                    <div className="text-center mt-4">
-                        <button type="submit" className="btn btn-primary bg-black hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-black">
-                            Login
-                        </button>
-                    </div>
-
-                    <p className="mt-4">
-                        Haven't registered yet?{' '}
-                        <Link href="/register">
-                            <span className="text-blue-500 hover:underline cursor-pointer">Register here</span>
+                    <div className="text-right">
+                        <Link href="/forgot-password" className="text-sm text-gray-600 hover:text-black hover:underline">
+                            Forgot password?
                         </Link>
-                    </p>
+                    </div>
+
+                    <button type="submit" disabled={isSubmitting} className={buttonPrimary + ' w-full'}>
+                        {isSubmitting ? 'Logging in...' : 'Log in'}
+                    </button>
                 </form>
-            </div>
-            {/* <Footer /> */}
+            </AuthCard>
         </>
     );
 };
