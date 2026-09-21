@@ -1,752 +1,740 @@
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { FiAlertCircle, FiCheck, FiMapPin, FiShoppingBag, FiTruck } from 'react-icons/fi';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import Swal from 'sweetalert2';
-import axios from 'axios';
-import { DeliveryContext } from '../../Contexts/DeliveryFee';
+import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 import { addGuestOrderToken } from '../../utils/guestCustomer';
-import { MapPin, Store, Truck, CheckCircle2 } from 'lucide-react';
+import { cartSubtotal, formatBDT } from '../../utils/pricing';
 
 const DISPLAY_CENTERS = [
   {
     id: 'dc1',
-    label: 'DC 1',
     name: 'DC1 - Shahabuddin Plaza',
     address: 'Shop: 35-36, 2nd Floor, Shahabuddin Plaza, 1207 Ring Rd, Dhaka',
   },
   {
     id: 'dc2',
-    label: 'DC 2',
     name: 'DC2 - Bashundhara City',
-    address: 'Shop No: 1, Block: A, Level: 5, Bashundhara City Shopping Complex , Dhaka, Bangladesh, 1215',
+    address:
+      'Shop No: 1, Block: A, Level: 5, Bashundhara City Shopping Complex , Dhaka, Bangladesh, 1215',
   },
   {
     id: 'dc3',
-    label: 'DC 3',
     name: 'DC3 - Lalbagh',
     address: '23, 4-C Shaista Khan Rd, Dhaka',
   },
 ];
 
-const BuyingAddress = ({ data, notes }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    clearErrors,
-  } = useForm();
+const FEES = { dhakaCity: 80, aroundDhaka: 120, outsideDhaka: 150, other: 150 };
+const DHAKA_CITY_AREAS = ['Dhaka - North', 'Dhaka - South'];
 
-  const { user } = useContext(AuthContext);
-  const { deliveryFee, setDeliveryFee } = useContext(DeliveryContext);
+const FACEBOOK_PATTERN = /^(https?:\/\/)?(www\.)?(facebook|fb)\.com\/.+/i;
+const SAVED_INFO_KEY = 'checkoutInfo';
+
+const INPUT =
+  'w-full rounded-xl border border-gray-300 bg-white px-3.5 py-3 text-sm shadow-sm transition placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10';
+const INPUT_ERROR = 'border-red-400 focus:border-red-500 focus:ring-red-500/10';
+
+// Accepts +8801XXXXXXXXX, 8801XXXXXXXXX, 01XXX-XXXXXX etc. and returns the
+// plain 11-digit form, or '' if it isn't a Bangladeshi mobile number.
+const normalizePhone = (raw) => {
+  let digits = String(raw || '').replace(/[\s\-()]/g, '');
+  if (digits.startsWith('+88')) digits = digits.slice(3);
+  else if (digits.startsWith('88') && digits.length === 13) digits = digits.slice(2);
+  return /^01[3-9]\d{8}$/.test(digits) ? digits : '';
+};
+
+const readSavedInfo = () => {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_INFO_KEY)) || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const loadAreas = async (file) => {
+  try {
+    const res = await fetch(file);
+    if (!res.ok) return [];
+    const list = await res.json();
+    return [...new Set(list.map((area) => area.name))];
+  } catch (error) {
+    console.error(`Could not load ${file}:`, error);
+    return [];
+  }
+};
+
+function Field({ id, label, optional, error, hint, children }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-gray-800">
+        {label}
+        {optional && (
+          <span className="ml-1.5 text-xs font-normal text-gray-400">Optional</span>
+        )}
+      </label>
+      {children}
+      {error ? (
+        <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+          <FiAlertCircle className="h-3.5 w-3.5 shrink-0" />
+          {error}
+        </p>
+      ) : (
+        hint && <p className="mt-1.5 text-xs text-gray-500">{hint}</p>
+      )}
+    </div>
+  );
+}
+
+function Step({ number, title, children }) {
+  return (
+    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+      <h2 className="mb-5 flex items-center gap-3 text-base font-semibold">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+          {number}
+        </span>
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function ChoiceCard({ selected, onSelect, icon, title, subtitle, name }) {
+  return (
+    <label
+      className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition ${
+        selected
+          ? 'border-black bg-gray-50'
+          : 'border-gray-200 hover:border-gray-300'
+      }`}
+    >
+      <input
+        type="radio"
+        name={name}
+        checked={selected}
+        onChange={onSelect}
+        className="sr-only"
+      />
+      <span
+        className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+          selected ? 'bg-black text-white' : 'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{title}</span>
+        <span className="block text-xs text-gray-500">{subtitle}</span>
+      </span>
+      {selected && <FiCheck className="mt-1 h-4 w-4 shrink-0" />}
+    </label>
+  );
+}
+
+const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
+  const { user } = useContext(AuthContext);
 
-  const [carts, setCarts] = useState([]);
-  const [userData, setUserData] = useState({});
-  const [regions, setRegions] = useState(data?.module || []);
-  const [cities, setCities] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [isOutsideDhaka, setIsOutsideDhaka] = useState(false);
+  const [form, setForm] = useState({
+    fullName: '',
+    phone: '',
+    facebook: '',
+    address: '',
+    notes: '',
+  });
+  const [mode, setMode] = useState('home');
+  const [dcId, setDcId] = useState('');
+  const [region, setRegion] = useState('');
+  const [city, setCity] = useState('');
+  const [payOnline, setPayOnline] = useState(false);
+  const [showFacebook, setShowFacebook] = useState(false);
+  const [areas, setAreas] = useState({ inside: [], outside: [], loaded: false });
+  const [savedUser, setSavedUser] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deliveryMode, setDeliveryMode] = useState('home');
-  const [selectedDC, setSelectedDC] = useState(null);
-  const [dcError, setDcError] = useState(false);
+  const submitGuard = useRef(false);
 
-  const DELIVERY_FEES = {
-    DHAKA_INSIDE: 80,
-    DHAKA_AROUND: 120,
-    DHAKA_OUTSIDE: 150,
-    OTHER_REGIONS: 150,
-    WEDNESDAY_DISCOUNT: 0,
-  };
+  const subtotal = cartSubtotal(items);
+  const isPickup = mode === 'pickup';
 
-  const isWednesday = () => false;
-
-  const getDeliveryFee = (location) => {
-    if (isWednesday()) return DELIVERY_FEES.WEDNESDAY_DISCOUNT;
-    switch (location) {
-      case 'dhaka-inside': return DELIVERY_FEES.DHAKA_INSIDE;
-      case 'dhaka-around': return DELIVERY_FEES.DHAKA_AROUND;
-      case 'dhaka-outside': return DELIVERY_FEES.DHAKA_OUTSIDE;
-      default: return DELIVERY_FEES.OTHER_REGIONS;
-    }
-  };
-
-  const updateDeliveryFee = (fee) => {
-    localStorage.setItem('deliveryFee', fee.toString());
-    setDeliveryFee(fee);
-  };
-
-  const handleDeliveryModeChange = (mode) => {
-    setDeliveryMode(mode);
-    setSelectedDC(null);
-    setDcError(false);
-    clearErrors(['region', 'city', 'address']);
-
-    if (mode === 'pickup') {
-      updateDeliveryFee(0);
-    } else {
-      if (selectedRegion === 'Dhaka') {
-        updateDeliveryFee(getDeliveryFee('dhaka-inside'));
-      } else if (selectedRegion) {
-        updateDeliveryFee(getDeliveryFee('other'));
-      } else {
-        updateDeliveryFee(0);
-      }
-    }
-  };
-
-  const handleDCSelect = (dcId) => {
-    setSelectedDC(dcId);
-    setDcError(false);
-  };
-
-  const fetchUserData = async () => {
-    try {
-      // Saved-address prefill needs proof of who's asking, which only a
-      // logged-in Firebase user can give - guests just type it in fresh.
-      if (!user) return;
-      const idToken = await user.getIdToken();
-      const result = await axiosPublic.get(
-        `admin/get-user-by-email/${user.email}`,
-        { headers: { Authorization: `Bearer ${idToken}` } },
-      );
-      setUserData(result.data);
-      reset({
-        fullName: result.data?.name || '',
-        address: result.data?.address || '',
-        phoneNumber: result.data?.mbl_no || '',
-        city: selectedCity || '',
-        region: selectedRegion || '',
-      });
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
-
-  const loadCartItems = () => {
-    const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
-    setCarts(cartItems.map((item) => item.id));
-  };
-
+  // Dhaka areas (used for city choice and pricing).
   useEffect(() => {
-    fetchUserData();
-    loadCartItems();
+    let cancelled = false;
+    Promise.all([
+      loadAreas('/Dhaka-inside-delivery.json'),
+      loadAreas('/Dhaka-outside-delivery.json'),
+    ]).then(([inside, outside]) => {
+      if (!cancelled) setAreas({ inside, outside, loaded: true });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleRegionChange = async (e) => {
-    const value = e.target.value;
-    setSelectedRegion(value);
-    setSelectedCity('');
-    setCities([]);
-    if (value === 'Dhaka') {
-      try {
-        const res = await axios.get(`/Dhaka-inside-delivery.json`);
-        setCities(res.data);
-        updateDeliveryFee(getDeliveryFee('dhaka-inside'));
-      } catch (error) {
-        console.error('Error fetching Dhaka cities:', error);
-      }
-    } else {
-      updateDeliveryFee(getDeliveryFee('other'));
-    }
-  };
+  // Pre-fill from the customer's account, or from the last order on this device.
+  useEffect(() => {
+    let cancelled = false;
 
-  const handleCityChange = async (event) => {
-    const cityValue = event.target.value;
-    setSelectedCity(cityValue);
-    if (cityValue === 'others') {
-      setSelectedCity('');
-      try {
-        const newOutsideState = !isOutsideDhaka;
-        setIsOutsideDhaka(newOutsideState);
-        if (newOutsideState) {
-          updateDeliveryFee(getDeliveryFee('dhaka-around'));
-          const res = await axios.get(`/Dhaka-outside-delivery.json`);
-          setCities(res.data);
-        } else {
-          updateDeliveryFee(getDeliveryFee('dhaka-inside'));
-          const res = await axios.get(`/Dhaka-inside-delivery.json`);
-          setCities(res.data);
+    const prefill = async () => {
+      let saved = readSavedInfo();
+
+      if (user) {
+        try {
+          const idToken = await user.getIdToken();
+          const result = await axiosPublic.get(
+            `admin/get-user-by-email/${user.email}`,
+            { headers: { Authorization: `Bearer ${idToken}` } },
+          );
+          setSavedUser(result.data);
+          saved = {
+            fullName: result.data?.name,
+            phone: result.data?.mbl_no,
+            region: result.data?.region,
+            city: result.data?.city,
+            address: result.data?.address,
+          };
+        } catch (error) {
+          console.error('Error fetching user data:', error);
         }
-      } catch (error) {
-        console.error('Error fetching city data:', error);
       }
-    } else if (cityValue) {
-      if (cityValue === 'Dhaka - South' || cityValue === 'Dhaka - North') {
-        updateDeliveryFee(getDeliveryFee('dhaka-inside'));
-      } else if (!isOutsideDhaka) {
-        updateDeliveryFee(getDeliveryFee('dhaka-around'));
-      } else {
-        updateDeliveryFee(getDeliveryFee('dhaka-outside'));
+
+      if (cancelled || !saved) return;
+
+      // Never overwrite something the customer has already typed.
+      setForm((prev) => ({
+        ...prev,
+        fullName: prev.fullName || saved.fullName || '',
+        phone: prev.phone || saved.phone || '',
+        address: prev.address || saved.address || '',
+      }));
+      if (saved.region && regions.some((item) => item.name === saved.region)) {
+        setRegion((prev) => prev || saved.region);
+        setCity((prev) => prev || saved.city || '');
       }
+    };
+
+    prefill();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email]);
+
+  const cityGroups = useMemo(() => {
+    const cityCore = areas.inside.filter((name) => DHAKA_CITY_AREAS.includes(name));
+    const around = areas.inside.filter((name) => !DHAKA_CITY_AREAS.includes(name));
+    const outside = areas.outside.filter((name) => !areas.inside.includes(name));
+    return { cityCore, around, outside };
+  }, [areas]);
+
+  // A saved city that isn't a valid choice would silently price wrongly.
+  useEffect(() => {
+    if (!areas.loaded || region !== 'Dhaka' || !city) return;
+    const all = [...areas.inside, ...areas.outside];
+    // (If the area lists failed to load, the field is free text - leave it.)
+    if (all.length > 0 && !all.includes(city)) setCity('');
+  }, [areas, region, city]);
+
+  const hasAreaLists = areas.inside.length + areas.outside.length > 0;
+
+  const computedFee = useMemo(() => {
+    if (isPickup) return 0;
+    if (!region) return null;
+    if (region !== 'Dhaka') return FEES.other;
+    if (!city) return null;
+    if (DHAKA_CITY_AREAS.includes(city)) return FEES.dhakaCity;
+    if (cityGroups.outside.includes(city)) return FEES.outsideDhaka;
+    return FEES.aroundDhaka;
+  }, [isPickup, region, city, cityGroups]);
+
+  useEffect(() => {
+    onDeliveryFeeChange(computedFee);
+  }, [computedFee, onDeliveryFeeChange]);
+
+  const setField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setSubmitError('');
+  };
+
+  const handleRegionChange = (value) => {
+    setRegion(value);
+    setCity('');
+    setErrors((prev) => ({ ...prev, region: undefined, city: undefined }));
+  };
+
+  const validate = () => {
+    const next = {};
+    if (!form.fullName.trim()) next.fullName = 'Please enter your name.';
+    if (!normalizePhone(form.phone)) {
+      next.phone = 'Enter a mobile number like 01XXXXXXXXX.';
+    }
+    if (form.facebook.trim() && !FACEBOOK_PATTERN.test(form.facebook.trim())) {
+      next.facebook = 'That does not look like a Facebook profile link.';
+    }
+    if (isPickup) {
+      if (!dcId) next.dc = 'Choose where you would like to pick up.';
+    } else {
+      if (!region) next.region = 'Choose your region.';
+      if (region === 'Dhaka' && !city) next.city = 'Choose your area.';
+      if (!form.address.trim()) next.address = 'Please enter your full address.';
+    }
+    return next;
+  };
+
+  const focusFirstError = (found) => {
+    const order = ['fullName', 'phone', 'facebook', 'dc', 'region', 'city', 'address'];
+    const first = order.find((key) => found[key]);
+    const target = first && document.getElementById(`co-${first}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.focus?.({ preventScroll: true });
     }
   };
 
-  const calculateOrderTotal = (cartItems) =>
-    cartItems.reduce((total, item) => {
-      const basePrice = item.product.sellingPrice;
-      const discount = (basePrice * item.product.discountPercentage) / 100;
-      const vat = (basePrice * item.product.vatPercentage) / 100;
-      return total + (basePrice - discount + vat) * item.Quantity;
-    }, 0);
-
-  const updateUserAddress = async (formData, address, region, city) => {
-    const isAddressChanged =
-      formData.fullName !== userData.name ||
-      region !== userData.region ||
-      city !== userData.city ||
-      address !== userData.address;
-    if (isAddressChanged && userData.id && user) {
-      const idToken = await user.getIdToken();
-      await axiosPublic.put(
-        `admin/update-user-address/${userData.id}`,
-        { name: formData.fullName, region, city, address },
-        { headers: { Authorization: `Bearer ${idToken}` } },
-      );
-    }
-  };
-
-  const onSubmit = async (formData) => {
-    if (isSubmitting) return;
-
-    if (deliveryMode === 'pickup' && !selectedDC) {
-      setDcError(true);
+  const rememberCustomer = (details) => {
+    if (!user) {
+      // A pickup order says nothing about the customer's own address.
+      const toSave = isPickup
+        ? { ...readSavedInfo(), fullName: details.fullName, phone: details.phone }
+        : details;
+      localStorage.setItem(SAVED_INFO_KEY, JSON.stringify(toSave));
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-
-      const dc = deliveryMode === 'pickup'
-        ? DISPLAY_CENTERS.find((d) => d.id === selectedDC)
-        : null;
-
-      const deliveryAddress = dc ? dc.address : formData.address;
-      const deliveryRegion = dc ? 'Dhaka' : selectedRegion;
-      const deliveryCity = dc ? dc.name : selectedCity;
-      const finalDeliveryFee = dc ? 0 : deliveryFee;
-
-      const result = await Swal.fire({
-        title: 'Confirm Your Order',
-        html: `
-          <div style="text-align: left; padding: 10px;">
-            <p style="margin-bottom: 15px; color: #555;">Please review your order details:</p>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-              <p style="margin: 8px 0;"><strong>Name:</strong> ${formData.fullName}</p>
-              <p style="margin: 8px 0;"><strong>Phone:</strong> ${formData.phoneNumber}</p>
-              ${dc
-                ? `<p style="margin: 8px 0;"><strong>Pickup Center:</strong> ${dc.name}</p>
-                   <p style="margin: 8px 0;"><strong>Center Address:</strong> ${dc.address}</p>
-                   <p style="margin: 8px 0;"><strong>Delivery Fee:</strong>
-                     <span style="color: #16a34a; font-weight: bold;">FREE</span>
-                   </p>`
-                : `<p style="margin: 8px 0;"><strong>Region:</strong> ${deliveryRegion}</p>
-                   ${deliveryCity ? `<p style="margin: 8px 0;"><strong>City:</strong> ${deliveryCity}</p>` : ''}
-                   <p style="margin: 8px 0;"><strong>Address:</strong> ${deliveryAddress}</p>
-                   <p style="margin: 8px 0;"><strong>Delivery Fee:</strong> ৳${finalDeliveryFee}</p>`
-              }
-            </div>
-            <p style="color: #666; font-size: 14px;">Would you like to proceed with this order?</p>
-          </div>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#000000',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: '<i class="fa fa-check"></i> Yes, Place Order',
-        cancelButtonText: '<i class="fa fa-times"></i> Cancel',
-        buttonsStyling: true,
-      });
-
-      if (!result.isConfirmed) {
-        setIsSubmitting(false);
-        return;
+    // Keep the account's default address current (best effort - never blocks the order).
+    if (savedUser?.id && !isPickup) {
+      const changed =
+        details.fullName !== savedUser.name ||
+        details.region !== savedUser.region ||
+        details.city !== savedUser.city ||
+        details.address !== savedUser.address;
+      if (changed) {
+        user
+          .getIdToken()
+          .then((idToken) =>
+            axiosPublic.put(
+              `admin/update-user-address/${savedUser.id}`,
+              {
+                name: details.fullName,
+                region: details.region,
+                city: details.city,
+                address: details.address,
+              },
+              { headers: { Authorization: `Bearer ${idToken}` } },
+            ),
+          )
+          .catch((error) => console.error('Could not update saved address:', error));
       }
-
-      const isAddressChanged =
-        formData.fullName !== userData.name ||
-        deliveryRegion !== userData.region ||
-        deliveryCity !== userData.city ||
-        deliveryAddress !== userData.address;
-
-      if (isAddressChanged && userData.id && user) {
-        localStorage.setItem(
-          'userAddress',
-          JSON.stringify({
-            id: userData.id,
-            name: formData.fullName,
-            region: deliveryRegion,
-            city: deliveryCity,
-            address: deliveryAddress,
-          }),
-        );
-      }
-
-      await updateUserAddress(formData, deliveryAddress, deliveryRegion, deliveryCity);
-
-      const orderData = {
-        fullName: formData.fullName,
-        region: deliveryRegion,
-        city: deliveryCity,
-        address: deliveryAddress,
-        phone_no: formData.phoneNumber,
-        BuyingDate: new Date(),
-        carts,
-        deliveryFee: finalDeliveryFee,
-        ...(dc && { isPickup: true, pickupCenter: dc.name }),
-        ...(formData.facebookProfile && { facebookProfile: formData.facebookProfile }),
-        ...(notes?.trim() && { notes: notes.trim() }),
-      };
-
-      const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
-      const totalPrice = calculateOrderTotal(cartItems);
-      const tempItems = generateTempItems(cartItems);
-
-      const response = await axiosPublic.post(`/admin/add-to-buy`, orderData);
-
-      if (!user && response.data?.trackingToken) {
-        addGuestOrderToken(response.data.trackingToken);
-      }
-
-      const finalConfirm = await Swal.fire({
-        title: 'Order Confirmed',
-        html: `
-          <div>
-            <p>${dc
-              ? 'Your order will be ready for pickup at the selected display center.'
-              : 'We will ship your items as soon as possible.'
-            }</p>
-            ${process.env.NEXT_PUBLIC_BKASHCASHBACK
-              ? `<p style="margin-top: 10px; color: #28a745; font-weight: bold;">
-                  🎉 Special Offer: Pay with bKash and get ${process.env.NEXT_PUBLIC_BKASHCASHBACK}% cashback!
-                </p>`
-              : ''
-            }
-          </div>
-        `,
-        icon: 'success',
-        confirmButtonColor: '#000000',
-        confirmButtonText: 'Proceed to payment',
-        footer: process.env.NEXT_PUBLIC_BKASHCASHBACK
-          ? '<span style="font-size: 12px; color: #666;">Cashback will be credited to your bKash account within 24 hours</span>'
-          : '',
-      });
-
-      if (!finalConfirm.isConfirmed) {
-        setIsSubmitting(false);
-        return;
-      }
-
-      Swal.fire({
-        title: 'Processing Order',
-        html: 'Please wait while we process your order...',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        didOpen: () => Swal.showLoading(),
-      });
-
-      pushToDataLayer('purchase', {
-        order_id: response.data.id,
-        currency: 'BDT',
-        totalPrice,
-        coupon: cartItems[0]?.coupon,
-        fullName: formData.fullName,
-        region: deliveryRegion,
-        city: deliveryCity,
-        address: deliveryAddress,
-        phone_no: formData.phoneNumber,
-        BuyingDate: new Date(),
-        items: tempItems,
-      });
-
-      if (response.status >= 200 && response.status < 300) {
-        Swal.close();
-        router.push(`/confirm-order/${response.data.trackingToken}`);
-      }
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      Swal.fire({
-        title: 'Order Failed',
-        text: 'There was an error processing your order. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#000000',
-        confirmButtonText: 'OK',
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (submitGuard.current) return;
+
+    const found = validate();
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      focusFirstError(found);
+      return;
+    }
+
+    submitGuard.current = true;
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    const dc = isPickup ? DISPLAY_CENTERS.find((item) => item.id === dcId) : null;
+    const phone = normalizePhone(form.phone);
+    const details = {
+      fullName: form.fullName.trim(),
+      phone,
+      region: dc ? 'Dhaka' : region,
+      city: dc ? dc.name : region === 'Dhaka' ? city : '',
+      address: dc ? dc.address : form.address.trim(),
+    };
+    const finalFee = dc ? 0 : computedFee;
+
+    const orderData = {
+      fullName: details.fullName,
+      region: details.region,
+      city: details.city,
+      address: details.address,
+      phone_no: phone,
+      BuyingDate: new Date(),
+      carts: items.map((item) => item.id),
+      deliveryFee: finalFee,
+      // Pay-on-pickup and cash-on-delivery are recorded up front; online
+      // payment is completed (and recorded) on the next screen.
+      paymentMethodId: isPickup && !payOnline ? 8 : 1,
+      ...(dc && { isPickup: true, pickupCenter: dc.name }),
+      ...(form.facebook.trim() && { facebookProfile: form.facebook.trim() }),
+      ...(form.notes.trim() && { notes: form.notes.trim() }),
+    };
+
+    let response;
+    try {
+      response = await axiosPublic.post('/admin/add-to-buy', orderData);
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      const serverMessage = error?.response?.data?.message;
+      setSubmitError(
+        typeof serverMessage === 'string' && serverMessage
+          ? serverMessage
+          : "We couldn't place your order. Nothing has been charged - please try again.",
+      );
+      submitGuard.current = false;
+      setIsSubmitting(false);
+      return;
+    }
+
+    const token = response.data?.trackingToken;
+
+    if (!user && token) addGuestOrderToken(token);
+    rememberCustomer(details);
+
+    try {
+      pushToDataLayer('purchase', {
+        order_id: response.data?.id,
+        currency: 'BDT',
+        totalPrice: subtotal + (finalFee || 0),
+        coupon: items[0]?.coupon,
+        fullName: details.fullName,
+        region: details.region,
+        city: details.city,
+        address: details.address,
+        phone_no: phone,
+        BuyingDate: new Date(),
+        items: generateTempItems(items),
+      });
+    } catch (error) {
+      console.error('Analytics event failed:', error);
+    }
+
+    // The order exists now - make sure "back" can never place it twice.
+    localStorage.removeItem('selectedItems');
+    localStorage.removeItem('deliveryFee');
+    localStorage.removeItem('defaultCartItem');
+
+    router.push(
+      payOnline
+        ? `/confirm-order/${token}`
+        : `/my-orders/details/${token}?placed=1`,
+    );
+  };
+
+  const total = subtotal + (computedFee || 0);
+  const feeKnown = computedFee !== null;
+
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-md mb-10 md:w-2/3">
-      <h2 className="text-2xl font-bold mb-8 text-center tracking-tight">
-        Checkout
-      </h2>
-
-      {/* ── Delivery Method Toggle ── */}
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-          Delivery Method
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {/* Home Delivery */}
-          <button
-            type="button"
-            onClick={() => handleDeliveryModeChange('home')}
-            className={`group flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-              deliveryMode === 'home'
-                ? 'border-black bg-black text-white shadow-md'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <Truck
-              className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                deliveryMode === 'home' ? 'text-white' : 'text-gray-500'
-              }`}
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      {/* 1 - Contact */}
+      <Step number={1} title="Your details">
+        <div className="space-y-4">
+          <Field id="co-fullName" label="Full name" error={errors.fullName}>
+            <input
+              id="co-fullName"
+              type="text"
+              autoComplete="name"
+              value={form.fullName}
+              onChange={(e) => setField('fullName', e.target.value)}
+              placeholder="Your name"
+              className={`${INPUT} ${errors.fullName ? INPUT_ERROR : ''}`}
             />
-            <div>
-              <p className="font-semibold text-sm leading-tight">Home Delivery</p>
-              <p
-                className={`text-xs mt-0.5 leading-tight ${
-                  deliveryMode === 'home' ? 'text-gray-300' : 'text-gray-400'
-                }`}
-              >
-                Delivered to your door
-              </p>
-            </div>
-          </button>
-
-          {/* Store Pickup */}
-          <button
-            type="button"
-            onClick={() => handleDeliveryModeChange('pickup')}
-            className={`group flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-              deliveryMode === 'pickup'
-                ? 'border-black bg-black text-white shadow-md'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-            }`}
+          </Field>
+          <Field
+            id="co-phone"
+            label="Mobile number"
+            error={errors.phone}
+            hint="We'll call or message this number about your delivery."
           >
-            <Store
-              className={`w-5 h-5 flex-shrink-0 ${
-                deliveryMode === 'pickup' ? 'text-white' : 'text-gray-500'
-              }`}
+            <input
+              id="co-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={form.phone}
+              onChange={(e) => setField('phone', e.target.value)}
+              placeholder="01XXXXXXXXX"
+              className={`${INPUT} ${errors.phone ? INPUT_ERROR : ''}`}
             />
-            <div>
-              <p className="font-semibold text-sm leading-tight">Store Pickup</p>
-              <p
-                className={`text-xs mt-0.5 font-semibold leading-tight ${
-                  deliveryMode === 'pickup' ? 'text-green-400' : 'text-green-600'
-                }`}
-              >
-                FREE · Pick up at DC
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        {/* ── Full Name ── */}
-        <div className="mb-4">
-          <label
-            htmlFor="fullName"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Full Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="fullName"
-            className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
-            placeholder="Enter your full name"
-            {...register('fullName', { required: 'Full Name is required' })}
-          />
-          {errors.fullName && (
-            <p className="text-red-500 text-xs mt-1.5">{errors.fullName.message}</p>
+          </Field>
+          {showFacebook ? (
+            <Field
+              id="co-facebook"
+              label="Facebook profile link"
+              optional
+              error={errors.facebook}
+              hint="Our team may reach out on Messenger about your order."
+            >
+              <input
+                id="co-facebook"
+                type="url"
+                value={form.facebook}
+                onChange={(e) => setField('facebook', e.target.value)}
+                placeholder="facebook.com/yourname"
+                className={`${INPUT} ${errors.facebook ? INPUT_ERROR : ''}`}
+              />
+            </Field>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowFacebook(true)}
+              className="text-xs font-medium text-gray-500 underline-offset-4 hover:text-black hover:underline"
+            >
+              + Add Facebook profile (optional)
+            </button>
           )}
         </div>
+      </Step>
 
-        {/* ── Phone Number ── */}
-        <div className="mb-6">
-          <label
-            htmlFor="phoneNumber"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Phone Number <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
-            placeholder="Enter your phone number"
-            {...register('phoneNumber', {
-              required: 'Phone Number is required',
-              pattern: {
-                value: /^[0-9]{8,14}$/,
-                message: 'Please enter a valid phone number (8–14 digits)',
-              },
-            })}
+      {/* 2 - Delivery */}
+      <Step number={2} title="Delivery">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ChoiceCard
+            name="delivery-mode"
+            selected={!isPickup}
+            onSelect={() => {
+              setMode('home');
+              setErrors((prev) => ({ ...prev, dc: undefined }));
+            }}
+            icon={<FiTruck className="h-4 w-4" />}
+            title="Home delivery"
+            subtitle="Delivered to your door"
           />
-          {errors.phoneNumber && (
-            <p className="text-red-500 text-xs mt-1.5">{errors.phoneNumber.message}</p>
-          )}
+          <ChoiceCard
+            name="delivery-mode"
+            selected={isPickup}
+            onSelect={() => {
+              setMode('pickup');
+              setErrors((prev) => ({
+                ...prev,
+                region: undefined,
+                city: undefined,
+                address: undefined,
+              }));
+            }}
+            icon={<FiShoppingBag className="h-4 w-4" />}
+            title="Store pickup"
+            subtitle="Free · collect from a display center"
+          />
         </div>
 
-        {/* ── Facebook Profile Link (Optional) ── */}
-        <div className="mb-6">
-          <label
-            htmlFor="facebookProfile"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Facebook Profile Link{' '}
-            <span className="text-gray-400 font-normal">(Optional)</span>
-          </label>
-          <input
-            type="url"
-            id="facebookProfile"
-            className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
-            placeholder="e.g. facebook.com/yourname"
-            {...register('facebookProfile', {
-              pattern: {
-                value: /^(https?:\/\/)?(www\.)?(facebook|fb)\.com\/.+/i,
-                message: 'Please enter a valid Facebook profile link',
-              },
-            })}
-          />
-          {errors.facebookProfile && (
-            <p className="text-red-500 text-xs mt-1.5">{errors.facebookProfile.message}</p>
-          )}
-          <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
-            Completely optional — feel free to skip this. If you do share it, our team may reach out to you on Messenger regarding your order.
-          </p>
-        </div>
-
-        {/* ══════════════════════════════════
-            STORE PICKUP — DC Selection
-        ══════════════════════════════════ */}
-        {deliveryMode === 'pickup' && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700">
-                Select Pickup Center <span className="text-red-500">*</span>
-              </label>
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+        {isPickup ? (
+          <div className="mt-5" id="co-dc" tabIndex={-1}>
+            <p className="mb-2 text-sm font-medium text-gray-800">Pickup center</p>
+            <div className="space-y-2">
+              {DISPLAY_CENTERS.map((center) => (
+                <label
+                  key={center.id}
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3.5 transition ${
+                    dcId === center.id
+                      ? 'border-black bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M5 13l4 4L19 7"
+                  <input
+                    type="radio"
+                    name="pickup-center"
+                    checked={dcId === center.id}
+                    onChange={() => {
+                      setDcId(center.id);
+                      setErrors((prev) => ({ ...prev, dc: undefined }));
+                    }}
+                    className="mt-1 h-4 w-4 shrink-0 accent-black"
                   />
-                </svg>
-                FREE Pickup
-              </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold">{center.name}</span>
+                    <span className="mt-0.5 flex items-start gap-1 text-xs text-gray-500">
+                      <FiMapPin className="mt-0.5 h-3 w-3 shrink-0" />
+                      {center.address}
+                    </span>
+                  </span>
+                </label>
+              ))}
             </div>
-
-            <div className="flex flex-col gap-3">
-              {DISPLAY_CENTERS.map((dc, idx) => {
-                const isSelected = selectedDC === dc.id;
-                return (
-                  <button
-                    key={dc.id}
-                    type="button"
-                    onClick={() => handleDCSelect(dc.id)}
-                    className={`group relative w-full flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                      isSelected
-                        ? 'border-black bg-gray-50 shadow-sm'
-                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {/* Index badge */}
-                    <div
-                      className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${
-                        isSelected
-                          ? 'bg-black text-white'
-                          : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200'
-                      }`}
-                    >
-                      {idx + 1}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`font-semibold text-sm mb-0.5 ${
-                          isSelected ? 'text-black' : 'text-gray-800'
-                        }`}
-                      >
-                        {dc.name}
-                      </p>
-                      <div className="flex items-start gap-1.5">
-                        <MapPin
-                          className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
-                            isSelected ? 'text-gray-500' : 'text-gray-400'
-                          }`}
-                        />
-                        <p className="text-xs text-gray-500 leading-relaxed">
-                          {dc.address}
-                        </p>
-                      </div>
-                    </div>
-
-                    {isSelected && (
-                      <CheckCircle2 className="flex-shrink-0 w-5 h-5 text-black mt-0.5" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {dcError && (
-              <p className="text-red-500 text-xs mt-2">
-                Please select a pickup center to continue.
+            {errors.dc && (
+              <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+                <FiAlertCircle className="h-3.5 w-3.5" />
+                {errors.dc}
               </p>
             )}
-
-            {/* Free pickup notice */}
-            <div className="mt-4 flex items-center gap-2.5 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <svg
-                className="w-4 h-4 text-green-600 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              <p className="text-xs text-green-700 font-medium">
-                No delivery charge applies when you pick up in store.
-              </p>
-            </div>
           </div>
-        )}
-
-        {/* ══════════════════════════════════
-            HOME DELIVERY — Address Fields
-        ══════════════════════════════════ */}
-        {deliveryMode === 'home' && (
-          <>
-            {/* Region */}
-            <div className="mb-4">
-              <label
-                htmlFor="region"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Region <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="region"
-                className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition bg-white"
-                {...register('region', { required: 'Region is required' })}
-                value={selectedRegion}
-                onChange={handleRegionChange}
-              >
-                <option value="">Select a region</option>
-                {regions.map((region) => (
-                  <option key={region.id} value={region.name}>
-                    {region.name}
-                  </option>
-                ))}
-              </select>
-              {errors.region && (
-                <p className="text-red-500 text-xs mt-1.5">{errors.region.message}</p>
-              )}
-            </div>
-
-            {/* City */}
-            {selectedRegion === 'Dhaka' && (
-              <div className="mb-4">
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  {isOutsideDhaka ? 'City (Outside Dhaka)' : 'City'}{' '}
-                  <span className="text-red-500">*</span>
-                </label>
+        ) : (
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="co-region" label="Region" error={errors.region}>
                 <select
-                  id="city"
-                  className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition bg-white"
-                  {...register('city', {
-                    required:
-                      selectedRegion === 'Dhaka' ? 'City is required' : false,
-                  })}
-                  value={selectedCity}
-                  onChange={handleCityChange}
+                  id="co-region"
+                  value={region}
+                  onChange={(e) => handleRegionChange(e.target.value)}
+                  className={`${INPUT} ${errors.region ? INPUT_ERROR : ''}`}
                 >
-                  <option value="">Select a city</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.name}>
-                      {city.name}
+                  <option value="">Select a region</option>
+                  {regions.map((item) => (
+                    <option key={item.id} value={item.name}>
+                      {item.name}
                     </option>
                   ))}
-                  <option value="others">Others</option>
                 </select>
-                {errors.city && (
-                  <p className="text-red-500 text-xs mt-1.5">{errors.city.message}</p>
-                )}
-              </div>
-            )}
+              </Field>
 
-            {/* Full Address */}
-            <div className="mb-4">
-              <label
-                htmlFor="address"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Full Address <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                id="address"
-                rows="4"
-                className="mt-1 p-2.5 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition resize-none"
-                placeholder="House/Flat number, Road, Area, Landmark"
-                {...register('address', {
-                  required: 'Full Address is required',
-                })}
-              />
-              {errors.address && (
-                <p className="text-red-500 text-xs mt-1.5">{errors.address.message}</p>
+              {region === 'Dhaka' && (
+                <Field id="co-city" label="Area" error={errors.city}>
+                  {areas.loaded && !hasAreaLists ? (
+                    <input
+                      id="co-city"
+                      type="text"
+                      value={city}
+                      onChange={(e) => {
+                        setCity(e.target.value);
+                        setErrors((prev) => ({ ...prev, city: undefined }));
+                      }}
+                      placeholder="Your area or thana"
+                      className={`${INPUT} ${errors.city ? INPUT_ERROR : ''}`}
+                    />
+                  ) : (
+                  <select
+                    id="co-city"
+                    value={city}
+                    onChange={(e) => {
+                      setCity(e.target.value);
+                      setErrors((prev) => ({ ...prev, city: undefined }));
+                    }}
+                    disabled={!areas.loaded}
+                    className={`${INPUT} ${errors.city ? INPUT_ERROR : ''}`}
+                  >
+                    <option value="">
+                      {areas.loaded ? 'Select your area' : 'Loading areas...'}
+                    </option>
+                    {cityGroups.cityCore.length > 0 && (
+                      <optgroup label={`Dhaka city - ${formatBDT(FEES.dhakaCity)}`}>
+                        {cityGroups.cityCore.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {cityGroups.around.length > 0 && (
+                      <optgroup label={`Around Dhaka - ${formatBDT(FEES.aroundDhaka)}`}>
+                        {cityGroups.around.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {cityGroups.outside.length > 0 && (
+                      <optgroup label={`Outside Dhaka - ${formatBDT(FEES.outsideDhaka)}`}>
+                        {cityGroups.outside.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                  )}
+                </Field>
               )}
             </div>
 
-            {/* Delivery Fee */}
-            {deliveryFee > 0 && (
-              <div className="mb-6 flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-600 font-medium">Delivery Fee</p>
-                <p className="text-sm font-bold text-black">৳{deliveryFee.toLocaleString()}</p>
-              </div>
-            )}
-          </>
+            <Field id="co-address" label="Full address" error={errors.address}>
+              <textarea
+                id="co-address"
+                rows={3}
+                autoComplete="street-address"
+                value={form.address}
+                onChange={(e) => setField('address', e.target.value)}
+                placeholder="House / flat, road, area, landmark"
+                className={`${INPUT} resize-none ${errors.address ? INPUT_ERROR : ''}`}
+              />
+            </Field>
+          </div>
         )}
+      </Step>
 
-        {/* ── Submit ── */}
-        <div className="flex items-center justify-center mt-8">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full sm:w-auto px-10 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 shadow-md text-sm tracking-wide ${
-              isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {isSubmitting ? 'Processing…' : 'Confirm Order and Proceed'}
-          </button>
+      {/* 3 - Payment */}
+      <Step number={3} title="Payment">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ChoiceCard
+            name="payment-choice"
+            selected={!payOnline}
+            onSelect={() => setPayOnline(false)}
+            icon={<FiCheck className="h-4 w-4" />}
+            title={isPickup ? 'Pay at pickup' : 'Cash on delivery'}
+            subtitle={isPickup ? 'Pay when you collect' : 'Pay when it arrives'}
+          />
+          <ChoiceCard
+            name="payment-choice"
+            selected={payOnline}
+            onSelect={() => setPayOnline(true)}
+            icon={<FiCheck className="h-4 w-4" />}
+            title="Pay online now"
+            subtitle="bKash, Nagad, Rocket or bank transfer"
+          />
         </div>
-      </form>
-    </div>
+        {payOnline && (
+          <p className="mt-3 text-xs text-gray-500">
+            After you place the order, you'll get the payment number and can
+            upload your payment screenshot.
+          </p>
+        )}
+      </Step>
+
+      {/* Notes */}
+      <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+        <Field id="co-notes" label="Order notes" optional>
+          <textarea
+            id="co-notes"
+            rows={2}
+            value={form.notes}
+            onChange={(e) => setField('notes', e.target.value)}
+            placeholder="Anything we should know about this order?"
+            className={`${INPUT} resize-none`}
+          />
+        </Field>
+      </section>
+
+      {submitError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          {submitError}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-6 py-4 text-sm font-semibold text-white shadow-md transition hover:bg-gray-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+            Placing your order...
+          </>
+        ) : payOnline ? (
+          `Place order & continue to payment${feeKnown ? ` · ${formatBDT(total)}` : ''}`
+        ) : (
+          `Place order${feeKnown ? ` · ${formatBDT(total)}` : ''}`
+        )}
+      </button>
+      <p className="text-center text-xs text-gray-400">
+        By placing your order you agree to our{' '}
+        <a href="/terms" className="underline underline-offset-2">
+          terms
+        </a>
+        .
+      </p>
+    </form>
   );
 };
 

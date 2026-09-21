@@ -1,266 +1,337 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { DeliveryContext } from '../../Contexts/DeliveryFee';
-import { discountedPrice, generateTempItems, pushToDataLayer } from '../../utils/ga4';
+import toast from 'react-hot-toast';
+import { FiAlertCircle, FiCheck, FiCheckCircle, FiCopy } from 'react-icons/fi';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 import { PaymentMethods } from '../../utils/Methods';
+import { formatBDT } from '../../utils/pricing';
 
-const PaymentInfo = ({ history }) => {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
-  const [paymentInfo, setPaymentInfo] = useState({ accountNumber: '', screenshot: null });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+// Methods the customer pays for up front and must prove with a screenshot.
+// (Cash on delivery / pick-up need nothing here - they're chosen at checkout.)
+const ONLINE_METHOD_IDS = [2, 3, 4, 6];
+const MAX_SCREENSHOT_MB = 10;
 
-  const axiosPublic = useAxiosPublic();
+// Pulls the copyable account/merchant number out of a method's instructions.
+const extractCopyValue = (process) => {
+  const text = String(process || '');
+  const account = text.match(/A\/C NUMBER:\s*(\d+)/i);
+  if (account) return account[1];
+  const mobile = text.match(/0\d{10}/);
+  return mobile ? mobile[0] : null;
+};
+
+const PaymentInfo = ({ history, token, email }) => {
   const router = useRouter();
-  const paymentMethods = PaymentMethods();
-  const deliveryFee = useContext(DeliveryContext);
+  const axiosPublic = useAxiosPublic();
+
+  const methods = useMemo(
+    () => PaymentMethods().filter((method) => ONLINE_METHOD_IDS.includes(method.id)),
+    [],
+  );
+
+  const [selected, setSelected] = useState(methods[0]);
+  const [accountNumber, setAccountNumber] = useState('');
+  const [screenshot, setScreenshot] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const order = history[0].history;
+  const subtotal = history.reduce((sum, cart) => sum + (Number(cart.totalPrice) || 0), 0);
+  const deliveryFee = Number(order.deliveryFee) || 0;
+  const total = subtotal + deliveryFee;
+  const copyValue = extractCopyValue(selected?.process);
 
   useEffect(() => {
-    if (paymentMethods.length > 0) {
-      setSelectedPaymentMethod(paymentMethods[0]);
-      toast.success('Cash on Delivery selected by default.', {
-        duration: 3000,
-        position: 'top-center',
-      });
+    if (!screenshot) {
+      setPreviewUrl(null);
+      return;
     }
-  }, []);
+    const url = URL.createObjectURL(screenshot);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [screenshot]);
 
-  const handlePaymentMethodChange = (method) => {
-    setSelectedPaymentMethod(method);
-    setPaymentInfo({ accountNumber: '', screenshot: null });
-    toast.success(`Payment method changed to ${method.name}`, {
-      icon: '💳',
-      duration: 2000,
-    });
+  const handleSelect = (method) => {
+    setSelected(method);
+    setErrors({});
+    setCopied(false);
   };
 
-  const handleConfirmPayment = async () => {
-    if ([2, 3, 4, 6].includes(selectedPaymentMethod?.id)) {
-      if (!paymentInfo.accountNumber || !paymentInfo.screenshot) {
-        toast.error('Please provide both account number and screenshot.');
-        return;
-      }
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(copyValue);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error("Couldn't copy - please select and copy the number.");
     }
+  };
+
+  const handleScreenshot = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrors((prev) => ({ ...prev, screenshot: 'Please choose an image file.' }));
+      event.target.value = '';
+      return;
+    }
+    if (file.size > MAX_SCREENSHOT_MB * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        screenshot: `The image must be under ${MAX_SCREENSHOT_MB}MB.`,
+      }));
+      event.target.value = '';
+      return;
+    }
+
+    setScreenshot(file);
+    setErrors((prev) => ({ ...prev, screenshot: undefined }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    const found = {};
+    if (!accountNumber.trim()) {
+      found.accountNumber = 'Enter the number or account you paid from.';
+    }
+    if (!screenshot) found.screenshot = 'Upload a screenshot of your payment.';
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
 
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('paymentMethod', selectedPaymentMethod.id);
-      formData.append('accountNumber', paymentInfo?.accountNumber || null);
-      formData.append('screenshot', paymentInfo?.screenshot || null);
-      formData.append('history', history[0].history.trackingToken);
-      formData.append('customer', history[0].customer.email);
+      const body = new FormData();
+      body.append('paymentMethod', selected.id);
+      body.append('accountNumber', accountNumber.trim());
+      body.append('screenshot', screenshot);
+      body.append('history', order.trackingToken);
+      body.append('customer', history[0].customer?.email || email);
 
-      const cartItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
-      const tempItems = generateTempItems(cartItems);
-      const total = discountedPrice(cartItems) + deliveryFee;
+      await axiosPublic.post('/admin/add-payment', body);
 
-      pushToDataLayer('payment_method', {
-        currency: 'BDT',
-        totalPrice: total,
-        coupon: cartItems[0]?.coupon,
-        payment_method: selectedPaymentMethod.name,
-        customer_email: history[0].customer.email,
-        customer_name: history[0].customer.name,
-        region: history[0].history.region,
-        address: history[0].history.address,
-        items: tempItems,
-      });
-
-      const response = await axiosPublic.post('/admin/add-payment', formData);
-
-      if (response.status >= 200 && response.status <= 300) {
-        toast.success('Payment Confirmed! Redirecting...', {
-          duration: 3000,
-          icon: '✅',
+      try {
+        pushToDataLayer('payment_method', {
+          currency: 'BDT',
+          totalPrice: total,
+          payment_method: selected.name,
+          region: order.region,
+          address: order.address,
+          items: generateTempItems(history),
         });
-        // /my-orders only lists orders for a logged-in Firebase account (see
-        // Hooks/useOrder.js) - guests have no session to prove ownership by
-        // email, so send everyone to the per-order tracking-token page instead,
-        // which both guests and logged-in customers can load.
-        setTimeout(
-          () => router.push(`/my-orders/details/${history[0].history.trackingToken}`),
-          2000,
-        );
-      } else {
-        toast.error('Payment failed. Try again.');
+      } catch (error) {
+        console.error('Analytics event failed:', error);
       }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error occurred while processing payment.');
-    } finally {
+
+      router.push(`/my-orders/details/${token}?placed=1&paid=1`);
+    } catch (error) {
+      console.error(error);
+      toast.error("We couldn't save your payment details. Please try again.");
       setIsSubmitting(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    setPaymentInfo((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
-  };
-
-  if (!selectedPaymentMethod) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex justify-center px-3 sm:px-6 py-8">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white">Payment Information</h2>
-          <p className="text-blue-100 text-sm mt-1">
-            Choose your payment method to complete your order
+    <div className="mx-auto w-full max-w-2xl">
+      {/* Order placed */}
+      <div className="mb-5 flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+        <FiCheckCircle className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
+        <div>
+          <h1 className="text-lg font-semibold text-emerald-900">
+            Your order is placed
+          </h1>
+          <p className="mt-0.5 text-sm text-emerald-800">
+            One last step - send your payment and upload the screenshot so we can
+            confirm it.
           </p>
         </div>
+      </div>
 
-        <div className="p-6 md:p-8 space-y-8">
-          {/* Payment Method Grid */}
-          <section>
-            <label className="font-semibold text-gray-800 text-lg mb-4 block">
-              Select Payment Method
-            </label>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
-              {paymentMethods.map((method) => (
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="space-y-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7"
+      >
+        {/* Amount */}
+        <div className="flex items-baseline justify-between rounded-xl bg-gray-50 px-4 py-3.5">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              Amount to pay
+            </p>
+            <p className="text-xs text-gray-400">
+              {formatBDT(subtotal)} items
+              {deliveryFee > 0 ? ` + ${formatBDT(deliveryFee)} delivery` : ''}
+            </p>
+          </div>
+          <p className="text-2xl font-bold">{formatBDT(total)}</p>
+        </div>
+
+        {/* Method */}
+        <section>
+          <h2 className="mb-3 text-sm font-semibold">Choose how you'll pay</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {methods.map((method) => {
+              const isSelected = selected.id === method.id;
+              return (
                 <button
                   key={method.id}
-                  onClick={() => handlePaymentMethodChange(method)}
-                  className={`relative aspect-square rounded-xl flex items-center justify-center p-3 transition-all duration-200 ${
-                    selectedPaymentMethod.id === method.id
-                      ? 'bg-blue-50 border-2 border-blue-500 scale-105 shadow-md'
-                      : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                  type="button"
+                  onClick={() => handleSelect(method)}
+                  aria-pressed={isSelected}
+                  className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-xs font-medium transition ${
+                    isSelected
+                      ? 'border-black bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   {method.icon && (
                     <Image
                       src={method.icon}
-                      alt={method.name}
-                      width={60}
-                      height={60}
-                      className="object-contain"
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="h-10 w-10 object-contain"
                     />
                   )}
-                  {selectedPaymentMethod.id === method.id && (
-                    <div className="absolute -top-2 -right-2 bg-blue-600 rounded-full p-1.5 shadow">
-                      <svg
-                        className="w-3.5 h-3.5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
+                  {method.name}
+                  {isSelected && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black text-white">
+                      <FiCheck className="h-3 w-3" />
+                    </span>
                   )}
                 </button>
-              ))}
-            </div>
-          </section>
+              );
+            })}
+          </div>
+        </section>
 
-          {/* Selected Method Info */}
-          <section className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">{selectedPaymentMethod.name}</h3>
-            </div>
-            <p className="text-gray-700 text-sm sm:text-base leading-relaxed whitespace-pre-line">
-              {selectedPaymentMethod.process}
-            </p>
-          </section>
-
-          {/* Additional Fields */}
-          {[2, 3, 4, 6].includes(selectedPaymentMethod.id) && (
-            <section className="space-y-5 bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <h3 className="font-semibold text-gray-900 text-lg mb-3">Payment Details</h3>
-
-              <div>
-                <label htmlFor="accountNumber" className="text-gray-700 font-medium mb-2 block">
-                  Account Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="accountNumber"
-                  id="accountNumber"
-                  value={paymentInfo.accountNumber}
-                  onChange={handleInputChange}
-                  placeholder="Enter your account number"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="screenshot" className="text-gray-700 font-medium mb-2 block">
-                  Payment Screenshot <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="file"
-                  id="screenshot"
-                  name="screenshot"
-                  accept="image/*"
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg file:bg-blue-50 file:border-0 file:text-blue-700 file:font-medium hover:file:bg-blue-100"
-                />
-                {paymentInfo.screenshot && (
-                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {paymentInfo.screenshot.name}
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Confirm Button */}
-          <div>
+        {/* Instructions */}
+        <section className="rounded-xl border border-gray-200 p-4">
+          <h3 className="text-sm font-semibold">
+            How to pay with {selected.name}
+          </h3>
+          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
+            {selected.process}
+          </p>
+          {copyValue && (
             <button
-              onClick={handleConfirmPayment}
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold px-6 py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+              type="button"
+              onClick={handleCopy}
+              className="mt-3 inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50"
             >
-              {isSubmitting ? (
+              {copied ? (
                 <>
-                  <div className="animate-spin h-5 w-5 border-b-2 border-white rounded-full"></div>
-                  <span>Processing...</span>
+                  <FiCheck className="h-4 w-4 text-emerald-600" />
+                  Copied
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Confirm Payment</span>
+                  <FiCopy className="h-4 w-4" />
+                  Copy {copyValue}
                 </>
               )}
             </button>
+          )}
+          <p className="mt-3 text-xs text-gray-500">
+            Please send exactly <strong>{formatBDT(total)}</strong>.
+          </p>
+        </section>
+
+        {/* Proof */}
+        <section className="space-y-4">
+          <div>
+            <label
+              htmlFor="accountNumber"
+              className="mb-1.5 block text-sm font-medium"
+            >
+              Your {selected.id === 6 ? 'account' : 'wallet'} number
+            </label>
+            <input
+              id="accountNumber"
+              type="text"
+              inputMode="numeric"
+              value={accountNumber}
+              onChange={(e) => {
+                setAccountNumber(e.target.value);
+                setErrors((prev) => ({ ...prev, accountNumber: undefined }));
+              }}
+              placeholder="The number you paid from"
+              className={`w-full rounded-xl border px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+                errors.accountNumber
+                  ? 'border-red-400 focus:ring-red-500/10'
+                  : 'border-gray-300 focus:border-black focus:ring-black/10'
+              }`}
+            />
+            {errors.accountNumber && (
+              <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+                <FiAlertCircle className="h-3.5 w-3.5" />
+                {errors.accountNumber}
+              </p>
+            )}
           </div>
 
-          {/* Security Info */}
-          <div className="flex items-start gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <svg className="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-700">Secure Payment</p>
-              <p className="text-xs text-gray-600 mt-1">
-                Your payment info is encrypted. We never store financial details.
+          <div>
+            <label
+              htmlFor="screenshot"
+              className="mb-1.5 block text-sm font-medium"
+            >
+              Payment screenshot
+            </label>
+            <input
+              id="screenshot"
+              type="file"
+              accept="image/*"
+              onChange={handleScreenshot}
+              className="block w-full rounded-xl border border-gray-300 text-sm file:mr-3 file:cursor-pointer file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-sm file:font-medium hover:file:bg-gray-200"
+            />
+            {errors.screenshot && (
+              <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+                <FiAlertCircle className="h-3.5 w-3.5" />
+                {errors.screenshot}
               </p>
-            </div>
+            )}
+            {previewUrl && (
+              <img
+                src={previewUrl}
+                alt="Your payment screenshot"
+                className="mt-3 max-h-48 rounded-lg border border-gray-200 object-contain"
+              />
+            )}
           </div>
-        </div>
-      </div>
+        </section>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-6 py-4 text-sm font-semibold text-white shadow-md transition hover:bg-gray-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSubmitting ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              Submitting...
+            </>
+          ) : (
+            'Confirm payment'
+          )}
+        </button>
+
+        <p className="text-center text-sm text-gray-500">
+          Changed your mind?{' '}
+          <Link
+            href={`/my-orders/details/${token}?placed=1`}
+            className="font-medium text-black underline underline-offset-4"
+          >
+            Pay on delivery / pickup instead
+          </Link>
+        </p>
+      </form>
     </div>
   );
 };

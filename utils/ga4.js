@@ -1,3 +1,5 @@
+import { cartSubtotal } from './pricing';
+
 export const pushToDataLayer = (eventName, ecommerceData, user_email) => {
   window.dataLayer = window.dataLayer || [];
 
@@ -48,12 +50,5 @@ export const generateTempItems = (selectedItems) =>
     discount_percent: item.product.discountPercentage || 0,
   }));
 
-// discounted vat price
-export const discountedPrice = (items) =>
-  items.reduce((acc, item) => {
-    const basePrice = item.product.sellingPrice;
-    const discount = (basePrice * item.product.discountPercentage) / 100;
-    const vat = (basePrice * item.product.vatPercentage) / 100;
-    const finalPrice = (basePrice - discount + vat) * item.Quantity;
-    return acc + parseInt(finalPrice);
-  }, 0);
+// discounted vat price (same rounding the backend charges)
+export const discountedPrice = (items) => cartSubtotal(items);

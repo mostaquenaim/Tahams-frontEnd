@@ -1,85 +1,96 @@
-import useAxiosPublic from '/Hooks/useAxiosPublic';
-import PaymentInfo from '/components/Cart/PaymentInfo';
 import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Link from 'next/link';
+import { FiAlertCircle } from 'react-icons/fi';
+import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import PaymentInfo from '../../components/Cart/PaymentInfo';
+import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { getGuestCustomerInfo } from '../../utils/guestCustomer';
 
-import Swal from 'sweetalert2'; // make sure it's installed
-import toast from 'react-hot-toast';
+// The order is written to the database just before this page opens, and the
+// items are attached to it a moment later - so an empty first answer is
+// normal. Give it a few chances before calling it a failure.
+const MAX_ATTEMPTS = 6;
+const RETRY_DELAY_MS = 800;
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PaymentProcess = () => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
-  const [buyingHistory, setBuyingHistory] = useState();
   const router = useRouter();
   const { token } = router.query;
 
+  const [history, setHistory] = useState(null);
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('loading'); // loading | ready | missing
+
   useEffect(() => {
-    const fetchHistory = async () => {
-      const email =
-        user?.email ||
-        JSON.parse(localStorage.getItem('guestCustomerInfo'))?.email;
+    if (!token || authLoading) return;
 
-      if (!email) throw new Error('No email found for the user or guest');
+    let cancelled = false;
 
-      const result = await axiosPublic.get(
-        `/admin/get-buying-history-by-token/${token}?email=${email}`,
-      );
+    const load = async () => {
+      const customerEmail = user?.email || getGuestCustomerInfo().email;
+      setEmail(customerEmail);
 
-      setBuyingHistory(result.data);
-      handleAddressUpdateCheck(); // 👈 trigger after data load
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+        try {
+          const result = await axiosPublic.get(
+            `/admin/get-buying-history-by-token/${token}?email=${encodeURIComponent(customerEmail)}`,
+          );
+          if (cancelled) return;
+          if (Array.isArray(result.data) && result.data.length > 0) {
+            setHistory(result.data);
+            setStatus('ready');
+            return;
+          }
+        } catch (error) {
+          console.error('Error fetching order:', error);
+        }
+        await wait(RETRY_DELAY_MS);
+        if (cancelled) return;
+      }
+
+      setStatus('missing');
     };
 
-    if (token && (user || localStorage.getItem('guestCustomerInfo'))) {
-      fetchHistory();
-    }
-  }, [user?.email, router.query]);
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, authLoading, user?.email, axiosPublic]);
 
-  // 👇 New helper: silently check and update user address if needed
-  const handleAddressUpdateCheck = async () => {
-    try {
-      const savedAddress = JSON.parse(localStorage.getItem('userAddress'));
-
-      // Only ever queued for a logged-in Firebase user - see BuyingAddress.js.
-      if (!savedAddress || !user) return;
-
-      toast.loading('Updating your default address...', { id: 'addr-update' });
-
-      const idToken = await user.getIdToken();
-      await axiosPublic.put(
-        `admin/update-user-address/${savedAddress.id}`,
-        {
-          name: savedAddress.fullName,
-          region: savedAddress.region,
-          city: savedAddress.city,
-          address: savedAddress.address,
-        },
-        { headers: { Authorization: `Bearer ${idToken}` } },
-      );
-
-      localStorage.removeItem('userAddress');
-
-      toast.success('Your default info has been updated.', {
-        id: 'addr-update',
-      });
-    } catch (err) {
-      console.error('Error updating address:', err);
-      toast.error('Failed to update address. Try again later.');
-    }
-  };
-
-  // UI section remains same
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Confirm Order</title>
+        <title>Complete your payment - Tahams</title>
       </Head>
-      <div className="pt-40 lg:pt-56 min-h-screen">
-        {loading ? (
-          <span className="loading loading-spinner loading-md"></span>
+      <div className="px-4 pb-16 pt-28 lg:pt-56">
+        {status === 'ready' ? (
+          <PaymentInfo history={history} token={token} email={email} />
+        ) : status === 'missing' ? (
+          <div className="mx-auto max-w-md rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+            <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+              <FiAlertCircle className="h-6 w-6" />
+            </span>
+            <h1 className="text-lg font-semibold">We couldn't load your order</h1>
+            <p className="mt-2 text-sm text-gray-500">
+              Your order may still have been placed. Check your order page to
+              see it and finish payment.
+            </p>
+            <Link
+              href={`/my-orders/details/${token}`}
+              className="mt-6 inline-block rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+            >
+              View my order
+            </Link>
+          </div>
         ) : (
-          <PaymentInfo history={buyingHistory} />
+          <div className="mx-auto max-w-2xl space-y-4" aria-busy="true">
+            <div className="h-28 animate-pulse rounded-2xl bg-gray-100" />
+            <div className="h-64 animate-pulse rounded-2xl bg-gray-100" />
+          </div>
         )}
       </div>
     </div>

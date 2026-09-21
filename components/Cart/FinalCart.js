@@ -1,98 +1,78 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { FaShoppingCart, FaRegStickyNote } from 'react-icons/fa';
-import PropTypes from 'prop-types';
-import { DeliveryContext } from '../../Contexts/DeliveryFee';
+import React from 'react';
+import { FiInfo } from 'react-icons/fi';
+import { cartSubtotal, formatBDT, lineTotal } from '../../utils/pricing';
 
-const FinalCart = ({ cartItems, onMemoChange }) => {
-    const [totalPrice, setTotalPrice] = useState(0);
-    const [memo, setMemo] = useState('');
+const imageUrl = (filename) =>
+  `${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`;
 
-    const handleMemoChange = (e) => {
-        setMemo(e.target.value);
-        onMemoChange?.(e.target.value);
-    };
+// Read-only order summary shown beside (or above, on mobile) the checkout form.
+const FinalCart = ({ items, deliveryFee, droppedCount = 0 }) => {
+  const subtotal = cartSubtotal(items);
+  const hasFee = deliveryFee !== null && deliveryFee !== undefined;
+  const total = subtotal + (hasFee ? deliveryFee : 0);
 
-    const { deliveryFee } = useContext(DeliveryContext)
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm lg:sticky lg:top-44">
+      <h2 className="text-lg font-semibold">Order summary</h2>
 
-    useEffect(() => {
-        // Calculate total price when cartItems change
-        const sum = cartItems.reduce((acc, item) => {
-            // Assuming item.product.sellingPrice and item.Quantity are numbers
-            return acc + parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity;
-        }, 0);
-
-        const newTotalPrice = sum + deliveryFee;
-        setTotalPrice(newTotalPrice);
-
-
-      // console.log(cartItems);
-        const tempItems = []
-
-        cartItems.forEach((item) => {
-            tempItems.push({
-                item_id: item.product.id,
-                item_name: item.product.name,
-                item_color: item.ProductName.split(" ")[0] || "Unknown",
-                item_series: item.category?.category?.category?.name || "N/A",
-                main_category: item.category?.category?.name || "N/A",
-                sub_category: item.category?.name || "N/A",
-                price: parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity || 0,
-                total_views: item.product.totalViews || 0,
-                // selected_category: selectedCategory,
-                selected_size: item.size || null,
-                selected_maleSize: item.maleSize || null,
-                selected_femaleSize: item.femaleSize || null,
-                discount_percent: item.product.discountPercentage || 0,
-                quantity: item.Quantity,
-            })
-        })
-    }, [cartItems, deliveryFee]);
-
-    return (
-        <div className="mt-8 p-8 bg-gray-100 border rounded-lg mb-10">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-semibold">Your Cart</h2>
-                <FaShoppingCart className="text-3xl text-blue-500" />
-            </div>
-
-            {/* Cart Information */}
-            <div className="mb-4 pb-4 border-b-2 border-gray-200">
-                {cartItems.map((item, index) => (
-                    <div className='flex justify-between' key={index}>
-                        <p className='w-2/3'>{item.ProductName} <span className='text-lg font-semibold'> x {item.Quantity}</span></p>
-                        <p>৳ {(parseInt(item.product.sellingPrice - (item.product.sellingPrice * item.product.discountPercentage / 100) + (item.product.sellingPrice * item.product.vatPercentage / 100)) * item.Quantity).toLocaleString()} </p>
-                    </div>
-                ))}
-                <p className='flex justify-between'>
-                    <span>Delivery fee</span>
-                    <span>৳ {deliveryFee && deliveryFee.toLocaleString()}</span>
-                </p>
-            </div>
-
-            <p className='text-end font-semibold'>৳ {totalPrice.toLocaleString()}</p>
-
-            {/* Memo Details */}
-            <div className="mb-4">
-                <div className="flex items-center">
-                    <FaRegStickyNote className="text-xl text-purple-500 mr-2" />
-                    <span className="text-lg font-semibold">Memo Details</span>
-                </div>
-                <textarea
-                    rows="4"
-                    placeholder="Add special instructions, personalization details, or notes here..."
-                    className="w-full p-2 border rounded"
-                    value={memo}
-                    onChange={handleMemoChange}
-                />
-            </div>
-
+      {droppedCount > 0 && (
+        <div className="mt-3 flex gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <FiInfo className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          {droppedCount === 1
+            ? "1 item is no longer in your cart, so we've left it out."
+            : `${droppedCount} items are no longer in your cart, so we've left them out.`}
         </div>
-    );
-};
+      )}
 
-FinalCart.propTypes = {
-    cartItems: PropTypes.array.isRequired,
-    onMemoChange: PropTypes.func,
+      <ul className="mt-4 divide-y divide-gray-100">
+        {items.map((item) => (
+          <li key={item.id} className="flex gap-3 py-3 first:pt-0">
+            <img
+              src={imageUrl(item.product?.filename)}
+              alt={item.ProductName}
+              className="h-14 w-14 shrink-0 rounded-lg border border-gray-100 object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">
+                {item.ProductName || item.product?.name}
+              </p>
+              <p className="text-xs text-gray-500">
+                {[item.size && `Size ${item.size}`, `Qty ${item.Quantity}`]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            </div>
+            <p className="text-sm font-semibold">{formatBDT(lineTotal(item))}</p>
+          </li>
+        ))}
+      </ul>
+
+      <dl className="mt-2 space-y-2 border-t border-gray-100 pt-4 text-sm">
+        <div className="flex justify-between">
+          <dt className="text-gray-500">Subtotal</dt>
+          <dd className="font-medium">{formatBDT(subtotal)}</dd>
+        </div>
+        <div className="flex justify-between">
+          <dt className="text-gray-500">Delivery</dt>
+          <dd className="font-medium">
+            {!hasFee ? (
+              <span className="font-normal text-gray-400">
+                Choose your area
+              </span>
+            ) : deliveryFee === 0 ? (
+              <span className="text-green-600">Free</span>
+            ) : (
+              formatBDT(deliveryFee)
+            )}
+          </dd>
+        </div>
+        <div className="flex items-baseline justify-between border-t border-gray-100 pt-3">
+          <dt className="text-base font-semibold">Total</dt>
+          <dd className="text-xl font-bold">{formatBDT(total)}</dd>
+        </div>
+      </dl>
+    </div>
+  );
 };
 
 export default FinalCart;

@@ -136,6 +136,23 @@ const OrderDetails = () => {
 
   const OrderInfo = () => (
     <div className="max-w-6xl mx-auto">
+      {router.query.placed && (
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <MdCheckCircle className="mt-0.5 text-2xl text-emerald-600 flex-shrink-0" />
+          <div>
+            <h2 className="font-semibold text-emerald-900">
+              {router.query.paid
+                ? 'Thank you! Your payment details were received.'
+                : 'Thank you! Your order is placed.'}
+            </h2>
+            <p className="mt-0.5 text-sm text-emerald-800">
+              {router.query.paid
+                ? "We'll confirm your payment shortly and get your order ready."
+                : "We'll get it ready and keep you posted. Bookmark this page to track your order."}
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header Card */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 md:p-8 mb-6 text-white">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
