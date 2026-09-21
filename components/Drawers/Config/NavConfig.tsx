@@ -158,6 +158,7 @@ export const NAV_CONFIG = [
     Icon: <FiGift />,
     Tasks: [
       { href: '/admin/add/add-new-arrivals', label: 'New Arrivals' },
+      { href: '/admin/edit/home-sections', label: 'Home Page Sections' },
       { href: '/admin/add/add-new-pop-up', label: 'Add Pop-Up' },
       { href: '/admin/edit/update-pop-up', label: 'Update Pop-Up' },
       { href: '/admin/edit/update-discount', label: 'Update Discount' },

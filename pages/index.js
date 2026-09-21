@@ -17,9 +17,7 @@ import SectionShow from '/components/Home/SectionShow/SectionShow';
 import Link from 'next/link';
 import PerfumeBox from '/components/Home/PerfumeBox';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
-import ZipperSpecial from '/components/Home/WinterSpecial/ZipperSpecial';
-import KangarooSpecial from '/components/Home/WinterSpecial/KangarooSpecial';
-import SweatshirtSpecial from '/components/Home/WinterSpecial/SweatshirtSpecial';
+import HomeSections from '/components/Home/HomeSections';
 import PromoBannerCarousel from '/components/Swiper/PromotionalBanner';
 
 export const CompanyContext = createContext(null);
@@ -31,9 +29,7 @@ export default function Home({
   initialNewArrivals,
   initialPopularItems,
   initialActivePop,
-  initialZipperItems,
-  initialKangarooItems,
-  initialSweatshirtItems,
+  initialHomeSections,
 }) {
   // const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -224,15 +220,7 @@ export default function Home({
               <NewArrival initialProducts={initialNewArrivals} />
               {/* <NewArrivalDraft/> */}
             </section>
-            <section id="zipper-hoodie">
-              <ZipperSpecial initialItems={initialZipperItems}></ZipperSpecial>
-            </section>
-            <section id="sweatshirt">
-              <SweatshirtSpecial initialItems={initialSweatshirtItems}></SweatshirtSpecial>
-            </section>
-            <section id="kangaroo-hoodie">
-              <KangarooSpecial initialItems={initialKangarooItems}></KangarooSpecial>
-            </section>
+            <HomeSections sections={initialHomeSections} />
             <section id="new-section">
               <SectionShow
                 layout={layout}
@@ -280,16 +268,12 @@ export async function getServerSideProps() {
     newArrivals,
     popularItems,
     activePop,
-    zipperItems,
-    kangarooItems,
-    sweatshirtItems,
+    homeSections,
   ] = await Promise.all([
     get('/admin/view-new-arrivals'),
     get('/admin/view-popular-items'),
     get('/admin/view-active-pop-up'),
-    get(`/admin/search-products?q=${encodeURIComponent('zipper hoodie')}`),
-    get(`/admin/search-products?q=${encodeURIComponent('kangaroo')}`),
-    get(`/admin/search-products?q=${encodeURIComponent('sweatshirt')}`),
+    get('/admin/view-home-sections'),
   ]);
 
   return {
@@ -299,9 +283,7 @@ export async function getServerSideProps() {
         .sort((a, b) => a.serial - b.serial),
       initialPopularItems: popularItems || [],
       initialActivePop: activePop || null,
-      initialZipperItems: zipperItems || [],
-      initialKangarooItems: kangarooItems || [],
-      initialSweatshirtItems: sweatshirtItems || [],
+      initialHomeSections: homeSections || [],
     },
   };
 }
