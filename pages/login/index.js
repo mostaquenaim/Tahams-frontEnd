@@ -67,6 +67,7 @@ const Login = () => {
 
                 if (loggedInUser.role === 'admin') {
                     await storeSession(response.data);
+                    router.push('/admin');
                     return;
                 }
 
@@ -141,7 +142,7 @@ const Login = () => {
 
             if (response.data.status >= 200 && response.data.status <= 205) {
                 await storeSession(response.data);
-                router.push('/dashboard');
+                router.push(response.data.data.role === 'admin' ? '/admin' : '/dashboard');
             } else {
                 toast.error(response.data.message || "Google sign-in failed");
                 await logOut();
