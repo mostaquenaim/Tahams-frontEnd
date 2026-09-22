@@ -1,18 +1,15 @@
 import Head from 'next/head';
-import Footer from '../../components/Footer/Footer';
+import ComingSoon from '../../components/ComingSoon';
 
 const Men = () => {
-    return (
-        <div>
-        <Head>
-           <title>Men - Tahams</title>
-       </Head>
-            <div className='min-h-screen'>
-
-            </div>
-            {/* <Footer /> */}
-        </div>
-    );
+  return (
+    <>
+      <Head>
+        <title>Men - Tahams</title>
+      </Head>
+      <ComingSoon pageTitle="Men" />
+    </>
+  );
 };
 
-export default Men; 
+export default Men;

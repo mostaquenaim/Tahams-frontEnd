@@ -1,21 +1,15 @@
-import useLoadCats from '/Hooks/useLoadCats';
-import React, { useEffect, useState } from 'react';
+import Head from 'next/head';
+import ComingSoon from '../../components/ComingSoon';
 
 const ComboBuilder = () => {
-    const [categories,, isPending] = useLoadCats()
-    const [mainCategories, setMainCategories] = useState([])    
-
-    useEffect(()=>{
-        const res = categories.filter((cat) => cat.isGenderVaried && cat.isForMen)
-        // console.log(res,'sss');
-        setMainCategories(res)
-    },[])
-
-    return (
-        <div>
-            
-        </div>
-    );
+  return (
+    <>
+      <Head>
+        <title>Combo Builder - Tahams</title>
+      </Head>
+      <ComingSoon pageTitle="Combo Builder" />
+    </>
+  );
 };
 
 export default ComboBuilder;

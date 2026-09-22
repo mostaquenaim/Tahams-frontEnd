@@ -6,6 +6,7 @@ import {
   SimpleCreateForm,
   getErrorMessage,
 } from '../../../components/Admin';
+import { randomLabel } from '../../../utils/devRandom';
 
 const AddSeries = () => {
   const axiosSecure = useAxiosSecure();
@@ -44,6 +45,7 @@ const AddSeries = () => {
       submitLabel="Add series"
       loading={loading}
       onSubmit={handleSubmit}
+      onFillRandom={() => setName(randomLabel(['Collection', 'Series', 'Line']))}
       error={error}
       success={success}
     >

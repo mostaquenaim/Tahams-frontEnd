@@ -3,43 +3,48 @@ import useAxiosPublic from '/Hooks/useAxiosPublic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import Loading from '/components/Loading';
 
 const SearchProduct = () => {
   const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
-  const { search } = router.query; // Get search directly
+  const { search } = router.query;
 
   useEffect(() => {
-    if (search) {
-      setIsLoading(true);
-      axiosPublic
-        .get(`admin/search-products?q=${search}`)
-        .then((response) => {
-          setProducts(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    if (!router.isReady) return;
+    if (!search) {
+      setProducts([]);
+      setIsLoading(false);
+      return;
     }
-  }, [search]); 
 
-  if (isLoading){
-    return <div className='h-screen flex justify-center items-center'>
-      <Loading></Loading>
-    </div>
-  }
+    let cancelled = false;
+    setIsLoading(true);
+    axiosPublic
+      .get(`admin/search-products?q=${encodeURIComponent(search)}`)
+      .then((response) => {
+        if (!cancelled) setProducts(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!cancelled) setProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    // A newer search shouldn't be overwritten by a slower earlier one.
+    return () => {
+      cancelled = true;
+    };
+  }, [router.isReady, search]);
 
   return (
     <div>
       <Head>
-        <title>{search || 'Search'} - search results</title>
+        <title>{search ? `${search} - Search results` : 'Search'} - Tahams</title>
       </Head>
       <FetchProducts
         categories={products}

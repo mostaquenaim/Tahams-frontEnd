@@ -6,6 +6,7 @@ import {
   SimpleCreateForm,
   getErrorMessage,
 } from '../../../components/Admin';
+import { randomLabel } from '../../../utils/devRandom';
 
 const AddPaymentMethod = () => {
   const axiosSecure = useAxiosSecure();
@@ -44,6 +45,7 @@ const AddPaymentMethod = () => {
       submitLabel="Add payment method"
       loading={loading}
       onSubmit={handleSubmit}
+      onFillRandom={() => setName(randomLabel(['Pay', 'Wallet', 'Card']))}
       error={error}
       success={success}
     >

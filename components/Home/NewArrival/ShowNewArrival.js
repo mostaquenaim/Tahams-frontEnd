@@ -11,7 +11,7 @@ const ShowNewArrival = ({ ind, prop }) => {
       transition={{ duration: 0.5, ease: 'easeOut', delay: ind * 0.1 }}
       className="relative w-full h-full mx-auto group cursor-pointer"
     >
-      <Link href={`/search-product?search=${prop.name}`}>
+      <Link href={`/search-product?search=${encodeURIComponent(prop.name)}`}>
         <span className="block">
           {/* Card Container */}
           <div className="relative overflow-hidden rounded-2xl bg-gray-100 shadow-md hover:shadow-2xl transition-all duration-500">
@@ -78,7 +78,7 @@ const ShowNewArrival = ({ ind, prop }) => {
 
               {/* New Badge (Optional) */}
               <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm font-bold rounded-full shadow-lg">
+                <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 bg-white text-black text-xs sm:text-sm font-bold rounded-full shadow-lg">
                   NEW
                 </span>
               </div>

@@ -6,6 +6,7 @@ import {
   Alert,
   Button,
   CheckboxField,
+  DevFillButton,
   Field,
   FormActions,
   ImageDropzone,
@@ -13,6 +14,11 @@ import {
   PageHeader,
   getErrorMessage,
 } from '../../../components/Admin';
+import {
+  randomImageFile,
+  randomLabel,
+  toDateTimeLocal,
+} from '../../../utils/devRandom';
 
 const INITIAL_FORM = {
   title: '',
@@ -33,6 +39,22 @@ const AddNewPopUp = () => {
   const setField = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
+    setFormError('');
+  };
+
+  // Development only (see DevFillButton).
+  const fillRandom = async () => {
+    const now = new Date();
+    const inAWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    setForm({
+      title: randomLabel(['Sale', 'Offer', 'Promo']).replace(/\s+/g, '-'),
+      url: '',
+      startDate: toDateTimeLocal(now),
+      endDate: toDateTimeLocal(inAWeek),
+      isActive: true,
+    });
+    setFiles([await randomImageFile('Pop-up')]);
+    setErrors({});
     setFormError('');
   };
 
@@ -184,6 +206,9 @@ const AddNewPopUp = () => {
         </div>
 
         <FormActions>
+          <span className="mr-auto">
+            <DevFillButton onFill={fillRandom} />
+          </span>
           <Button type="submit" variant="primary" loading={saving}>
             {saving ? 'Creating...' : 'Create pop-up'}
           </Button>

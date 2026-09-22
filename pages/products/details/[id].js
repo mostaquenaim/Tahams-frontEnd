@@ -22,6 +22,13 @@ import { DeleteFromWish } from '/utils/WishFunctions';
 import PeopleAlsoLike from '/components/Product/PeopleAlsoLike';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProductSize from '/components/Product/ProductSize';
+import { FiChevronDown, FiChevronLeft, FiChevronRight, FiMinus, FiPlus } from 'react-icons/fi';
+import { formatBDT } from '../../../utils/pricing';
+import {
+  Breadcrumbs,
+  buttonPrimary,
+  buttonSecondary,
+} from '/components/Storefront/StorefrontUI';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Zoom, Thumbs, Navigation } from 'swiper/modules';
@@ -399,298 +406,365 @@ const Product = ({ product }) => {
     </div>
   );
 
+  const isCouples =
+    product.pscs[0].category.category.category.name == 'Couples';
+  const isAdmin = userInfo && userInfo.role == 'admin';
+  const hasDiscount = discountPercentage > 0;
+  const finalPrice = hasDiscount
+    ? parseInt((sellingPrice * (100 - discountPercentage)) / 100)
+    : sellingPrice;
+  const seriesName = product.pscs[0].category.category.category.name;
+  const canBuy = ifStock && !isAdmin;
+
   return (
-    <div>
+    <div className="bg-white">
       <Head>
-        <title>{product.name}</title>
+        <title>{`${product.name} - Tahams`}</title>
+        {description && <meta name="description" content={description} />}
       </Head>
-      <div className="max-w-7xl mx-auto p-4 min-h-screen pt-48 lg:pt-56 pb-10">
-        <div className="flex flex-col md:flex-row gap-5 sm:gap-0 lg:gap-12 xl:gap-0">
+      <div className="max-w-7xl mx-auto px-4 min-h-screen pt-40 lg:pt-56 pb-16">
+        <Breadcrumbs
+          items={[
+            { label: 'Home', href: '/' },
+            { label: seriesName },
+            { label: name },
+          ]}
+        />
+
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           {/* Product Image */}
-          <div className="md:w-1/2">
-            <Swiper
-              modules={[Zoom, Thumbs]}
-              zoom={{ maxRatio: 8 }}
-              thumbs={{
-                swiper:
-                  thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
-              }}
-              className="w-full h-72 md:h-96 md:w-80 lg:h-[600px] lg:w-[480px] rounded !mx-0 cursor-zoom-in"
-            >
-              {displayImages.map((img, idx) => (
-                <SwiperSlide key={idx}>
-                  <div className="swiper-zoom-container">
-                    <img
-                      src={img}
-                      alt={name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            <div className="md:hidden flex justify-center mt-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                <FaSearchPlus className="w-3 h-3" />
-                Double tap to zoom
-              </span>
-            </div>
-
-            <div className="relative mt-3 w-full md:w-80 lg:w-[480px]">
+          <div className="min-w-0">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
+              {hasDiscount && (
+                <span className="absolute left-3 top-3 z-10 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                  {discountPercentage}% OFF
+                </span>
+              )}
+              {!ifStock && (
+                <span className="absolute right-3 top-3 z-10 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white">
+                  Out of stock
+                </span>
+              )}
               <Swiper
-                onSwiper={setThumbsSwiper}
-                modules={[Thumbs, Navigation]}
-                navigation={{ nextEl: '.thumb-next', prevEl: '.thumb-prev' }}
-                spaceBetween={8}
-                slidesPerView="auto"
-                watchSlidesProgress={true}
-                className="px-8"
+                modules={[Zoom, Thumbs]}
+                zoom={{ maxRatio: 8 }}
+                thumbs={{
+                  swiper:
+                    thumbsSwiper && !thumbsSwiper.destroyed
+                      ? thumbsSwiper
+                      : null,
+                }}
+                className="aspect-[3/4] w-full cursor-zoom-in"
               >
                 {displayImages.map((img, idx) => (
-                  <SwiperSlide
-                    key={idx}
-                    className="group !w-14 lg:!w-24 cursor-pointer"
-                  >
-                    <img
-                      src={img}
-                      alt={name}
-                      className="h-20 w-14 lg:h-32 lg:w-24 object-cover rounded opacity-60 group-[.swiper-slide-thumb-active]:opacity-100 transition-opacity"
-                    />
+                  <SwiperSlide key={idx}>
+                    <div className="swiper-zoom-container">
+                      <img
+                        src={img}
+                        alt={`${name} - photo ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                   </SwiperSlide>
                 ))}
               </Swiper>
-
-              <button className="thumb-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md rounded-full p-1.5 hover:bg-gray-100 [&.swiper-button-disabled]:opacity-0 [&.swiper-button-disabled]:pointer-events-none transition-opacity">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <button className="thumb-next absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md rounded-full p-1.5 hover:bg-gray-100 [&.swiper-button-disabled]:opacity-0 [&.swiper-button-disabled]:pointer-events-none transition-opacity">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
             </div>
+
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-gray-400">
+              <FaSearchPlus className="h-3 w-3" />
+              <span className="md:hidden">Double tap to zoom</span>
+              <span className="hidden md:inline">Click to zoom</span>
+            </p>
+
+            {displayImages.length > 1 && (
+              <div className="relative mt-3">
+                <Swiper
+                  onSwiper={setThumbsSwiper}
+                  modules={[Thumbs, Navigation]}
+                  navigation={{ nextEl: '.thumb-next', prevEl: '.thumb-prev' }}
+                  spaceBetween={8}
+                  slidesPerView="auto"
+                  watchSlidesProgress={true}
+                  className="px-8"
+                >
+                  {displayImages.map((img, idx) => (
+                    <SwiperSlide
+                      key={idx}
+                      className="group !w-16 cursor-pointer lg:!w-20"
+                    >
+                      <img
+                        src={img}
+                        alt=""
+                        loading="lazy"
+                        className="h-20 w-16 rounded-lg border-2 border-transparent object-cover opacity-60 transition group-[.swiper-slide-thumb-active]:border-black group-[.swiper-slide-thumb-active]:opacity-100 lg:h-24 lg:w-20"
+                      />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                <button
+                  type="button"
+                  aria-label="Previous photos"
+                  className="thumb-prev absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-gray-100 bg-white p-1.5 shadow-sm transition-opacity hover:bg-gray-50 [&.swiper-button-disabled]:pointer-events-none [&.swiper-button-disabled]:opacity-0"
+                >
+                  <FiChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next photos"
+                  className="thumb-next absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-gray-100 bg-white p-1.5 shadow-sm transition-opacity hover:bg-gray-50 [&.swiper-button-disabled]:pointer-events-none [&.swiper-button-disabled]:opacity-0"
+                >
+                  <FiChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Product Details */}
-          <div className="md:w-1/2 ">
-            <h1 className="text-2xl font-bold mb-2">{name}</h1>
+          <div className="min-w-0">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  {seriesName}
+                </p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+                  {name}
+                </h1>
+              </div>
 
-            {/* Wishlist Icon */}
-            {!loading ? (
-              <div className="mb-2">
+              {/* Wishlist Icon */}
+              {!loading ? (
                 <button
-                  className={`text-xl ${
-                    isAddedToWishlist ? 'text-red-500' : 'text-gray-500'
+                  type="button"
+                  className={`shrink-0 rounded-full border p-3 text-lg transition ${
+                    isAddedToWishlist
+                      ? 'border-red-200 bg-red-50 text-red-500'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-400'
                   }`}
                   onClick={addToWishlist}
+                  aria-pressed={isAddedToWishlist}
+                  aria-label={
+                    isAddedToWishlist
+                      ? 'Remove from wishlist'
+                      : 'Add to wishlist'
+                  }
                 >
                   {isAddedToWishlist ? <FaHeart /> : <FaRegHeart />}
                 </button>
-              </div>
-            ) : (
-              <span className="loading loading-spinner loading-md"></span>
-            )}
-
-            {/* description  */}
-            <div className="prose prose-lg" style={{ whiteSpace: 'pre-line' }}>
-              {description}
+              ) : (
+                <span className="loading loading-spinner loading-md"></span>
+              )}
             </div>
 
-            {/* Discount */}
-            {discountPercentage > 0 && (
-              <p className="text-red-500 line-through mb-2">
-                {sellingPrice} BDT
+            {/* price  */}
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-3xl font-bold text-gray-900">
+                {formatBDT(finalPrice)}
+              </span>
+              {hasDiscount && (
+                <>
+                  <span className="text-base text-gray-400 line-through">
+                    {formatBDT(sellingPrice)}
+                  </span>
+                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-600">
+                    Save {formatBDT(sellingPrice - finalPrice)}
+                  </span>
+                </>
+              )}
+            </div>
+            {vatPercentage > 0 && (
+              <p className="mt-1 text-xs text-gray-500">
+                + {vatPercentage}% VAT added at checkout
               </p>
             )}
 
-            {/* price  */}
-            <p className="text-green-600 text-lg mb-2">
-              {discountPercentage > 0 ? (
-                <span>
-                  {parseInt(
-                    (sellingPrice * (100 - discountPercentage)) / 100,
-                  )}{' '}
-                </span>
-              ) : (
-                <span>{sellingPrice} </span>
-              )}
-              BDT
-            </p>
-
-            {/* Add the DiscountBadge component below your price display */}
-            {/* <DiscountBadge /> */}
-
             {/* Stock Status */}
             <p
-              className={`mb-2 ${ifStock ? 'text-green-500' : 'text-red-500'}`}
+              className={`mt-3 inline-flex items-center gap-1.5 text-sm font-medium ${
+                ifStock ? 'text-green-600' : 'text-red-600'
+              }`}
             >
-              {ifStock ? 'In Stock' : 'Out of Stock'}
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  ifStock ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              />
+              {ifStock ? 'In stock' : 'Out of stock'}
             </p>
-
-            {/* VAT */}
-            <p className="text-gray-600 mb-4">VAT: {vatPercentage}%</p>
 
             {/* views */}
             {userInfo?.role == 'admin' && (
-              <>
-                <button className="btn btn-accent">
-                  <FaEye /> {totalViews}
-                </button>
-              </>
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                <FaEye /> {totalViews} views
+              </p>
             )}
 
-            {/* Color Information */}
-            {color && (
-              <div className="mb-4">
-                <p className="text-gray-600 font-semibold">Color:</p>
-                <div
-                  className="p-3 w-32 mt-1 rounded-full text-center border-black border-1"
-                  style={{ backgroundColor: color.colorCode }}
-                >
-                  <span
-                    className={`text-black text-center ${
-                      color.colorCode === '#000000' && 'text-white'
-                    }`}
-                  >
+            {/* description  */}
+            {description && (
+              <p
+                className="mt-4 text-sm leading-relaxed text-gray-600"
+                style={{ whiteSpace: 'pre-line' }}
+              >
+                {description}
+              </p>
+            )}
+
+            <div className="mt-6 space-y-5 border-t border-gray-100 pt-6">
+              {/* Color Information */}
+              {color && (
+                <div className="flex items-center gap-3">
+                  <p className="text-sm font-medium text-gray-700">Color</p>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3 text-sm text-gray-700">
+                    <span
+                      className="h-5 w-5 rounded-full border border-gray-200"
+                      style={{ backgroundColor: color.colorCode }}
+                    />
                     {color?.name}
                   </span>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Category Dropdown */}
-            <div className="mb-4">
-              <label htmlFor="category" className="block text-gray-700">
-                Category
-              </label>
-              <select
-                id="category"
-                className="mt-1 block w-full p-2 border rounded"
-                value={selectedCategory || ''}
-                onChange={(e) => handleCategoryChange(parseInt(e.target.value))}
-              >
-                {uniqueCategories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.category.category.name}
-                    {category.category.category.isGenderVaried &&
-                      (category.category.category.isForMen
-                        ? ', Men'
-                        : ', Women')}
-                  </option>
-                ))}
-              </select>
+              {/* Category Dropdown */}
+              {uniqueCategories.length > 1 && (
+                <div>
+                  <label
+                    htmlFor="category"
+                    className="mb-1.5 block text-sm font-medium text-gray-700"
+                  >
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
+                    value={selectedCategory || ''}
+                    onChange={(e) =>
+                      handleCategoryChange(parseInt(e.target.value))
+                    }
+                  >
+                    {uniqueCategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.category.category.name}
+                        {category.category.category.isGenderVaried &&
+                          (category.category.category.isForMen
+                            ? ', Men'
+                            : ', Women')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Size Selection */}
+              <ProductSize
+                selectedCategory={selectedCategory}
+                product={product}
+                selectedSize={selectedSize}
+                handleSizeChange={handleSizeChange}
+                selectedFemaleSize={selectedFemaleSize}
+                handleFemaleSizeChange={handleFemaleSizeChange}
+              />
+
+              {/* Quantity Selector */}
+              {!isCouples && (
+                <div className="flex items-center gap-4">
+                  <label
+                    htmlFor="quantity"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Quantity
+                  </label>
+                  <div className="inline-flex items-center overflow-hidden rounded-xl border border-gray-200">
+                    <button
+                      type="button"
+                      aria-label="Decrease quantity"
+                      className="px-3 py-2.5 text-gray-600 transition hover:bg-gray-50 disabled:opacity-40"
+                      onClick={handleQuantityDecrease}
+                      disabled={quantity <= 1}
+                    >
+                      <FiMinus className="h-4 w-4" />
+                    </button>
+                    <input
+                      id="quantity"
+                      type="text"
+                      className="w-12 border-x border-gray-200 py-2 text-center text-sm font-medium outline-none"
+                      value={quantity}
+                      readOnly
+                    />
+                    <button
+                      type="button"
+                      aria-label="Increase quantity"
+                      className="px-3 py-2.5 text-gray-600 transition hover:bg-gray-50"
+                      onClick={handleQuantityIncrease}
+                    >
+                      <FiPlus className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Size Selection */}
-            <ProductSize
-              selectedCategory={selectedCategory}
-              product={product}
-              selectedSize={selectedSize}
-              handleSizeChange={handleSizeChange}
-              selectedFemaleSize={selectedFemaleSize}
-              handleFemaleSizeChange={handleFemaleSizeChange}
-            />
-
-            {/* Quantity Selector */}
-            {product.pscs[0].category.category.category.name == 'Couples' ? (
-              ''
-            ) : (
-              <div className="flex items-center mb-4">
-                <label htmlFor="quantity" className="block text-gray-700 mr-4">
-                  Quantity
-                </label>
-                <button
-                  className="px-2 py-1 border rounded-l bg-gray-200"
-                  onClick={handleQuantityDecrease}
-                >
-                  -
-                </button>
-                <input
-                  id="quantity"
-                  type="text"
-                  className="w-12 text-center border-t border-b"
-                  value={quantity}
-                  readOnly
-                />
-                <button
-                  className="px-2 py-1 border rounded-r bg-gray-200"
-                  onClick={handleQuantityIncrease}
-                >
-                  +
-                </button>
-              </div>
-            )}
 
             {/* Add to Cart and Buy Now Buttons */}
-            <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <button
-                className={`btn btn-primary ${
-                  !ifStock || isAddedToCart || (userInfo && userInfo.role == 'admin')
-                    ? 'btn-disabled'
-                    : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'
-                }`}
+                type="button"
+                className={buttonSecondary}
+                disabled={!canBuy || isAddedToCart}
                 onClick={handleAddToCart}
               >
-                <FaShoppingCart /> {ifStock ? 'Add to Cart' : 'Out of Stock'}
+                <FaShoppingCart />
+                {!ifStock
+                  ? 'Out of stock'
+                  : isAddedToCart
+                  ? 'Adding...'
+                  : 'Add to cart'}
               </button>
               <button
-                className={`btn btn-accent ${
-                  !ifStock || (userInfo && userInfo.role == 'admin')
-                    ? 'btn-disabled'
-                    : 'bg-black text-white hover:scale-105 duration-300 hover:shadow-lg hover:shadow-black'
-                }`}
+                type="button"
+                className={buttonPrimary}
+                disabled={!canBuy}
                 onClick={handleBuyNow}
               >
-                {ifStock ? '🛍️ Buy Now' : 'Out of Stock'}
+                {ifStock ? 'Buy now' : 'Out of stock'}
               </button>
             </div>
+            {isAdmin && (
+              <p className="mt-2 text-xs text-gray-500">
+                Admin accounts can&apos;t place orders.
+              </p>
+            )}
 
             {/* size chart  */}
             {product.pscs[0].category.filename && (
-              <div className="pt-4">
-                <p className="text-gray-600 font-semibold">Size Chart:</p>
+              <details className="group mt-6 rounded-2xl border border-gray-100 p-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-gray-800">
+                  Size chart
+                  <FiChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                </summary>
                 <img
-                  className=""
+                  className="mt-3 w-full rounded-lg"
+                  loading="lazy"
                   src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.pscs[0].category.filename}`}
-                  alt="Size Chart"
+                  alt="Size chart"
                 />
-              </div>
+              </details>
             )}
           </div>
         </div>
 
         {/* Long Description */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">
-            More about this product
-          </h2>
-          <div className="prose prose-lg" style={{ whiteSpace: 'pre-line' }}>
-            {longDescription}
-          </div>
-        </div>
+        {longDescription && (
+          <section className="mt-12 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+              More about this product
+            </h2>
+            <div
+              className="text-sm leading-relaxed text-gray-600"
+              style={{ whiteSpace: 'pre-line' }}
+            >
+              {longDescription}
+            </div>
+          </section>
+        )}
 
         {/* people also like  */}
         <PeopleAlsoLike
@@ -698,25 +772,20 @@ const Product = ({ product }) => {
           currentProductId={product.id}
         />
       </div>
-      {
-        <Link
-          href="/MyCart"
-          onMouseEnter={handleCartBarMouseEnter}
-          onMouseLeave={handleCartBarMouseLeave}
-          className={`fixed bottom-0 left-0 w-full h-16 bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-3 transition-all duration-500 z-[60] shadow-2xl ${
-            !showGotoCart
-              ? 'translate-y-full opacity-0'
-              : 'translate-y-0 opacity-100'
-          }`}
-        >
-          <span className="font-semibold uppercase tracking-widest text-sm">
-            View Cart & Checkout
-          </span>
-          <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">
-            NEW
-          </span>
-        </Link>
-      }
+      <Link
+        href="/MyCart"
+        onMouseEnter={handleCartBarMouseEnter}
+        onMouseLeave={handleCartBarMouseLeave}
+        className={`fixed bottom-0 left-0 z-[60] flex h-16 w-full items-center justify-center gap-3 bg-slate-900 text-white shadow-2xl transition-all duration-500 hover:bg-black ${
+          !showGotoCart
+            ? 'pointer-events-none translate-y-full opacity-0'
+            : 'translate-y-0 opacity-100'
+        }`}
+      >
+        <span className="text-sm font-semibold uppercase tracking-widest">
+          View Cart & Checkout
+        </span>
+      </Link>
 
       {/* Success Animation */}
       <AnimatePresence>
@@ -725,12 +794,12 @@ const Product = ({ product }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed bottom-10 right-10 bg-green-500 text-white p-4 rounded-lg shadow-xl flex items-center gap-2 z-50"
+            className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 p-4 text-white shadow-xl sm:right-10"
           >
             <FaCheckCircle className="text-2xl" />
             <div>
               <p className="font-bold">Discount Applied!</p>
-              <p>5% discount added to your order</p>
+              <p className="text-sm">5% discount added to your order</p>
             </div>
           </motion.div>
         )}

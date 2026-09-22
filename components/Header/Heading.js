@@ -1,61 +1,22 @@
-const Heading = ({
-  first = '',
-  second = '',
-  className = '',
-  center = true,
-  theme = 'dark',
-}) => {
-  // Theme configuration
-  const themeClasses = {
-    dark: {
-      bg: 'bg-black',
-      text: 'text-white text-opacity-80',
-      border: 'border-blue-600',
-      shadow: 'shadow-neutral-600',
-    },
-    light: {
-      bg: 'bg-white',
-      text: 'text-gray-800',
-      border: 'border-blue-600',
-      shadow: 'shadow-gray-300',
-    },
-  };
-
-  const currentTheme = themeClasses[theme] || themeClasses.dark;
-
-  return (
-    <div
-      className={`
-        p-6 rounded-lg shadow-lg shadow-slate-400
-        ${currentTheme.bg} 
-        ${currentTheme.text} 
-        ${currentTheme.shadow}
-        ${currentTheme.border} border 
-        ${center ? 'text-center' : 'text-left'}
-        ${className}
-      `}
-    >
-      {/* First line of text - optional */}
-      {first && (
-        <div className="text-blue-600 text-sm md:text-base lg:text-xl font-semibold mb-2">
-          {first}
-        </div>
-      )}
-
-      {/* Second line of text - optional */}
-      {second && (
-        <div
-          className={`text-2xl md:text-4xl lg:text-6xl font-extrabold ${
-            first ? 'mt-2' : ''
-          }`}
-        >
-          <span className={`pb-1 border-b-2 border-blue-600 ${currentTheme.border}`}>
-            {second}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-};
+// Section title used across the home page. `first` is a small eyebrow line,
+// `second` the main title. Home sections all sit on a white background.
+const Heading = ({ first = '', second = '', className = '', center = true }) => (
+  <div className={`${center ? 'text-center' : 'text-left'} ${className}`}>
+    {first && (
+      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 sm:text-sm">
+        {first}
+      </p>
+    )}
+    {second && (
+      <h2 className="mt-1 text-2xl font-semibold uppercase tracking-wide text-gray-900 sm:text-3xl lg:text-4xl">
+        {second}
+      </h2>
+    )}
+    <span
+      aria-hidden="true"
+      className={`mt-3 block h-0.5 w-12 bg-black ${center ? 'mx-auto' : ''}`}
+    />
+  </div>
+);
 
 export default Heading;

@@ -24,7 +24,6 @@ const FilterComp = ({
         handleOfferChange({ target: { value: 'all' } });
     };
 
-    console.log(colors);
     return (
         <div className="flex flex-col h-full bg-white">
             <div className="flex-grow space-y-8 pb-24 md:pb-6">

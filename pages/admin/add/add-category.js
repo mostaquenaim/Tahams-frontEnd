@@ -9,6 +9,7 @@ import {
   SimpleCreateForm,
   getErrorMessage,
 } from '../../../components/Admin';
+import { pick, randomLabel } from '../../../utils/devRandom';
 
 const genderSuffix = (item) => {
   if (!item?.isGenderVaried) return '';
@@ -66,6 +67,10 @@ const AddCategory = () => {
       submitLabel="Add category"
       loading={loading}
       onSubmit={handleSubmit}
+      onFillRandom={() => {
+        if (series.length > 0) setSeriesId(String(pick(series).id));
+        setName(randomLabel(['Tees', 'Shirts', 'Outerwear', 'Basics']));
+      }}
       error={error}
       success={success}
     >

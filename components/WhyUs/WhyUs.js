@@ -1,30 +1,29 @@
+import Heading from '../Header/Heading';
 
 const WhyUs = () => {
-    return (
-        <section className="pt-4 md:pt-8 lg:pt-10 bg-white space-y-8 py-12 px-2 sm:px-4 lg:px-8 max-w-7xl mx-auto">
-            <div className="container mx-auto flex flex-col md:grid md:grid-cols-3 items-center justify-center lg:justify-between">
-                {/* Left Section */}
-                <div className="text-center lg:text-left lg:px-14 mb-8 lg:mb-0 col-span-2">
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div className="grid items-center gap-10 md:grid-cols-5">
+        <div className="text-center md:col-span-3 md:text-left">
+          <Heading first="Why Tahams?" second="The unique way of life" center={false} className="text-center md:text-left" />
+          <p className="mt-6 text-base leading-relaxed text-gray-600 sm:text-lg">
+            At Tahams, we take immense pride in offering you the finest
+            clothing and accessories. Our unwavering commitment to excellence
+            sets us apart.
+          </p>
+        </div>
 
-                    <h2 className="text-4xl font-extrabold text-gray-800 mb-4">
-                        Why Tahams?
-                    </h2>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                    THE UNIQUE WAY OF LIFE.
-                    </h3>
-                    <p className="text-lg text-gray-600 mb-6">
-                        At Tahams, we take immense pride in offering you the finest clothing and accessories. Our unwavering commitment to excellence sets us apart
-                    </p>
-                </div>
-
-                {/* Right Section */}
-                <div className="lg:w-1/2 lg:px-8 mx-auto">
-                    {/* Add your image here */}
-                    <img className="w-full h-auto" src="/why-tahams-pic.png" alt="Image" />
-                </div>
-            </div>
-        </section>
-    );
+        <div className="md:col-span-2">
+          <img
+            className="mx-auto h-auto w-full max-w-sm"
+            src="/why-tahams-pic.png"
+            alt="Tahams"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default WhyUs;

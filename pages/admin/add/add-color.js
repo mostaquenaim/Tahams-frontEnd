@@ -6,6 +6,7 @@ import {
   SimpleCreateForm,
   getErrorMessage,
 } from '../../../components/Admin';
+import { randomHex, randomLabel } from '../../../utils/devRandom';
 
 const DEFAULT_CODE = '#000000';
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
@@ -54,6 +55,10 @@ const AddColor = () => {
       submitLabel="Add color"
       loading={loading}
       onSubmit={handleSubmit}
+      onFillRandom={() => {
+        setName(randomLabel(['Shade', 'Tone', 'Hue']));
+        setCode(randomHex());
+      }}
       error={error}
       success={success}
     >

@@ -1,29 +1,36 @@
 import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { ArrowLeft } from "lucide-react";
+import { buttonPrimary, buttonSecondary } from '../components/Storefront/StorefrontUI';
 
 const Custom404 = () => {
   return (
     <>
       <Head>
-        <title>404 - Not Found </title>
+        <title>Page not found - Tahams</title>
       </Head>
-      <div className="min-h-screen flex flex-col justify-center items-center">
-        <h1 className="text-4xl font-extrabold mb-4">404 - Page Not Found</h1>
-        <p className="text-gray-500 mb-8">
-          The page you are looking for doesn't exist.
-        </p>
-        {/* <div className="text-center mt-4"> */}
-        <Link href="/" className="btn btn-outline capitalize gap-2 group mt-3">
-          <ArrowLeft
-            size={18}
-            className="transition-transform duration-200 group-hover:-translate-x-1"
-          />
-          Back to Home
-        </Link>
-        {/* </div> */}
-      </div>
+      <section className="flex min-h-screen items-center justify-center bg-gray-50 px-4 pb-16 pt-32">
+        <div className="max-w-md text-center">
+          <p className="text-7xl font-bold tracking-tight text-gray-200 sm:text-8xl">
+            404
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold text-gray-900">
+            We can&apos;t find that page
+          </h1>
+          <p className="mt-2 text-gray-500">
+            The link may be broken or the page may have moved. Let&apos;s get you
+            back to something good.
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href="/" className={buttonPrimary}>
+              Back to home
+            </Link>
+            <Link href="/contact" className={buttonSecondary}>
+              Contact us
+            </Link>
+          </div>
+        </div>
+      </section>
     </>
   );
 };

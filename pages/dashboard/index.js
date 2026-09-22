@@ -12,6 +12,7 @@ import Head from 'next/head';
 import { getGuestCustomerInfo } from '../../utils/guestCustomer';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { cartSubtotal } from '../../utils/pricing';
 
 const Dashboard = () => {
   const { user, logOut, loading } = useContext(AuthContext);
@@ -47,7 +48,7 @@ const Dashboard = () => {
   };
 
   const totalSpent = orders?.reduce((acc, order) => acc + (order.totalPrice || 0), 0) || 0;
-  const cartTotal = cart?.reduce((acc, item) => acc + item.product.sellingPrice * item.Quantity, 0) || 0;
+  const cartTotal = cartSubtotal(cart);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },

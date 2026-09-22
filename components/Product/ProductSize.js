@@ -1,5 +1,40 @@
-import useLoadSizes from '/Hooks/useLoadSizes';
 import React from 'react';
+
+const sizeButtonClass = (active, soldOut) =>
+  `min-w-[3rem] rounded-xl border px-4 py-2.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
+    soldOut
+      ? 'cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300 line-through'
+      : active
+      ? 'border-black bg-black text-white'
+      : 'border-gray-200 bg-white text-gray-800 hover:border-gray-500'
+  }`;
+
+const SizeGroup = ({ label, sizes, selected, onSelect }) => (
+  <div role="radiogroup" aria-label={label || 'Size'}>
+    {label && (
+      <p className="mb-2 text-sm font-medium text-gray-700">{label}</p>
+    )}
+    <div className="flex flex-wrap gap-2">
+      {sizes.map(({ size, quantity }) => {
+        const soldOut = !(quantity > 0);
+        const active = selected === size?.name;
+        return (
+          <button
+            key={size?.id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            disabled={soldOut}
+            className={sizeButtonClass(active, soldOut)}
+            onClick={() => !soldOut && onSelect(size?.name)}
+          >
+            {size?.name}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
 
 const ProductSize = ({
   selectedCategory,
@@ -9,69 +44,37 @@ const ProductSize = ({
   selectedFemaleSize,
   handleFemaleSizeChange,
 }) => {
- const filteredSizes = selectedCategory
+  const filteredSizes = selectedCategory
     ? Array.from(
         new Map(
           product.pscs.map((p) => [
             p.size?.id, // unique key
             { size: p.size, quantity: p.quantity },
-          ])
-        ).values()
+          ]),
+        ).values(),
       )
     : [];
 
-  return (
-    <div>
-      {filteredSizes && filteredSizes.length > 0 && (
-        <div className="mb-4">
-          <label className="text-gray-600 font-semibold">Select Size:</label>
-          {product.pscs[0].category.category.category.name === 'Couples' && (
-            <p className="text-gray-600 p-2 text-xl font-semibold">Male:</p>
-          )}
-          <div className="flex gap-3 flex-wrap">
-            {filteredSizes.map(({ size, quantity }) => (
-              <button
-                key={size?.id}
-                className={`btn btn-outline ${
-                  selectedSize === size?.name
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black'
-                } border-black text-black ${
-                  quantity === 0 ? 'btn-disabled' : ''
-                }`}
-                onClick={() => quantity > 0 && handleSizeChange(size?.name)}
-              >
-                {size?.name}
-              </button>
-            ))}
-          </div>
+  if (filteredSizes.length === 0) return null;
 
-          {product.pscs[0].category.category.category.name === 'Couples' && (
-            <div>
-              <p className="text-gray-600 p-2 text-xl font-semibold">Female:</p>
-              <div className="flex gap-3 flex-wrap">
-                {filteredSizes.map(({ size, quantity }) => (
-                  <button
-                //   data-tip='hello'
-                    key={size?.id}
-                    className={`btn btn-outline ${
-                      selectedFemaleSize === size?.name
-                        ? 'bg-black text-white'
-                        : 'bg-white text-black'
-                    } border-black text-black ${
-                      quantity === 0 ? 'btn-disabled' : ''
-                    }`}
-                    onClick={() =>
-                      quantity > 0 && handleFemaleSizeChange(size?.name)
-                    }
-                  >
-                    {size?.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+  const isCouples =
+    product.pscs[0].category.category.category.name === 'Couples';
+
+  return (
+    <div className="space-y-4">
+      <SizeGroup
+        label={isCouples ? 'Select size - Male' : 'Select size'}
+        sizes={filteredSizes}
+        selected={selectedSize}
+        onSelect={handleSizeChange}
+      />
+      {isCouples && (
+        <SizeGroup
+          label="Select size - Female"
+          sizes={filteredSizes}
+          selected={selectedFemaleSize}
+          onSelect={handleFemaleSizeChange}
+        />
       )}
     </div>
   );

@@ -1,22 +1,34 @@
 import Link from 'next/link';
 
 const ShowCat = ({ prop }) => {
-    return (
-        <>
-            <Link
-            href={`/categories/${prop.categoryName}`}
-                className={`relative ${prop.categoryName === 'Customize' && 'row-span-2 scale-105'}`}>
-                <figure className='relative'>
-                    <img src={prop.filename} className='rounded-lg shadow-md' alt={prop.categoryName} />
-                    <div className='absolute inset-0 flex justify-center items-end '>
-                        <div className='font-semibold text-white text-xl rounded-lg bg-black p-5 w-2/3 text-center bg-opacity-80'>
-                            {prop.categoryName}
-                        </div>
-                    </div>
-                </figure>
-            </Link>
-        </>
-    );
+  const isCustomize = prop.categoryName === 'Customize';
+
+  return (
+    <Link
+      href={`/categories/${prop.categoryName}`}
+      className={`group relative block overflow-hidden rounded-2xl shadow-sm transition duration-300 hover:shadow-lg ${
+        isCustomize ? 'row-span-2' : ''
+      }`}
+    >
+      <img
+        src={prop.filename}
+        alt={prop.categoryName}
+        loading="lazy"
+        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+      />
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4 pt-12">
+        <span className="flex items-center justify-between text-lg font-semibold text-white">
+          {prop.categoryName}
+          <span
+            aria-hidden="true"
+            className="transition-transform duration-300 group-hover:translate-x-1"
+          >
+            →
+          </span>
+        </span>
+      </div>
+    </Link>
+  );
 };
 
 export default ShowCat;

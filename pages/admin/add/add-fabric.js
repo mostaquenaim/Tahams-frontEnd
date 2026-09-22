@@ -6,6 +6,7 @@ import {
   SimpleCreateForm,
   getErrorMessage,
 } from '../../../components/Admin';
+import { randomLabel } from '../../../utils/devRandom';
 
 const AddFabric = () => {
   const axiosSecure = useAxiosSecure();
@@ -44,6 +45,7 @@ const AddFabric = () => {
       submitLabel="Add fabric"
       loading={loading}
       onSubmit={handleSubmit}
+      onFillRandom={() => setName(randomLabel(['Cotton', 'Linen', 'Denim', 'Fleece']))}
       error={error}
       success={success}
     >

@@ -1,14 +1,15 @@
-import Head from "next/head";
+import Head from 'next/head';
+import ComingSoon from '../../components/ComingSoon';
 
 const MyReturns = () => {
-    return (
-        <div>
-
-            <Head>
-                <title>My Return/Cancellation - Tahams</title>
-            </Head>
-        </div>
-    );
+  return (
+    <>
+      <Head>
+        <title>Returns & Cancellations - Tahams</title>
+      </Head>
+      <ComingSoon pageTitle="Returns & Cancellations" />
+    </>
+  );
 };
 
 export default MyReturns;

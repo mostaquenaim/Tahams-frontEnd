@@ -6,6 +6,7 @@ import {
   FiClock,
   FiImage,
   FiInfo,
+  FiShuffle,
   FiUploadCloud,
   FiX,
 } from 'react-icons/fi';
@@ -17,6 +18,7 @@ import {
   Section,
   cx,
 } from './AdminUI';
+import { IS_DEV } from '../../utils/devRandom';
 
 // Form building blocks for admin create/edit pages. They compose the
 // primitives in AdminUI so forms look like the list pages.
@@ -122,6 +124,39 @@ export function FormActions({ children }) {
   );
 }
 
+// Development-only shortcut for add pages: fills the form with random values so
+// it can be submitted quickly. Renders nothing in production builds. `onFill`
+// may be async (e.g. when it generates an image).
+export function DevFillButton({ onFill, label = 'Fill with random data' }) {
+  const [busy, setBusy] = useState(false);
+  if (!IS_DEV) return null;
+
+  const handleClick = async () => {
+    setBusy(true);
+    try {
+      await onFill();
+    } catch (error) {
+      console.error('Random fill failed:', error);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      icon={<FiShuffle />}
+      loading={busy}
+      onClick={handleClick}
+      title="Development only"
+      className="border-dashed"
+    >
+      {label}
+    </Button>
+  );
+}
+
 // A single-card create form: header, body fields, feedback and submit button.
 // Used by the one-field "add X" pages.
 export function SimpleCreateForm({
@@ -132,6 +167,7 @@ export function SimpleCreateForm({
   onSubmit,
   error,
   success,
+  onFillRandom,
   children,
 }) {
   return (
@@ -148,6 +184,11 @@ export function SimpleCreateForm({
           <Alert tone="success">{success}</Alert>
         </div>
         <FormActions>
+          {onFillRandom && (
+            <span className="mr-auto">
+              <DevFillButton onFill={onFillRandom} />
+            </span>
+          )}
           <Button type="submit" variant="primary" loading={loading}>
             {loading ? 'Saving...' : submitLabel}
           </Button>

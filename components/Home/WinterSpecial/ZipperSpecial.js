@@ -13,13 +13,13 @@ const ZipperSpecial = ({ initialItems = null }) => {
   const visibleItems = searchedItems.slice(0, DISPLAY_LIMIT);
 
   return (
-    <div className="pt-10 md:pt-16 lg:pt-10 shadow-md space-y-8 py-12 px-2 sm:px-4 lg:px-8 max-w-7xl mx-auto">
+    <div className="pt-10 md:pt-16 lg:pt-10 space-y-8 py-12 px-2 sm:px-4 lg:px-8 max-w-7xl mx-auto">
       <div className="px-2 md:px-10">
         <Heading first="ZIPPER" second="HOODIE"></Heading>
       </div>
 
       <div className="pt-10 pb-10 hidden lg:flex justify-center">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-6">
           {searchedItems.length > 0 &&
             searchedItems.map((item) => (
               <ShowProductSmall key={item.id} item={item} />
@@ -28,7 +28,7 @@ const ZipperSpecial = ({ initialItems = null }) => {
       </div>
 
       <div className="pt-10 pb-10 lg:hidden flex justify-center">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-6">
           {visibleItems.length > 0 &&
             visibleItems.map((item) => (
               <ShowProductSmall key={item.id} item={item} />
@@ -42,10 +42,10 @@ const ZipperSpecial = ({ initialItems = null }) => {
           <button
             onClick={() =>
               router.push(
-                `search-product?search=${encodeURIComponent('zipper hoodie')}`,
+                `/search-product?search=${encodeURIComponent('zipper hoodie')}`,
               )
             }
-            className="px-6 py-2 border border-black text-black hover:bg-black hover:text-white transition"
+            className="px-6 py-2 border border-black text-black hover:bg-black hover:text-white transition rounded-xl font-medium"
           >
             Explore More
           </button>

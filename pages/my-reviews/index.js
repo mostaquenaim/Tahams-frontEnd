@@ -1,14 +1,15 @@
-import Head from "next/head";
+import Head from 'next/head';
+import ComingSoon from '../../components/ComingSoon';
 
 const MyReviews = () => {
-    return (
-        <div>
-            
+  return (
+    <>
       <Head>
         <title>My Reviews - Tahams</title>
       </Head>
-        </div>
-    );
+      <ComingSoon pageTitle="My Reviews" />
+    </>
+  );
 };
 
 export default MyReviews;

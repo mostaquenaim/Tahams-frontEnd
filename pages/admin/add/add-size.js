@@ -6,6 +6,7 @@ import {
   SimpleCreateForm,
   getErrorMessage,
 } from '../../../components/Admin';
+import { pick } from '../../../utils/devRandom';
 
 const AddSize = () => {
   const axiosSecure = useAxiosSecure();
@@ -44,6 +45,7 @@ const AddSize = () => {
       submitLabel="Add size"
       loading={loading}
       onSubmit={handleSubmit}
+      onFillRandom={() => setName(pick(['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']))}
       error={error}
       success={success}
     >

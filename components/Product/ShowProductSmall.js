@@ -1,207 +1,145 @@
-import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
-import CartButton from '../Buttons/CartButton';
-import { FaCartShopping, FaDisplay, FaEye } from 'react-icons/fa6';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import toast from 'react-hot-toast';
+import { FiShoppingBag } from 'react-icons/fi';
+import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { getGuestCustomerInfo } from '../../utils/guestCustomer';
-import { FaHeart } from 'react-icons/fa';
-import { ShoppingCart } from 'lucide-react';
+import { formatBDT } from '../../utils/pricing';
+import { imageUrl } from '../Storefront/StorefrontUI';
 
+// Compact product card for the home page sections. "Buy now" adds the first
+// available size and jumps straight to checkout.
 const ShowProductSmall = ({ item }) => {
-  // console.log(item.filename);
-  // console.log(item,'atimm');
   const router = useRouter();
-  const { user, setShowGotoCart } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [userInfo, setUserInfo] = useState(null);
-  const [mainLoaded, setMainLoaded] = useState(false);
-  const [hoverLoaded, setHoverLoaded] = useState(false);
+  const [buying, setBuying] = useState(false);
+  const axiosPublic = useAxiosPublic();
 
-  const [isAddedToCart, setIsAddedToCart] = useState(false);
-  // const [showGotoCart, setShowGotoCart] = useState(false)
-  const [hovered, setHovered] = useState(false);
-  const [hoveredWish, setHoveredWish] = useState(false);
-  const [hoveredImage, setHoveredImage] = useState('');
-  const [ftImage, setFtImage] = useState(
-    'https://static-01.daraz.com.bd/p/13e6157acd98dfb45b8f2c9de90fe6bd.jpg',
-  );
-
-  const { sellingPrice, discountPercentage, id, filename, ifStock, productId } =
-    item;
+  const { sellingPrice, discountPercentage, ifStock, productId } = item;
   const discountedPrice = parseInt(
     (sellingPrice * (100 - discountPercentage)) / 100,
   );
-
-  const image = `/admin/get-ft-photo-by-product-id/${id}`;
-
-  const axiosPublic = useAxiosPublic();
+  const hasDiscount = discountPercentage > 0;
+  const hoverPhoto = item.productPictures?.[0];
+  const detailsHref = `/products/details/${productId}`;
+  const canBuy = ifStock && userInfo?.role !== 'admin';
 
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem('userInfo'));
-    setUserInfo(storedData);
-
-    axiosPublic.get(image).then((res) => {
-      setFtImage(res.data.filename);
-    });
+    setUserInfo(JSON.parse(localStorage.getItem('userInfo')));
   }, []);
 
-  const handleAddToCart = async () => {
-    if (!ifStock) return;
+  const handleBuyNow = async () => {
+    if (!canBuy || buying) return;
 
-    let customEmail = user?.email || '';
-
-    if (!user) {
-      const guestCustomerInfo = getGuestCustomerInfo();
-      customEmail = guestCustomerInfo.email;
-    }
+    const customEmail = user?.email || getGuestCustomerInfo().email;
+    setBuying(true);
 
     try {
-      // Make a POST request to the backend for adding to the cart
+      const firstSize = item.pscs[0];
       const response = await axiosPublic.post('/admin/add-to-cart', {
-        productId: item.productId,
-        size: item.pscs[0].size.name,
-        category: item.pscs[0].category.id,
-        Quantity: item.pscs[0].quantity > 0 ? 1 : 0,
+        productId,
+        size: firstSize.size.name,
+        category: firstSize.category.id,
+        Quantity: firstSize.quantity > 0 ? 1 : 0,
         colorId: item.color?.id,
-        customerEmail: customEmail, // Use guest or logged-in user email
+        customerEmail: customEmail,
       });
 
       if (response.status >= 200 && response.status <= 205) {
         localStorage.setItem('selectedItems', JSON.stringify([response.data]));
-
-        // Redirect to the buy-now page
-        router.push({
-          pathname: '/buy-now',
-        });
-
-        toast.success('Item added to the cart', { duration: 3000 });
+        router.push({ pathname: '/buy-now' });
       } else {
-        toast.error('Failed to buy now');
+        toast.error("Couldn't start checkout. Please try again.");
+        setBuying(false);
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error('An error occurred while adding to the cart');
+      toast.error("Couldn't start checkout. Please try again.");
+      setBuying(false);
     }
-    // finally {
-    //     setTimeout(() => setIsAddedToCart(false), 700);
-    //     setTimeout(() => setShowGotoCart(false), 4000);
-    // }
   };
 
-  const handleMouseEnter = () => {
-    // Set the source of the first image in productPictures as the hoveredImage
-    if (item.productPictures.length > 0) {
-      // console.log(item.productPictures[0].filename);
-      setHovered(true);
-      setHoveredImage(item.productPictures[0].filename);
-    }
-    setHoveredWish(true);
+  // The category page is remembered so the details page can pre-select it.
+  const rememberCategory = () => {
+    localStorage.setItem(
+      'defaultCategoryId',
+      window.location.pathname.split('/').pop(),
+    );
   };
-
-  const handleMouseLeave = () => {
-    setHovered(false);
-    setHoveredWish(false);
-  };
-
-  const handleProductClick = () => {
-    const url = new URL(window.location.href);
-    const CatId = url.pathname.split('/').pop();
-    // console.log(CatId);
-    localStorage.setItem('defaultCategoryId', CatId);
-    router.push(`/products/details/${productId}`);
-  };
-
-  const imageStyle =
-    'rounded-t-md absolute transition-all duration-300 ease-in-out';
-  const subShow = 'opacity-0 scale-105';
-  const mainShow = 'opacity-100 scale-100';
-
-  const cardBtnStyle =
-    'bg-black text-white duration-300 hover:shadow-lg hover:shadow-black hover:scale-105 hover:-translate-y-1';
 
   return (
-    <>
-      <div className="flex flex-col items-center pb-4 border rounded-md bg-base-100 shadow-sm w-32 md:w-44 hover:shadow-slate-400">
-        {/* image  */}
-        <div
-          onClick={handleProductClick}
-          className="relative cursor-pointer h-40 w-full md:h-44 md:w-full overflow-hidden rounded-t-md flex items-center justify-center bg-white"
-        >
-          {/* Placeholder Loader (shows until main or hover image is loaded) */}
-          {(!hovered && !mainLoaded) || (hovered && !hoverLoaded) ? (
-            <div className="absolute w-full h-full bg-gray-300 animate-pulse rounded-t-md z-0" />
-          ) : null}
-
-          {/* Main Image */}
+    <article className="group flex w-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      <Link
+        href={detailsHref}
+        onClick={rememberCategory}
+        aria-label={`View ${item.name}`}
+        className="relative block aspect-[4/5] w-full overflow-hidden bg-gray-100"
+      >
+        <img
+          src={imageUrl(item.thumbImage ? item.thumbImage : item.filename)}
+          alt={item.name}
+          loading="lazy"
+          className={`absolute inset-0 h-full w-full object-cover transition duration-500 ${
+            hoverPhoto
+              ? 'group-hover:scale-105 group-hover:opacity-0'
+              : 'group-hover:scale-105'
+          }`}
+        />
+        {hoverPhoto && (
           <img
-            src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${
-              item.thumbImage ? item.thumbImage : item.filename
-            }`}
-            alt={item.name}
-            className={`${imageStyle} ${hovered ? subShow : mainShow} ${
-              mainLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            onMouseEnter={handleMouseEnter}
-            onLoad={() => setMainLoaded(true)}
-            style={{ display: hovered ? 'none' : 'block' }}
+            src={imageUrl(hoverPhoto.thumb ? hoverPhoto.thumb : hoverPhoto.filename)}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full scale-105 object-cover opacity-0 transition duration-500 group-hover:scale-100 group-hover:opacity-100"
           />
+        )}
 
-          {/* Hover Image */}
-          {item.productPictures[0]?.filename && (
-            <img
-              src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${
-                item.productPictures[0].thumb
-                  ? item.productPictures[0].thumb
-                  : item.productPictures[0].filename
-              }`}
-              alt={item.name}
-              className={`${imageStyle} ${hovered ? mainShow : subShow} ${
-                hoverLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              onMouseLeave={handleMouseLeave}
-              onLoad={() => setHoverLoaded(true)}
-              style={{ display: hovered ? 'block' : 'none' }}
-            />
+        {hasDiscount && ifStock && (
+          <span className="absolute left-2 top-2 z-10 rounded-full bg-black px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+            {discountPercentage}% off
+          </span>
+        )}
+        {!ifStock && (
+          <span className="absolute inset-0 z-20 flex items-center justify-center bg-white/60">
+            <span className="rounded-full bg-gray-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
+              Sold out
+            </span>
+          </span>
+        )}
+      </Link>
+
+      <div className="flex flex-1 flex-col p-2.5 sm:p-3">
+        <h3 className="line-clamp-1 text-xs font-medium text-gray-900 sm:text-sm">
+          {item.name}
+        </h3>
+        <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+          <span className="text-sm font-semibold text-gray-900">
+            {formatBDT(discountedPrice)}
+          </span>
+          {hasDiscount && (
+            <span className="text-[11px] text-gray-400 line-through">
+              {formatBDT(sellingPrice)}
+            </span>
           )}
-
-          {!ifStock && (
-            <img
-              src="/out-of-stock.png"
-              className="absolute top-0 left-0 w-24 z-20"
-              alt="Out of stock"
-            />
-          )}
-        </div>
-
-        {/* text and rest part  */}
-        <div className="flex flex-col items-center text-center justify-center gap-2 px-2 py-1">
-          <h2 className="text-xs md:text-sm font-semibold">{item.name}</h2>
-          <div className="flex gap-2 items-center text-xs">
-            {discountPercentage > 0 && (
-              <p className="line-through text-red-500">{sellingPrice} BDT</p>
-            )}
-            <p className="text-green-600 font-medium">{discountedPrice} BDT</p>
-          </div>
-          <div className="flex gap-1 justify-center items-center">
-            <button
-              className={`btn btn-xs ${
-                !ifStock || (userInfo && userInfo.role == 'admin')
-                  ? 'btn-disabled'
-                  : 'bg-black/90 hover:bg-black border-black border-1 text-white duration-300 hover:shadow-black'
-              }`}
-              disabled={!ifStock || (userInfo && userInfo.role == 'admin')}
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              {ifStock ? 'Buy Now' : 'Out of Stock'}
-            </button>
-          </div>
-        </div>
+        </p>
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={!canBuy || buying}
+          className={`mt-2.5 inline-flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${
+            canBuy
+              ? 'bg-black text-white hover:bg-gray-800 active:scale-[0.98] disabled:opacity-60'
+              : 'cursor-not-allowed bg-gray-100 text-gray-400'
+          }`}
+        >
+          <FiShoppingBag className="h-3.5 w-3.5" />
+          {!ifStock ? 'Sold out' : buying ? 'Please wait...' : 'Buy now'}
+        </button>
       </div>
-    </>
+    </article>
   );
 };
 
