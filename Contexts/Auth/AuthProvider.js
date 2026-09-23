@@ -10,6 +10,14 @@ const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showGotoCart, setShowGotoCart] = useState(false)
+    // Admins created via scripts/seed-admin.ts sign in through this
+    // backend's own password check (/admin/signin) and never touch
+    // Firebase, so `user` above stays null for them forever. This tracks
+    // that there's still a valid backend session, mirroring localStorage.email
+    // which login.js's storeSession() writes on every login.
+    const [backendEmail, setBackendEmail] = useState(
+        () => (typeof window !== 'undefined' && localStorage.getItem('email')) || null
+    );
 
 
     // onAuthStateChanged below is what normally flips loading back to
@@ -36,6 +44,10 @@ const AuthProvider = ({ children }) => {
 
     const logOut = () => {
         setLoading(true);
+        setBackendEmail(null);
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('email');
+        }
         return signOut(auth);
     }
 
@@ -66,7 +78,9 @@ const AuthProvider = ({ children }) => {
         logOut,
         handleGoogleSignIn,
         setShowGotoCart,
-        showGotoCart
+        showGotoCart,
+        backendEmail,
+        setBackendEmail,
     }
 
     return (

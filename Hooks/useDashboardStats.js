@@ -16,7 +16,7 @@ const EMPTY_RESULT = {
 // both are omitted. Aggregates are computed server-side over the whole
 // matching set, not just a page of orders.
 const useDashboardStats = (startDate, endDate) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, backendEmail } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
 
   const fetchStats = async () => {
@@ -35,9 +35,9 @@ const useDashboardStats = (startDate, endDate) => {
     isPending,
     refetch,
   } = useQuery({
-    queryKey: ['dashboardStats', user?.email, startDate, endDate],
+    queryKey: ['dashboardStats', user?.email || backendEmail, startDate, endDate],
     queryFn: fetchStats,
-    enabled: !loading && !!user,
+    enabled: !loading && !!(user || backendEmail),
     keepPreviousData: true,
   });
 

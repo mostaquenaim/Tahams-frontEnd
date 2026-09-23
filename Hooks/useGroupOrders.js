@@ -15,13 +15,13 @@ const EMPTY_RESULT = {
 // backend so search/filtering/stats reflect the whole matching dataset,
 // not just whatever page happens to be loaded.
 const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems = false, filters = {}) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, backendEmail } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const { search = '', status = 'all', region = 'all', hideCancelled = false } = filters;
 
   const fetchGroupOrderData = async () => {
     const params = new URLSearchParams({
-      email: user?.email || '',
+      email: user?.email || backendEmail || '',
       page: String(page),
       limit: String(limit),
       allItems: String(allItems),
@@ -85,7 +85,7 @@ const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems = false
   const { refetch, data = EMPTY_RESULT, isPending } = useQuery({
     queryKey: [
       'sortedGroupedOrdersArray',
-      user?.email,
+      user?.email || backendEmail,
       page,
       limit,
       allItems,
@@ -95,7 +95,7 @@ const useGroupOrders = (page = 1, limit = 20, isEnabled = true, allItems = false
       hideCancelled,
     ],
     queryFn: fetchGroupOrderData,
-    enabled: !loading && !!user && isEnabled,
+    enabled: !loading && !!(user || backendEmail) && isEnabled,
     keepPreviousData: true, // Smooth pagination
   });
 

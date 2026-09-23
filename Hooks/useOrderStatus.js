@@ -6,7 +6,7 @@ import { AuthContext } from "/Contexts/Auth/AuthProvider";
 const useOrderStatus = (token) => {
     // console.log('token',token);
     const axiosPublic = useAxiosPublic();
-    const { user, loading } = useContext(AuthContext);
+    const { user, loading, backendEmail } = useContext(AuthContext);
 
     const fetchOrderStatusData = async () => {
         const res = await axiosPublic.get(`/admin/get-buying-history-status-by-token/${token}`);
@@ -15,9 +15,9 @@ const useOrderStatus = (token) => {
     };
 
     const { refetch, data: orderStatus = [] } = useQuery({
-        queryKey: ['orderStatus', user?.email], 
+        queryKey: ['orderStatus', user?.email || backendEmail],
         queryFn: fetchOrderStatusData,
-        enabled: !loading && !!user, // Enable the query when the user is not loading and is authenticated
+        enabled: !loading && !!(user || backendEmail), // Enable the query when the user is not loading and is authenticated
     });
 
     return [orderStatus, refetch];

@@ -28,7 +28,7 @@ import {
 
 const Index = () => {
     const axiosSecure = useAxiosSecure();
-    const { user } = useContext(AuthContext)
+    const { user, backendEmail } = useContext(AuthContext)
 
     const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -79,7 +79,7 @@ const Index = () => {
         if (selectedProduct) {
             setBusy(true);
             try {
-                await axiosSecure.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email}`);
+                await axiosSecure.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email || backendEmail}`);
                 refetch();
                 closeDeleteModal();
             } catch (error) {

@@ -21,7 +21,7 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm();
-    const { user, signIn, logOut } = useContext(AuthContext)
+    const { user, signIn, logOut, setBackendEmail } = useContext(AuthContext)
     // console.log(user, "17");
     const router = useRouter()
 
@@ -47,6 +47,7 @@ const Login = () => {
         localStorage.setItem('access_token', sessionData.access_token)
         localStorage.setItem('userInfo', JSON.stringify(sessionData.data));
         localStorage.setItem('email', sessionData.data.email);
+        setBackendEmail(sessionData.data.email);
         await mergeGuestCartIntoAccount(axiosPublic, sessionData.data.email);
     };
 

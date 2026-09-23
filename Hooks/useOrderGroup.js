@@ -5,7 +5,7 @@ import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const useOrderGroup = (historyId) => {
   const axiosSecure = useAxiosSecure();
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, backendEmail } = useContext(AuthContext);
 
   const fetchOrderData = async () => {
     const res = await axiosSecure.get(`/admin/order-group/${historyId}`);
@@ -15,7 +15,7 @@ const useOrderGroup = (historyId) => {
   const { refetch, isPending, data: specificOrders = [] } = useQuery({
     queryKey: ['specificOrders', historyId],
     queryFn: fetchOrderData,
-    enabled: !loading && !!user && !!historyId,
+    enabled: !loading && !!(user || backendEmail) && !!historyId,
   });
 
   return {specificOrders, refetch, isPending};

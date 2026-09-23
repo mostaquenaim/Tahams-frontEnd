@@ -35,7 +35,7 @@ import {
 } from '../../../components/Admin';
 
 const ShowProducts = () => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, backendEmail } = useContext(AuthContext);
   const [products, refetch] = useProduct({ publishable: true });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -176,7 +176,7 @@ const ShowProducts = () => {
       setDeleting(true);
       try {
         await axiosSecure.delete(
-          `/admin/delete-product/${selectedProduct}?email=${user?.email}`,
+          `/admin/delete-product/${selectedProduct}?email=${user?.email || backendEmail}`,
         );
         refetch();
         closeDeleteModal();
