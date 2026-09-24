@@ -85,9 +85,9 @@ const Product = ({ product }) => {
     };
 
     // Pushing data to dataLayer
-    pushToDataLayer('view_item', {
-      item,
-    });
+    // pushToDataLayer('view_item', {
+    //   item,
+    // });
 
     try {
       await axiosPublic.post(
@@ -323,10 +323,10 @@ const Product = ({ product }) => {
       }
     }
 
-    pushToDataLayer('add_to_cart', {
-      item: product,
-      user_email: customEmail,
-    });
+    // pushToDataLayer('add_to_cart', {
+    //   item: product,
+    //   user_email: customEmail,
+    // });
   };
 
   const goToCartTimeoutRef = useRef(null);

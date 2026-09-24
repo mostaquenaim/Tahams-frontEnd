@@ -85,7 +85,7 @@ const MyCart = () => {
     setRemovingId(item.id);
     try {
       await axiosPublic.delete(`/admin/delete-cart/${item.uniqueId}`);
-      pushToDataLayer('remove_from_cart', { item });
+      // pushToDataLayer('remove_from_cart', { item });
       await refetch();
       toast.success('Removed from your cart');
     } catch (error) {
@@ -147,11 +147,11 @@ const MyCart = () => {
 
     localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
 
-    pushToDataLayer('begin_checkout', {
-      currency: 'BDT',
-      totalPrice: subtotal,
-      items: generateTempItems(selectedItems),
-    });
+    // pushToDataLayer('begin_checkout', {
+    //   currency: 'BDT',
+    //   totalPrice: subtotal,
+    //   items: generateTempItems(selectedItems),
+    // });
 
     router.push('/buy-now');
   };

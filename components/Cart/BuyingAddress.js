@@ -397,23 +397,23 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
     if (!user && token) addGuestOrderToken(token);
     rememberCustomer(details);
 
-    try {
-      pushToDataLayer('purchase', {
-        order_id: response.data?.id,
-        currency: 'BDT',
-        totalPrice: subtotal + (finalFee || 0),
-        coupon: items[0]?.coupon,
-        fullName: details.fullName,
-        region: details.region,
-        city: details.city,
-        address: details.address,
-        phone_no: phone,
-        BuyingDate: new Date(),
-        items: generateTempItems(items),
-      });
-    } catch (error) {
-      console.error('Analytics event failed:', error);
-    }
+    // try {
+    //   pushToDataLayer('purchase', {
+    //     order_id: response.data?.id,
+    //     currency: 'BDT',
+    //     totalPrice: subtotal + (finalFee || 0),
+    //     coupon: items[0]?.coupon,
+    //     fullName: details.fullName,
+    //     region: details.region,
+    //     city: details.city,
+    //     address: details.address,
+    //     phone_no: phone,
+    //     BuyingDate: new Date(),
+    //     items: generateTempItems(items),
+    //   });
+    // } catch (error) {
+    //   console.error('Analytics event failed:', error);
+    // }
 
     // The order exists now - make sure "back" can never place it twice.
     localStorage.removeItem('selectedItems');

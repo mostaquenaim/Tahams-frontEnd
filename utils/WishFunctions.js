@@ -5,12 +5,12 @@ const axiosPublic = useAxiosPublic()
 
 export const AddToWish = async (product, customEmail, checkIfWished) => {
     // add to wish process 
-    pushToDataLayer('add_to_wish',
-        {
-            item: product,
-            user_email: customEmail
-        }
-    )
+    // pushToDataLayer('add_to_wish',
+    //     {
+    //         item: product,
+    //         user_email: customEmail
+    //     }
+    // )
 
     try {
         // Make a POST request to add the product to the wishlist
@@ -28,12 +28,12 @@ export const AddToWish = async (product, customEmail, checkIfWished) => {
 
 export const DeleteFromWish = async (product, customEmail, wishId, checkIfWished, refetch) => {
     // Check for guest customer info in localStorage
-    pushToDataLayer('remove_from_wish',
-        {
-            item: product,
-            user_email: customEmail
-        }
-    )
+    // pushToDataLayer('remove_from_wish',
+    //     {
+    //         item: product,
+    //         user_email: customEmail
+    //     }
+    // )
 
     try {
         const res = await axiosPublic.delete(`/admin/remove-wish/${wishId}`);

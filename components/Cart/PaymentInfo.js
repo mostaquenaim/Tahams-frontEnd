@@ -117,18 +117,18 @@ const PaymentInfo = ({ history, token, email }) => {
 
       await axiosPublic.post('/admin/add-payment', body);
 
-      try {
-        pushToDataLayer('payment_method', {
-          currency: 'BDT',
-          totalPrice: total,
-          payment_method: selected.name,
-          region: order.region,
-          address: order.address,
-          items: generateTempItems(history),
-        });
-      } catch (error) {
-        console.error('Analytics event failed:', error);
-      }
+      // try {
+      //   pushToDataLayer('payment_method', {
+      //     currency: 'BDT',
+      //     totalPrice: total,
+      //     payment_method: selected.name,
+      //     region: order.region,
+      //     address: order.address,
+      //     items: generateTempItems(history),
+      //   });
+      // } catch (error) {
+      //   console.error('Analytics event failed:', error);
+      // }
 
       router.push(`/my-orders/details/${token}?placed=1&paid=1`);
     } catch (error) {
