@@ -279,8 +279,8 @@ export async function getServerSideProps() {
   return {
     props: {
       initialNewArrivals: (newArrivals || [])
-        .slice()
-        .sort((a, b) => a.serial - b.serial),
+        .filter((arrival) => arrival.serial !== 'discontinued')
+        .sort((a, b) => Number(a.serial) - Number(b.serial)),
       initialPopularItems: popularItems || [],
       initialActivePop: activePop || null,
       initialHomeSections: homeSections || [],

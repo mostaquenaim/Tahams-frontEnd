@@ -22,8 +22,8 @@ import {
   getErrorMessage,
 } from '../../../components/Admin';
 
-// The storefront has a fixed number of "new arrival" slots. Saving a slot
-// creates a new arrival at that position and retires whatever was there.
+// The storefront has a fixed number of "new arrival" slots. Saving an empty
+// slot creates an arrival there; saving a live one edits it in place.
 const MAX_SLOTS = 8;
 
 const EMPTY_DRAFT = { name: '', description: '', category: '', file: null };
@@ -32,6 +32,50 @@ const describeType = (item) =>
   [item.name, item.category?.name, item.category?.category?.name]
     .filter(Boolean)
     .join(' › ');
+
+// Storefront cards link to a search for the arrival's name, so warn when that
+// search would come back empty.
+const NameMatchHint = ({ name }) => {
+  const axiosPublic = useAxiosPublic();
+  const [matches, setMatches] = useState(null);
+  const term = name.trim();
+
+  useEffect(() => {
+    setMatches(null);
+    if (!term) return undefined;
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await axiosPublic.get('/admin/search-products', {
+          params: { q: term },
+        });
+        if (!cancelled) setMatches(Array.isArray(res.data) ? res.data.length : 0);
+      } catch {
+        if (!cancelled) setMatches(null);
+      }
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [term, axiosPublic]);
+
+  if (matches === null) return null;
+  return matches === 0 ? (
+    <Alert tone="warning">
+      No published products match &ldquo;{term}&rdquo;. Customers who click this
+      card will see an empty search page - use a name that appears in your
+      product names.
+    </Alert>
+  ) : (
+    <p className="text-xs text-gray-500">
+      Clicking this card shows {matches} matching{' '}
+      {matches === 1 ? 'product' : 'products'}.
+    </p>
+  );
+};
 
 const AddNewArrivals = () => {
   const axiosPublic = useAxiosPublic();
@@ -133,11 +177,8 @@ const AddNewArrivals = () => {
       found.description = 'Description is required.';
     }
     if (!values.category) found.category = 'Choose a product type.';
-    if (!values.file) {
-      found.file = live[slot]
-        ? 'Choose an image to save changes - saving replaces this arrival.'
-        : 'Choose an image.';
-    }
+    // An existing arrival keeps its image unless a new one is chosen.
+    if (!values.file && !live[slot]) found.file = 'Choose an image.';
     if (Object.keys(found).length > 0) {
       setErrors((prev) => ({ ...prev, [slot]: found }));
       return;
@@ -148,13 +189,22 @@ const AddNewArrivals = () => {
       const body = new FormData();
       body.append('name', values.name.trim());
       body.append('description', values.description.trim());
-      body.append('serial', slot);
       body.append('category', values.category);
-      body.append('filename', await compressImage(values.file));
+      if (values.file) {
+        body.append('filename', await compressImage(values.file));
+      }
 
-      await axiosSecure.post('/admin/add-new-arrivals', body, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+      if (live[slot]) {
+        await axiosSecure.patch(
+          `/admin/update-new-arrival/${live[slot].id}`,
+          body,
+          config,
+        );
+      } else {
+        body.append('serial', slot);
+        await axiosSecure.post('/admin/add-new-arrivals', body, config);
+      }
 
       toast.success(`Slot ${slot} saved`);
       clearSlot(slot);
@@ -270,6 +320,7 @@ const AddNewArrivals = () => {
                         className="w-full"
                       />
                     </Field>
+                    <NameMatchHint name={values.name} />
                     <Field
                       label="Description"
                       htmlFor={`description-${slot}`}
@@ -319,11 +370,11 @@ const AddNewArrivals = () => {
                   <Field
                     label="Image"
                     htmlFor={`image-${slot}`}
-                    required
+                    required={!arrival}
                     error={slotErrors.file}
                     hint={
                       arrival && !values.file
-                        ? 'Current image shown below. Upload a new one to replace it.'
+                        ? 'Optional - leave empty to keep the current image.'
                         : undefined
                     }
                   >

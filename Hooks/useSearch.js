@@ -5,9 +5,9 @@ const useSearch = (searchQuery, initialData) => {
   const axiosPublic = useAxiosPublic();
 
   const fetchSearchData = async () => {
-    const res = await axiosPublic.get(
-      `/admin/search-products?q=${searchQuery}`
-    );
+    const res = await axiosPublic.get('/admin/search-products', {
+      params: { q: searchQuery },
+    });
     return res.data;
   };
 

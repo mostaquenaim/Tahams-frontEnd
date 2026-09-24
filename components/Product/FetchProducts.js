@@ -50,12 +50,15 @@ const FetchProducts = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const priceRangeChanged =
+    priceRange[0] !== DEFAULT_PRICE_RANGE[0] ||
+    priceRange[1] !== DEFAULT_PRICE_RANGE[1];
+
   const hasActiveFilters =
     selectedColors.length > 0 ||
     selectedAvailability !== '' ||
     selectedOffer === 'discount' ||
-    priceRange[0] !== DEFAULT_PRICE_RANGE[0] ||
-    priceRange[1] !== DEFAULT_PRICE_RANGE[1];
+    priceRangeChanged;
 
   const clearFilters = () => {
     setSelectedColors([]);
@@ -88,7 +91,12 @@ const FetchProducts = ({
       const productPrice = parseInt(
         (product.sellingPrice * (100 - product.discountPercentage)) / 100,
       );
-      if (productPrice < priceRange[0] || productPrice > priceRange[1])
+      // Only apply the price range once the customer has changed it, so
+      // products priced outside the default range aren't silently hidden.
+      if (
+        priceRangeChanged &&
+        (productPrice < priceRange[0] || productPrice > priceRange[1])
+      )
         return false;
       if (
         selectedAvailability !== '' &&
@@ -118,6 +126,7 @@ const FetchProducts = ({
     categories,
     selectedColors,
     priceRange,
+    priceRangeChanged,
     selectedAvailability,
     selectedOffer,
     sortOption,

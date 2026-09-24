@@ -43,29 +43,53 @@ useEffect(() => {
 }, []);
 
   const handleSearch = () => {
+    const term = searchInput.trim();
+    if (!term) return;
     fnc(!btn);
-    router.push(`/search-product?search=${searchInput}`);
+    router.push(`/search-product?search=${encodeURIComponent(term)}`);
+    setSearchInput('');
+    setSearchedProducts([]);
   };
 
-  const handleSearchInput = async (e) => {
-    const query = e.target.value;
-    setSearchInput(query);
-    setIsLoading(true);
+  // Debounced suggestions; a slower earlier response never overwrites a newer one.
+  const requestId = useRef(0);
+  useEffect(() => {
+    const term = searchInput.trim();
+    const id = (requestId.current += 1);
 
-    try {
-      const response = await axiosPublic.get(
-        `admin/search-products?q=${query}`,
-      );
-      setSearchedProducts(response.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
+    if (!term) {
+      setSearchedProducts([]);
       setIsLoading(false);
+      return undefined;
     }
+
+    setIsLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const response = await axiosPublic.get('admin/search-bar-products', {
+          params: { q: term },
+        });
+        if (id !== requestId.current) return;
+        setSearchedProducts(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        if (id !== requestId.current) return;
+        console.error(error);
+        setSearchedProducts([]);
+      } finally {
+        if (id === requestId.current) setIsLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, axiosPublic]);
+
+  const handleSearchInput = (e) => {
+    setSearchInput(e.target.value);
   };
 
   const handleResultClick = (id) => {
     setSearchInput('');
+    setSearchedProducts([]);
     fnc(!btn);
     router.push(`/products/details/${id}`);
   };
@@ -142,11 +166,12 @@ useEffect(() => {
               className="input input-bordered join-item w-full"
               placeholder="Search"
               value={searchInput}
-              onChange={(e) => handleSearchInput(e)}
+              onChange={handleSearchInput}
               onKeyDown={handleKeyPress}
+              aria-label="Search products"
             />
             {/* Search Results Dropdown with Image */}
-            {searchInput && searchedProducts.length > 0 && (
+            {searchInput.trim() && !isLoading && searchedProducts.length > 0 && (
               <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
                 {searchedProducts.map((product) => (
                   <div
@@ -168,7 +193,11 @@ useEffect(() => {
 
           {/* search  */}
           <div className="indicator">
-            <button className="btn join-item" onClick={() => handleSearch()}>
+            <button
+              className="btn join-item"
+              onClick={() => handleSearch()}
+              disabled={!searchInput.trim()}
+            >
               Search
             </button>
           </div>

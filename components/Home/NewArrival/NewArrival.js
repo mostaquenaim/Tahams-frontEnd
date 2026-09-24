@@ -16,7 +16,9 @@ const NewArrival = ({ initialProducts = null }) => {
   const fetchNewArrivals = async () => {
     try {
       const res = await axiosPublic.get(`/admin/view-new-arrivals`);
-      const sortedProducts = res.data.sort((a, b) => a.serial - b.serial);
+      const sortedProducts = res.data
+        .filter((arrival) => arrival.serial !== 'discontinued')
+        .sort((a, b) => Number(a.serial) - Number(b.serial));
       setProducts(sortedProducts);
     } catch (error) {
       console.error('Error fetching new arrivals', error);
@@ -37,11 +39,11 @@ const NewArrival = ({ initialProducts = null }) => {
               ></div>
             ))
           : products.map((product, index) => (
-              <React.Fragment key={product.id ?? index}>
-                {product.serial != 'discontinued' && (
-                  <ShowNewArrival ind={index} prop={product} />
-                )}
-              </React.Fragment>
+              <ShowNewArrival
+                key={product.id ?? index}
+                ind={index}
+                prop={product}
+              />
             ))}
       </div>
     </div>
