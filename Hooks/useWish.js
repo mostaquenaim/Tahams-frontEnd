@@ -6,7 +6,7 @@ import { getGuestCustomerInfo } from "/utils/guestCustomer";
 
 const useWish = () => {
     const axiosPublic = useAxiosPublic();
-    const { user, loading } = useContext(AuthContext);
+    const { user, backendEmail, loading } = useContext(AuthContext);
     const [userData, setUserData] = useState(null)
 
     useEffect(()=>{
@@ -21,7 +21,7 @@ const useWish = () => {
     },[loading, user])
 
     const fetchWishData = async () => {
-        const res = await axiosPublic.get(`/admin/get-wish-by-user/${userData?.email}`);
+        const res = await axiosPublic.get(`/admin/get-wish-by-user/${userData?.email || backendEmail}`);
         // console.log(res.data,'wish');
         return res.data;
     };

@@ -142,7 +142,7 @@ const CustomizeYourTee = () => {
     back: null,
   });
 
-  const { user, loading } = useContext(AuthContext);
+  const { user, backendEmail, loading } = useContext(AuthContext);
 
   const inputRefs = useRef({});
 
@@ -150,7 +150,7 @@ const CustomizeYourTee = () => {
   useEffect(() => {
     if (!loading) {
       const guestCustomerInfo = getGuestCustomerInfo(user);
-      setCustomerEmail(user?.email || guestCustomerInfo.email);
+      setCustomerEmail(user?.email || backendEmail || guestCustomerInfo.email);
     }
   }, [loading, user]);
 

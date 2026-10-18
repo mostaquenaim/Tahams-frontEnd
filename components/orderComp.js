@@ -121,7 +121,7 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
     useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const axiosPublic = useAxiosPublic();
-  const { user } = useContext(AuthContext);
+  const { user, backendEmail } = useContext(AuthContext);
 
   useEffect(() => {
     setLocalOrderDetails(orderDetails);
@@ -241,10 +241,12 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
       [selectedStep.date]: new Date().toISOString(),
     };
 
+    const userEmail = backendEmail || user?.email;
+
     try {
       setIsUpdating(true);
       const response = await axiosPublic.patch(
-        `/admin/update-buying-history-status-by-token/${localOrderDetails.trackingToken}?email=${user?.email}`,
+        `/admin/update-buying-history-status-by-token/${localOrderDetails.trackingToken}?email=${userEmail}`,
         updateData,
       );
 

@@ -21,7 +21,7 @@ const readSelectedItems = () => {
 const BuyNow = ({ regions }) => {
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
-  const { user, loading: authLoading } = useContext(AuthContext);
+  const { user, backendEmail, loading: authLoading } = useContext(AuthContext);
 
   // null while we work out which items are actually still purchasable.
   const [items, setItems] = useState(null);
@@ -45,7 +45,7 @@ const BuyNow = ({ regions }) => {
       // changed, or the order was already placed and the customer came back).
       let fresh = stored;
       try {
-        const email = user?.email || getGuestCustomerInfo().email;
+        const email = user?.email || backendEmail || getGuestCustomerInfo().email;
         const res = await axiosPublic.get(
           `/admin/get-all-carts?email=${encodeURIComponent(email)}`,
         );
@@ -76,7 +76,7 @@ const BuyNow = ({ regions }) => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user?.email]);
+  }, [authLoading, user?.email, backendEmail]);
 
   return (
     <>

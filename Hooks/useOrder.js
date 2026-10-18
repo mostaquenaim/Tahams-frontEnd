@@ -5,7 +5,7 @@ import { AuthContext } from '/Contexts/Auth/AuthProvider';
 
 const useOrder = (page = 1, limit = 20, isEnabled = true, allItems = false) => {
   const axiosPublic = useAxiosPublic();
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, backendEmail } = useContext(AuthContext);
 
   // Order history by email requires proving you own that email - a
   // Firebase ID token does that server-side. Guests with no Firebase
@@ -22,7 +22,7 @@ const useOrder = (page = 1, limit = 20, isEnabled = true, allItems = false) => {
   };
 
   const { refetch, data: orders = [] } = useQuery({
-    queryKey: ['orders', user?.email, page],
+    queryKey: ['orders', user?.email, backendEmail, page],
     queryFn: fetchCartData,
     enabled: !loading && !!user && isEnabled,
   });
