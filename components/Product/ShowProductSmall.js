@@ -13,7 +13,7 @@ import { imageUrl } from '../Storefront/StorefrontUI';
 // available size and jumps straight to checkout.
 const ShowProductSmall = ({ item }) => {
   const router = useRouter();
-  const { user } = useContext(AuthContext);
+  const { user, backendEmail } = useContext(AuthContext);
   const [userInfo, setUserInfo] = useState(null);
   const [buying, setBuying] = useState(false);
   const axiosPublic = useAxiosPublic();
@@ -34,7 +34,7 @@ const ShowProductSmall = ({ item }) => {
   const handleBuyNow = async () => {
     if (!canBuy || buying) return;
 
-    const customEmail = user?.email || getGuestCustomerInfo().email;
+    const customEmail = user?.email || backendEmail || getGuestCustomerInfo().email;
     setBuying(true);
 
     try {

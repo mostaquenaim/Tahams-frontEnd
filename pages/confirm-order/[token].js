@@ -16,7 +16,7 @@ const RETRY_DELAY_MS = 800;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PaymentProcess = () => {
-  const { user, loading: authLoading } = useContext(AuthContext);
+  const { user, backendEmail, loading: authLoading } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
   const { token } = router.query;
@@ -31,7 +31,7 @@ const PaymentProcess = () => {
     let cancelled = false;
 
     const load = async () => {
-      const customerEmail = user?.email || getGuestCustomerInfo().email;
+      const customerEmail = user?.email || backendEmail || getGuestCustomerInfo().email;
       setEmail(customerEmail);
 
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
@@ -59,7 +59,7 @@ const PaymentProcess = () => {
     return () => {
       cancelled = true;
     };
-  }, [token, authLoading, user?.email, axiosPublic]);
+  }, [token, authLoading, user?.email, backendEmail, axiosPublic]);
 
   return (
     <div className="min-h-screen">

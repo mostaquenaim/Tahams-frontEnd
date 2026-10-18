@@ -6,7 +6,7 @@ import { getGuestCustomerInfo } from "../utils/guestCustomer";
 
 const useCart = () => {
     const axiosPublic = useAxiosPublic();
-    const { user, loading } = useContext(AuthContext);
+    const { user, backendEmail, loading } = useContext(AuthContext);
     const [guestUser, setGuestUser] = useState(null);
 
     // Check localStorage only on the client side
@@ -24,7 +24,7 @@ const useCart = () => {
         }
 
         // Fetch cart data for the current user
-        const res = await axiosPublic.get(`/admin/get-all-carts?email=${currentUser.email}`);
+        const res = await axiosPublic.get(`/admin/get-all-carts?email=${currentUser.email || backendEmail}`);
         // console.log(res.data);
         const result = res.data.filter((item) => !item.isBought);
         // console.log(result);
@@ -32,7 +32,7 @@ const useCart = () => {
     };
 
     const { isPending: isLoading ,refetch, data: cart = [] } = useQuery({
-        queryKey: ['cart', user?.email || guestUser?.email], // Include user or guest email in the query key
+        queryKey: ['cart', user?.email || backendEmail || guestUser?.email], // Include user or guest email in the query key
         queryFn: fetchCartData,
         enabled: !loading && (!!user || !!guestUser), // Enable only if user or guestUser is available
     });

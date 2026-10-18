@@ -18,12 +18,12 @@ import {
 const WishList = () => {
   const [isPending, wish, refetch] = useWish();
   const [removingId, setRemovingId] = useState(null);
-  const { user, loading } = useContext(AuthContext);
+  const { user, backendEmail, loading } = useContext(AuthContext);
   const [customEmail, setCustomEmail] = useState('');
 
   useEffect(() => {
     if (!loading) {
-      setCustomEmail(user ? user.email : getGuestCustomerInfo().email);
+      setCustomEmail(user?.email || backendEmail || getGuestCustomerInfo().email);
     }
   }, [loading, user]);
 

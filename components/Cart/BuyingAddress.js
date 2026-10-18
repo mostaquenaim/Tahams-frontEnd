@@ -136,7 +136,7 @@ function ChoiceCard({ selected, onSelect, icon, title, subtitle, name }) {
 const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
-  const { user } = useContext(AuthContext);
+  const { user, backendEmail } = useContext(AuthContext);
 
   const [form, setForm] = useState({
     fullName: '',
@@ -222,7 +222,7 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.email]);
+  }, [user?.email || backendEmail]);
 
   const cityGroups = useMemo(() => {
     const cityCore = areas.inside.filter((name) => DHAKA_CITY_AREAS.includes(name));

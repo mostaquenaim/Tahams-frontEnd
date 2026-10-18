@@ -48,7 +48,7 @@ const Product = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
-  const { user, loading } = useContext(AuthContext);
+  const { user, backendEmail, loading } = useContext(AuthContext);
   const [userInfo, setUserInfo] = useState(null);
   const [pending, setPending] = useState(false);
   const [wishId, setWishId] = useState(-1);
@@ -61,7 +61,7 @@ const Product = ({ product }) => {
 
   const viewCount = async () => {
     // console.log('line 32');
-    const customerEmail = user?.email || getGuestCustomerInfo()?.email;
+    const customerEmail = user?.email || backendEmail || getGuestCustomerInfo()?.email;
 
     const item = {
       item_id: product.id,
@@ -145,7 +145,7 @@ const Product = ({ product }) => {
         setCustomEmail(guestCustomerInfo.email);
       } else {
         // console.log('acheee');
-        setCustomEmail(user?.email);
+        setCustomEmail(user?.email || backendEmail);
       }
     }
   }, [loading, user]);
