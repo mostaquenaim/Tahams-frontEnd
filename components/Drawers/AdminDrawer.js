@@ -13,9 +13,10 @@ import {
 } from 'react-icons/fi';
 import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
-import { CountContext } from '../../Contexts/CountProvider';
-import { CustomizationOrderContext } from '/Contexts/CustomizationOrderCountProvider';
+import useAdminBadgeCounts from '../../Hooks/useAdminBadgeCounts';
 import { NAV_CONFIG, NAV_GROUPS } from './Config/NavConfig';
+
+const formatBadge = (count) => (count > 99 ? '99+' : count);
 
 function getInitials(name) {
   if (!name?.trim()) return 'AD';
@@ -24,9 +25,37 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-const isActivePath = (pathname, href) =>
-  pathname?.toLowerCase() === href.toLowerCase() ||
-  pathname?.toLowerCase().startsWith(href.toLowerCase() + '/');
+const splitHref = (href) => {
+  const [path, search = ''] = href.split('?');
+  return { path: path.toLowerCase(), params: [...new URLSearchParams(search)] };
+};
+
+const matchesQuery = (query, params) =>
+  params.every(([key, value]) => query?.[key] === value);
+
+// Hrefs that pick a view of a page through the query, e.g. the
+// customization requests tab at /admin/show/show-orders?tab=custom.
+const QUERY_HREFS = NAV_CONFIG.flatMap((section) =>
+  section.Tasks.map((task) => splitHref(task.href)),
+).filter(({ params }) => params.length > 0);
+
+// An href with a query is active only on that exact page with those params.
+// A plain href is active on its path and anything nested under it, unless
+// the current query belongs to one of the query hrefs above.
+const isActivePath = (router, href) => {
+  const pathname = router.pathname?.toLowerCase() || '';
+  const { path, params } = splitHref(href);
+
+  if (params.length > 0) {
+    return pathname === path && matchesQuery(router.query, params);
+  }
+
+  if (pathname !== path && !pathname.startsWith(path + '/')) return false;
+
+  return !QUERY_HREFS.some(
+    (entry) => entry.path === pathname && matchesQuery(router.query, entry.params),
+  );
+};
 
 const GROUPED_SECTIONS = NAV_GROUPS.map((group) => ({
   label: group,
@@ -36,34 +65,37 @@ const GROUPED_SECTIONS = NAV_GROUPS.map((group) => ({
 const AdminDrawer = () => {
   const router = useRouter();
   const { isAdminOpen, setAdminIsOpen } = useContext(AdminDrawerContext);
-  const { user } = useContext(AuthContext);
-  const { showCount } = useContext(CountContext);
-  const { showCustomizedCount } = useContext(CustomizationOrderContext);
+  const { user, backendEmail } = useContext(AuthContext);
+  const badgeCounts = useAdminBadgeCounts();
 
   const [expandedSections, setExpandedSections] = useState({});
 
   useEffect(() => {
     const activeSection = NAV_CONFIG.find((section) =>
-      section.Tasks.some((task) => isActivePath(router.pathname, task.href)),
+      section.Tasks.some((task) => isActivePath(router, task.href)),
     );
     if (activeSection) {
       setExpandedSections((prev) => ({ ...prev, [activeSection.Name]: true }));
     }
-  }, [router.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.pathname, router.query]);
 
   const toggleSection = (name) => {
     setExpandedSections((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
+  // NavConfig task id -> count from useAdminBadgeCounts
   const getTaskBadge = (task) =>
     task.id === 'orders'
-      ? showCount
+      ? badgeCounts.newOrders
       : task.id === 'custom'
-        ? showCustomizedCount
-        : 0;
+        ? badgeCounts.newCustomizations
+        : task.id === 'requests'
+          ? badgeCounts.pendingRequests
+          : 0;
 
   const displayName = user?.displayName?.trim() || 'Admin';
-  const contactLine = user?.email || user?.phoneNumber || 'Administrator';
+  const contactLine = user?.email || backendEmail || user?.phoneNumber || 'Administrator';
 
   return (
     <>
@@ -136,7 +168,7 @@ const AdminDrawer = () => {
                 {group.sections.map((section) => {
                   const isExpanded = expandedSections[section.Name];
                   const hasActiveChild = section.Tasks.some((t) =>
-                    isActivePath(router.pathname, t.href),
+                    isActivePath(router, t.href),
                   );
                   const sectionBadge = section.Tasks.reduce(
                     (sum, t) => sum + (getTaskBadge(t) || 0),
@@ -188,7 +220,7 @@ const AdminDrawer = () => {
                           <span className="flex items-center gap-1.5">
                             {sectionBadge > 0 && !isExpanded && (
                               <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] font-medium leading-none text-red-700">
-                                {sectionBadge}
+                                {formatBadge(sectionBadge)}
                               </span>
                             )}
                             <span className="text-gray-400">
@@ -217,7 +249,7 @@ const AdminDrawer = () => {
                           >
                             {section.Tasks.map((task) => {
                               const isActive = isActivePath(
-                                router.pathname,
+                                router,
                                 task.href,
                               );
                               const badgeCount = getTaskBadge(task);
@@ -244,7 +276,7 @@ const AdminDrawer = () => {
                                             : 'bg-red-100 text-red-700'
                                         }`}
                                       >
-                                        {badgeCount}
+                                        {formatBadge(badgeCount)}
                                       </span>
                                     )}
                                   </Link>

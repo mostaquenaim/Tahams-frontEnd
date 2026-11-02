@@ -83,6 +83,45 @@ export function PageHeader({ eyebrow, title, badge, description, actions }) {
   );
 }
 
+// Underline tabs for switching between views of one page. `tabs` is
+// [{ value, label, icon, count }]; a positive `count` shows as a red
+// "needs attention" pill. The parent owns the selected value.
+export function Tabs({ value, onChange, tabs }) {
+  return (
+    <div
+      role="tablist"
+      className="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200"
+    >
+      {tabs.map((tab) => {
+        const isActive = tab.value === value;
+        return (
+          <button
+            key={tab.value}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => !isActive && onChange(tab.value)}
+            className={cx(
+              '-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 [&_svg]:h-4 [&_svg]:w-4',
+              isActive
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+            )}
+          >
+            {tab.icon}
+            {tab.label}
+            {tab.count > 0 && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] font-medium leading-none text-red-700">
+                {tab.count > 99 ? '99+' : tab.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // White card with an optional titled header, for detail pages.
 export function Section({
   title,

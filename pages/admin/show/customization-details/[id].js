@@ -70,7 +70,7 @@ const CustomizationDetails = () => {
 
   const backButton = (
     <Button
-      href="/admin/show/show-customization-requests"
+      href="/admin/show/show-orders?tab=custom"
       variant="ghost"
       size="sm"
       icon={<FiArrowLeft />}

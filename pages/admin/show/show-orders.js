@@ -12,6 +12,7 @@ import {
   FiDownload,
   FiFileText,
   FiGrid,
+  FiLayers,
   FiMessageSquare,
   FiPackage,
   FiTrendingUp,
@@ -22,7 +23,12 @@ import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useGroupOrders from '../../../Hooks/useGroupOrders';
+import useAdminBadgeCounts, {
+  refreshAdminBadges,
+} from '../../../Hooks/useAdminBadgeCounts';
+import { useQueryClient } from '@tanstack/react-query';
 import { getOrderStatus } from '../../../utils/orderStatus';
+import CustomizationRequestsPanel from '../../../components/Show/CustomizationRequestsPanel';
 import {
   AdminPage,
   Badge,
@@ -47,6 +53,7 @@ import {
   Table,
   TableCard,
   TableEmpty,
+  Tabs,
   Td,
   Th,
   ToolbarSpacer,
@@ -116,11 +123,17 @@ const getNotePosition = (button) => {
     : { top: rect.bottom + 8, left };
 };
 
-const ShowOrders = ({ data }) => {
+const PAGE_TABS = [
+  { value: 'orders', label: 'Orders', icon: <FiPackage /> },
+  { value: 'custom', label: 'Customization requests', icon: <FiLayers /> },
+];
+
+const OrdersPanel = ({ data, tabs, active }) => {
   const { loading } = useContext(AuthContext);
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
   const addressOptions = data?.module || [];
 
   const [searchInput, setSearchInput] = useState('');
@@ -156,6 +169,12 @@ const ShowOrders = ({ data }) => {
   const noteButtonRefs = useRef({});
   const notePopoverRef = useRef(null);
   const tableScrollRef = useRef(null);
+
+  // The note popover is position: fixed, so it would stay on screen after
+  // switching to the other tab unless it is closed here.
+  useEffect(() => {
+    if (!active) setOpenNoteId(null);
+  }, [active]);
 
   useEffect(() => {
     if (openNoteId === null) return;
@@ -312,6 +331,7 @@ const ShowOrders = ({ data }) => {
           checkedDate: new Date().toISOString(),
         },
       );
+      refreshAdminBadges(queryClient);
       await refetch();
     } catch (error) {
       console.error('Error updating checked state:', error);
@@ -640,7 +660,7 @@ const ShowOrders = ({ data }) => {
   const successRatio = Number(fraudCheck?.success_ratio) || 0;
 
   return (
-    <AdminPage title="Orders">
+    <>
       <PageHeader
         title="Orders"
         description="Review, check and ship customer orders."
@@ -663,6 +683,8 @@ const ShowOrders = ({ data }) => {
           </Dropdown>
         }
       />
+
+      {tabs}
 
       <StatGrid cols={3}>
         <StatCard
@@ -885,6 +907,58 @@ const ShowOrders = ({ data }) => {
           </div>
         )}
       </Modal>
+    </>
+  );
+};
+
+// Orders and customization requests share this page as two tabs, selected
+// by `?tab=custom` so links, refreshes and the back button keep the tab.
+// A panel mounts the first time its tab is opened and then stays mounted
+// (hidden) so switching back keeps its filters, page and scroll position.
+const ShowOrders = ({ data }) => {
+  const router = useRouter();
+  const tab = router.query.tab === 'custom' ? 'custom' : 'orders';
+
+  const [visitedTabs, setVisitedTabs] = useState(() => ({ [tab]: true }));
+
+  useEffect(() => {
+    setVisitedTabs((prev) => (prev[tab] ? prev : { ...prev, [tab]: true }));
+  }, [tab]);
+
+  const handleTabChange = (value) => {
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: value === 'custom' ? { tab: 'custom' } : {},
+      },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  };
+
+  const { newOrders, newCustomizations } = useAdminBadgeCounts();
+  const tabCounts = { orders: newOrders, custom: newCustomizations };
+
+  const tabs = (
+    <Tabs
+      value={tab}
+      onChange={handleTabChange}
+      tabs={PAGE_TABS.map((item) => ({ ...item, count: tabCounts[item.value] }))}
+    />
+  );
+
+  return (
+    <AdminPage title={tab === 'custom' ? 'Customization requests' : 'Orders'}>
+      {visitedTabs.orders && (
+        <div hidden={tab !== 'orders'}>
+          <OrdersPanel data={data} tabs={tabs} active={tab === 'orders'} />
+        </div>
+      )}
+      {visitedTabs.custom && (
+        <div hidden={tab !== 'custom'}>
+          <CustomizationRequestsPanel tabs={tabs} />
+        </div>
+      )}
     </AdminPage>
   );
 };

@@ -9,8 +9,10 @@ import {
   FiInbox,
   FiRotateCcw,
 } from 'react-icons/fi';
+import { useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useRequests from '../../../Hooks/useRequests';
+import { refreshAdminBadges } from '../../../Hooks/useAdminBadgeCounts';
 import {
   AdminPage,
   Badge,
@@ -40,6 +42,7 @@ const ShowRequests = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [approving, setApproving] = useState(false);
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
@@ -130,6 +133,7 @@ const ShowRequests = () => {
           }
         });
         refetch();
+        refreshAdminBadges(queryClient);
       } else {
         toast.error("Failed to approve request.", {
           position: 'top-right',

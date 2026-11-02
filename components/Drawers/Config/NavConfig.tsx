@@ -145,10 +145,14 @@ export const NAV_CONFIG = [
       },
       {
         id: 'custom', // Use this ID in your component to wrap with <Badge />
-        href: '/admin/show/show-customization-requests',
+        href: '/admin/show/show-orders?tab=custom',
         label: 'Customization Requests',
       },
-      { href: '/admin/show/show-requests', label: 'Cancel/Return Requests' },
+      {
+        id: 'requests', // pending (unapproved) cancel/return requests badge
+        href: '/admin/show/show-requests',
+        label: 'Cancel/Return Requests',
+      },
       { href: '/admin/show/Show-All-Carts', label: 'View Carts' },
     ],
   },
