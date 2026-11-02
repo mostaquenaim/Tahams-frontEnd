@@ -25,7 +25,9 @@ import {
 } from 'react-icons/fi';
 import { AuthContext } from '../../../../Contexts/Auth/AuthProvider';
 import OrderComp from '../../../../components/orderComp';
+import { useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
+import { refreshAdminBadges } from '../../../../Hooks/useAdminBadgeCounts';
 import useOrderGroup from '/Hooks/useOrderGroup';
 import { getOrderStatus } from '../../../../utils/orderStatus';
 import {
@@ -104,6 +106,7 @@ const ShowOrderDetails = () => {
   const { loading } = useContext(AuthContext);
   const { specificOrders: group, refetch, isPending } = useOrderGroup(id);
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
 
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -178,6 +181,8 @@ const ShowOrderDetails = () => {
     setIsDeleting(true);
     try {
       await axiosSecure.put(`/admin/delete-history/${history?.trackingToken}`);
+      // A deleted order may still have been unchecked, i.e. in the badge
+      refreshAdminBadges(queryClient);
       closeConfirmationModal();
       router.push('/admin/show/show-orders');
     } catch (error) {
