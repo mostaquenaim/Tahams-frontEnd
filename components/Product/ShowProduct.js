@@ -9,7 +9,7 @@ import { formatBDT } from '../../utils/pricing';
 import { imageUrl } from '../Storefront/StorefrontUI';
 
 const ShowProduct = ({ item }) => {
-  const { user, setShowGotoCart } = useContext(AuthContext);
+  const { user, backendEmail, setShowGotoCart } = useContext(AuthContext);
   const [userInfo, setUserInfo] = useState(null);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const axiosPublic = useAxiosPublic();
@@ -36,7 +36,7 @@ const ShowProduct = ({ item }) => {
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
-    const customEmail = user?.email || getGuestCustomerInfo().email;
+    const customEmail = user?.email || backendEmail || getGuestCustomerInfo().email;
 
     setIsAddedToCart(true);
     setShowGotoCart(true);
