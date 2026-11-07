@@ -1,54 +1,77 @@
-import React, {
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { AiOutlineHeart, AiOutlineShoppingCart } from 'react-icons/ai';
+import {
+  Heart,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Mail,
+  Package,
+  ShoppingBag,
+} from 'lucide-react';
 
 // Components
 import ResponsiveNavBar from './ResponsiveNavBar';
 import ListComponent from './components/ListComponent';
+import NavSearch from './components/NavSearch';
+import AccountMenu from './components/AccountMenu';
+import NavIconLink, { NAV_ICON_BTN_CLASS } from './components/NavIconLink';
+import PromoBannerCarousel from '../Swiper/PromotionalBanner';
 
 // Hooks
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import useLoadCats from '../../Hooks/useLoadCats';
+import useCart from '../../Hooks/useCart';
 
 // Context
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
-import DrawerProvider from '/Contexts/DrawerProvider';
 import { DrawerContext } from '/Contexts/DrawerProvider';
 import promoBanners from '/public/promotional-banner-details.json';
-import PromoBannerCarousel from '../Swiper/PromotionalBanner';
-
-// Constants
-const NAV_END_BTN_CLASS = 'btn btn-square btn-ghost text-xl';
-const SEARCH_DEBOUNCE_DELAY = 300;
 
 const NavBarCompRe = () => {
   const axiosPublic = useAxiosPublic();
   const router = useRouter();
   const { user, logOut, loading: authLoading } = useContext(AuthContext);
   const [categories, , isPending] = useLoadCats();
-  const { isLeftDrawerOpen, setIsLeftDrawerOpen } = useContext(DrawerContext);
+  const [, cart] = useCart();
+  const { setIsLeftDrawerOpen } = useContext(DrawerContext);
 
   // State
   const [searchBtn, setSearchBtn] = useState(false);
   const [genders, setGenders] = useState([]);
-  const [searchInput, setSearchInput] = useState('');
-  const [searchedProducts, setSearchedProducts] = useState([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState(null);
+
+  const [megaSuppressed, setMegaSuppressed] = useState(false);
+
+  const cartCount = Array.isArray(cart) ? cart.length : 0;
+
+  // Hover menus are pure CSS, so after clicking a link inside one it would stay
+  // open under the cursor. Hide them on navigation until the mouse moves again.
+  useEffect(() => {
+    const release = () => setMegaSuppressed(false);
+    const suppress = () => {
+      window.removeEventListener('mousemove', release);
+      setMegaSuppressed(true);
+    };
+    const releaseOnMove = () => {
+      window.addEventListener('mousemove', release, { once: true });
+    };
+    router.events.on('routeChangeStart', suppress);
+    router.events.on('routeChangeComplete', releaseOnMove);
+    router.events.on('routeChangeError', releaseOnMove);
+    return () => {
+      router.events.off('routeChangeStart', suppress);
+      router.events.off('routeChangeComplete', releaseOnMove);
+      router.events.off('routeChangeError', releaseOnMove);
+      window.removeEventListener('mousemove', release);
+    };
+  }, [router.events]);
 
   useEffect(() => {
     const fetchGenders = async () => {
       try {
         const response = await axiosPublic.get('/admin/view-genders');
-        setGenders(response.data);
+        setGenders(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching genders:', error);
       }
@@ -56,144 +79,55 @@ const NavBarCompRe = () => {
     fetchGenders();
   }, [axiosPublic]);
 
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) clearTimeout(searchTimeout);
-    };
-  }, [searchTimeout]);
-
-  // Cleanup search timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-    };
-  }, [searchTimeout]);
-
-  useEffect(() => {
-    router.prefetch('/search-product');
-  }, [router]);
-
-  const detailsRef = useRef(null);
-  useEffect(() => {
-  const handleClickOutside = (e) => {
-    if (detailsRef.current && !detailsRef.current.contains(e.target)) {
-      detailsRef.current.open = false;
-    }
-  };
-  document.addEventListener('click', handleClickOutside);
-  return () => document.removeEventListener('click', handleClickOutside);
-}, []);
-
   // Handlers
   const handleLogout = useCallback(async () => {
     try {
       await logOut();
       localStorage.removeItem('userInfo');
       localStorage.removeItem('access_token');
-      // console.log('User logged out successfully');
     } catch (error) {
       console.error('Error during logout:', error.message);
-      // You might want to show a toast notification here
     }
   }, [logOut]);
 
-  // handle search
-  const handleSearch = useCallback(() => {
-    if (!searchInput.trim()) return;
+  const currentPath = (router.asPath || '').split('?')[0];
 
-    router.push(`/search-product?search=${encodeURIComponent(searchInput)}`);
-    setSearchInput('');
-    setSearchedProducts([]);
-  }, [searchInput, router]);
-
-  // handle search input
-  const handleSearchInput = useCallback(
-    async (e) => {
-      const query = e.target.value;
-      setSearchInput(query);
-
-      // Clear previous timeout
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-
-      if (!query.trim()) {
-        setSearchedProducts([]);
-        setIsSearchLoading(false);
-        return;
-      }
-
-      setIsSearchLoading(true);
-
-      // Debounce search
-      const newTimeout = setTimeout(async () => {
-        try {
-          const response = await axiosPublic.get(
-            `admin/search-bar-products?q=${encodeURIComponent(query)}`,
-          );
-          setSearchedProducts(response.data || []);
-        } catch (error) {
-          console.error('Search error:', error);
-          setSearchedProducts([]);
-        } finally {
-          setIsSearchLoading(false);
-        }
-      }, SEARCH_DEBOUNCE_DELAY);
-
-      setSearchTimeout(newTimeout);
-    },
-    [axiosPublic, searchTimeout],
-  );
-
-  // handle result click
-  const handleResultClick = useCallback(
-    (id) => {
-      setSearchInput('');
-      setSearchedProducts([]);
-      router.push(`/products/details/${id}`);
-    },
-    [router],
-  );
-
-  const handleKeyPress = useCallback(
-    (e) => {
-      if (e.key === 'Enter') {
-        handleSearch();
-      }
-    },
-    [handleSearch],
-  );
-
-  // styles
-  const navEndBtnClass = 'btn btn-square btn-ghost text-xl';
-
-  const Li = ({ children }) => (
-    <li className="transition md:hover:scale-105">{children}</li>
-  );
+  const menuItemClass = 'flex items-center gap-3 py-2.5';
 
   const sideLinks = (
     <>
-      <Li>
-        <Link href="/dashboard">Dashboard</Link>
-      </Li>
-      <Li>
-        <Link href="/my-orders">My orders</Link>
-      </Li>
-      <Li>
-        <Link href="/contact">Contact Us</Link>
-      </Li>
-      <Li>
-        {authLoading ? null : user ? (
-          <button onClick={handleLogout}>Logout</button>
-        ) : (
-          <Link href="/login">Login</Link>
-        )}
-      </Li>
+      <li>
+        <Link href="/dashboard" className={menuItemClass}>
+          <LayoutDashboard size={16} /> Dashboard
+        </Link>
+      </li>
+      <li>
+        <Link href="/my-orders" className={menuItemClass}>
+          <Package size={16} /> My orders
+        </Link>
+      </li>
+      <li>
+        <Link href="/contact" className={menuItemClass}>
+          <Mail size={16} /> Contact Us
+        </Link>
+      </li>
+      {!authLoading && (
+        <li className="mt-1 border-t border-white/10 pt-1">
+          {user ? (
+            <button type="button" onClick={handleLogout} className={menuItemClass}>
+              <LogOut size={16} /> Logout
+            </button>
+          ) : (
+            <Link href="/login" className={menuItemClass}>
+              <LogIn size={16} /> Login
+            </Link>
+          )}
+        </li>
+      )}
     </>
   );
 
+  // Used inside mega menus and the mobile drawer.
   const ListStyle = ({ goto, pageName, extraClass }) => {
     const onBtnClick = () => {
       router.push(goto);
@@ -207,194 +141,128 @@ const NavBarCompRe = () => {
         <button onClick={onBtnClick}>{pageName}</button>
         <hr className="nav-underline hidden hover:inline-block border-black duration-300 transition-width"></hr>
       </li>
-      // hidden hover:inline-block
+    );
+  };
+
+  // Top-level desktop link with an animated underline; underlined while active.
+  const TopLink = ({ href, children }) => {
+    const isActive = currentPath === href;
+    return (
+      <li>
+        <Link
+          href={href}
+          className={`relative inline-block py-1 transition-opacity hover:text-white hover:opacity-100 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100 ${
+            isActive ? 'opacity-100 after:scale-x-100' : 'opacity-90 after:scale-x-0'
+          }`}
+        >
+          {children}
+        </Link>
+      </li>
     );
   };
 
   // navlinks
   const links = (
     <>
-      <ListStyle goto="/" pageName="Home" />
+      <TopLink href="/">Home</TopLink>
       {isPending ? (
-        <li className="text-sm text-gray-300 px-2">Loading menu…</li>
+        <li className="text-white/40">Loading menu…</li>
       ) : (
         <>
-          {genders &&
-            genders.map((gender, index) => (
+          {genders.map((gender, index) => (
+            <li key={`gender-${gender.id ?? index}`}>
               <ListComponent
-                key={index}
                 cat={gender}
                 cats={categories}
                 ListStyle={ListStyle}
               ></ListComponent>
-            ))}
+            </li>
+          ))}
           {categories &&
             categories.map(
               (cat, index) =>
                 cat.name != 'Customize' &&
-                (!cat.isGenderVaried ? (
-                  <ListComponent
-                    key={index}
-                    cat={cat}
-                    ListStyle={ListStyle}
-                  ></ListComponent>
-                ) : (
-                  ''
-                )),
+                !cat.isGenderVaried && (
+                  <li key={`cat-${cat.id ?? index}`}>
+                    <ListComponent cat={cat} ListStyle={ListStyle}></ListComponent>
+                  </li>
+                ),
             )}
         </>
       )}
     </>
   );
 
-  const collabs = (
-    <>
-      <ListStyle goto="/collabs/artist" pageName="Artist Collabs" />
-      <ListStyle goto="/collabs/influencer" pageName="Influencer Collabs" />
-    </>
-  );
-
-  const SearchResults = () =>
-    searchInput && (
-      <div className="absolute left-0 mt-2 w-full bg-white shadow-xl border border-gray-300 rounded-md z-50 max-h-60 overflow-y-auto">
-        {isSearchLoading ? (
-          <div className="px-4 py-3 text-gray-500 text-center">
-            Searching...
-          </div>
-        ) : searchedProducts.length > 0 ? (
-          searchedProducts.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => handleResultClick(product.productId)}
-              className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer text-left font-medium text-gray-800 transition-colors duration-200"
-            >
-              <img
-                src={`${process.env.NEXT_PUBLIC_API}/admin/getimage/${product.filename}`}
-                alt={product.name}
-                className="w-12 h-12 object-cover rounded"
-                loading="lazy"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-              <span className="truncate">{product.name}</span>
-            </div>
-          ))
-        ) : (
-          <div className="px-4 py-3 text-gray-500 text-center">
-            No products found
-          </div>
-        )}
-      </div>
-    );
-
   return (
     <div data-theme="black" className="relative">
       {/* Desktop Navigation */}
-      <div
+      <header
         className={
           searchBtn
             ? 'hidden'
-            : 'hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white'
+            : `hidden lg:block absolute top-0 z-20 left-0 right-0 bg-black text-white ${
+                megaSuppressed ? 'nav-mega-suppressed' : ''
+              }`
         }
       >
         <PromoBannerCarousel banners={promoBanners} />
-        <div className="flex items-center justify-between">
-          {/* Search Section */}
-          <div className="w-1/3 text-center z-40">
-            <div className="join w-full px-20 py-5">
-              <div className="w-full relative">
-                <input
-                  className="input input-bordered join-item w-full"
-                  placeholder="Search products..."
-                  value={searchInput}
-                  onChange={handleSearchInput}
-                  onKeyPress={handleKeyPress}
-                  aria-label="Search products"
-                />
-                <SearchResults />
-              </div>
-              <div className="indicator">
-                <button
-                  className="btn join-item"
-                  onClick={handleSearch}
-                  disabled={!searchInput.trim()}
-                  type="button"
-                  aria-label="Search"
-                >
-                  Search
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* Logo Section */}
-          <div className="absolute w-full">
-            <Link href="/" className="w-20 mx-auto text-center block">
+        <div className="border-b border-white/10">
+          <div className="grid h-20 grid-cols-3 items-center gap-6 px-8 xl:px-12">
+            {/* Search */}
+            <div className="w-full max-w-sm">
+              <NavSearch />
+            </div>
+
+            {/* Logo */}
+            <Link href="/" className="justify-self-center" aria-label="Tahams home">
               <img
                 src="/logo-removebg.png"
-                alt="Company Logo"
-                className="w-20 p-2 mx-auto"
+                alt="Tahams"
+                className="h-16 w-auto"
                 loading="eager"
               />
             </Link>
-          </div>
 
-          {/* menu  */}
-          <ul className="menu menu-horizontal px-1">
-            <li>
-              <Link href={`/WishList`} className={navEndBtnClass}>
-                <AiOutlineHeart></AiOutlineHeart>
-              </Link>
-            </li>
-            <li>
-              <Link href="/MyCart" className={navEndBtnClass}>
-                <AiOutlineShoppingCart></AiOutlineShoppingCart>
-              </Link>
-            </li>
-            <li>
-              <details ref={detailsRef}>
-                <summary>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block w-5 h-5 stroke-current"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                    ></path>
-                  </svg>
-                </summary>
-                <ul className="p-2 bg-base-100 right-0">{sideLinks}</ul>
-              </details>
-            </li>
-          </ul>
+            {/* Actions */}
+            <div className="flex items-center gap-1 justify-self-end">
+              <NavIconLink href="/WishList" label="Wishlist">
+                <Heart size={20} strokeWidth={1.75} />
+              </NavIconLink>
+              <NavIconLink href="/MyCart" label="Cart" count={cartCount}>
+                <ShoppingBag size={20} strokeWidth={1.75} />
+              </NavIconLink>
+              <AccountMenu user={user} triggerClass={NAV_ICON_BTN_CLASS}>
+                {sideLinks}
+              </AccountMenu>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <ul className="hidden md:flex gap-5 justify-center items-center text-base px-5 font-semibold w-full">
+        <nav aria-label="Primary">
+          <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 px-8 pt-3 text-sm font-semibold uppercase tracking-wider">
             {links}
           </ul>
-          <ul className="hidden md:flex gap-5 text-center justify-center items-center text-base px-5 py-3 font-semibold w-full">
-            {collabs}
+          <ul className="flex items-center justify-center gap-8 px-8 pb-3 pt-2 text-xs font-medium uppercase tracking-[0.2em] text-white/60">
+            <TopLink href="/collabs/artist">Artist Collabs</TopLink>
+            <TopLink href="/collabs/influencer">Influencer Collabs</TopLink>
           </ul>
-        </div>
-      </div>
+        </nav>
+      </header>
 
       {/* second nav */}
       <section className="fixed top-0 w-full bg-black z-10">
         <ResponsiveNavBar
           btn={searchBtn}
           fnc={setSearchBtn}
-          ListStyle={ListStyle}
-          ListComponent={ListComponent}
           categories={categories}
           genders={genders}
+          isPending={isPending}
           sideLinks={sideLinks}
+          user={user}
+          authLoading={authLoading}
+          onLogout={handleLogout}
+          cartCount={cartCount}
         ></ResponsiveNavBar>
       </section>
     </div>

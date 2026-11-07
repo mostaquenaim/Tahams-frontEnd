@@ -1,5 +1,5 @@
 import useAxiosPublic from '../../../Hooks/useAxiosPublic';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import ListListComponent from './components/ListListComponent';
 
@@ -28,8 +28,6 @@ const ListComponent = ({
       });
   }, []);
 
-  const isGenderItem = cat.name === 'Men' || cat.name === 'Women';
-
   const List = ({
     children,
     parentClass,
@@ -38,47 +36,15 @@ const ListComponent = ({
     filename,
   }) => {
     const [openUl, setOpenUl] = useState(false);
-    const wrapperRef = useRef(null);
 
     const handleOpenUl = (e) => {
       e.preventDefault();
       setOpenUl((v) => !v);
     };
 
-    // Close on outside click OR when hovering a sibling nav item
-    useEffect(() => {
-      if (!isGenderItem || isSide) return;
-
-      const handleClickOutside = (e) => {
-        if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-          setOpenUl(false);
-        }
-      };
-
-      // Close when mouse enters another item in the same nav <ul>
-      const handleSiblingHover = (e) => {
-        if (!wrapperRef.current || wrapperRef.current.contains(e.target)) return;
-        const navUl = wrapperRef.current.closest('ul');
-        if (navUl && navUl.contains(e.target)) {
-          setOpenUl(false);
-        }
-      };
-
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('mouseover', handleSiblingHover);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('mouseover', handleSiblingHover);
-      };
-    }, []);
-
-    // Desktop Men/Women: click-controlled class; others: CSS hover via ulClass
-    const desktopClass = isGenderItem
-      ? 'ulClassClick'
-      : parentClass;
-
+    // Desktop menus (Men/Women included) open on hover via .ulClass in navStyle.css
     return (
-      <div ref={wrapperRef} className={`${!isSide && desktopClass}`}>
+      <div className={`${!isSide && parentClass}`}>
         {parentName != 'Men' && parentName != 'Women' && !isSide ? (
           <a
             href={`/categories/${parentName}`}
@@ -86,7 +52,7 @@ const ListComponent = ({
             className="group"
           >
             <span
-              className={`hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center`}
+              className={`hover:opacity-70 transition-opacity flex gap-1 items-center`}
             >
               {parentName}
               <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
@@ -95,12 +61,10 @@ const ListComponent = ({
         ) : (
           <span
             onClick={handleOpenUl}
-            className="hover:font-extrabold hover:scale-105 transition-all flex gap-1 items-center cursor-pointer"
+            className="hover:opacity-70 transition-opacity flex gap-1 items-center cursor-pointer"
           >
             {parentName}
-            <MdOutlineKeyboardArrowDown
-              className={`transition-transform duration-200 ${openUl ? 'rotate-180' : ''}`}
-            />
+            <MdOutlineKeyboardArrowDown></MdOutlineKeyboardArrowDown>
           </span>
         )}
 
@@ -111,12 +75,12 @@ const ListComponent = ({
               ? openUl
                 ? 'block relative transition-all duration-300 opacity-100 rounded-lg'
                 : 'block opacity-0 absolute -z-40'
-              : isGenderItem
-                ? openUl
-                  ? 'flex w-full left-0 justify-around'
-                  : 'hidden w-full left-0 justify-around'
-                : 'hidden w-full left-0 justify-around'
-          } gap-10 p-5 bg-base-100 absolute border-white border-2 shadow shadow-black`}
+              : 'hidden w-full left-0 justify-around'
+          } ${
+            isSide
+              ? 'gap-10 p-5 border-white border-2 shadow shadow-black'
+              : 'z-30 gap-10 px-10 py-8 border-t border-gray-200 shadow-2xl text-base font-medium normal-case tracking-normal'
+          } bg-base-100 absolute`}
         >
           {children}
         </ul>

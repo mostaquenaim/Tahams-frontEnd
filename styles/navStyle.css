@@ -4,7 +4,33 @@
 .ulClass:hover > ul {
   display: flex;
 }
-/* Men/Women use .ulClassClick — no hover rule, visibility is React-controlled */
+/* Set on the desktop header during/after a route change so the mega menu the
+   cursor is resting on closes; cleared on the next mouse move. */
+.nav-mega-suppressed .ulClass > ul {
+  display: none !important;
+}
+
+/* Mobile drawer: slide panels in when drilling down / going back */
+@keyframes navPanelInForward {
+  from { transform: translateX(28px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes navPanelInBack {
+  from { transform: translateX(-28px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.nav-panel-forward {
+  animation: navPanelInForward 220ms ease-out both;
+}
+.nav-panel-back {
+  animation: navPanelInBack 220ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-panel-forward,
+  .nav-panel-back {
+    animation: none;
+  }
+}
 .ulDrawerClass:hover > ul {
   display: block;
   position: relative;
