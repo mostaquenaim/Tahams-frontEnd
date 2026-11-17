@@ -3,6 +3,9 @@
 module.exports = {
   reactStrictMode: false,
   poweredByHeader: false,
+  // nginx gzips responses (gzip on + gzip_types for css/js/json/svg), so
+  // don't spend Node CPU compressing them a second time.
+  compress: false,
   images: {
     // WebP only: AVIF encoding is far more CPU-expensive on a 1 vCPU box.
     formats: ['image/webp'],
