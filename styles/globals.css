@@ -120,3 +120,11 @@
 .animate-shadowPulse {
   animation: shadowPulse 2s infinite ease-in-out;
 }
+
+/* Product page on phones/tablets: keep the footer clear of the sticky
+   Add to cart / Buy now bar (the class is set by that page). */
+@media (max-width: 1023.98px) {
+  body.has-mobile-buy-bar {
+    padding-bottom: 5.5rem;
+  }
+}

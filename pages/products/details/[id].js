@@ -107,6 +107,12 @@ const Product = ({ product }) => {
     viewCount();
   }, []);
 
+  // Room under the footer for the sticky phone buy bar (see globals.css).
+  useEffect(() => {
+    document.body.classList.add('has-mobile-buy-bar');
+    return () => document.body.classList.remove('has-mobile-buy-bar');
+  }, []);
+
   // store user data from local storage
   useEffect(() => {
     const storedUserInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -766,6 +772,43 @@ const Product = ({ product }) => {
           currentProductId={product.id}
         />
       </div>
+      {/* Phones/tablets: Add to cart + Buy now always within thumb reach.
+          Desktop keeps only the buttons next to the product details. */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-xl items-center gap-2">
+          <div className="mr-1 shrink-0">
+            <p className="text-base font-bold leading-tight text-gray-900">
+              {formatBDT(finalPrice)}
+            </p>
+            {hasDiscount && (
+              <p className="text-xs text-gray-400 line-through">
+                {formatBDT(sellingPrice)}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            className={`${buttonSecondary} min-w-0 flex-1 !px-2`}
+            disabled={!canBuy || isAddedToCart}
+            onClick={handleAddToCart}
+          >
+            {!ifStock
+              ? 'Out of stock'
+              : isAddedToCart
+              ? 'Adding...'
+              : 'Add to cart'}
+          </button>
+          <button
+            type="button"
+            className={`${buttonPrimary} min-w-0 flex-1 !px-2`}
+            disabled={!canBuy}
+            onClick={handleBuyNow}
+          >
+            {ifStock ? 'Buy now' : 'Out of stock'}
+          </button>
+        </div>
+      </div>
+
       {/* Shown after a successful add (here or a quick add below) */}
       <AddedToCartBar raised />
 
@@ -776,7 +819,7 @@ const Product = ({ product }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 p-4 text-white shadow-xl sm:right-10"
+            className="fixed bottom-44 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 p-4 text-white shadow-xl sm:right-10 lg:bottom-20"
           >
             <FaCheckCircle className="text-2xl" />
             <div>
