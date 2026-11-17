@@ -1,12 +1,13 @@
 'use client';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation, Pagination, A11y } from 'swiper/modules';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Autoplay, Pagination, A11y } from 'swiper/modules';
 
 import 'swiper/css';
-import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+
+// No prev/next arrows: on phones they looked like "back" buttons. The notice
+// still rotates on its own, can be swiped, and shows dots.
 
 export default function PromoBannerCarousel({ banners }) {
   if (!banners || banners.length === 0) return null;
@@ -14,17 +15,13 @@ export default function PromoBannerCarousel({ banners }) {
   return (
     <div className="relative w-full overflow-hidden">
       <Swiper
-        modules={[Autoplay, Navigation, Pagination, A11y]}
+        modules={[Autoplay, Pagination, A11y]}
         speed={600} // smooth but not slow
         loop={banners.length > 1}
         autoplay={{
           delay: 5000,
           disableOnInteraction: false,
           pauseOnMouseEnter: true,
-        }}
-        navigation={{
-          nextEl: '.promo-next',
-          prevEl: '.promo-prev',
         }}
         pagination={{
           clickable: true,
@@ -43,7 +40,7 @@ export default function PromoBannerCarousel({ banners }) {
               }}
             >
               <div
-                className="text-sm md:text-base font-medium flex flex-col lg:flex-row flex-wrap items-center justify-center gap-2 px-10 md:px-16 lg:px-24"
+                className="text-sm md:text-base font-medium flex flex-col lg:flex-row flex-wrap items-center justify-center gap-2 px-4 md:px-16 lg:px-24"
                 style={{
                   color: banner.textColor ?? '#ffffff',
                 }}
@@ -69,26 +66,9 @@ export default function PromoBannerCarousel({ banners }) {
         ))}
       </Swiper>
 
-      {/* Navigation Arrows */}
+      {/* Pagination Dots */}
       {banners.length > 1 && (
-        <>
-          <button
-            className="promo-prev absolute left-3 top-1/2 -translate-y-1/2 z-10 text-black opacity-70 hover:opacity-100 transition"
-            aria-label="Previous banner"
-          >
-            <ChevronLeft size={22} />
-          </button>
-
-          <button
-            className="promo-next absolute right-3 top-1/2 -translate-y-1/2 z-10 text-black opacity-70 hover:opacity-100 transition"
-            aria-label="Next banner"
-          >
-            <ChevronRight size={22} />
-          </button>
-
-          {/* Pagination Dots */}
-          <div className="promo-pagination absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-2"></div>
-        </>
+        <div className="promo-pagination absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-2"></div>
       )}
     </div>
   );
