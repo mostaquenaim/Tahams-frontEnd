@@ -251,10 +251,19 @@ const Product = ({ product }) => {
         item.category.id === selectedCategory &&
         item.size?.name === selectedSize
       ) {
-        if (item.quantity > quantity && quantity < 30) {
-          setQuantity(quantity + 1);
+        if (quantity >= item.quantity) {
+          // Fixed id: tapping + repeatedly replaces the toast instead of
+          // stacking copies of it.
+          toast.error(
+            `No more stock available. Only ${item.quantity} left in size ${selectedSize}.`,
+            { id: 'stock-limit' },
+          );
+        } else if (quantity >= 30) {
+          toast.error('You can order up to 30 of this item at a time.', {
+            id: 'stock-limit',
+          });
         } else {
-          toast.error('Sorry! You cannot add more than that');
+          setQuantity(quantity + 1);
         }
       }
     });

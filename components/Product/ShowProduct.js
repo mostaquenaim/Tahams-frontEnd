@@ -38,17 +38,24 @@ const ShowProduct = ({ item }) => {
     e.stopPropagation();
     const customEmail = user?.email || backendEmail || getGuestCustomerInfo().email;
 
+    // Quick add uses the first size that is actually in stock. (It used to
+    // take the first size even when sold out and add it with quantity 0.)
+    const firstSize = item.pscs?.find((psc) => psc.quantity > 0);
+    if (!firstSize) {
+      toast.error('Sorry, this item is out of stock right now.');
+      return;
+    }
+
     setIsAddedToCart(true);
     setShowGotoCart(true);
     localStorage.setItem('showGotoCart', true);
 
     try {
-      const firstSize = item.pscs[0];
       const response = await axiosPublic.post('/admin/add-to-cart', {
         productId,
         size: firstSize.size.name,
         category: firstSize.category.id,
-        Quantity: firstSize.quantity > 0 ? 1 : 0,
+        Quantity: 1,
         colorId: item.color?.id,
         customerEmail: customEmail,
       });
