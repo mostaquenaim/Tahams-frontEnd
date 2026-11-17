@@ -85,7 +85,7 @@ const BuyNow = ({ regions }) => {
       <Head>
         <title>Checkout - Tahams</title>
       </Head>
-      <div className="min-h-screen pb-16 pt-28 lg:pt-56">
+      <div className="min-h-screen pb-16 pt-40 lg:pt-56">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-6">
             <Link
@@ -99,13 +99,15 @@ const BuyNow = ({ regions }) => {
           </div>
 
           {items === null ? (
-            <div className="grid gap-6 lg:grid-cols-5" aria-busy="true">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5" aria-busy="true">
               <div className="h-96 animate-pulse rounded-2xl bg-gray-100 lg:col-span-3" />
               <div className="h-72 animate-pulse rounded-2xl bg-gray-100 lg:col-span-2" />
             </div>
           ) : (
-            <div className="grid items-start gap-6 lg:grid-cols-5">
-              <div className="order-2 lg:order-1 lg:col-span-3">
+            // grid-cols-1 keeps the column at screen width on phones (see
+            // MyCart): otherwise long product names widen the whole page.
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
+              <div className="order-2 min-w-0 lg:order-1 lg:col-span-3">
                 <BuyingAddress
                   regions={regions}
                   items={items}
@@ -113,7 +115,7 @@ const BuyNow = ({ regions }) => {
                   onDeliveryFeeChange={setDeliveryFee}
                 />
               </div>
-              <div className="order-1 lg:order-2 lg:col-span-2">
+              <div className="order-1 min-w-0 lg:order-2 lg:col-span-2">
                 <FinalCart
                   items={items}
                   deliveryFee={deliveryFee}

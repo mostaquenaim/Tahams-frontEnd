@@ -66,7 +66,7 @@ const PaymentProcess = () => {
       <Head>
         <title>Complete your payment - Tahams</title>
       </Head>
-      <div className="px-4 pb-16 pt-28 lg:pt-56">
+      <div className="px-4 pb-16 pt-40 lg:pt-56">
         {status === 'ready' ? (
           <PaymentInfo history={history} token={token} email={email} />
         ) : status === 'missing' ? (
