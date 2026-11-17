@@ -78,7 +78,9 @@ const ShowProduct = ({ item }) => {
         href={detailsHref}
         onClick={rememberCategory}
         aria-label={`View ${name}`}
-        className="relative block aspect-[3/4] w-full overflow-hidden bg-gray-100"
+        // `isolate` keeps the badge's z-index inside this card, so it can't
+        // draw over the fixed navbar while scrolling.
+        className="relative isolate block aspect-[3/4] w-full overflow-hidden bg-gray-100"
       >
         <img
           src={imageUrl(thumbImage)}

@@ -435,7 +435,8 @@ const Product = ({ product }) => {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           {/* Product Image */}
           <div className="min-w-0">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
+            {/* `isolate`: badges stay under the fixed navbar when scrolling. */}
+            <div className="relative isolate overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
               {hasDiscount && (
                 <span className="absolute left-3 top-3 z-10 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
                   {discountPercentage}% OFF
