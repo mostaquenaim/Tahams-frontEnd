@@ -1,6 +1,5 @@
-import { Fragment, useContext, useEffect, useState, useRef } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   FaCheckCircle,
   FaEye,
@@ -25,6 +24,7 @@ import ProductSize from '/components/Product/ProductSize';
 import { FiChevronDown, FiChevronLeft, FiChevronRight, FiMinus, FiPlus } from 'react-icons/fi';
 import { formatBDT } from '../../../utils/pricing';
 import { apiGet } from '../../../utils/staticFetch';
+import AddedToCartBar from '/components/Cart/AddedToCartBar';
 import {
   Breadcrumbs,
   buttonPrimary,
@@ -41,7 +41,6 @@ import 'swiper/css/navigation';
 const Product = ({ product }) => {
   // console.log('product-test', product.productPictures);
   const [isAddedToWishlist, setAddedToWishlist] = useState(false);
-  const [showGotoCart, setShowGotoCart] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedMaleSize, setSelectedMaleSize] = useState('');
   const [selectedFemaleSize, setSelectedFemaleSize] = useState('');
@@ -49,7 +48,8 @@ const Product = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
-  const { user, backendEmail, loading } = useContext(AuthContext);
+  const { user, backendEmail, loading, setShowGotoCart } =
+    useContext(AuthContext);
   const [userInfo, setUserInfo] = useState(null);
   const [pending, setPending] = useState(false);
   const [wishId, setWishId] = useState(-1);
@@ -282,7 +282,6 @@ const Product = ({ product }) => {
       toast.error('You have to select a size for each');
     } else {
       setIsAddedToCart(true);
-      setShowGotoCart(true);
 
       if (quantity >= 3) {
         setDiscountEligible(true);
@@ -314,6 +313,8 @@ const Product = ({ product }) => {
           toast.success('Item added to the cart', {
             duration: 3000,
           });
+          // Only after a successful add; a new value restarts the bar's timer.
+          setShowGotoCart(Date.now());
         } else {
           // Handle error
           toast.error('Failed to add item to the cart');
@@ -326,10 +327,6 @@ const Product = ({ product }) => {
         setTimeout(() => {
           setIsAddedToCart(false);
         }, 700);
-
-        goToCartTimeoutRef.current = setTimeout(() => {
-          setShowGotoCart(false);
-        }, 10000);
       }
     }
 
@@ -337,20 +334,6 @@ const Product = ({ product }) => {
     //   item: product,
     //   user_email: customEmail,
     // });
-  };
-
-  const goToCartTimeoutRef = useRef(null);
-
-  const handleCartBarMouseEnter = () => {
-    if (goToCartTimeoutRef.current) {
-      clearTimeout(goToCartTimeoutRef.current);
-    }
-  };
-
-  const handleCartBarMouseLeave = () => {
-    goToCartTimeoutRef.current = setTimeout(() => {
-      setShowGotoCart(false);
-    }, 3000);
   };
 
   // buy now handling
@@ -783,20 +766,8 @@ const Product = ({ product }) => {
           currentProductId={product.id}
         />
       </div>
-      <Link
-        href="/MyCart"
-        onMouseEnter={handleCartBarMouseEnter}
-        onMouseLeave={handleCartBarMouseLeave}
-        className={`fixed bottom-0 left-0 z-[60] flex h-16 w-full items-center justify-center gap-3 bg-slate-900 text-white shadow-2xl transition-all duration-500 hover:bg-black ${
-          !showGotoCart
-            ? 'pointer-events-none translate-y-full opacity-0'
-            : 'translate-y-0 opacity-100'
-        }`}
-      >
-        <span className="text-sm font-semibold uppercase tracking-widest">
-          View Cart & Checkout
-        </span>
-      </Link>
+      {/* Shown after a successful add (here or a quick add below) */}
+      <AddedToCartBar raised />
 
       {/* Success Animation */}
       <AnimatePresence>

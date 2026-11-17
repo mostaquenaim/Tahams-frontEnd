@@ -47,8 +47,6 @@ const ShowProduct = ({ item }) => {
     }
 
     setIsAddedToCart(true);
-    setShowGotoCart(true);
-    localStorage.setItem('showGotoCart', true);
 
     try {
       const response = await axiosPublic.post('/admin/add-to-cart', {
@@ -62,12 +60,13 @@ const ShowProduct = ({ item }) => {
 
       if (response.status >= 200 && response.status <= 205) {
         toast.success(`Added to cart (size ${firstSize.size.name})`);
+        // Only after a successful add; a new value restarts the bar's timer.
+        setShowGotoCart(Date.now());
       }
     } catch (error) {
       toast.error("Couldn't add that to your cart. Please try again.");
     } finally {
       setTimeout(() => setIsAddedToCart(false), 700);
-      setTimeout(() => setShowGotoCart(false), 4000);
     }
   };
 
