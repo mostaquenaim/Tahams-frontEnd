@@ -24,6 +24,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ProductSize from '/components/Product/ProductSize';
 import { FiChevronDown, FiChevronLeft, FiChevronRight, FiMinus, FiPlus } from 'react-icons/fi';
 import { formatBDT } from '../../../utils/pricing';
+import { apiGet } from '../../../utils/staticFetch';
 import {
   Breadcrumbs,
   buttonPrimary,
@@ -808,42 +809,41 @@ const Product = ({ product }) => {
   );
 };
 
-export async function getServerSideProps(context) {
-  const { params } = context;
+// Product pages are the same for every visitor: cache each one and rebuild
+// it in the background at most every 60s. Price and per-size stock shown
+// here can be up to ~60s old; the cart and checkout load live data.
+const PRODUCT_REVALIDATE_SECONDS = 60;
+
+// Don't prebuild products at build time: each page is generated on its
+// first visit, then served from cache.
+export async function getStaticPaths() {
+  return { paths: [], fallback: 'blocking' };
+}
+
+export async function getStaticProps({ params }) {
   const { id } = params;
 
+  let product;
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API}/admin/get-product-by-id/${id}`,
+    product = await apiGet(
+      `/admin/get-product-by-id/${encodeURIComponent(id)}`,
     );
-
-    if (!response.ok) {
-      // If the response is not ok, throw an error to be caught below
-      throw new Error('Product not found');
-    }
-
-    const product = await response.json();
-
-    return {
-      props: {
-        product,
-      },
-    };
   } catch (error) {
-    console.error('Error fetching data:', error);
-
-    // Option 1: Redirect to a custom 404 page
-    return {
-      notFound: true,
-    };
-
-    // Option 2: Pass an error prop to display a message on the page
-    // return {
-    //     props: {
-    //         error: 'Product not found',
-    //     },
-    // };
+    // API down or slow. Throwing (rather than returning notFound) keeps the
+    // last good copy of this page online instead of replacing it with a 404.
+    console.error('Error fetching product:', error.message);
+    throw error;
   }
+
+  // The backend answers an unknown product with an empty body.
+  if (!product || typeof product !== 'object' || !product.pscs) {
+    return { notFound: true, revalidate: PRODUCT_REVALIDATE_SECONDS };
+  }
+
+  return {
+    props: { product },
+    revalidate: PRODUCT_REVALIDATE_SECONDS,
+  };
 }
 
 export default Product;
