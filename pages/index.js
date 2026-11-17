@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiGet, isBuildPhase } from '/utils/staticFetch';
 import ThemeProvider from '/Contexts/ThemeProvider';
 import { scrollToSection } from '/utils/scrollToSection';
 import ShopByCategory from '/components/ShopByCategory/ShopByCategory';
@@ -12,9 +12,7 @@ import NewArrival from '/components/Home/NewArrival/NewArrival';
 import Popular from '/components/Home/Popular/Popular';
 import bannerImages from '../public/banner-images.json';
 import ProfessionalSwiper from '/components/Swiper/SwiperDS';
-import NewArrivalDraft from '/components/Home/NewArrival/NewArrivalDraft';
 import SectionShow from '/components/Home/SectionShow/SectionShow';
-import Link from 'next/link';
 import PerfumeBox from '/components/Home/PerfumeBox';
 import { getGuestCustomerInfo } from '/utils/guestCustomer';
 import HomeSections from '/components/Home/HomeSections';
@@ -256,34 +254,43 @@ export default function Home({
   );
 }
 
-export async function getServerSideProps() {
-  const api = process.env.NEXT_PUBLIC_API;
-  const get = (path) =>
-    axios
-      .get(`${api}${path}`)
-      .then((r) => r.data)
-      .catch(() => null);
+// Same HTML for every visitor, so build it once and rebuild it in the
+// background at most every 60s, instead of rendering on every request.
+// Prices, products and the popup on the homepage can be up to ~60s old;
+// cart/checkout always load live prices.
+const HOME_REVALIDATE_SECONDS = 60;
 
-  const [
-    newArrivals,
-    popularItems,
-    activePop,
-    homeSections,
-  ] = await Promise.all([
-    get('/admin/view-new-arrivals'),
-    get('/admin/view-popular-items'),
-    get('/admin/view-active-pop-up'),
-    get('/admin/view-home-sections'),
-  ]);
-
+function toHomeProps(newArrivals, popularItems, activePop, homeSections) {
   return {
-    props: {
-      initialNewArrivals: (newArrivals || [])
-        .filter((arrival) => arrival.serial !== 'discontinued')
-        .sort((a, b) => Number(a.serial) - Number(b.serial)),
-      initialPopularItems: popularItems || [],
-      initialActivePop: activePop || null,
-      initialHomeSections: homeSections || [],
-    },
+    initialNewArrivals: (newArrivals || [])
+      .filter((arrival) => arrival.serial !== 'discontinued')
+      .sort((a, b) => Number(a.serial) - Number(b.serial)),
+    initialPopularItems: popularItems || [],
+    initialActivePop: activePop || null,
+    initialHomeSections: homeSections || [],
   };
+}
+
+export async function getStaticProps() {
+  try {
+    const [newArrivals, popularItems, activePop, homeSections] =
+      await Promise.all([
+        apiGet('/admin/view-new-arrivals'),
+        apiGet('/admin/view-popular-items'),
+        apiGet('/admin/view-active-pop-up'),
+        apiGet('/admin/view-home-sections'),
+      ]);
+
+    return {
+      props: toHomeProps(newArrivals, popularItems, activePop, homeSections),
+      revalidate: HOME_REVALIDATE_SECONDS,
+    };
+  } catch (error) {
+    console.error('Homepage data fetch failed:', error.message);
+    // Outside the build, throwing keeps the last good page online.
+    if (!isBuildPhase()) throw error;
+    // During the build there is no previous page: ship an empty one and
+    // retry soon.
+    return { props: toHomeProps(), revalidate: 10 };
+  }
 }
