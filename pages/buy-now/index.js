@@ -8,6 +8,8 @@ import FinalCart from '../../components/Cart/FinalCart';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { getGuestCustomerInfo } from '../../utils/guestCustomer';
+import { fetchRegions } from '../../utils/regions';
+import { isBuildPhase } from '../../utils/staticFetch';
 
 const readSelectedItems = () => {
   try {
@@ -83,7 +85,7 @@ const BuyNow = ({ regions }) => {
       <Head>
         <title>Checkout - Tahams</title>
       </Head>
-      <div className="min-h-screen pb-16 pt-28 lg:pt-56">
+      <div className="min-h-screen pb-16 pt-40 lg:pt-56">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-6">
             <Link
@@ -97,13 +99,15 @@ const BuyNow = ({ regions }) => {
           </div>
 
           {items === null ? (
-            <div className="grid gap-6 lg:grid-cols-5" aria-busy="true">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5" aria-busy="true">
               <div className="h-96 animate-pulse rounded-2xl bg-gray-100 lg:col-span-3" />
               <div className="h-72 animate-pulse rounded-2xl bg-gray-100 lg:col-span-2" />
             </div>
           ) : (
-            <div className="grid items-start gap-6 lg:grid-cols-5">
-              <div className="order-2 lg:order-1 lg:col-span-3">
+            // grid-cols-1 keeps the column at screen width on phones (see
+            // MyCart): otherwise long product names widen the whole page.
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
+              <div className="order-2 min-w-0 lg:order-1 lg:col-span-3">
                 <BuyingAddress
                   regions={regions}
                   items={items}
@@ -111,7 +115,7 @@ const BuyNow = ({ regions }) => {
                   onDeliveryFeeChange={setDeliveryFee}
                 />
               </div>
-              <div className="order-1 lg:order-2 lg:col-span-2">
+              <div className="order-1 min-w-0 lg:order-2 lg:col-span-2">
                 <FinalCart
                   items={items}
                   deliveryFee={deliveryFee}
@@ -140,27 +144,20 @@ const FALLBACK_REGIONS = [
   'Mymensingh',
 ].map((name) => ({ id: name, name }));
 
-export async function getServerSideProps() {
-  let regions = FALLBACK_REGIONS;
+// The region list is the same for everyone and rarely changes: build the
+// page once and refresh it in the background at most once a day. The cart
+// items come from localStorage in the browser, so nothing here is per-user.
+const REGIONS_REVALIDATE_SECONDS = 86400;
 
+export async function getStaticProps() {
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_LOCATION}?countryCode=BD`,
-      { signal: controller.signal },
-    );
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data?.module) && data.module.length > 0) {
-        regions = data.module.map(({ id, name }) => ({ id, name }));
-      }
-    }
+    const regions = await fetchRegions();
+    return { props: { regions }, revalidate: REGIONS_REVALIDATE_SECONDS };
   } catch (error) {
-    console.error('Could not load regions, using fallback:', error.message);
+    console.error('Could not load regions:', error.message);
+    // Outside the build, throwing keeps the last good region list online
+    // instead of caching the short fallback list for a whole day.
+    if (!isBuildPhase()) throw error;
+    return { props: { regions: FALLBACK_REGIONS }, revalidate: 300 };
   }
-
-  return { props: { regions } };
 }

@@ -161,7 +161,7 @@ const MyCart = () => {
       <Head>
         <title>My Cart - Tahams</title>
       </Head>
-      <section className="min-h-screen pb-16 pt-28 lg:pt-56">
+      <section className="min-h-screen pb-16 pt-40 lg:pt-56">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-6 flex items-end justify-between gap-3">
             <div>
@@ -199,8 +199,11 @@ const MyCart = () => {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
+            // grid-cols-1 matters on phones: without it the single column
+            // grows to fit the longest one-line product title and the whole
+            // page becomes wider than the screen.
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="min-w-0 lg:col-span-2">
                 <div className="mb-3 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 text-sm">
                   <label className="flex cursor-pointer select-none items-center gap-3 font-medium">
                     <input
@@ -294,8 +297,10 @@ const MyCart = () => {
                               <FiTrash2 className="h-4 w-4" />
                             </button>
                           </div>
-                          <div className="mt-2 flex items-end justify-between text-sm">
-                            <div className="flex items-center gap-3">
+                          {/* Wraps on narrow phones: the line total drops to
+                              its own line instead of spilling out of the card. */}
+                          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
+                            <div className="flex items-center gap-2 sm:gap-3">
                               <div
                                 className={`flex items-center rounded-lg border border-gray-200 ${
                                   updatingId === item.id ? 'opacity-50' : ''
@@ -326,11 +331,11 @@ const MyCart = () => {
                                   +
                                 </button>
                               </div>
-                              <span className="text-gray-500">
+                              <span className="whitespace-nowrap text-gray-500">
                                 × {formatBDT(Math.ceil(unitPrice(item.product)))}
                               </span>
                             </div>
-                            <p className="text-base font-bold">
+                            <p className="ml-auto whitespace-nowrap text-base font-bold">
                               {formatBDT(lineTotal(item))}
                             </p>
                           </div>
@@ -341,7 +346,7 @@ const MyCart = () => {
                 </ul>
               </div>
 
-              <aside className="lg:col-span-1">
+              <aside className="min-w-0 lg:col-span-1">
                 <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm lg:sticky lg:top-44">
                   <h2 className="text-lg font-semibold">Order summary</h2>
                   <dl className="mt-4 space-y-2 text-sm">

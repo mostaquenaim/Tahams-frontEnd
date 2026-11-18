@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ShowProduct from '/components/Product/ShowProduct';
 import FilterComp from '/components/Filter/Filter';
 import { FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import useLoadColors from '../../Hooks/useLoadColors';
 import Link from 'next/link';
-import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import AddedToCartBar from '../Cart/AddedToCartBar';
 import {
   SkeletonGrid,
   CONTACT,
@@ -33,7 +33,6 @@ const FetchProducts = ({
   const [windowWidth, setWindowWidth] = useState(0);
 
   const colors = useLoadColors();
-  const { showGotoCart } = useContext(AuthContext);
 
   // Dynamic Category Name Extraction
   const categoryName = useMemo(() => {
@@ -373,19 +372,8 @@ const FetchProducts = ({
         </div>
       </div>
 
-      {/* Sticky Cart Bar */}
-      <Link
-        href="/MyCart"
-        className={`fixed bottom-0 left-0 w-full h-16 bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-3 transition-all duration-500 z-[60] shadow-2xl ${
-          !showGotoCart
-            ? 'translate-y-full opacity-0'
-            : 'translate-y-0 opacity-100'
-        }`}
-      >
-        <span className="font-semibold uppercase tracking-widest text-sm">
-          View Cart & Checkout
-        </span>
-      </Link>
+      {/* Shown after a successful quick add */}
+      <AddedToCartBar />
     </div>
   );
 };

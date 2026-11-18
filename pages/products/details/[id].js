@@ -1,6 +1,5 @@
-import { Fragment, useContext, useEffect, useState, useRef } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
   FaCheckCircle,
   FaEye,
@@ -24,6 +23,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ProductSize from '/components/Product/ProductSize';
 import { FiChevronDown, FiChevronLeft, FiChevronRight, FiMinus, FiPlus } from 'react-icons/fi';
 import { formatBDT } from '../../../utils/pricing';
+import { apiGet } from '../../../utils/staticFetch';
+import AddedToCartBar from '/components/Cart/AddedToCartBar';
 import {
   Breadcrumbs,
   buttonPrimary,
@@ -40,7 +41,6 @@ import 'swiper/css/navigation';
 const Product = ({ product }) => {
   // console.log('product-test', product.productPictures);
   const [isAddedToWishlist, setAddedToWishlist] = useState(false);
-  const [showGotoCart, setShowGotoCart] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedMaleSize, setSelectedMaleSize] = useState('');
   const [selectedFemaleSize, setSelectedFemaleSize] = useState('');
@@ -48,7 +48,8 @@ const Product = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
-  const { user, backendEmail, loading } = useContext(AuthContext);
+  const { user, backendEmail, loading, setShowGotoCart } =
+    useContext(AuthContext);
   const [userInfo, setUserInfo] = useState(null);
   const [pending, setPending] = useState(false);
   const [wishId, setWishId] = useState(-1);
@@ -104,6 +105,12 @@ const Product = ({ product }) => {
   // view count
   useEffect(() => {
     viewCount();
+  }, []);
+
+  // Room under the footer for the sticky phone buy bar (see globals.css).
+  useEffect(() => {
+    document.body.classList.add('has-mobile-buy-bar');
+    return () => document.body.classList.remove('has-mobile-buy-bar');
   }, []);
 
   // store user data from local storage
@@ -250,10 +257,19 @@ const Product = ({ product }) => {
         item.category.id === selectedCategory &&
         item.size?.name === selectedSize
       ) {
-        if (item.quantity > quantity && quantity < 30) {
-          setQuantity(quantity + 1);
+        if (quantity >= item.quantity) {
+          // Fixed id: tapping + repeatedly replaces the toast instead of
+          // stacking copies of it.
+          toast.error(
+            `No more stock available. Only ${item.quantity} left in size ${selectedSize}.`,
+            { id: 'stock-limit' },
+          );
+        } else if (quantity >= 30) {
+          toast.error('You can order up to 30 of this item at a time.', {
+            id: 'stock-limit',
+          });
         } else {
-          toast.error('Sorry! You cannot add more than that');
+          setQuantity(quantity + 1);
         }
       }
     });
@@ -272,7 +288,6 @@ const Product = ({ product }) => {
       toast.error('You have to select a size for each');
     } else {
       setIsAddedToCart(true);
-      setShowGotoCart(true);
 
       if (quantity >= 3) {
         setDiscountEligible(true);
@@ -304,6 +319,8 @@ const Product = ({ product }) => {
           toast.success('Item added to the cart', {
             duration: 3000,
           });
+          // Only after a successful add; a new value restarts the bar's timer.
+          setShowGotoCart(Date.now());
         } else {
           // Handle error
           toast.error('Failed to add item to the cart');
@@ -316,10 +333,6 @@ const Product = ({ product }) => {
         setTimeout(() => {
           setIsAddedToCart(false);
         }, 700);
-
-        goToCartTimeoutRef.current = setTimeout(() => {
-          setShowGotoCart(false);
-        }, 10000);
       }
     }
 
@@ -327,20 +340,6 @@ const Product = ({ product }) => {
     //   item: product,
     //   user_email: customEmail,
     // });
-  };
-
-  const goToCartTimeoutRef = useRef(null);
-
-  const handleCartBarMouseEnter = () => {
-    if (goToCartTimeoutRef.current) {
-      clearTimeout(goToCartTimeoutRef.current);
-    }
-  };
-
-  const handleCartBarMouseLeave = () => {
-    goToCartTimeoutRef.current = setTimeout(() => {
-      setShowGotoCart(false);
-    }, 3000);
   };
 
   // buy now handling
@@ -434,7 +433,8 @@ const Product = ({ product }) => {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           {/* Product Image */}
           <div className="min-w-0">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
+            {/* `isolate`: badges stay under the fixed navbar when scrolling. */}
+            <div className="relative isolate overflow-hidden rounded-2xl border border-gray-100 bg-gray-50">
               {hasDiscount && (
                 <span className="absolute left-3 top-3 z-10 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
                   {discountPercentage}% OFF
@@ -772,20 +772,45 @@ const Product = ({ product }) => {
           currentProductId={product.id}
         />
       </div>
-      <Link
-        href="/MyCart"
-        onMouseEnter={handleCartBarMouseEnter}
-        onMouseLeave={handleCartBarMouseLeave}
-        className={`fixed bottom-0 left-0 z-[60] flex h-16 w-full items-center justify-center gap-3 bg-slate-900 text-white shadow-2xl transition-all duration-500 hover:bg-black ${
-          !showGotoCart
-            ? 'pointer-events-none translate-y-full opacity-0'
-            : 'translate-y-0 opacity-100'
-        }`}
-      >
-        <span className="text-sm font-semibold uppercase tracking-widest">
-          View Cart & Checkout
-        </span>
-      </Link>
+      {/* Phones/tablets: Add to cart + Buy now always within thumb reach.
+          Desktop keeps only the buttons next to the product details. */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-xl items-center gap-2">
+          <div className="mr-1 shrink-0">
+            <p className="text-base font-bold leading-tight text-gray-900">
+              {formatBDT(finalPrice)}
+            </p>
+            {hasDiscount && (
+              <p className="text-xs text-gray-400 line-through">
+                {formatBDT(sellingPrice)}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            className={`${buttonSecondary} min-w-0 flex-1 !px-2`}
+            disabled={!canBuy || isAddedToCart}
+            onClick={handleAddToCart}
+          >
+            {!ifStock
+              ? 'Out of stock'
+              : isAddedToCart
+              ? 'Adding...'
+              : 'Add to cart'}
+          </button>
+          <button
+            type="button"
+            className={`${buttonPrimary} min-w-0 flex-1 !px-2`}
+            disabled={!canBuy}
+            onClick={handleBuyNow}
+          >
+            {ifStock ? 'Buy now' : 'Out of stock'}
+          </button>
+        </div>
+      </div>
+
+      {/* Shown after a successful add (here or a quick add below) */}
+      <AddedToCartBar raised />
 
       {/* Success Animation */}
       <AnimatePresence>
@@ -794,7 +819,7 @@ const Product = ({ product }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 p-4 text-white shadow-xl sm:right-10"
+            className="fixed bottom-44 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 p-4 text-white shadow-xl sm:right-10 lg:bottom-20"
           >
             <FaCheckCircle className="text-2xl" />
             <div>
@@ -808,42 +833,41 @@ const Product = ({ product }) => {
   );
 };
 
-export async function getServerSideProps(context) {
-  const { params } = context;
+// Product pages are the same for every visitor: cache each one and rebuild
+// it in the background at most every 60s. Price and per-size stock shown
+// here can be up to ~60s old; the cart and checkout load live data.
+const PRODUCT_REVALIDATE_SECONDS = 60;
+
+// Don't prebuild products at build time: each page is generated on its
+// first visit, then served from cache.
+export async function getStaticPaths() {
+  return { paths: [], fallback: 'blocking' };
+}
+
+export async function getStaticProps({ params }) {
   const { id } = params;
 
+  let product;
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API}/admin/get-product-by-id/${id}`,
+    product = await apiGet(
+      `/admin/get-product-by-id/${encodeURIComponent(id)}`,
     );
-
-    if (!response.ok) {
-      // If the response is not ok, throw an error to be caught below
-      throw new Error('Product not found');
-    }
-
-    const product = await response.json();
-
-    return {
-      props: {
-        product,
-      },
-    };
   } catch (error) {
-    console.error('Error fetching data:', error);
-
-    // Option 1: Redirect to a custom 404 page
-    return {
-      notFound: true,
-    };
-
-    // Option 2: Pass an error prop to display a message on the page
-    // return {
-    //     props: {
-    //         error: 'Product not found',
-    //     },
-    // };
+    // API down or slow. Throwing (rather than returning notFound) keeps the
+    // last good copy of this page online instead of replacing it with a 404.
+    console.error('Error fetching product:', error.message);
+    throw error;
   }
+
+  // The backend answers an unknown product with an empty body.
+  if (!product || typeof product !== 'object' || !product.pscs) {
+    return { notFound: true, revalidate: PRODUCT_REVALIDATE_SECONDS };
+  }
+
+  return {
+    props: { product },
+    revalidate: PRODUCT_REVALIDATE_SECONDS,
+  };
 }
 
 export default Product;

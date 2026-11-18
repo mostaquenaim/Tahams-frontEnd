@@ -28,6 +28,8 @@ import useAdminBadgeCounts, {
 } from '../../../Hooks/useAdminBadgeCounts';
 import { useQueryClient } from '@tanstack/react-query';
 import { getOrderStatus } from '../../../utils/orderStatus';
+import { fetchRegionsData } from '../../../utils/regions';
+import { isBuildPhase } from '../../../utils/staticFetch';
 import CustomizationRequestsPanel from '../../../components/Show/CustomizationRequestsPanel';
 import {
   AdminPage,
@@ -965,13 +967,18 @@ const ShowOrders = ({ data }) => {
 
 export default ShowOrders;
 
-export async function getServerSideProps() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_LOCATION}?countryCode=BD`);
-  const data = await res.json();
-
-  return {
-    props: {
-      data,
-    },
-  };
+// The region list (used for address options) is the same for everyone and
+// rarely changes. Building it statically means anonymous requests to this URL
+// no longer trigger a server render plus an external API call; the admin
+// check and all order data stay client-side as before.
+export async function getStaticProps() {
+  try {
+    const data = await fetchRegionsData();
+    return { props: { data }, revalidate: 86400 };
+  } catch (error) {
+    console.error('Could not load regions:', error.message);
+    // Outside the build, throwing keeps the last good region list online.
+    if (!isBuildPhase()) throw error;
+    return { props: { data: { module: [] } }, revalidate: 300 };
+  }
 }
