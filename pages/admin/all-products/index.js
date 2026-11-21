@@ -176,7 +176,7 @@ const ShowProducts = () => {
       setDeleting(true);
       try {
         await axiosSecure.delete(
-          `/admin/delete-product/${selectedProduct}?email=${user?.email || backendEmail}`,
+          `/admin/delete-product/${selectedProduct}`,
         );
         refetch();
         closeDeleteModal();
