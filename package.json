@@ -6,7 +6,8 @@
     "dev": "next dev --port 8000",
     "build": "next build",
     "start": "next start --port 8000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:admin-access": "node scripts/check-admin-access.mjs"
   },
   "dependencies": {
     "@datobs/react-image-magnifiers": "^1.4.8",
