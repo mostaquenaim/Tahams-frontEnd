@@ -14,6 +14,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import useCustomizationReq from '/Hooks/useCustomizationReq';
 import useAxiosSecure from '/Hooks/useAxiosSecure';
 import { refreshAdminBadges } from '/Hooks/useAdminBadgeCounts';
+import { useAdminAccess } from '/Contexts/AdminAccessContext';
+import { P } from '/utils/adminAccess';
 import {
   Badge,
   CheckToggle,
@@ -151,6 +153,8 @@ const CustomizationRequestsPanel = ({ tabs }) => {
 
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const { can } = useAdminAccess();
+  const canManage = can(P.CUSTOMIZATIONS_MANAGE);
 
   const handleCheckRequest = async (customization) => {
     setCheckingId(customization.groupId);
@@ -335,11 +339,17 @@ const CustomizationRequestsPanel = ({ tabs }) => {
                   </Td>
                   <Td nowrap align="right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <CheckToggle
-                        checked={customization.isChecked}
-                        loading={checkingId === customization.groupId}
-                        onClick={() => handleCheckRequest(customization)}
-                      />
+                      {canManage ? (
+                        <CheckToggle
+                          checked={customization.isChecked}
+                          loading={checkingId === customization.groupId}
+                          onClick={() => handleCheckRequest(customization)}
+                        />
+                      ) : (
+                        <Badge tone={customization.isChecked ? 'success' : 'neutral'}>
+                          {customization.isChecked ? 'Checked' : 'Not checked'}
+                        </Badge>
+                      )}
                       <IconButton
                         label="View details"
                         icon={<FiEye />}

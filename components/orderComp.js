@@ -113,7 +113,11 @@ const formatDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
 };
 
-const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
+// `admin` shows every step (including cancel/return); `readOnly` keeps that
+// view but stops a staff member without orders:update_status from clicking
+// steps (the backend would refuse the change anyway).
+const OrderComp = ({ orderDetails, admin = false, readOnly = false, onUpdated }) => {
+  const canChange = admin && !readOnly;
   const [localOrderDetails, setLocalOrderDetails] = useState(orderDetails);
   const [selectedStep, setSelectedStep] = useState(null);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
@@ -199,7 +203,7 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
   }, [localOrderDetails]);
 
   const openConfirmationModal = (step, index) => {
-    if (!admin) return;
+    if (!canChange) return;
 
     const isException = exceptionSteps.some(
       (exceptionStep) => exceptionStep.id === step.id,
@@ -231,7 +235,7 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
   };
 
   const handleStepClick = async () => {
-    if (!admin || !selectedStep) return;
+    if (!canChange || !selectedStep) return;
 
     const updateData = {
       dateKey: selectedStep.date,
@@ -297,7 +301,7 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
                       ) : (
                         <FaCheckCircle
                           onClick={() => openConfirmationModal(step, index)}
-                          className={`${admin ? 'cursor-pointer' : ''} text-green-500 text-2xl mb-2`}
+                          className={`${canChange ? 'cursor-pointer' : ''} text-green-500 text-2xl mb-2`}
                         />
                       )
                     ) : isBlockedByException ? (
@@ -306,7 +310,7 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
                       <MdRadioButtonUnchecked
                         onClick={() => openConfirmationModal(step, index)}
                         className={`text-gray-500 text-2xl mb-2 ${
-                          admin ? 'cursor-pointer hover:text-blue-500' : ''
+                          canChange ? 'cursor-pointer hover:text-blue-500' : ''
                         }`}
                       />
                     )}

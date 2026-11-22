@@ -31,6 +31,8 @@ import { getOrderStatus } from '../../../utils/orderStatus';
 import { fetchRegionsData } from '../../../utils/regions';
 import { isBuildPhase } from '../../../utils/staticFetch';
 import CustomizationRequestsPanel from '../../../components/Show/CustomizationRequestsPanel';
+import { useAdminAccess } from '../../../Contexts/AdminAccessContext';
+import { P } from '../../../utils/adminAccess';
 import {
   AdminPage,
   Badge,
@@ -136,6 +138,9 @@ const OrdersPanel = ({ data, tabs, active }) => {
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const { can } = useAdminAccess();
+  const canShip = can(P.ORDERS_COURIER);
+  const canEdit = can(P.ORDERS_EDIT);
   const addressOptions = data?.module || [];
 
   const [searchInput, setSearchInput] = useState('');
@@ -632,19 +637,27 @@ const OrdersPanel = ({ data, tabs, active }) => {
               >
                 History
               </Button>
-              <Button
-                size="sm"
-                variant="primary"
-                icon={<FiTruck />}
-                onClick={() => handlePathaoCourier(group)}
-              >
-                Ship
-              </Button>
-              <CheckToggle
-                checked={history.isChecked}
-                loading={checkingId === history.id}
-                onClick={() => handleCheck(history)}
-              />
+              {canShip && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  icon={<FiTruck />}
+                  onClick={() => handlePathaoCourier(group)}
+                >
+                  Ship
+                </Button>
+              )}
+              {canEdit ? (
+                <CheckToggle
+                  checked={history.isChecked}
+                  loading={checkingId === history.id}
+                  onClick={() => handleCheck(history)}
+                />
+              ) : (
+                <Badge tone={history.isChecked ? 'success' : 'neutral'}>
+                  {history.isChecked ? 'Checked' : 'Not checked'}
+                </Badge>
+              )}
             </div>
           </Td>
         );
@@ -919,7 +932,15 @@ const OrdersPanel = ({ data, tabs, active }) => {
 // (hidden) so switching back keeps its filters, page and scroll position.
 const ShowOrders = ({ data }) => {
   const router = useRouter();
-  const tab = router.query.tab === 'custom' ? 'custom' : 'orders';
+  const { can } = useAdminAccess();
+  // The page opens with either permission; each tab needs its own.
+  const allowedTabs = PAGE_TABS.filter((item) =>
+    can(item.value === 'custom' ? P.CUSTOMIZATIONS_VIEW : P.ORDERS_VIEW),
+  );
+  const wanted = router.query.tab === 'custom' ? 'custom' : 'orders';
+  const tab = allowedTabs.some((item) => item.value === wanted)
+    ? wanted
+    : allowedTabs[0]?.value || 'orders';
 
   const [visitedTabs, setVisitedTabs] = useState(() => ({ [tab]: true }));
 
@@ -941,13 +962,18 @@ const ShowOrders = ({ data }) => {
   const { newOrders, newCustomizations } = useAdminBadgeCounts();
   const tabCounts = { orders: newOrders, custom: newCustomizations };
 
-  const tabs = (
-    <Tabs
-      value={tab}
-      onChange={handleTabChange}
-      tabs={PAGE_TABS.map((item) => ({ ...item, count: tabCounts[item.value] }))}
-    />
-  );
+  // Nothing to switch between when the role covers only one of the tabs.
+  const tabs =
+    allowedTabs.length > 1 ? (
+      <Tabs
+        value={tab}
+        onChange={handleTabChange}
+        tabs={allowedTabs.map((item) => ({
+          ...item,
+          count: tabCounts[item.value],
+        }))}
+      />
+    ) : null;
 
   return (
     <AdminPage title={tab === 'custom' ? 'Customization requests' : 'Orders'}>

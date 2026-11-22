@@ -3,6 +3,8 @@ import Swal from 'sweetalert2';
 import { FiEdit2, FiImage, FiList, FiPlus, FiTrash2 } from 'react-icons/fi';
 import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
 import useLoadSeries from '../../../../Hooks/useLoadSeries';
+import { useAdminAccess } from '../../../../Contexts/AdminAccessContext';
+import { P } from '../../../../utils/adminAccess';
 import { handleUploadWithCloudinary } from '/components/Images/AddImageToCloudinary';
 import {
   AdminPage,
@@ -34,6 +36,7 @@ const getAudience = (series) => {
 const ShowAllSeries = () => {
   const axiosSecure = useAxiosSecure();
   const [series, refetch, isPending] = useLoadSeries();
+  const canDelete = useAdminAccess().can(P.CATALOG_DELETE);
 
   const [editId, setEditId] = useState(null);
   const [savingId, setSavingId] = useState(null);
@@ -324,12 +327,14 @@ const ShowAllSeries = () => {
                               )
                             }
                           />
-                          <IconButton
-                            label="Delete"
-                            icon={<FiTrash2 />}
-                            variant="ghost-danger"
-                            onClick={() => handleDeleteCategory(cat.id)}
-                          />
+                          {canDelete && (
+                            <IconButton
+                              label="Delete"
+                              icon={<FiTrash2 />}
+                              variant="ghost-danger"
+                              onClick={() => handleDeleteCategory(cat.id)}
+                            />
+                          )}
                         </div>
                       )}
                     </Td>

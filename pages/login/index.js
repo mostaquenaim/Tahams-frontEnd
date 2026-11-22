@@ -36,7 +36,14 @@ const Login = () => {
           // console.log('isAdmin',isAdmin);
 
             if (isAdmin) {
-                router.push('/admin');
+                // Only with a live backend session. A staff member whose
+                // session was revoked (suspended, password reset, expired)
+                // lands here with no access_token while still signed in to
+                // Firebase; sending them on to /admin would just show the
+                // 404 page, so keep the login form up instead.
+                if (localStorage.getItem('access_token')) {
+                    router.push('/admin');
+                }
             }
             else {
                 router.push('/');

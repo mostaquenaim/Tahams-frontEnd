@@ -9,6 +9,8 @@ import { FiExternalLink, FiImage, FiPlus, FiTrash2, FiUploadCloud } from 'react-
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useLoadProducts from '../../../Hooks/useLoadProducts';
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
+import { useAdminAccess } from '../../../Contexts/AdminAccessContext';
+import { P } from '../../../utils/adminAccess';
 import {
     AdminPage,
     Button,
@@ -29,6 +31,10 @@ import {
 const Index = () => {
     const axiosSecure = useAxiosSecure();
     const { user, backendEmail } = useContext(AuthContext)
+    const { can } = useAdminAccess();
+    const canPublish = can(P.PRODUCTS_PUBLISH);
+    const canDelete = can(P.PRODUCTS_DELETE);
+    const canCreate = can(P.PRODUCTS_CREATE);
 
     const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -172,21 +178,26 @@ const Index = () => {
                             icon={<FiExternalLink />}
                             href={`/products/details/${product.productId}`}
                         />
-                        <Button size="sm" variant="primary" icon={<FiUploadCloud />} onClick={() => openPublishModal(product)}>
-                            Publish
-                        </Button>
-                        <IconButton
-                            label="Delete"
-                            icon={<FiTrash2 />}
-                            variant="ghost-danger"
-                            onClick={() => openDeleteModal(product)}
-                        />
+                        {canPublish && (
+                            <Button size="sm" variant="primary" icon={<FiUploadCloud />} onClick={() => openPublishModal(product)}>
+                                Publish
+                            </Button>
+                        )}
+                        {canDelete && (
+                            <IconButton
+                                label="Delete"
+                                icon={<FiTrash2 />}
+                                variant="ghost-danger"
+                                onClick={() => openDeleteModal(product)}
+                            />
+                        )}
                     </div>
                 );
             },
             meta: { align: 'right', nowrap: true },
         }),
-    ], []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ], [canPublish, canDelete]);
 
     const table = useReactTable({
         data: unpublishedProducts,
@@ -200,9 +211,11 @@ const Index = () => {
                 title="Unpublished products"
                 description="Review draft products and publish them to the store."
                 actions={
-                    <Button variant="primary" icon={<FiPlus />} href="/admin/add/add-product">
-                        Add product
-                    </Button>
+                    canCreate && (
+                        <Button variant="primary" icon={<FiPlus />} href="/admin/add/add-product">
+                            Add product
+                        </Button>
+                    )
                 }
             />
 

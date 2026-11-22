@@ -15,7 +15,9 @@ import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
 import {
   FiBarChart2,
+  FiChevronRight,
   FiDollarSign,
+  FiLock,
   FiLogOut,
   FiPackage,
   FiRefreshCw,
@@ -23,12 +25,17 @@ import {
   FiTrendingUp,
   FiUsers,
 } from 'react-icons/fi';
+import Link from 'next/link';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
+import { useAdminAccess } from '../../Contexts/AdminAccessContext';
+import { P } from '../../utils/adminAccess';
+import { NAV_CONFIG } from '../../components/Drawers/Config/NavConfig';
 import useDashboardStats from '/Hooks/useDashboardStats';
 import {
   AdminPage,
   Dropdown,
   DropdownItem,
+  DropdownLabel,
   EmptyState,
   IconButton,
   PageHeader,
@@ -71,8 +78,104 @@ const getInitials = (name) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
+// Same logout as before, shared by the dashboard and the staff landing page.
+const useAdminLogout = () => {
+  const { logOut } = useContext(AuthContext);
+  return async () => {
+    try {
+      await logOut();
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('access_token');
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Logout failed. Please try again.');
+      console.error('Logout error:', error);
+    }
+  };
+};
+
+function AccountMenu() {
+  const { user } = useContext(AuthContext);
+  const { access, role } = useAdminAccess();
+  const handleLogout = useAdminLogout();
+  const name = user?.displayName?.trim() || access?.name?.trim() || 'Admin';
+  return (
+    <Dropdown
+      label={name}
+      icon={
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-[10px] font-semibold text-white">
+          {getInitials(name)}
+        </span>
+      }
+    >
+      {role?.name && <DropdownLabel>{role.name}</DropdownLabel>}
+      <DropdownItem icon={<FiLogOut />} tone="danger" onClick={handleLogout}>
+        Log out
+      </DropdownItem>
+    </Dropdown>
+  );
+}
+
+// Landing page for staff whose role has no dashboard:view (e.g. Content
+// Editor): their sections, instead of a page of numbers they can't load.
+function StaffHome() {
+  const { access, role, canOpen } = useAdminAccess();
+  const sections = NAV_CONFIG.map((section) => ({
+    ...section,
+    Tasks: section.Tasks.filter((task) => canOpen(task.href)),
+  })).filter((section) => section.Tasks.length > 0);
+  const firstName = access?.name?.trim()?.split(/\s+/)[0];
+
+  return (
+    <AdminPage title="Admin home" width="narrow">
+      <PageHeader
+        title={firstName ? `Welcome, ${firstName}` : 'Welcome'}
+        description={
+          role?.name
+            ? `You're signed in as ${role.name}. These are the sections your role can use.`
+            : 'These are the sections your role can use.'
+        }
+        actions={<AccountMenu />}
+      />
+      {sections.length === 0 ? (
+        <Section bodyClassName="p-0">
+          <EmptyState
+            icon={<FiLock />}
+            title="No sections yet"
+            description="Your role doesn't include any admin sections. Ask an Owner to give it the permissions you need."
+          />
+        </Section>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sections.map((section) => (
+            <Section key={section.Name} title={section.Name} icon={section.Icon} bodyClassName="p-2">
+              <ul>
+                {section.Tasks.map((task) => (
+                  <li key={task.href}>
+                    <Link
+                      href={task.href}
+                      className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                    >
+                      {task.label}
+                      <FiChevronRight className="h-4 w-4 text-gray-400" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ))}
+        </div>
+      )}
+    </AdminPage>
+  );
+}
+
+const AdminHome = () => {
+  const { can } = useAdminAccess();
+  return can(P.DASHBOARD_VIEW) ? <AdminDashboard /> : <StaffHome />;
+};
+
 const AdminDashboard = () => {
-  const { user, logOut } = useContext(AuthContext);
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
 
@@ -101,17 +204,9 @@ const AdminDashboard = () => {
       ? Math.round((repeatCustomers / uniqueCustomers) * 100)
       : 0;
 
-  const handleLogout = async () => {
-    try {
-      await logOut();
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('access_token');
-      toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Logout failed. Please try again.');
-      console.error('Logout error:', error);
-    }
-  };
+  // Without finance:view the backend withholds money figures as null (not
+  // 0), so "hidden" can be told apart from "no sales".
+  const revenueHidden = totalSales === null;
 
   return (
     <AdminPage title="Dashboard">
@@ -134,22 +229,7 @@ const AdminDashboard = () => {
               icon={<FiRefreshCw />}
               onClick={() => refetch()}
             />
-            <Dropdown
-              label={user?.displayName?.trim() || 'Admin'}
-              icon={
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-[10px] font-semibold text-white">
-                  {getInitials(user?.displayName)}
-                </span>
-              }
-            >
-              <DropdownItem
-                icon={<FiLogOut />}
-                tone="danger"
-                onClick={handleLogout}
-              >
-                Log out
-              </DropdownItem>
-            </Dropdown>
+            <AccountMenu />
           </>
         }
       />
@@ -157,9 +237,14 @@ const AdminDashboard = () => {
       <StatGrid cols={4}>
         <StatCard
           label="Total sales"
-          value={`৳${Math.round(totalSales || 0).toLocaleString()}`}
-          icon={<FiDollarSign />}
-          tone="success"
+          value={
+            revenueHidden
+              ? 'Hidden'
+              : `৳${Math.round(totalSales || 0).toLocaleString()}`
+          }
+          hint={revenueHidden ? "Your role can't see revenue" : undefined}
+          icon={revenueHidden ? <FiLock /> : <FiDollarSign />}
+          tone={revenueHidden ? 'neutral' : 'success'}
         />
         <StatCard
           label="Total orders"
@@ -187,6 +272,12 @@ const AdminDashboard = () => {
             <div className="flex h-72 items-center justify-center">
               <Spinner className="h-6 w-6 text-gray-300" />
             </div>
+          ) : revenueHidden ? (
+            <EmptyState
+              icon={<FiLock />}
+              title="Revenue is hidden"
+              description="Your role doesn't include seeing sales figures. The orders trend is still available."
+            />
           ) : chartData.length === 0 ? (
             <EmptyState
               icon={<FiTrendingUp />}
@@ -281,4 +372,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminHome;

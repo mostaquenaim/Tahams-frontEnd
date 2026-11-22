@@ -3,6 +3,8 @@ import Swal from "sweetalert2";
 import { FiCheck, FiEdit2, FiEye, FiEyeOff, FiFolder, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
 import useLoadSubCategories from "../../../../Hooks/useLoadSubCategories";
+import { useAdminAccess } from "../../../../Contexts/AdminAccessContext";
+import { P } from "../../../../utils/adminAccess";
 import {
     AdminPage,
     Badge,
@@ -30,6 +32,7 @@ import {
 const ShowAllCategories = () => {
     const axiosSecure = useAxiosSecure();
     const [categories, refetch, isPending] = useLoadSubCategories();
+    const canDelete = useAdminAccess().can(P.CATALOG_DELETE);
 
     const [editId, setEditId] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
@@ -182,9 +185,11 @@ const ShowAllCategories = () => {
                             <Button size="sm" icon={<FiEyeOff />} onClick={() => handleDisableOrEnable(selectedIds)}>
                                 Disable
                             </Button>
-                            <Button size="sm" variant="ghost-danger" icon={<FiTrash2 />} onClick={() => handleDelete(selectedIds)}>
-                                Delete
-                            </Button>
+                            {canDelete && (
+                                <Button size="sm" variant="ghost-danger" icon={<FiTrash2 />} onClick={() => handleDelete(selectedIds)}>
+                                    Delete
+                                </Button>
+                            )}
                         </SelectionBar>
                     )
                 }
@@ -303,12 +308,14 @@ const ShowAllCategories = () => {
                                                         onClick={() => handleDisableOrEnable([cat.id], 'enable')}
                                                     />
                                                 )}
-                                                <IconButton
-                                                    label="Delete"
-                                                    icon={<FiTrash2 />}
-                                                    variant="ghost-danger"
-                                                    onClick={() => handleDelete([cat.id])}
-                                                />
+                                                {canDelete && (
+                                                    <IconButton
+                                                        label="Delete"
+                                                        icon={<FiTrash2 />}
+                                                        variant="ghost-danger"
+                                                        onClick={() => handleDelete([cat.id])}
+                                                    />
+                                                )}
                                             </div>
                                         </Td>
                                     </Tr>

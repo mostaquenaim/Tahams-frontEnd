@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,7 @@ import {
 import { AdminDrawerContext } from '/Contexts/AdminDrawerProvider';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import useAdminBadgeCounts from '../../Hooks/useAdminBadgeCounts';
+import { useAdminAccess } from '../../Contexts/AdminAccessContext';
 import { NAV_CONFIG, NAV_GROUPS } from './Config/NavConfig';
 
 const formatBadge = (count) => (count > 99 ? '99+' : count);
@@ -57,16 +58,33 @@ const isActivePath = (router, href) => {
   );
 };
 
-const GROUPED_SECTIONS = NAV_GROUPS.map((group) => ({
-  label: group,
-  sections: NAV_CONFIG.filter((section) => section.Group === group),
-})).filter((group) => group.sections.length > 0);
+// Only the links this staff member can open; sections and groups left empty
+// disappear.
+const buildVisibleNav = (canOpen) => {
+  const sections = NAV_CONFIG.map((section) => ({
+    ...section,
+    Tasks: section.Tasks.filter((task) => canOpen(task.href)),
+  })).filter((section) => section.Tasks.length > 0);
+
+  return NAV_GROUPS.map((group) => ({
+    label: group,
+    sections: sections.filter((section) => section.Group === group),
+  })).filter((group) => group.sections.length > 0);
+};
 
 const AdminDrawer = () => {
   const router = useRouter();
   const { isAdminOpen, setAdminIsOpen } = useContext(AdminDrawerContext);
   const { user, backendEmail } = useContext(AuthContext);
+  const { access, canOpen, role } = useAdminAccess();
   const badgeCounts = useAdminBadgeCounts();
+
+  const groupedSections = useMemo(
+    () => buildVisibleNav(canOpen),
+    // canOpen is rebuilt whenever access changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [access],
+  );
 
   const [expandedSections, setExpandedSections] = useState({});
 
@@ -94,8 +112,10 @@ const AdminDrawer = () => {
           ? badgeCounts.pendingRequests
           : 0;
 
-  const displayName = user?.displayName?.trim() || 'Admin';
+  const displayName =
+    user?.displayName?.trim() || access?.name?.trim() || 'Admin';
   const contactLine = user?.email || backendEmail || user?.phoneNumber || 'Administrator';
+  const roleName = role?.name || 'Staff';
 
   return (
     <>
@@ -154,7 +174,12 @@ const AdminDrawer = () => {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-5">
-          {GROUPED_SECTIONS.map((group) => (
+          {groupedSections.length === 0 && isAdminOpen && (
+            <p className="px-3 text-xs leading-relaxed text-gray-400">
+              Your role doesn&apos;t include any admin sections yet.
+            </p>
+          )}
+          {groupedSections.map((group) => (
             <div key={group.label} className="mb-6 last:mb-0">
               {isAdminOpen ? (
                 <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
@@ -310,15 +335,20 @@ const AdminDrawer = () => {
                   ) : (
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gray-700 to-gray-900">
                       <span className="text-sm font-semibold text-white">
-                        {getInitials(user?.displayName)}
+                        {getInitials(displayName)}
                       </span>
                     </div>
                   )}
                   <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-gray-900">
-                    {displayName}
+                  <p className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate text-sm font-semibold text-gray-900">
+                      {displayName}
+                    </span>
+                    <span className="shrink-0 rounded bg-gray-200 px-1.5 py-px text-[10px] font-medium text-gray-700">
+                      {roleName}
+                    </span>
                   </p>
                   <p className="truncate text-xs text-gray-500">
                     {contactLine}
@@ -340,11 +370,11 @@ const AdminDrawer = () => {
             <div className="flex flex-col items-center gap-2">
               <div
                 className="relative"
-                title={`${displayName} · ${contactLine}`}
+                title={`${displayName} (${roleName}) · ${contactLine}`}
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gray-700 to-gray-900">
                   <span className="text-sm font-semibold text-white">
-                    {getInitials(user?.displayName)}
+                    {getInitials(displayName)}
                   </span>
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />

@@ -13,6 +13,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import useRequests from '../../../Hooks/useRequests';
 import { refreshAdminBadges } from '../../../Hooks/useAdminBadgeCounts';
+import { useAdminAccess } from '../../../Contexts/AdminAccessContext';
+import { P } from '../../../utils/adminAccess';
 import {
   AdminPage,
   Badge,
@@ -43,6 +45,7 @@ const ShowRequests = () => {
   const [approving, setApproving] = useState(false);
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const { can } = useAdminAccess();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
@@ -292,7 +295,7 @@ const ShowRequests = () => {
                   </Td>
                   <Td nowrap align="right">
                     <div className="flex items-center justify-end gap-1">
-                      {!request.isApproved && (
+                      {!request.isApproved && can(P.RETURNS_PROCESS) && (
                         <Button
                           size="sm"
                           icon={<FiCheck />}
@@ -301,11 +304,13 @@ const ShowRequests = () => {
                           Approve
                         </Button>
                       )}
-                      <IconButton
-                        label="View order"
-                        icon={<FiEye />}
-                        onClick={() => handleDetails(request)}
-                      />
+                      {can(P.ORDERS_VIEW) && (
+                        <IconButton
+                          label="View order"
+                          icon={<FiEye />}
+                          onClick={() => handleDetails(request)}
+                        />
+                      )}
                     </div>
                   </Td>
                 </Tr>

@@ -29,6 +29,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '../../../../Hooks/useAxiosSecure';
 import { refreshAdminBadges } from '../../../../Hooks/useAdminBadgeCounts';
 import useOrderGroup from '/Hooks/useOrderGroup';
+import { useAdminAccess } from '../../../../Contexts/AdminAccessContext';
+import { P } from '../../../../utils/adminAccess';
 import { getOrderStatus } from '../../../../utils/orderStatus';
 import {
   AdminPage,
@@ -107,6 +109,7 @@ const ShowOrderDetails = () => {
   const { specificOrders: group, refetch, isPending } = useOrderGroup(id);
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const { can } = useAdminAccess();
 
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -289,9 +292,11 @@ const ShowOrderDetails = () => {
             description={`Placed on ${formatDateTime(history?.BuyingDate)}`}
             actions={
               <>
-                <Button icon={<FiMail />} onClick={openMessageBox}>
-                  Send message
-                </Button>
+                {can(P.CUSTOMERS_CONTACT) && (
+                  <Button icon={<FiMail />} onClick={openMessageBox}>
+                    Send message
+                  </Button>
+                )}
                 <Dropdown label="More" icon={<FiMoreHorizontal />} width="w-48">
                   <DropdownItem
                     icon={<FiXCircle />}
@@ -299,13 +304,15 @@ const ShowOrderDetails = () => {
                   >
                     Cancel order
                   </DropdownItem>
-                  <DropdownItem
-                    icon={<FiTrash2 />}
-                    tone="danger"
-                    onClick={openConfirmationModal}
-                  >
-                    Delete order
-                  </DropdownItem>
+                  {can(P.ORDERS_DELETE) && (
+                    <DropdownItem
+                      icon={<FiTrash2 />}
+                      tone="danger"
+                      onClick={openConfirmationModal}
+                    >
+                      Delete order
+                    </DropdownItem>
+                  )}
                 </Dropdown>
               </>
             }
@@ -393,6 +400,7 @@ const ShowOrderDetails = () => {
                 <OrderComp
                   orderDetails={history}
                   admin={true}
+                  readOnly={!can(P.ORDERS_UPDATE_STATUS)}
                   onUpdated={refetch}
                 />
               </Section>
@@ -496,14 +504,16 @@ const ShowOrderDetails = () => {
                 title="Admin note"
                 icon={<FiMessageSquare />}
                 actions={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    icon={hasNote ? <FiEdit2 /> : <FiPlus />}
-                    onClick={openNoteModal}
-                  >
-                    {hasNote ? 'Edit' : 'Add'}
-                  </Button>
+                  can(P.ORDERS_EDIT) && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      icon={hasNote ? <FiEdit2 /> : <FiPlus />}
+                      onClick={openNoteModal}
+                    >
+                      {hasNote ? 'Edit' : 'Add'}
+                    </Button>
+                  )
                 }
               >
                 {hasNote ? (

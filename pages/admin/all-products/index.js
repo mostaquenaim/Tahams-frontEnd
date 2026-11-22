@@ -14,6 +14,8 @@ import {
 import { AuthContext } from '../../../Contexts/Auth/AuthProvider';
 import useProduct from '../../../Hooks/useProduct';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
+import { useAdminAccess } from '../../../Contexts/AdminAccessContext';
+import { P } from '../../../utils/adminAccess';
 import {
   AdminPage,
   Badge,
@@ -45,6 +47,7 @@ const ShowProducts = () => {
   const [stockModalProduct, setStockModalProduct] = useState(null);
   const [savingStock, setSavingStock] = useState(false);
   const axiosSecure = useAxiosSecure();
+  const { can } = useAdminAccess();
   const [syncing, setSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -279,13 +282,15 @@ const ShowProducts = () => {
         title="Products"
         description="Manage your product inventory and details."
         actions={
-          <Button
-            variant="primary"
-            icon={<FiPlus />}
-            href="/admin/add/add-product"
-          >
-            Add product
-          </Button>
+          can(P.PRODUCTS_CREATE) && (
+            <Button
+              variant="primary"
+              icon={<FiPlus />}
+              href="/admin/add/add-product"
+            >
+              Add product
+            </Button>
+          )
         }
       />
 
@@ -405,27 +410,35 @@ const ShowProducts = () => {
                     </Td>
                     <Td nowrap align="right">
                       <div className="flex items-center justify-end gap-0.5">
-                        <IconButton
-                          label="Edit"
-                          icon={<FiEdit2 />}
-                          href={`/admin/edit/product/${product.productId}`}
-                        />
-                        <IconButton
-                          label="Manage stock"
-                          icon={<FiPackage />}
-                          onClick={() => openStockModal(product)}
-                        />
-                        <IconButton
-                          label="Duplicate"
-                          icon={<FiCopy />}
-                          onClick={() => handleDuplicate(product.id)}
-                        />
-                        <IconButton
-                          label="Delete"
-                          icon={<FiTrash2 />}
-                          variant="ghost-danger"
-                          onClick={() => openDeleteModal(product.id)}
-                        />
+                        {can(P.PRODUCTS_EDIT) && (
+                          <IconButton
+                            label="Edit"
+                            icon={<FiEdit2 />}
+                            href={`/admin/edit/product/${product.productId}`}
+                          />
+                        )}
+                        {can(P.INVENTORY_UPDATE) && (
+                          <IconButton
+                            label="Manage stock"
+                            icon={<FiPackage />}
+                            onClick={() => openStockModal(product)}
+                          />
+                        )}
+                        {can(P.PRODUCTS_CREATE) && (
+                          <IconButton
+                            label="Duplicate"
+                            icon={<FiCopy />}
+                            onClick={() => handleDuplicate(product.id)}
+                          />
+                        )}
+                        {can(P.PRODUCTS_DELETE) && (
+                          <IconButton
+                            label="Delete"
+                            icon={<FiTrash2 />}
+                            variant="ghost-danger"
+                            onClick={() => openDeleteModal(product.id)}
+                          />
+                        )}
                       </div>
                     </Td>
                   </Tr>
