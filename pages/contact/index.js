@@ -14,19 +14,33 @@ const SHOWROOMS = [
   {
     label: 'Head office',
     address: '2nd Floor, 2-G/8, Maa House, Golden Street, Ring Rd, Dhaka 1207',
+    phone: '+8801347519967',
+    map: 'https://maps.app.goo.gl/w6CFtf6APKZ5FF8S6',
   },
   {
     label: 'Display Center 1',
-    address: '35-36, 2nd Floor, Shahabuddin Plaza, Ring Road, Dhaka 1207',
+    address: 'Shop No. 36-37, Ground Floor, Shahabuddin Plaza, Ring Road, Dhaka-1207',
+    phone: '+8801314188605',
+    map: 'https://maps.app.goo.gl/89rVTtxgdV5G1E3j9',
   },
   {
     label: 'Display Center 2',
-    address:
-      'Shop No: 1, Block: A, Level: 5, Bashundhara City Shopping Complex',
+    address: 'Shop No. 1, Block A, Level 5, Bashundhara City, Panthapath, Dhaka-1215',
+    phone: '+8801332136066',
+    map: 'https://maps.app.goo.gl/s2EwSNcKPKkCPv919',
   },
   {
     label: 'Display Center 3',
-    address: '23, 4-C Shaista Khan Rd, Lalbagh, Dhaka',
+    address: '23/4-C, Shaista Khan Road, Lalbagh, Dhaka-1211',
+    phone: '+8801349019745',
+    map: 'https://maps.app.goo.gl/PqekBmQzVfLRTYBK8',
+  },
+  {
+    label: 'Display Center 4',
+    address:
+      'Shop No. 45, Ground Floor, Al-Nahiyan Shopping Complex, KFC Goli, Beside Sony Square, Mirpur 1, Dhaka-1216',
+    phone: '+8801347519960',
+    map: 'https://maps.app.goo.gl/y91oWQHtynygeVRA8',
   },
 ];
 
@@ -71,6 +85,12 @@ const Contact = () => {
                     <span className="text-sm text-gray-600">
                       {CONTACT.phoneLabel}
                     </span>
+                    <span className="block text-xs text-green-600">
+                      WhatsApp also available
+                    </span>
+                    <span className="block text-xs text-gray-500">
+                      {CONTACT.supportHours}
+                    </span>
                   </span>
                 </a>
                 <a
@@ -99,6 +119,24 @@ const Contact = () => {
                     <li key={place.label} className="py-2.5">
                       <p className="font-medium text-gray-900">{place.label}</p>
                       <p className="text-gray-600">{place.address}</p>
+                      <p className="mt-1 flex flex-wrap gap-x-4 text-xs">
+                        <a
+                          href={`tel:${place.phone}`}
+                          className="text-gray-700 underline-offset-2 hover:underline"
+                        >
+                          {place.phone}
+                        </a>
+                        {place.map && (
+                          <a
+                            href={place.map}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-gray-700 underline-offset-2 hover:underline"
+                          >
+                            View on map
+                          </a>
+                        )}
+                      </p>
                     </li>
                   ))}
                 </ul>

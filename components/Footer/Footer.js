@@ -16,24 +16,35 @@ const CONTACT_INFO = {
   headquarters: {
     address:
       '2nd Floor, 2-G/8, Maa House,\nGolden Street, Ring Road,\nShyamoli, Dhaka-1207',
-    phone: '+8801602054102',
+    phone: '+8801347519967',
+    map: 'https://maps.app.goo.gl/w6CFtf6APKZ5FF8S6',
   },
   displayCenters: [
     {
       title: 'Display Center 1',
-      address: '2nd Floor, Shop No: 35 & 36\nShahabuddin Plaza, Adabor',
-      phone: '01314188605',
+      address: 'Shop No. 36-37, Ground Floor,\nShahabuddin Plaza, Ring Road, Dhaka-1207',
+      phone: '+8801314188605',
+      map: 'https://maps.app.goo.gl/89rVTtxgdV5G1E3j9',
     },
     {
       title: 'Display Center 2',
       address:
-        'Shop No: 1, Block: A, Level: 5\nBashundhara City Shopping Complex',
-      phone: '01332136066',
+        'Shop No. 1, Block A, Level 5,\nBashundhara City, Panthapath, Dhaka-1215',
+      phone: '+8801332136066',
+      map: 'https://maps.app.goo.gl/s2EwSNcKPKkCPv919',
     },
     {
       title: 'Display Center 3',
-      address: '23, 4-C Shaista Khan Rd,\nLalbagh, Dhaka',
-      phone: '01349019745',
+      address: '23/4-C, Shaista Khan Road,\nLalbagh, Dhaka-1211',
+      phone: '+8801349019745',
+      map: 'https://maps.app.goo.gl/PqekBmQzVfLRTYBK8',
+    },
+    {
+      title: 'Display Center 4',
+      address:
+        'Shop No. 45, Ground Floor, Al-Nahiyan Shopping Complex,\nKFC Goli, Beside Sony Square, Mirpur 1, Dhaka-1216',
+      phone: '+8801347519960',
+      map: 'https://maps.app.goo.gl/y91oWQHtynygeVRA8',
     },
   ],
   email: 'tahamsbd@gmail.com',
@@ -96,18 +107,30 @@ const ContactLink = ({ href, icon: Icon, label, iconColor }) => (
   </a>
 );
 
-const DisplayCenter = ({ title, address, phone }) => (
+const DisplayCenter = ({ title, address, phone, map }) => (
   <div className="bg-gray-800/50 rounded-lg p-4 hover:bg-gray-800/70 transition-colors duration-300">
     <h4 className="font-semibold text-white mb-2 text-sm">{title}</h4>
     <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line mb-2">
       {address}
     </p>
-    <a 
-      href={`tel:${phone}`}
-      className="text-green-400 hover:text-green-300 text-xs transition-colors"
-    >
-      {phone}
-    </a>
+    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+      <a
+        href={`tel:${phone}`}
+        className="text-green-400 hover:text-green-300 transition-colors"
+      >
+        {phone}
+      </a>
+      {map && (
+        <a
+          href={map}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 transition-colors"
+        >
+          View on map
+        </a>
+      )}
+    </div>
   </div>
 );
 
@@ -178,6 +201,20 @@ const Footer = () => {
                   >
                     {CONTACT_INFO.headquarters.phone}
                   </a>
+                  <span className="ml-2 text-xs text-gray-400">
+                    (WhatsApp also available)
+                  </span>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Contact Hours: Sat–Thu, 10 AM – 6 PM
+                  </p>
+                  <a
+                    href={CONTACT_INFO.headquarters.map}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-block text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    View on map
+                  </a>
                 </div>
 
                 {/* Display Centers - Responsive grid */}
@@ -211,6 +248,9 @@ const Footer = () => {
                     label="Call HQ"
                     iconColor="text-green-400"
                   />
+                  <span className="self-center text-xs text-gray-500">
+                    WhatsApp also available
+                  </span>
                 </div>
               </div>
             </section>

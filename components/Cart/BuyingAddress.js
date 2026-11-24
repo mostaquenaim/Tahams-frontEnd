@@ -11,18 +11,23 @@ const DISPLAY_CENTERS = [
   {
     id: 'dc1',
     name: 'DC1 - Shahabuddin Plaza',
-    address: 'Shop: 35-36, 2nd Floor, Shahabuddin Plaza, 1207 Ring Rd, Dhaka',
+    address: 'Shop No. 36-37, Ground Floor, Shahabuddin Plaza, Ring Road, Dhaka-1207',
   },
   {
     id: 'dc2',
     name: 'DC2 - Bashundhara City',
-    address:
-      'Shop No: 1, Block: A, Level: 5, Bashundhara City Shopping Complex , Dhaka, Bangladesh, 1215',
+    address: 'Shop No. 1, Block A, Level 5, Bashundhara City, Panthapath, Dhaka-1215',
   },
   {
     id: 'dc3',
     name: 'DC3 - Lalbagh',
-    address: '23, 4-C Shaista Khan Rd, Dhaka',
+    address: '23/4-C, Shaista Khan Road, Lalbagh, Dhaka-1211',
+  },
+  {
+    id: 'dc4',
+    name: 'DC4 - Mirpur 1',
+    address:
+      'Shop No. 45, Ground Floor, Al-Nahiyan Shopping Complex, KFC Goli, Beside Sony Square, Mirpur 1, Dhaka-1216',
   },
 ];
 

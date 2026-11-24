@@ -422,7 +422,7 @@ const SECTIONS = [
 
 const CONTACT_DETAILS = {
   email: 'tahamsbd@gmail.com',
-  phone: '+8801602054102',
+  phone: '+8801347519967',
   address: '2, G/8, Maa House, Golden Street, Ring Road, Shyamoli, Dhaka-1207',
 };
 
