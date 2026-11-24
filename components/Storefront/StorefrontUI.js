@@ -5,8 +5,10 @@ import { FiArrowLeft, FiChevronRight } from 'react-icons/fi';
 // (rounded-2xl white cards, gray-100 borders, black primary actions).
 
 export const CONTACT = {
-  phone: '+8801602054102',
-  phoneLabel: '+88 016020-54102',
+  phone: '+8801347519967',
+  phoneLabel: '+88 01347519967',
+  whatsapp: 'https://wa.me/8801347519967',
+  supportHours: 'Sat–Thu, 10 AM – 6 PM',
   email: 'tahamsbd@gmail.com',
   facebook: 'https://www.facebook.com/tahamsbd/',
   instagram: 'https://www.instagram.com/tahams_bd/',

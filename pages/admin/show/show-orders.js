@@ -113,6 +113,21 @@ const formatDate = (value) =>
 
 const NOTE_POPOVER_WIDTH = 288;
 
+// Checkout seeds adminNote with 'Order created.' (plus the customer's own note,
+// capped at 250 chars — see the checkout code in admin.service.ts). That text says
+// nothing new, so only a note staff actually wrote highlights the icon.
+const DEFAULT_ADMIN_NOTE = 'Order created.';
+const isDefaultAdminNote = (adminNote, customerNote) => {
+  const note = adminNote?.trim();
+  if (!note || note === DEFAULT_ADMIN_NOTE) return true;
+  const customer = typeof customerNote === 'string' ? customerNote.trim() : '';
+  return (
+    Boolean(customer) &&
+    note ===
+      `${DEFAULT_ADMIN_NOTE} Customer note: ${customer}`.slice(0, 250).trim()
+  );
+};
+
 const getNotePosition = (button) => {
   const rect = button.getBoundingClientRect();
   const left = Math.max(
@@ -591,6 +606,8 @@ const OrdersPanel = ({ data, tabs, active }) => {
 
       case 'notes': {
         const hasNote = Boolean(history?.adminNote?.trim());
+        const hasStaffNote =
+          hasNote && !isDefaultAdminNote(history.adminNote, history.notes);
         const isOpen = openNoteId === history.id;
         return (
           <Td key={key} nowrap onClick={(e) => e.stopPropagation()}>
@@ -601,13 +618,21 @@ const OrdersPanel = ({ data, tabs, active }) => {
                 if (!isOpen) setNotePosition(getNotePosition(e.currentTarget));
                 setOpenNoteId(isOpen ? null : history.id);
               }}
-              aria-label={hasNote ? 'View note' : 'No note'}
+              aria-label={
+                hasStaffNote ? 'View staff note' : hasNote ? 'View note' : 'No note'
+              }
               aria-expanded={isOpen}
-              title={hasNote ? 'View note' : 'No note'}
+              title={
+                hasStaffNote
+                  ? 'Staff note added'
+                  : hasNote
+                    ? 'Default note only'
+                    : 'No note'
+              }
               className={cx(
                 'inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors [&_svg]:h-4 [&_svg]:w-4',
-                hasNote
-                  ? 'border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100'
+                hasStaffNote
+                  ? 'border-amber-300 bg-amber-100 text-amber-700 hover:bg-amber-200'
                   : 'border-transparent text-gray-300 hover:bg-gray-100 hover:text-gray-500',
                 isOpen && 'ring-2 ring-gray-900/10',
               )}
