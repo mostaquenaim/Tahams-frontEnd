@@ -1,22 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import useAxiosPublic from "./useAxiosPublic";
-import { useContext } from "react";
-import { AuthContext } from "/Contexts/Auth/AuthProvider";
+import useAxiosSecure from "./useAxiosSecure";
 
+// Admin-only: every cancellation/return request. Authorised by the admin
+// JWT (useAxiosSecure), not by an email - the old ?email= version let anyone
+// who knew an admin's email read every request.
 const useRequests = () => {
-    const axiosPublic = useAxiosPublic();
-    const { user, loading, backendEmail } = useContext(AuthContext);
+    const axiosSecure = useAxiosSecure();
 
     const fetchReqData = async () => {
-        const res = await axiosPublic.get(`/admin/view-cancellation-or-return-requests?email=${user?.email || backendEmail}`);
-        // console.log(res.data);
+        const res = await axiosSecure.get('/admin/view-cancellation-or-return-requests');
         return res.data;
     };
 
     const { refetch, data: requests = [], isPending } = useQuery({
-        queryKey: ['requests', user?.email || backendEmail], // Include user.email in the query key
+        queryKey: ['requests'],
         queryFn: fetchReqData,
-        enabled: !loading && !!(user || backendEmail), // Enable the query when the user is not loading and is authenticated
     });
 
     return [requests, refetch, isPending];

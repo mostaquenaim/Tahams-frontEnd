@@ -5,7 +5,7 @@ import {
   FiImage,
   FiShoppingCart,
 } from 'react-icons/fi';
-import useCart from '/Hooks/useCart';
+import useAdminCarts from '/Hooks/useAdminCarts';
 import {
   AdminPage,
   Badge,
@@ -29,7 +29,7 @@ import {
 const COLUMN_COUNT = 9;
 
 const ShowAllCarts = () => {
-  const [isLoading, cart, refetch] = useCart();
+  const [isLoading, cart, refetch] = useAdminCarts();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');

@@ -127,8 +127,12 @@ const MyCart = () => {
     setConfirmBulk(false);
     setBulkRemoving(true);
     try {
+      // The backend only deletes items owned by this email (same proof of
+      // ownership as the quantity update above).
+      const ownerEmail = cart.find((item) => selectedIds.includes(item.id))
+        ?.customer?.email;
       await axiosPublic.delete('/admin/delete-carts', {
-        data: { checkedItems: selectedIds },
+        data: { checkedItems: selectedIds, email: ownerEmail },
       });
       await refetch();
       toast.success(

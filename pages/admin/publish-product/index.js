@@ -79,7 +79,7 @@ const Index = () => {
         if (selectedProduct) {
             setBusy(true);
             try {
-                await axiosSecure.delete(`/admin/delete-product/${selectedProduct.id}?email=${user?.email || backendEmail}`);
+                await axiosSecure.delete(`/admin/delete-product/${selectedProduct.id}`);
                 refetch();
                 closeDeleteModal();
             } catch (error) {

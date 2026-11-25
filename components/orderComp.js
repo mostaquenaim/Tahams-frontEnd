@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheckCircle, FaTimes } from 'react-icons/fa';
 import { MdRadioButtonUnchecked } from 'react-icons/md';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
-import useAxiosPublic from '../Hooks/useAxiosPublic';
-import { AuthContext } from '../Contexts/Auth/AuthProvider';
+import useAxiosSecure from '../Hooks/useAxiosSecure';
 import toast from 'react-hot-toast';
 import { Button, Modal } from './Admin';
 
@@ -120,8 +119,7 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
     useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const axiosPublic = useAxiosPublic();
-  const { user, backendEmail } = useContext(AuthContext);
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
     setLocalOrderDetails(orderDetails);
@@ -241,12 +239,11 @@ const OrderComp = ({ orderDetails, admin = false, onUpdated }) => {
       [selectedStep.date]: new Date().toISOString(),
     };
 
-    const userEmail = backendEmail || user?.email;
-
     try {
       setIsUpdating(true);
-      const response = await axiosPublic.patch(
-        `/admin/update-buying-history-status-by-token/${localOrderDetails.trackingToken}?email=${userEmail}`,
+      // Admin-only route: authorised by the admin JWT, not by an email.
+      const response = await axiosSecure.patch(
+        `/admin/update-buying-history-status-by-token/${localOrderDetails.trackingToken}`,
         updateData,
       );
 

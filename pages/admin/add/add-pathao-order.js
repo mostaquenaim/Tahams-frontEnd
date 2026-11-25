@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FiPackage, FiTruck, FiUser } from 'react-icons/fi';
-import useAxiosPublic from '../../../Hooks/useAxiosPublic';
 import useAxiosSecure from '../../../Hooks/useAxiosSecure';
 import {
   AdminPage,
@@ -82,7 +81,6 @@ const buildInitialForm = (data) => {
 };
 
 const AddPathaoOrder = () => {
-  const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
 
   const [form, setForm] = useState(INITIAL_FORM);
@@ -177,7 +175,7 @@ const AddPathaoOrder = () => {
     const trackingToken = orderData?.history?.trackingToken;
     if (trackingToken) {
       try {
-        await axiosPublic.post(
+        await axiosSecure.post(
           `/admin/add-courier/${trackingToken}`,
           {
             consignment_id: pathaoData?.data?.consignment_id || null,
