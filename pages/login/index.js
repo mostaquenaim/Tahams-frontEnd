@@ -30,11 +30,20 @@ const Login = () => {
     useEffect(() => {
         if (user) {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            const isAdmin = userInfo?.role === 'admin'; // Adjust this field name if needed
+            // role === 'admin' is the Owner; isStaff covers every staff role
+            // (Manager, Order Staff, ...) - both open the admin panel.
+            const isAdmin = userInfo?.role === 'admin' || userInfo?.isStaff === true;
           // console.log('isAdmin',isAdmin);
 
             if (isAdmin) {
-                router.push('/admin');
+                // Only with a live backend session. A staff member whose
+                // session was revoked (suspended, password reset, expired)
+                // lands here with no access_token while still signed in to
+                // Firebase; sending them on to /admin would just show the
+                // 404 page, so keep the login form up instead.
+                if (localStorage.getItem('access_token')) {
+                    router.push('/admin');
+                }
             }
             else {
                 router.push('/');
@@ -68,6 +77,24 @@ const Login = () => {
 
                 if (loggedInUser.role === 'admin') {
                     await storeSession(response.data);
+                    router.push('/admin');
+                    return;
+                }
+
+                // Any other staff role (Manager, Order Staff, ...). Staff
+                // accounts created by an Owner exist only in this backend,
+                // never in Firebase, so a Firebase failure must not block
+                // the admin login. A promoted customer who does have a
+                // Firebase account still gets signed in there too, so they
+                // can keep shopping. Session first, so the redirect effect
+                // above already sees isStaff.
+                if (loggedInUser.isStaff === true) {
+                    await storeSession(response.data);
+                    try {
+                        await signIn(data.email, data.password);
+                    } catch (firebaseError) {
+                        // backend-only staff account - expected
+                    }
                     router.push('/admin');
                     return;
                 }
@@ -143,7 +170,8 @@ const Login = () => {
 
             if (response.data.status >= 200 && response.data.status <= 205) {
                 await storeSession(response.data);
-                router.push(response.data.data.role === 'admin' ? '/admin' : '/dashboard');
+                const signedIn = response.data.data;
+                router.push(signedIn.role === 'admin' || signedIn.isStaff === true ? '/admin' : '/dashboard');
             } else {
                 toast.error(response.data.message || "Google sign-in failed");
                 await logOut();

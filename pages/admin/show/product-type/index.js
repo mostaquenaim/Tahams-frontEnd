@@ -3,6 +3,8 @@ import Swal from "sweetalert2";
 import { FiCheck, FiEdit2, FiImage, FiPlus, FiTrash2, FiType, FiUpload, FiX } from "react-icons/fi";
 import useLoadSubSubCategories from "../../../../Hooks/useLoadSubSubCategories";
 import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
+import { useAdminAccess } from "../../../../Contexts/AdminAccessContext";
+import { P } from "../../../../utils/adminAccess";
 import {
     AdminPage,
     Button,
@@ -36,6 +38,7 @@ const ProductType = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const axiosSecure = useAxiosSecure();
+    const canDelete = useAdminAccess().can(P.CATALOG_DELETE);
 
     const handleEditSizeChart = async (item) => {
         if (editItem === item.id) {
@@ -291,12 +294,14 @@ const ProductType = () => {
                                         {[item.category?.category?.name, item.category?.name].filter(Boolean).join(' › ') || '—'}
                                     </Td>
                                     <Td nowrap align="right">
-                                        <IconButton
-                                            label="Delete"
-                                            icon={<FiTrash2 />}
-                                            variant="ghost-danger"
-                                            onClick={() => handleDeleteCProductType(item.id)}
-                                        />
+                                        {canDelete && (
+                                            <IconButton
+                                                label="Delete"
+                                                icon={<FiTrash2 />}
+                                                variant="ghost-danger"
+                                                onClick={() => handleDeleteCProductType(item.id)}
+                                            />
+                                        )}
                                     </Td>
                                 </Tr>
                             ))

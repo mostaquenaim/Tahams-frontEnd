@@ -79,10 +79,13 @@ export const NAV_CONFIG = [
     ],
   },
   {
-    Name: 'Role Management',
+    Name: 'Staff & Roles',
     Group: 'People',
     Icon: <FiShield />,
-    Tasks: [{ href: '/admin/manage/roles', label: 'Manage Roles' }],
+    Tasks: [
+      { href: '/admin/manage/staff', label: 'Staff' },
+      { href: '/admin/manage/roles', label: 'Roles & Permissions' },
+    ],
   },
   {
     Name: 'User Management',
@@ -187,6 +190,11 @@ export const NAV_CONFIG = [
         href: '/admin/settings/rearrange-navbar',
         label: 'Rearrange Navbar Items',
       },
+      { href: '/admin/manage/audit-log', label: 'Audit Log' },
     ],
   },
 ];
+
+// Which links a staff member sees is decided per href by canOpenHref() in
+// utils/adminAccess.js (the same rules that guard the pages themselves);
+// sections left with no visible links are hidden.
