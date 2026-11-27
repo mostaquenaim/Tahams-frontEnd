@@ -76,6 +76,7 @@ export const NAV_CONFIG = [
       { href: '/admin/payments/transactions', label: 'All Transactions' },
       { href: '/admin/payments/refunds', label: 'Refund Requests' },
       { href: '/admin/payments/payouts', label: 'Vendor Payouts' },
+      { href: '/admin/payments/payment-methods', label: 'Payment Methods' },
     ],
   },
   {

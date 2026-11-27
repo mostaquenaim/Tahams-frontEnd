@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { FiAlertCircle, FiCheck, FiMapPin, FiShoppingBag, FiTruck } from 'react-icons/fi';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { useDeliveryFees } from '../../Hooks/useCheckoutConfig';
 import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 import { addGuestOrderToken } from '../../utils/guestCustomer';
 import { cartSubtotal, formatBDT } from '../../utils/pricing';
+import { deliveryFeeFor } from '../../utils/deliveryFee';
 
 const DISPLAY_CENTERS = [
   {
@@ -31,8 +33,11 @@ const DISPLAY_CENTERS = [
   },
 ];
 
-const FEES = { dhakaCity: 80, aroundDhaka: 120, outsideDhaka: 150, other: 150 };
-const DHAKA_CITY_AREAS = ['Dhaka - North', 'Dhaka - South'];
+// Delivery fees and the Dhaka area lists come from the backend
+// (useDeliveryFees), which also re-prices every order with the same table.
+
+// The backend's answer when the fee we sent no longer matches its table.
+const STALE_FEE_MESSAGE = 'Invalid delivery fee.';
 
 const FACEBOOK_PATTERN = /^(https?:\/\/)?(www\.)?(facebook|fb)\.com\/.+/i;
 const SAVED_INFO_KEY = 'checkoutInfo';
@@ -55,18 +60,6 @@ const readSavedInfo = () => {
     return JSON.parse(localStorage.getItem(SAVED_INFO_KEY)) || null;
   } catch (error) {
     return null;
-  }
-};
-
-const loadAreas = async (file) => {
-  try {
-    const res = await fetch(file);
-    if (!res.ok) return [];
-    const list = await res.json();
-    return [...new Set(list.map((area) => area.name))];
-  } catch (error) {
-    console.error(`Could not load ${file}:`, error);
-    return [];
   }
 };
 
@@ -156,7 +149,6 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
   const [city, setCity] = useState('');
   const [payOnline, setPayOnline] = useState(false);
   const [showFacebook, setShowFacebook] = useState(false);
-  const [areas, setAreas] = useState({ inside: [], outside: [], loaded: false });
   const [savedUser, setSavedUser] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
@@ -166,19 +158,13 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
   const subtotal = cartSubtotal(items);
   const isPickup = mode === 'pickup';
 
-  // Dhaka areas (used for city choice and pricing).
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
-      loadAreas('/Dhaka-inside-delivery.json'),
-      loadAreas('/Dhaka-outside-delivery.json'),
-    ]).then(([inside, outside]) => {
-      if (!cancelled) setAreas({ inside, outside, loaded: true });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Fees and Dhaka areas (used for city choice and pricing).
+  const {
+    data: feeConfig,
+    isError: feesFailed,
+    isFetching: feesFetching,
+    refetch: refetchFees,
+  } = useDeliveryFees();
 
   // Pre-fill from the customer's account, or from the last order on this device.
   useEffect(() => {
@@ -229,32 +215,27 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email || backendEmail]);
 
-  const cityGroups = useMemo(() => {
-    const cityCore = areas.inside.filter((name) => DHAKA_CITY_AREAS.includes(name));
-    const around = areas.inside.filter((name) => !DHAKA_CITY_AREAS.includes(name));
-    const outside = areas.outside.filter((name) => !areas.inside.includes(name));
-    return { cityCore, around, outside };
-  }, [areas]);
+  const cityGroups = useMemo(
+    () => ({
+      cityCore: feeConfig?.dhakaAreas.dhakaCity || [],
+      around: feeConfig?.dhakaAreas.aroundDhaka || [],
+      outside: feeConfig?.dhakaAreas.outsideDhaka || [],
+    }),
+    [feeConfig],
+  );
 
   // A saved city that isn't a valid choice would silently price wrongly.
   useEffect(() => {
-    if (!areas.loaded || region !== 'Dhaka' || !city) return;
-    const all = [...areas.inside, ...areas.outside];
-    // (If the area lists failed to load, the field is free text - leave it.)
-    if (all.length > 0 && !all.includes(city)) setCity('');
-  }, [areas, region, city]);
+    if (!feeConfig || region !== 'Dhaka' || !city) return;
+    const all = [...cityGroups.cityCore, ...cityGroups.around, ...cityGroups.outside];
+    if (!all.includes(city)) setCity('');
+  }, [feeConfig, cityGroups, region, city]);
 
-  const hasAreaLists = areas.inside.length + areas.outside.length > 0;
-
-  const computedFee = useMemo(() => {
-    if (isPickup) return 0;
-    if (!region) return null;
-    if (region !== 'Dhaka') return FEES.other;
-    if (!city) return null;
-    if (DHAKA_CITY_AREAS.includes(city)) return FEES.dhakaCity;
-    if (cityGroups.outside.includes(city)) return FEES.outsideDhaka;
-    return FEES.aroundDhaka;
-  }, [isPickup, region, city, cityGroups]);
+  // null until the fee is known (no region/area yet, or fees not loaded).
+  const computedFee = useMemo(
+    () => deliveryFeeFor(feeConfig, { isPickup, region, city }),
+    [feeConfig, isPickup, region, city],
+  );
 
   useEffect(() => {
     onDeliveryFeeChange(computedFee);
@@ -349,6 +330,16 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
       return;
     }
 
+    // Region and area are chosen but the fee table didn't load: never send
+    // an order without a known fee.
+    if (computedFee === null) {
+      setSubmitError(
+        "We couldn't load the delivery charges. Please check your connection and try again.",
+      );
+      refetchFees();
+      return;
+    }
+
     submitGuard.current = true;
     setIsSubmitting(true);
     setSubmitError('');
@@ -387,11 +378,20 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
     } catch (error) {
       console.error('Error submitting order:', error);
       const serverMessage = error?.response?.data?.message;
-      setSubmitError(
-        typeof serverMessage === 'string' && serverMessage
-          ? serverMessage
-          : "We couldn't place your order. Nothing has been charged - please try again.",
-      );
+      if (serverMessage === STALE_FEE_MESSAGE) {
+        // The fees changed since this page loaded. Show the new total and
+        // let the customer confirm it - never resubmit on their behalf.
+        refetchFees();
+        setSubmitError(
+          'Our delivery charges have just been updated. Please check the new total and place your order again.',
+        );
+      } else {
+        setSubmitError(
+          typeof serverMessage === 'string' && serverMessage
+            ? serverMessage
+            : "We couldn't place your order. Nothing has been charged - please try again.",
+        );
+      }
       submitGuard.current = false;
       setIsSubmitting(false);
       return;
@@ -590,19 +590,6 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
 
               {region === 'Dhaka' && (
                 <Field id="co-city" label="Area" error={errors.city}>
-                  {areas.loaded && !hasAreaLists ? (
-                    <input
-                      id="co-city"
-                      type="text"
-                      value={city}
-                      onChange={(e) => {
-                        setCity(e.target.value);
-                        setErrors((prev) => ({ ...prev, city: undefined }));
-                      }}
-                      placeholder="Your area or thana"
-                      className={`${INPUT} ${errors.city ? INPUT_ERROR : ''}`}
-                    />
-                  ) : (
                   <select
                     id="co-city"
                     value={city}
@@ -610,14 +597,18 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
                       setCity(e.target.value);
                       setErrors((prev) => ({ ...prev, city: undefined }));
                     }}
-                    disabled={!areas.loaded}
+                    disabled={!feeConfig}
                     className={`${INPUT} ${errors.city ? INPUT_ERROR : ''}`}
                   >
                     <option value="">
-                      {areas.loaded ? 'Select your area' : 'Loading areas...'}
+                      {feeConfig
+                        ? 'Select your area'
+                        : feesFailed
+                          ? 'Areas could not be loaded'
+                          : 'Loading areas...'}
                     </option>
-                    {cityGroups.cityCore.length > 0 && (
-                      <optgroup label={`Dhaka city - ${formatBDT(FEES.dhakaCity)}`}>
+                    {feeConfig && cityGroups.cityCore.length > 0 && (
+                      <optgroup label={`Dhaka city - ${formatBDT(feeConfig.fees.dhakaCity)}`}>
                         {cityGroups.cityCore.map((name) => (
                           <option key={name} value={name}>
                             {name}
@@ -625,8 +616,8 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
                         ))}
                       </optgroup>
                     )}
-                    {cityGroups.around.length > 0 && (
-                      <optgroup label={`Around Dhaka - ${formatBDT(FEES.aroundDhaka)}`}>
+                    {feeConfig && cityGroups.around.length > 0 && (
+                      <optgroup label={`Around Dhaka - ${formatBDT(feeConfig.fees.aroundDhaka)}`}>
                         {cityGroups.around.map((name) => (
                           <option key={name} value={name}>
                             {name}
@@ -634,8 +625,8 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
                         ))}
                       </optgroup>
                     )}
-                    {cityGroups.outside.length > 0 && (
-                      <optgroup label={`Outside Dhaka - ${formatBDT(FEES.outsideDhaka)}`}>
+                    {feeConfig && cityGroups.outside.length > 0 && (
+                      <optgroup label={`Outside Dhaka - ${formatBDT(feeConfig.fees.outsideDhaka)}`}>
                         {cityGroups.outside.map((name) => (
                           <option key={name} value={name}>
                             {name}
@@ -644,10 +635,29 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
                       </optgroup>
                     )}
                   </select>
-                  )}
                 </Field>
               )}
             </div>
+
+            {!feeConfig && feesFailed && (
+              <div
+                role="alert"
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                <span className="flex items-center gap-2">
+                  <FiAlertCircle className="h-4 w-4 shrink-0" />
+                  We couldn't load the delivery charges.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => refetchFees()}
+                  disabled={feesFetching}
+                  className="font-semibold underline underline-offset-2 disabled:opacity-60"
+                >
+                  {feesFetching ? 'Trying again...' : 'Try again'}
+                </button>
+              </div>
+            )}
 
             <Field id="co-address" label="Full address" error={errors.address}>
               <textarea

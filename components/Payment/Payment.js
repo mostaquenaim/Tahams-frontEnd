@@ -1,12 +1,15 @@
 import Image from 'next/image';
 import React from 'react';
 import { FaCreditCard, FaSmile, FaTruck, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
-import { DeliveryMethods, PaymentMethods } from '/utils/Methods';
+import { DeliveryMethods } from '/utils/Methods';
+import { usePaymentMethods } from '/Hooks/useCheckoutConfig';
 
 const Payment = () => {
-    const allPaymentMethods = PaymentMethods()
+    // Active methods from the admin Payment methods page; those without an
+    // icon have nothing to show here.
+    const { data: paymentMethods } = usePaymentMethods()
+    const allPaymentMethods = (paymentMethods || []).filter((method) => method.icon)
     const deliveryMethods = DeliveryMethods()
-    // console.log(allPaymentMethods, 'ress');
     return (
         <>
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-10 pt-16 pb-10 px-10 text-center items-center shadow-md bg-black bg-opacity-20'>

@@ -30,7 +30,9 @@ const AddPaymentMethod = () => {
     try {
       await axiosSecure.post('/admin/add-payment-method', { name: trimmed });
       setName('');
-      setSuccess('"' + trimmed + '" was added.');
+      setSuccess(
+        '"' + trimmed + '" was added. It stays hidden from customers until you set its number and instructions on the Payment methods page.',
+      );
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to add payment method.'));
     } finally {
@@ -41,7 +43,7 @@ const AddPaymentMethod = () => {
   return (
     <SimpleCreateForm
       title="Add payment method"
-      description="Add a payment method customers can choose at checkout."
+      description="Add a payment method, then set its number and instructions on the Payment methods page."
       submitLabel="Add payment method"
       loading={loading}
       onSubmit={handleSubmit}

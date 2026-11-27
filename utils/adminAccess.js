@@ -188,6 +188,7 @@ export const PAGE_RULES = {
   '/admin/payments/refunds': all(P.PAYMENTS_VIEW),
   '/admin/payments/payouts': all(P.PAYMENTS_VIEW, P.FINANCE_VIEW),
   '/admin/add/add-payment-method': all(P.PAYMENT_METHODS_MANAGE),
+  '/admin/payments/payment-methods': all(P.PAYMENT_METHODS_MANAGE),
   '/admin/add/add-new-arrivals': all(P.CONTENT_MANAGE),
   '/admin/edit/home-sections': all(P.CONTENT_MANAGE),
   '/admin/add/add-new-pop-up': all(P.CONTENT_MANAGE),

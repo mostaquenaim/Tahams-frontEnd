@@ -5,34 +5,36 @@ import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { FiAlertCircle, FiCheck, FiCheckCircle, FiCopy } from 'react-icons/fi';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
+import { usePaymentMethods } from '../../Hooks/useCheckoutConfig';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
-import { PaymentMethods } from '../../utils/Methods';
 import { formatBDT } from '../../utils/pricing';
 
-// Methods the customer pays for up front and must prove with a screenshot.
-// (Cash on delivery / pick-up need nothing here - they're chosen at checkout.)
-const ONLINE_METHOD_IDS = [2, 3, 4, 6];
 const MAX_SCREENSHOT_MB = 10;
-
-// Pulls the copyable account/merchant number out of a method's instructions.
-const extractCopyValue = (process) => {
-  const text = String(process || '');
-  const account = text.match(/A\/C NUMBER:\s*(\d+)/i);
-  if (account) return account[1];
-  const mobile = text.match(/0\d{10}/);
-  return mobile ? mobile[0] : null;
-};
 
 const PaymentInfo = ({ history, token, email }) => {
   const router = useRouter();
   const axiosPublic = useAxiosPublic();
 
+  // Methods the customer pays up front and proves with a screenshot, with
+  // the numbers/instructions set on the admin Payment methods page. (Cash on
+  // delivery / pick-up need nothing here - they're chosen at checkout.)
+  const {
+    data: allMethods,
+    isLoading: methodsLoading,
+    isError: methodsFailed,
+    isFetching: methodsFetching,
+    refetch: refetchMethods,
+  } = usePaymentMethods();
   const methods = useMemo(
-    () => PaymentMethods().filter((method) => ONLINE_METHOD_IDS.includes(method.id)),
-    [],
+    () => (allMethods || []).filter((method) => method.payOnline),
+    [allMethods],
   );
 
-  const [selected, setSelected] = useState(methods[0]);
+  const [selectedId, setSelectedId] = useState(null);
+  // The customer's pick, else the first method. Falls back if their pick
+  // disappears after a refetch (e.g. an admin switched it off).
+  const selected =
+    methods.find((method) => method.id === selectedId) || methods[0] || null;
   const [accountNumber, setAccountNumber] = useState('');
   const [screenshot, setScreenshot] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -44,7 +46,7 @@ const PaymentInfo = ({ history, token, email }) => {
   const subtotal = history.reduce((sum, cart) => sum + (Number(cart.totalPrice) || 0), 0);
   const deliveryFee = Number(order.deliveryFee) || 0;
   const total = subtotal + deliveryFee;
-  const copyValue = extractCopyValue(selected?.process);
+  const copyValue = selected?.accountNumber || null;
 
   useEffect(() => {
     if (!screenshot) {
@@ -57,7 +59,7 @@ const PaymentInfo = ({ history, token, email }) => {
   }, [screenshot]);
 
   const handleSelect = (method) => {
-    setSelected(method);
+    setSelectedId(method.id);
     setErrors({});
     setCopied(false);
   };
@@ -133,10 +135,26 @@ const PaymentInfo = ({ history, token, email }) => {
       router.push(`/my-orders/details/${token}?placed=1&paid=1`);
     } catch (error) {
       console.error(error);
-      toast.error("We couldn't save your payment details. Please try again.");
+      const serverMessage = error?.response?.data?.message;
+      if (error?.response?.status === 400 && typeof serverMessage === 'string') {
+        // e.g. the method was switched off while this page was open
+        toast.error(serverMessage);
+        refetchMethods();
+      } else {
+        toast.error("We couldn't save your payment details. Please try again.");
+      }
       setIsSubmitting(false);
     }
   };
+
+  const payLaterLink = (
+    <Link
+      href={`/my-orders/details/${token}?placed=1`}
+      className="font-medium text-black underline underline-offset-4"
+    >
+      Pay on delivery / pickup instead
+    </Link>
+  );
 
   return (
     <div className="mx-auto w-full max-w-2xl">
@@ -154,6 +172,36 @@ const PaymentInfo = ({ history, token, email }) => {
         </div>
       </div>
 
+      {!selected ? (
+        <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-5 text-sm shadow-sm sm:p-7">
+          {methodsLoading ? (
+            <p className="flex items-center gap-2 text-gray-500">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-black" />
+              Loading payment options...
+            </p>
+          ) : (
+            <>
+              <p className="flex items-start gap-2 text-red-700">
+                <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                {methodsFailed
+                  ? "We couldn't load the payment options."
+                  : 'Online payment is not available right now.'}
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <button
+                  type="button"
+                  onClick={() => refetchMethods()}
+                  disabled={methodsFetching}
+                  className="rounded-lg border border-gray-300 px-3 py-2 font-medium transition hover:bg-gray-50 disabled:opacity-60"
+                >
+                  {methodsFetching ? 'Trying again...' : 'Try again'}
+                </button>
+                {payLaterLink}
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -218,7 +266,7 @@ const PaymentInfo = ({ history, token, email }) => {
             How to pay with {selected.name}
           </h3>
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
-            {selected.process}
+            {selected.instructions}
           </p>
           {copyValue && (
             <button
@@ -251,7 +299,7 @@ const PaymentInfo = ({ history, token, email }) => {
               htmlFor="accountNumber"
               className="mb-1.5 block text-sm font-medium"
             >
-              Your {selected.id === 6 ? 'account' : 'wallet'} number
+              Number or account you paid from
             </label>
             <input
               id="accountNumber"
@@ -323,15 +371,10 @@ const PaymentInfo = ({ history, token, email }) => {
         </button>
 
         <p className="text-center text-sm text-gray-500">
-          Changed your mind?{' '}
-          <Link
-            href={`/my-orders/details/${token}?placed=1`}
-            className="font-medium text-black underline underline-offset-4"
-          >
-            Pay on delivery / pickup instead
-          </Link>
+          Changed your mind? {payLaterLink}
         </p>
       </form>
+      )}
     </div>
   );
 };
