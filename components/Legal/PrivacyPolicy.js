@@ -1,5 +1,28 @@
 import Link from 'next/link';
 import { Mail, Phone, MapPin } from 'lucide-react';
+import useSiteSettings from '../../Hooks/useSiteSettings';
+import { oneLine } from '../../utils/siteSettings';
+
+// '@handle' from an Instagram profile link.
+const instagramHandle = (url) => {
+  const match = /instagram\.com\/([^/?#]+)/i.exec(url || '');
+  return match ? `@${match[1]}` : 'Instagram';
+};
+
+const InstagramLink = () => {
+  const { social } = useSiteSettings();
+  if (!social.instagram) return 'Instagram';
+  return (
+    <a
+      href={social.instagram}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 hover:text-blue-700 underline"
+    >
+      {instagramHandle(social.instagram)}
+    </a>
+  );
+};
 
 const SECTIONS = [
   {
@@ -280,15 +303,7 @@ const SECTIONS = [
     content: (
       <>
         <p className="mb-3">
-          TAHAMS is active on Instagram:{' '}
-          <a
-            href="https://www.instagram.com/tahams_bd/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-700 underline"
-          >
-            @tahams_bd
-          </a>
+          TAHAMS is active on Instagram: <InstagramLink />
         </p>
         <p className="mb-2">
           When you follow or interact with us on social media:
@@ -420,11 +435,6 @@ const SECTIONS = [
   },
 ];
 
-const CONTACT_DETAILS = {
-  email: 'tahamsbd@gmail.com',
-  phone: '+8801347519967',
-  address: '2, G/8, Maa House, Golden Street, Ring Road, Shyamoli, Dhaka-1207',
-};
 
 const CORE_PRINCIPLES = [
   { title: 'Transparency', desc: "We're honest about what we collect and why" },
@@ -434,7 +444,14 @@ const CORE_PRINCIPLES = [
   { title: 'Accountability', desc: 'We take responsibility for your information' },
 ];
 
-const ContactCard = () => (
+const ContactCard = () => {
+  const { contact } = useSiteSettings();
+  const CONTACT_DETAILS = {
+    email: contact.email,
+    phone: contact.phone,
+    address: oneLine(contact.headOfficeAddress),
+  };
+  return (
   <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-3">
     <h3 className="text-lg font-semibold text-gray-800 mb-2">
       TAHAMS Privacy Team
@@ -461,7 +478,8 @@ const ContactCard = () => (
       Response Time: 10-15 business days
     </p>
   </div>
-);
+  );
+};
 
 const PrivacyPolicy = () => {
   return (

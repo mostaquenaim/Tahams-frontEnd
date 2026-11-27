@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Heart, Search, ShoppingBag, X } from 'lucide-react';
 import LeftDrawer from '../Drawers/LeftDrawer';
 import PromoBannerCarousel from '../Swiper/PromotionalBanner';
-import promoBanners from '/public/promotional-banner-details.json';
 import NavSearch from './components/NavSearch';
 import AccountMenu from './components/AccountMenu';
 import NavIconLink, { NAV_ICON_BTN_CLASS } from './components/NavIconLink';
@@ -22,7 +21,7 @@ const ResponsiveNavBar = ({
   return (
     <div>
       <div data-theme="black" className="w-full top-0">
-        <PromoBannerCarousel banners={promoBanners} />
+        <PromoBannerCarousel />
         <div className="navbar bg-base-100 border-b border-white/10 px-2 sm:px-4">
           <div className="flex-none">
             <LeftDrawer

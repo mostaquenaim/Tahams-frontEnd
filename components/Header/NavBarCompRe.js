@@ -27,7 +27,6 @@ import useCart from '../../Hooks/useCart';
 // Context
 import { AuthContext } from '/Contexts/Auth/AuthProvider';
 import { DrawerContext } from '/Contexts/DrawerProvider';
-import promoBanners from '/public/promotional-banner-details.json';
 
 const NavBarCompRe = () => {
   const axiosPublic = useAxiosPublic();
@@ -205,7 +204,7 @@ const NavBarCompRe = () => {
               }`
         }
       >
-        <PromoBannerCarousel banners={promoBanners} />
+        <PromoBannerCarousel />
 
         <div className="border-b border-white/10">
           <div className="grid h-20 grid-cols-3 items-center gap-6 px-8 xl:px-12">

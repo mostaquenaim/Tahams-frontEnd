@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { AiTwotoneHeart } from 'react-icons/ai';
 import { scrollToSection } from '/utils/scrollToSection';
-import ComingSoon from '../ComingSoon';
+import useSiteSettings from '../../Hooks/useSiteSettings';
+import { socialLinks } from '../../utils/siteSettings';
 import {
   FaFacebook,
   FaInstagram,
@@ -11,44 +12,6 @@ import {
   FaPhone,
   FaEnvelope,
 } from 'react-icons/fa';
-
-const CONTACT_INFO = {
-  headquarters: {
-    address:
-      '2nd Floor, 2-G/8, Maa House,\nGolden Street, Ring Road,\nShyamoli, Dhaka-1207',
-    phone: '+8801347519967',
-    map: 'https://maps.app.goo.gl/w6CFtf6APKZ5FF8S6',
-  },
-  displayCenters: [
-    {
-      title: 'Display Center 1',
-      address: 'Shop No. 36-37, Ground Floor,\nShahabuddin Plaza, Ring Road, Dhaka-1207',
-      phone: '+8801314188605',
-      map: 'https://maps.app.goo.gl/89rVTtxgdV5G1E3j9',
-    },
-    {
-      title: 'Display Center 2',
-      address:
-        'Shop No. 1, Block A, Level 5,\nBashundhara City, Panthapath, Dhaka-1215',
-      phone: '+8801332136066',
-      map: 'https://maps.app.goo.gl/s2EwSNcKPKkCPv919',
-    },
-    {
-      title: 'Display Center 3',
-      address: '23/4-C, Shaista Khan Road,\nLalbagh, Dhaka-1211',
-      phone: '+8801349019745',
-      map: 'https://maps.app.goo.gl/PqekBmQzVfLRTYBK8',
-    },
-    {
-      title: 'Display Center 4',
-      address:
-        'Shop No. 45, Ground Floor, Al-Nahiyan Shopping Complex,\nKFC Goli, Beside Sony Square, Mirpur 1, Dhaka-1216',
-      phone: '+8801347519960',
-      map: 'https://maps.app.goo.gl/y91oWQHtynygeVRA8',
-    },
-  ],
-  email: 'tahamsbd@gmail.com',
-};
 
 const COMPANY_LINKS = [
   { href: '/#about', label: 'About us' },
@@ -73,26 +36,14 @@ const LEGAL_LINKS = [
   { href: '/cookies', label: 'Cookie Policy' },
 ];
 
-const SOCIAL_LINKS = [
-  {
-    href: 'https://www.facebook.com/tahamsbd/',
-    icon: FaFacebook,
-    label: 'Facebook',
-    hoverColor: 'hover:bg-blue-600',
-  },
-  {
-    href: 'https://www.instagram.com/tahams_bd/',
+const SOCIAL_STYLE = {
+  facebook: { icon: FaFacebook, hoverColor: 'hover:bg-blue-600' },
+  instagram: {
     icon: FaInstagram,
-    label: 'Instagram',
     hoverColor: 'hover:bg-gradient-to-br hover:from-purple-600 hover:via-pink-600 hover:to-orange-500',
   },
-  {
-    href: 'https://www.tiktok.com/@tahams_bd',
-    icon: FaTiktok,
-    label: 'TikTok',
-    hoverColor: 'hover:bg-black',
-  },
-];
+  tiktok: { icon: FaTiktok, hoverColor: 'hover:bg-black' },
+};
 
 // Subcomponents
 const ContactLink = ({ href, icon: Icon, label, iconColor }) => (
@@ -107,19 +58,21 @@ const ContactLink = ({ href, icon: Icon, label, iconColor }) => (
   </a>
 );
 
-const DisplayCenter = ({ title, address, phone, map }) => (
+const DisplayCenter = ({ name, address, phone, mapUrl: map }) => (
   <div className="bg-gray-800/50 rounded-lg p-4 hover:bg-gray-800/70 transition-colors duration-300">
-    <h4 className="font-semibold text-white mb-2 text-sm">{title}</h4>
+    <h4 className="font-semibold text-white mb-2 text-sm">{name}</h4>
     <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line mb-2">
       {address}
     </p>
     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-      <a
-        href={`tel:${phone}`}
-        className="text-green-400 hover:text-green-300 transition-colors"
-      >
-        {phone}
-      </a>
+      {phone && (
+        <a
+          href={`tel:${phone}`}
+          className="text-green-400 hover:text-green-300 transition-colors"
+        >
+          {phone}
+        </a>
+      )}
       {map && (
         <a
           href={map}
@@ -166,6 +119,11 @@ const NavLink = ({ href, children, onClick }) => (
 const Footer = () => {
   const router = useRouter();
   const isHomepage = router.pathname === '/';
+  const { contact, showrooms, social } = useSiteSettings();
+  const footerSocials = socialLinks(social, Object.keys(SOCIAL_STYLE)).map((link) => ({
+    ...link,
+    ...SOCIAL_STYLE[link.key],
+  }));
 
   return (
     <footer className="bg-gray-900 text-white" role="contentinfo">
@@ -193,64 +151,74 @@ const Footer = () => {
                     Headquarters
                   </h4>
                   <address className="text-gray-400 mb-4 leading-relaxed not-italic whitespace-pre-line text-base">
-                    {CONTACT_INFO.headquarters.address}
+                    {contact.headOfficeAddress}
                   </address>
-                  <a 
-                    href={`tel:${CONTACT_INFO.headquarters.phone}`}
+                  <a
+                    href={`tel:${contact.phone}`}
                     className="text-green-400 hover:text-green-300 transition-colors font-medium"
                   >
-                    {CONTACT_INFO.headquarters.phone}
+                    {contact.phone}
                   </a>
-                  <span className="ml-2 text-xs text-gray-400">
-                    (WhatsApp also available)
-                  </span>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Contact Hours: Sat–Thu, 10 AM – 6 PM
-                  </p>
-                  <a
-                    href={CONTACT_INFO.headquarters.map}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-block text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    View on map
-                  </a>
+                  {contact.whatsapp && (
+                    <span className="ml-2 text-xs text-gray-400">
+                      (WhatsApp also available)
+                    </span>
+                  )}
+                  {contact.supportHours && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Contact Hours: {contact.supportHours}
+                    </p>
+                  )}
+                  {contact.headOfficeMapUrl && (
+                    <a
+                      href={contact.headOfficeMapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-block text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      View on map
+                    </a>
+                  )}
                 </div>
 
                 {/* Display Centers - Responsive grid */}
-                <div>
-                  <h4 className="font-semibold text-white mb-4 text-lg flex items-center">
-                    <FaMapMarkerAlt
-                      className="mr-3 text-blue-400"
-                      aria-hidden="true"
-                    />
-                    Display Centers
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {CONTACT_INFO.displayCenters.map((center, index) => (
-                      <DisplayCenter key={index} {...center} />
-                    ))}
+                {showrooms.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-white mb-4 text-lg flex items-center">
+                      <FaMapMarkerAlt
+                        className="mr-3 text-blue-400"
+                        aria-hidden="true"
+                      />
+                      Display Centers
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {showrooms.map((center) => (
+                        <DisplayCenter key={center.id} {...center} />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Contact Links */}
                 <div className="flex flex-wrap gap-6">
                   <ContactLink
-                    href={`mailto:${CONTACT_INFO.email}`}
+                    href={`mailto:${contact.email}`}
                     icon={FaEnvelope}
                     label="Email Us"
                     iconColor="text-yellow-400"
                   />
                   <div className="hidden sm:block text-gray-600">|</div>
                   <ContactLink
-                    href={`tel:${CONTACT_INFO.headquarters.phone}`}
+                    href={`tel:${contact.phone}`}
                     icon={FaPhone}
                     label="Call HQ"
                     iconColor="text-green-400"
                   />
-                  <span className="self-center text-xs text-gray-500">
-                    WhatsApp also available
-                  </span>
+                  {contact.whatsapp && (
+                    <span className="self-center text-xs text-gray-500">
+                      WhatsApp also available
+                    </span>
+                  )}
                 </div>
               </div>
             </section>
@@ -348,8 +316,8 @@ const Footer = () => {
 
             {/* Social Media */}
             <nav className="flex gap-3 order-1 lg:order-2" aria-label="Social Media">
-              {SOCIAL_LINKS.map((social) => (
-                <SocialLink key={social.label} {...social} />
+              {footerSocials.map((link) => (
+                <SocialLink key={link.key} {...link} />
               ))}
             </nav>
           </div>

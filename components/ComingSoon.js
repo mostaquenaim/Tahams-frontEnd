@@ -1,14 +1,12 @@
 import Link from 'next/link';
 import { FiClock, FiMail, FiPhone } from 'react-icons/fi';
-import {
-  CONTACT,
-  BackLink,
-  buttonPrimary,
-} from './Storefront/StorefrontUI';
+import { BackLink, buttonPrimary } from './Storefront/StorefrontUI';
+import useSiteSettings from '../Hooks/useSiteSettings';
 
 // Placeholder for info pages that don't have content yet. Rather than a dead
 // end, it points customers at the ways they can reach us today.
 const ComingSoon = ({ pageTitle }) => {
+  const { contact } = useSiteSettings();
   return (
     <section className="flex min-h-screen items-center justify-center bg-gray-50 px-4 pb-16 pt-40 lg:pt-52">
       <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm sm:p-10">
@@ -24,7 +22,7 @@ const ComingSoon = ({ pageTitle }) => {
         </p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <a href={`tel:${CONTACT.phone}`} className={buttonPrimary}>
+          <a href={`tel:${contact.phone}`} className={buttonPrimary}>
             <FiPhone className="h-4 w-4" />
             Call us
           </a>

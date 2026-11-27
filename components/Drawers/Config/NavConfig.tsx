@@ -190,6 +190,7 @@ export const NAV_CONFIG = [
         href: '/admin/settings/rearrange-navbar',
         label: 'Rearrange Navbar Items',
       },
+      { href: '/admin/settings/site-info', label: 'Site Info' },
       { href: '/admin/manage/audit-log', label: 'Audit Log' },
     ],
   },

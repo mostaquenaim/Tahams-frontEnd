@@ -6,30 +6,8 @@ import { AuthContext } from '../../Contexts/Auth/AuthProvider';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 import { addGuestOrderToken } from '../../utils/guestCustomer';
 import { cartSubtotal, formatBDT } from '../../utils/pricing';
-
-const DISPLAY_CENTERS = [
-  {
-    id: 'dc1',
-    name: 'DC1 - Shahabuddin Plaza',
-    address: 'Shop No. 36-37, Ground Floor, Shahabuddin Plaza, Ring Road, Dhaka-1207',
-  },
-  {
-    id: 'dc2',
-    name: 'DC2 - Bashundhara City',
-    address: 'Shop No. 1, Block A, Level 5, Bashundhara City, Panthapath, Dhaka-1215',
-  },
-  {
-    id: 'dc3',
-    name: 'DC3 - Lalbagh',
-    address: '23/4-C, Shaista Khan Road, Lalbagh, Dhaka-1211',
-  },
-  {
-    id: 'dc4',
-    name: 'DC4 - Mirpur 1',
-    address:
-      'Shop No. 45, Ground Floor, Al-Nahiyan Shopping Complex, KFC Goli, Beside Sony Square, Mirpur 1, Dhaka-1216',
-  },
-];
+import useSiteSettings from '../../Hooks/useSiteSettings';
+import { oneLine, pickupCenters } from '../../utils/siteSettings';
 
 const FEES = { dhakaCity: 80, aroundDhaka: 120, outsideDhaka: 150, other: 150 };
 const DHAKA_CITY_AREAS = ['Dhaka - North', 'Dhaka - South'];
@@ -163,8 +141,13 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitGuard = useRef(false);
 
+  // Showrooms with store pickup on (admin "Site info" page).
+  const { showrooms } = useSiteSettings();
+  const centers = pickupCenters(showrooms);
+
   const subtotal = cartSubtotal(items);
-  const isPickup = mode === 'pickup';
+  // If every pickup point is switched off, home delivery is the only choice.
+  const isPickup = mode === 'pickup' && centers.length > 0;
 
   // Dhaka areas (used for city choice and pricing).
   useEffect(() => {
@@ -282,7 +265,10 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
       next.facebook = 'That does not look like a Facebook profile link.';
     }
     if (isPickup) {
-      if (!dcId) next.dc = 'Choose where you would like to pick up.';
+      // Also catches a choice that disappeared when the saved list loaded.
+      if (!centers.some((center) => center.id === dcId)) {
+        next.dc = 'Choose where you would like to pick up.';
+      }
     } else {
       if (!region) next.region = 'Choose your region.';
       if (region === 'Dhaka' && !city) next.city = 'Choose your area.';
@@ -353,7 +339,8 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
     setIsSubmitting(true);
     setSubmitError('');
 
-    const dc = isPickup ? DISPLAY_CENTERS.find((item) => item.id === dcId) : null;
+    const center = isPickup ? centers.find((item) => item.id === dcId) : null;
+    const dc = center && { name: center.pickupName, address: oneLine(center.address) };
     const phone = normalizePhone(form.phone);
     const details = {
       fullName: form.fullName.trim(),
@@ -511,6 +498,7 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
             title="Home delivery"
             subtitle="Delivered to your door"
           />
+          {centers.length > 0 && (
           <ChoiceCard
             name="delivery-mode"
             selected={isPickup}
@@ -527,13 +515,14 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
             title="Store pickup"
             subtitle="Free · collect from a display center"
           />
+          )}
         </div>
 
         {isPickup ? (
           <div className="mt-5" id="co-dc" tabIndex={-1}>
             <p className="mb-2 text-sm font-medium text-gray-800">Pickup center</p>
             <div className="space-y-2">
-              {DISPLAY_CENTERS.map((center) => (
+              {centers.map((center) => (
                 <label
                   key={center.id}
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3.5 transition ${
@@ -553,10 +542,10 @@ const BuyingAddress = ({ regions = [], items, onDeliveryFeeChange }) => {
                     className="mt-1 h-4 w-4 shrink-0 accent-black"
                   />
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold">{center.name}</span>
+                    <span className="block text-sm font-semibold">{center.pickupName}</span>
                     <span className="mt-0.5 flex items-start gap-1 text-xs text-gray-500">
                       <FiMapPin className="mt-0.5 h-3 w-3 shrink-0" />
-                      {center.address}
+                      {oneLine(center.address)}
                     </span>
                   </span>
                 </label>

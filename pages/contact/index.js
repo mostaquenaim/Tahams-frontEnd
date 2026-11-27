@@ -7,54 +7,29 @@ import {
   PageShell,
   PageHeader,
   Card,
-  CONTACT,
 } from '../../components/Storefront/StorefrontUI';
+import useSiteSettings from '../../Hooks/useSiteSettings';
+import { oneLine, phoneLabel, socialLinks } from '../../utils/siteSettings';
 
-const SHOWROOMS = [
-  {
-    label: 'Head office',
-    address: '2nd Floor, 2-G/8, Maa House, Golden Street, Ring Rd, Dhaka 1207',
-    phone: '+8801347519967',
-    map: 'https://maps.app.goo.gl/w6CFtf6APKZ5FF8S6',
-  },
-  {
-    label: 'Display Center 1',
-    address: 'Shop No. 36-37, Ground Floor, Shahabuddin Plaza, Ring Road, Dhaka-1207',
-    phone: '+8801314188605',
-    map: 'https://maps.app.goo.gl/89rVTtxgdV5G1E3j9',
-  },
-  {
-    label: 'Display Center 2',
-    address: 'Shop No. 1, Block A, Level 5, Bashundhara City, Panthapath, Dhaka-1215',
-    phone: '+8801332136066',
-    map: 'https://maps.app.goo.gl/s2EwSNcKPKkCPv919',
-  },
-  {
-    label: 'Display Center 3',
-    address: '23/4-C, Shaista Khan Road, Lalbagh, Dhaka-1211',
-    phone: '+8801349019745',
-    map: 'https://maps.app.goo.gl/PqekBmQzVfLRTYBK8',
-  },
-  {
-    label: 'Display Center 4',
-    address:
-      'Shop No. 45, Ground Floor, Al-Nahiyan Shopping Complex, KFC Goli, Beside Sony Square, Mirpur 1, Dhaka-1216',
-    phone: '+8801347519960',
-    map: 'https://maps.app.goo.gl/y91oWQHtynygeVRA8',
-  },
-];
-
-const SOCIALS = [
-  { label: 'Facebook', href: CONTACT.facebook, icon: FaFacebook },
-  { label: 'Instagram', href: CONTACT.instagram, icon: FaInstagram },
-  {
-    label: 'TikTok',
-    href: 'https://www.tiktok.com/@tahams_bd',
-    icon: FaTiktok,
-  },
-];
+const SOCIAL_ICONS = { facebook: FaFacebook, instagram: FaInstagram, tiktok: FaTiktok };
 
 const Contact = () => {
+  const { contact, showrooms, social } = useSiteSettings();
+  const places = [
+    {
+      id: 'head-office',
+      name: 'Head office',
+      address: contact.headOfficeAddress,
+      phone: contact.phone,
+      mapUrl: contact.headOfficeMapUrl,
+    },
+    ...showrooms,
+  ];
+  const socials = socialLinks(social, Object.keys(SOCIAL_ICONS)).map((link) => ({
+    ...link,
+    icon: SOCIAL_ICONS[link.key],
+  }));
+
   return (
     <>
       <Head>
@@ -74,7 +49,7 @@ const Contact = () => {
             <Card className="space-y-6 sm:p-8">
               <div className="grid gap-5 sm:grid-cols-2">
                 <a
-                  href={`tel:${CONTACT.phone}`}
+                  href={`tel:${contact.phone}`}
                   className="flex items-start gap-3 rounded-xl border border-gray-100 p-4 transition hover:border-gray-300"
                 >
                   <FiPhone className="mt-0.5 h-5 w-5 shrink-0 text-gray-500" />
@@ -83,18 +58,24 @@ const Contact = () => {
                       Phone
                     </span>
                     <span className="text-sm text-gray-600">
-                      {CONTACT.phoneLabel}
+                      {phoneLabel(contact.phone)}
                     </span>
-                    <span className="block text-xs text-green-600">
-                      WhatsApp also available
-                    </span>
-                    <span className="block text-xs text-gray-500">
-                      {CONTACT.supportHours}
-                    </span>
+                    {contact.whatsapp && (
+                      <span className="block text-xs text-green-600">
+                        {contact.whatsapp === contact.phone
+                          ? 'WhatsApp also available'
+                          : `WhatsApp: ${phoneLabel(contact.whatsapp)}`}
+                      </span>
+                    )}
+                    {contact.supportHours && (
+                      <span className="block text-xs text-gray-500">
+                        {contact.supportHours}
+                      </span>
+                    )}
                   </span>
                 </a>
                 <a
-                  href={`mailto:${CONTACT.email}`}
+                  href={`mailto:${contact.email}`}
                   className="flex items-start gap-3 rounded-xl border border-gray-100 p-4 transition hover:border-gray-300"
                 >
                   <FiMail className="mt-0.5 h-5 w-5 shrink-0 text-gray-500" />
@@ -103,7 +84,7 @@ const Contact = () => {
                       Email
                     </span>
                     <span className="break-words text-sm text-gray-600">
-                      {CONTACT.email}
+                      {contact.email}
                     </span>
                   </span>
                 </a>
@@ -115,20 +96,22 @@ const Contact = () => {
                   Find us
                 </h2>
                 <ul className="mt-3 divide-y divide-gray-100 text-sm">
-                  {SHOWROOMS.map((place) => (
-                    <li key={place.label} className="py-2.5">
-                      <p className="font-medium text-gray-900">{place.label}</p>
-                      <p className="text-gray-600">{place.address}</p>
+                  {places.map((place) => (
+                    <li key={place.id} className="py-2.5">
+                      <p className="font-medium text-gray-900">{place.name}</p>
+                      <p className="text-gray-600">{oneLine(place.address)}</p>
                       <p className="mt-1 flex flex-wrap gap-x-4 text-xs">
-                        <a
-                          href={`tel:${place.phone}`}
-                          className="text-gray-700 underline-offset-2 hover:underline"
-                        >
-                          {place.phone}
-                        </a>
-                        {place.map && (
+                        {place.phone && (
                           <a
-                            href={place.map}
+                            href={`tel:${place.phone}`}
+                            className="text-gray-700 underline-offset-2 hover:underline"
+                          >
+                            {place.phone}
+                          </a>
+                        )}
+                        {place.mapUrl && (
+                          <a
+                            href={place.mapUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="text-gray-700 underline-offset-2 hover:underline"
@@ -142,12 +125,13 @@ const Contact = () => {
                 </ul>
               </div>
 
+              {socials.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-gray-900">
                   Follow us
                 </h2>
                 <div className="mt-3 flex gap-3">
-                  {SOCIALS.map(({ label, href, icon: Icon }) => (
+                  {socials.map(({ label, href, icon: Icon }) => (
                     <a
                       key={label}
                       href={href}
@@ -161,6 +145,7 @@ const Contact = () => {
                   ))}
                 </div>
               </div>
+              )}
             </Card>
           </div>
         </div>

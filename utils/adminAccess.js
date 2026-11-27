@@ -215,6 +215,7 @@ export const PAGE_RULES = {
   '/admin/add/add-size': all(P.CATALOG_MANAGE),
   '/admin/add/add-fabric': all(P.CATALOG_MANAGE),
   '/admin/settings/rearrange-navbar': all(P.CATALOG_MANAGE),
+  '/admin/settings/site-info': all(P.SETTINGS_MANAGE),
 
   // Operations
   '/admin/inventory/stock-status': all(P.INVENTORY_VIEW),

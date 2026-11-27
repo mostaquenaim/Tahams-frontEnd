@@ -4,16 +4,7 @@ import { FiArrowLeft, FiChevronRight } from 'react-icons/fi';
 // Shared building blocks for storefront pages, matching the cart/checkout look
 // (rounded-2xl white cards, gray-100 borders, black primary actions).
 
-export const CONTACT = {
-  phone: '+8801347519967',
-  phoneLabel: '+88 01347519967',
-  whatsapp: 'https://wa.me/8801347519967',
-  supportHours: 'Sat–Thu, 10 AM – 6 PM',
-  email: 'tahamsbd@gmail.com',
-  facebook: 'https://www.facebook.com/tahamsbd/',
-  instagram: 'https://www.instagram.com/tahams_bd/',
-  messenger: 'https://m.me/111664024670524',
-};
+// Contact details and social links: Hooks/useSiteSettings.
 
 export const imageUrl = (filename) =>
   `${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`;

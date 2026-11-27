@@ -7,10 +7,10 @@ import Link from 'next/link';
 import AddedToCartBar from '../Cart/AddedToCartBar';
 import {
   SkeletonGrid,
-  CONTACT,
   buttonPrimary,
   buttonSecondary,
 } from '../Storefront/StorefrontUI';
+import useSiteSettings from '../../Hooks/useSiteSettings';
 import { FiSearch } from 'react-icons/fi';
 import { Facebook, Instagram, MessageCircle, Phone } from 'lucide-react';
 
@@ -392,7 +392,9 @@ const FilterChip = ({ label, onRemove }) => (
   </span>
 );
 
-const EmptyStateSection = ({ filtered, onClear, query }) => (
+const EmptyStateSection = ({ filtered, onClear, query }) => {
+  const { contact, social } = useSiteSettings();
+  return (
   <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
     <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-gray-400">
       <FiSearch className="h-7 w-7" />
@@ -426,26 +428,33 @@ const EmptyStateSection = ({ filtered, onClear, query }) => (
       <SocialBtn
         icon={<Phone size={18} />}
         label="Call"
-        href={`tel:${CONTACT.phone}`}
+        href={`tel:${contact.phone}`}
       />
-      <SocialBtn
-        icon={<Facebook size={18} />}
-        label="Facebook"
-        href={CONTACT.facebook}
-      />
-      <SocialBtn
-        icon={<Instagram size={18} />}
-        label="Instagram"
-        href={CONTACT.instagram}
-      />
-      <SocialBtn
-        icon={<MessageCircle size={18} />}
-        label="Chat"
-        href={CONTACT.messenger}
-      />
+      {social.facebook && (
+        <SocialBtn
+          icon={<Facebook size={18} />}
+          label="Facebook"
+          href={social.facebook}
+        />
+      )}
+      {social.instagram && (
+        <SocialBtn
+          icon={<Instagram size={18} />}
+          label="Instagram"
+          href={social.instagram}
+        />
+      )}
+      {social.messenger && (
+        <SocialBtn
+          icon={<MessageCircle size={18} />}
+          label="Chat"
+          href={social.messenger}
+        />
+      )}
     </div>
   </div>
-);
+  );
+};
 
 const SocialBtn = ({ icon, label, href }) => (
   <a

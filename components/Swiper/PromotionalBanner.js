@@ -5,16 +5,28 @@ import { Autoplay, Pagination, A11y } from 'swiper/modules';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
+import useSiteSettings from '../../Hooks/useSiteSettings';
+import { activeBanners } from '../../utils/siteSettings';
 
 // No prev/next arrows: on phones they looked like "back" buttons. The notice
 // still rotates on its own, can be swiped, and shows dots.
+//
+// Banners come from the admin "Site info" page (built-in ones until saved).
 
-export default function PromoBannerCarousel({ banners }) {
-  if (!banners || banners.length === 0) return null;
+// Web links open in a new tab; tel:/mailto: must not leave a blank one.
+const opensNewTab = (url) => /^https?:/i.test(url || '');
+
+export default function PromoBannerCarousel() {
+  const { promoBanners } = useSiteSettings();
+  const banners = activeBanners(promoBanners);
+  if (banners.length === 0) return null;
 
   return (
     <div className="relative w-full overflow-hidden">
       <Swiper
+        // Loop mode clones slides once; remount when the set changes (the
+        // saved banners replace the built-in ones after the first load).
+        key={banners.map((b) => b.text).join('|')}
         modules={[Autoplay, Pagination, A11y]}
         speed={600} // smooth but not slow
         loop={banners.length > 1}
@@ -52,8 +64,10 @@ export default function PromoBannerCarousel({ banners }) {
                     <a
                       key={idx}
                       href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      {...(opensNewTab(link.url) && {
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      })}
                       className="underline font-semibold hover:opacity-80 transition-opacity italic"
                     >
                       {link.text}
