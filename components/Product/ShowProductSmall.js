@@ -35,15 +35,25 @@ const ShowProductSmall = ({ item }) => {
     if (!canBuy || buying) return;
 
     const customEmail = user?.email || backendEmail || getGuestCustomerInfo().email;
+
+    // The first size that is actually in stock. (It used to take the first
+    // size even when sold out and add it with quantity 0 - a ৳0 line.)
+    const firstSize = item.pscs?.find((psc) => psc.quantity > 0);
+    if (!firstSize) {
+      toast.error('Sorry, this item is out of stock right now.');
+      return;
+    }
+
     setBuying(true);
 
     try {
-      const firstSize = item.pscs[0];
       const response = await axiosPublic.post('/admin/add-to-cart', {
         productId,
-        size: firstSize.size.name,
-        category: firstSize.category.id,
-        Quantity: firstSize.quantity > 0 ? 1 : 0,
+        // null for a product without sizes: the backend then uses its
+        // size-less stock row.
+        size: firstSize.size?.name ?? null,
+        category: firstSize.category?.id,
+        Quantity: 1,
         colorId: item.color?.id,
         customerEmail: customEmail,
       });

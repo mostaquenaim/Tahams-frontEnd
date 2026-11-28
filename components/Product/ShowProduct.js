@@ -51,15 +51,21 @@ const ShowProduct = ({ item }) => {
     try {
       const response = await axiosPublic.post('/admin/add-to-cart', {
         productId,
-        size: firstSize.size.name,
-        category: firstSize.category.id,
+        // null for a product without sizes: the backend then uses its
+        // size-less stock row.
+        size: firstSize.size?.name ?? null,
+        category: firstSize.category?.id,
         Quantity: 1,
         colorId: item.color?.id,
         customerEmail: customEmail,
       });
 
       if (response.status >= 200 && response.status <= 205) {
-        toast.success(`Added to cart (size ${firstSize.size.name})`);
+        toast.success(
+          firstSize.size?.name
+            ? `Added to cart (size ${firstSize.size.name})`
+            : 'Added to cart',
+        );
         // Only after a successful add; a new value restarts the bar's timer.
         setShowGotoCart(Date.now());
       }

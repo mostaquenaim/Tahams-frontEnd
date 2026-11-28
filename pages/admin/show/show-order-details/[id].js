@@ -556,7 +556,7 @@ const ShowOrderDetails = () => {
         icon={<FiTrash2 />}
         tone="danger"
         title="Delete this order?"
-        description="This action cannot be undone."
+        description="Its items go back in stock. This action cannot be undone."
         size="sm"
         footer={
           <>

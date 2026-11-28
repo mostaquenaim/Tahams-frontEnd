@@ -23,6 +23,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ProductSize from '/components/Product/ProductSize';
 import { FiChevronDown, FiChevronLeft, FiChevronRight, FiMinus, FiPlus } from 'react-icons/fi';
 import { formatBDT } from '../../../utils/pricing';
+import { MAX_LINE_QUANTITY } from '../../../utils/cartLimits';
 import { apiGet } from '../../../utils/staticFetch';
 import AddedToCartBar from '/components/Cart/AddedToCartBar';
 import {
@@ -264,8 +265,8 @@ const Product = ({ product }) => {
             `No more stock available. Only ${item.quantity} left in size ${selectedSize}.`,
             { id: 'stock-limit' },
           );
-        } else if (quantity >= 30) {
-          toast.error('You can order up to 30 of this item at a time.', {
+        } else if (quantity >= MAX_LINE_QUANTITY) {
+          toast.error(`You can order up to ${MAX_LINE_QUANTITY} of this item at a time.`, {
             id: 'stock-limit',
           });
         } else {

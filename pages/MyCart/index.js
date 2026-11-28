@@ -8,8 +8,7 @@ import useCart from '../../Hooks/useCart';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { generateTempItems, pushToDataLayer } from '../../utils/ga4';
 import { cartSubtotal, formatBDT, lineTotal, unitPrice } from '../../utils/pricing';
-
-const MAX_QUANTITY = 10;
+import { MAX_LINE_QUANTITY as MAX_QUANTITY } from '../../utils/cartLimits';
 
 const imageUrl = (filename) =>
   `${process.env.NEXT_PUBLIC_API}/admin/getimage/${filename}`;
@@ -97,7 +96,13 @@ const MyCart = () => {
   };
 
   const handleQuantity = async (item, next) => {
-    if (next < 1 || next > MAX_QUANTITY || updatingId) return;
+    if (next < 1 || updatingId) return;
+    // A line added before the limit was 10 can hold more: "-" takes it
+    // straight down to the limit (checkout refuses more than that).
+    if (next > MAX_QUANTITY) {
+      if (next > item.Quantity) return;
+      next = MAX_QUANTITY;
+    }
     setUpdatingId(item.id);
     try {
       await axiosPublic.put(`/admin/update-cart-quantity/${item.uniqueId}`, {

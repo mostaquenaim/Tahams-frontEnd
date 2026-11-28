@@ -288,9 +288,11 @@ const OrderDetails = () => {
                 <div className="flex items-center justify-between pb-4 border-b border-gray-200">
                   <span className="text-gray-600 font-medium">Status:</span>
                   <span
-                    className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(orderDetails[0].history.deliveryStatus.name)}`}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(orderDetails[0].history?.deliveryStatus?.name)}`}
                   >
-                    {orderDetails[0].history.deliveryStatus.name}
+                    {/* An order saved without a status row (missing lookup row) must not crash the page. */}
+                    {orderDetails[0].history?.deliveryStatus?.name ||
+                      'Order placed'}
                   </span>
                 </div>
 
@@ -301,7 +303,11 @@ const OrderDetails = () => {
                       <MdPayment className="mr-2" /> Payment Method:
                     </span>
                     <span className="font-medium text-gray-800">
-                      {orderDetails[0].history.paymentMethod.name}
+                      {/* Orders can be saved without a payment method (checkout's
+                          id isn't in the payment-method table); show that
+                          instead of crashing the whole page. */}
+                      {orderDetails[0].history?.paymentMethod?.name ||
+                        'To be confirmed'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">

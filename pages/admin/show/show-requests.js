@@ -327,7 +327,7 @@ const ShowRequests = () => {
         icon={<FiCheckCircle />}
         tone="success"
         title="Approve this request?"
-        description="The request will be marked as approved."
+        description="The requested items are taken off the order and put back in stock. This can't be undone."
         footer={
           <>
             <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>

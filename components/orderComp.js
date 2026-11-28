@@ -361,6 +361,12 @@ const OrderComp = ({ orderDetails, admin = false, readOnly = false, onUpdated })
               {selectedStep?.label || 'the selected step'}
             </strong>
             ?
+            {exceptionSteps.some((s) => s.id === selectedStep?.id) && (
+              <span className="mt-2 block">
+                Its items go back in stock, and the order can&apos;t change
+                status after this.
+              </span>
+            )}
           </>
         }
         size="sm"
